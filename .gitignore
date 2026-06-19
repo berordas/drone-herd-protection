@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Salidas de render (si se guardan animaciones)
+*.mp4
+*.gif
+
+# SO / editor
+.DS_Store
+.vscode/
+.idea/
