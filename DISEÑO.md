@@ -5,8 +5,9 @@
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
 > **Última actualización:** vacas (calma + miedo, bandera #3) + **remate ("pounce") del lobo**
-> resuelto: cuando la vaca lenta se rezaga y queda cortada del rebaño, la jauría cierra a matar
-> → captura **~40% sin drones** (ni 0% ni 100%). Siguiente: batería/carga (§4.3).
+> resuelto, y **baseline del mundo CONGELADO** (`baseline.py`): captura **49% sin drones**
+> (Wilson 95% IC 39–59%, 100 seeds) = referencia fija para comparar FSM vs MARL. El umbral del
+> pounce es **estático** (`0.25·cow_spread`), no se acopla al huddle vivo. Siguiente: batería (§4.3).
 
 ---
 
@@ -328,6 +329,7 @@ Carpeta `AI_LAB/` (proyecto Python local). Estructura:
 - `render.py` — animación matplotlib (por reproducción: lee estado, nunca llama a `step`).
 - `coordinators.py` — `DummyCoordinator` (ignora obs, devuelve "todos quietos"); FSM y MARL después.
 - `main.py` — bucle: reset → obs → coordinador → acciones → step → terminal → métricas.
+- `baseline.py` — **adversario congelado** (config + seeds + métrica de referencia); `build_baseline_world(seed)` y self-check de deriva.
 
 Decisiones de diseño ratificadas:
 - Cada grupo de entidades = array `(N, 2)` de NumPy (vectoriza y se trocea por agente para MAPPO).
@@ -363,6 +365,16 @@ Decisiones de diseño ratificadas:
   violaciones (parcela + zonas).
 - ✅ Captura = **~40%** (16/40) tras añadir el **remate** del lobo (bandera #11 resuelta): caza a
   la vaca rezagada cuando queda cortada del grupo (15/16 son de vaca aislada, no atropello).
+
+🧊 **Baseline del mundo CONGELADO (`baseline.py`):** tras calibrar vacas + lobo, se fija el
+adversario (config + 100 seeds) para que FSM y MARL se midan contra lo mismo.
+- **Métrica de referencia (sin drones):** `predation = 49/100 = 49.0%` (Wilson 95% IC 39.4–58.7%).
+  Es lo que los coordinadores deben **mejorar** (bajar la depredación).
+- `wolf_pounce_isolation` = **umbral estático** `0.25·cow_spread` (=2.5): cuando entren los drones
+  cambiarán *si una vaca se aísla* (lo medido), no el listón → no contamina "los drones protegen".
+- La batería es **ortogonal** (qué drones hay disponibles, no la dinámica vaca/lobo) → no mueve el
+  baseline. busca-huecos/amago son adversarios posteriores de la escalera, no este baseline.
+- ⚠️ NO tocar estos parámetros una vez empiece la comparación; si se recalibra, re-medir ambas ramas.
 
 ---
 
