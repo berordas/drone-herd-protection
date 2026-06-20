@@ -4,10 +4,9 @@
 > decisiones tomadas, las herramientas, el plan, las referencias y —muy importante— las
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
-> **Última actualización:** implementado el comportamiento de las vacas (calma + miedo,
-> apiñamiento, valla blanda = bandera #3 resuelta). **Abierto:** el lobo simétrico nunca alcanza
-> `capture_radius` contra un rebaño apiñado → la captura del rezagado requiere decidir el "pounce"
-> del lobo (ver §4.2 y bandera #11).
+> **Última actualización:** vacas (calma + miedo, bandera #3) + **remate ("pounce") del lobo**
+> resuelto: cuando la vaca lenta se rezaga y queda cortada del rebaño, la jauría cierra a matar
+> → captura **~40% sin drones** (ni 0% ni 100%). Siguiente: batería/carga (§4.3).
 
 ---
 
@@ -123,6 +122,10 @@ comunicación ni jerarquía**):
    cerca desde fuera sin atravesar el rebaño).
 2. **Repulsión entre lobos** que están en el "anillo" (a ~`d_safe`) → reparto angular = **cerco
    emergente**.
+3. **Remate ("pounce"):** si la presa queda **realmente cortada** del rebaño (su vaca más próxima
+   a > `wolf_pounce_isolation`), la jauría **abandona el standoff y persigue a matar**. Solo se
+   dispara con una vaca de verdad aislada → captura de la rezagada a tasa sensata (**~40% sin
+   drones**), no por atravesar el grupo. *(KNOB sensible: 2.25→58%, 2.5→40%, 2.75→12%.)*
 
 Capa biológica añadida:
 - **Selección de presa:** el lobo apunta a la vaca **más expuesta** (la más alejada del
@@ -155,12 +158,12 @@ que **solo tienen sentido cuando los drones se muevan** (fases muy posteriores).
   lenta se queda atrás al apiñarse y queda expuesta = la presa que el lobo selecciona. (Sin nada
   que lo fuerce: emerge de la heterogeneidad.)
 - **Desplazamiento directo** (sin velocidad en el estado), vectorizado, RNG sembrado.
-- **⚠️ Conflicto abierto (captura):** con el lobo **simétrico** (mantiene `d_safe=6` y corre más
-  que las vacas) la distancia lobo-vaca **nunca baja de ~5.6 m** < `capture_radius=3` → **captura
-  = 0%** contra un rebaño que se apiña y no huye. El rezagado queda expuesto pero el lobo solo
-  guarda la distancia. Las capturas previas (2/30) venían del paseo aleatorio, que la cohesión
-  ahora elimina. Resolverlo exige tocar el lobo (un **"pounce"**: cerrar a matar cuando la presa
-  está realmente aislada). **Decisión pendiente del arquitecto (bandera #11).**
+- **✅ Captura resuelta (remate):** el conflicto (el lobo simétrico nunca bajaba de ~5.6 m) se
+  resolvió con el **pounce** del lobo (opción A, ratificada): cuando la vaca lenta se rezaga y
+  queda cortada (aislamiento > `wolf_pounce_isolation` ≈ 2.5 m), la jauría cierra a matar.
+  Verificado: **16/40 (40%) predation**, de las cuales 15 son capturas de vaca aislada (no
+  atropello). Se añadió `wander_panic` (paseo residual en pánico) para que la rezagada se separe
+  de verdad. El huddle sigue apretado (radio 4.1→2.1 m). Ver bandera #11.
 - **Escolta — PENDIENTE:** los **collares** conducen el rebaño al refugio (guided herding); los
   **drones escoltan** (pantalla protectora + disuasión). "Escolta" = proteger el traslado, no empujar.
 
@@ -346,6 +349,8 @@ Decisiones de diseño ratificadas:
 4. Combinación atracción+repulsión, normalizada a velocidad, **desplazamiento directo (sin
    velocidad en el estado)**. Hook `wolf_speed_near` preparado (no activo).
 5. Zonas prohibidas: **clamp geométrico** por paso fuera de establo y central (NO navegación).
+6. **Remate ("pounce")**: si la presa queda cortada del rebaño (> `wolf_pounce_isolation`), pasa
+   de standoff a persecución pura → caza a la rezagada (~40% sin drones, 15/16 de vaca aislada).
 - `capture_radius` y `d_safe` **independientes** (desacoplados).
 - Verificado: 30 seeds → 28 timeout / 2 predation (cerco se asienta; las 2 son capturas por paseo
   aleatorio). 0 frames-lobo dentro de establo/central.
@@ -356,8 +361,8 @@ Decisiones de diseño ratificadas:
   sin huida. Rezagado emergente por heterogeneidad de velocidad (`cow_speed_jitter`).
 - Desplazamiento directo (sin velocidad en estado), vectorizado, reproducible. Contención: 0
   violaciones (parcela + zonas).
-- ⚠️ Captura = **0%** con el lobo simétrico (min lobo-vaca 5.6 m > `capture_radius` 3): la cohesión
-  eliminó las capturas por paseo aleatorio y el lobo no penetra. Decisión abierta (bandera #11).
+- ✅ Captura = **~40%** (16/40) tras añadir el **remate** del lobo (bandera #11 resuelta): caza a
+  la vaca rezagada cuando queda cortada del grupo (15/16 son de vaca aislada, no atropello).
 
 ---
 
@@ -399,14 +404,12 @@ Decisiones de diseño ratificadas:
     comparten el renderizado → la brecha sim-to-real de percepción casi desaparece. Dataset del
     lobo: renderizar lobos sintéticos (Blender / Isaac) — no hay detector de "lobo aéreo" de
     estantería.
-11. **⚠️ Captura del rezagado — DECISIÓN ABIERTA** (lo de "ya funciona" resultó **falso**). Con el
-    lobo simétrico, mantener `d_safe=6` > `capture_radius=3` + correr más que las vacas = el lobo
-    **nunca** alcanza la distancia letal contra un rebaño apiñado (verificado: mín. lobo-vaca
-    5.6 m, captura 0/30). El rezagado queda expuesto pero no se le caza. Opciones: **(A) pounce**
-    del lobo — cerrar a matar cuando la presa esté suficientemente aislada del resto (biológico, da
-    capturas solo de vacas realmente cortadas; toca el lobo); (B) bajar `d_safe`→`capture_radius`
-    (pierde el standoff limpio); (C) aceptar 0% ahora (la captura llegaría con la escolta/drones).
-    Recomendación: **(A)**. Pendiente de ratificar antes de seguir.
+11. ✅ **RESUELTA — Captura del rezagado (opción A, pounce).** El lobo simétrico mantiene el
+    standoff salvo cuando la presa está **cortada** del rebaño (vaca más próxima > ~2.5 m): ahí
+    persigue a matar. Da ~40% de captura sin drones (15/16 son de vaca aislada). Se añadió un
+    paseo residual en pánico (`wander_panic`) para que la vaca lenta se rezague de verdad.
+    **KNOB sensible** (`wolf_pounce_isolation`): pequeños cambios mueven mucho la tasa → reafinar
+    si se cambian los parámetros de las vacas.
 12. **Pure pursuit y filtro de estimación del lobo.** Reutilizar el pure pursuit (de Robots) en la
     capa de guiado; implementar un **EKF/filtro de partículas** para estimar la trayectoria del
     lobo a partir de detecciones ruidosas (análogo al MCL de la asignatura — el GPS da la
@@ -419,12 +422,12 @@ Decisiones de diseño ratificadas:
 
 ## 11. SIGUIENTE PASO
 
-**Decidir la captura del rezagado (bandera #11).** Las vacas (calma + miedo) ya están; pero el
-cerco simétrico **no** cierra a matar, así que la captura es 0% (la pieza que se asumía "ya
-funciona" no lo hace). Antes de seguir, ratificar cómo se modela la captura — recomendado: un
-**"pounce"** del lobo cuando la presa esté realmente aislada (cambio pequeño y enfocado en el lobo).
+**Batería y estación de carga (§4.3).** Vacas (calma + miedo) y lobo (Muro + remate) cerrados, con
+captura ~40% sin drones → hay un problema real que resolver. Toca el ciclo de batería: 8 drones
+(4 activos + 4 reserva), batería ~10 min / carga ~5 min, **cola de carga** (sale el más cargado),
+arranque escalonado, y el negativo por "dron tirado sin batería".
 
-Después: batería/carga → escolta → percepción (sustituto) → coordinador clásico → MARL → comparación.
+Después: escolta → percepción (sustituto) → coordinador clásico → MARL → comparación.
 
 ---
 

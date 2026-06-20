@@ -48,6 +48,7 @@ class World:
         k_separation: float = 3.0,         # peso de separación (evita apilarse). TUNE
         r_separation: float | None = None, # m, radio de separación (default ~0.3*cow_spread). TUNE
         wander_calm: float = 1.0,          # peso del paseo aleatorio en calma. TUNE
+        wander_panic: float = 0.35,        # paseo residual en pánico (rebaño algo móvil -> rezagado). TUNE
         r_fear: float | None = None,       # m, alcance del miedo al lobo (default ~0.25*min(W,H)). TUNE
         k_fence: float = 1.5,              # rigidez de la valla blanda (la "correa"). TUNE
         capture_radius: float | None = None,  # m, a qué distancia MATA (default derivado de geometría)
@@ -58,6 +59,7 @@ class World:
         wolf_repulsion_radius: float | None = None,    # alcance de la repulsión entre lobos
         wolf_repulsion_strength: float = 1.0,          # peso del término de repulsión
         wolf_engage_band: float | None = None,         # margen sobre d_safe para contar como "en el anillo"
+        wolf_pounce_isolation: float | None = None,    # m: aislamiento de la presa que dispara el remate. TUNE
         seed: int | None = None,
     ):
         # --- configuración (inmutable durante el episodio) ---
@@ -102,6 +104,7 @@ class World:
         self.k_separation = k_separation
         self.r_separation = r_separation if r_separation is not None else 0.4 * self.cow_spread
         self.wander_calm = wander_calm
+        self.wander_panic = wander_panic
         self.r_fear = r_fear if r_fear is not None else 0.25 * m
         self.k_fence = k_fence
 
@@ -119,6 +122,13 @@ class World:
         )
         self.wolf_repulsion_strength = wolf_repulsion_strength
         self.wolf_engage_band = wolf_engage_band if wolf_engage_band is not None else 0.5 * self.d_safe
+        # Remate ("pounce"): la presa cuenta como cortada del rebaño si su vaca más próxima
+        # está a más de esto. Default = 0.25*cow_spread (~un poco más que el espaciado del
+        # huddle) -> tasa de captura ~40% sin drones. KNOB SENSIBLE: pequeños cambios mueven
+        # mucho la tasa (2.25->58%, 2.5->40%, 2.75->12%); reafinar si cambian las vacas.
+        self.wolf_pounce_isolation = (
+            wolf_pounce_isolation if wolf_pounce_isolation is not None else 0.25 * self.cow_spread
+        )
 
         self._seed = seed
 
@@ -252,8 +262,10 @@ class World:
         )
         separation = self.k_separation * push.sum(axis=1)             # (n,2)
 
-        # Paseo aleatorio; se atenúa con el miedo (no deambulan al apiñarse).
-        wander = self.rng.normal(0.0, 1.0, size=cows.shape) * (self.wander_calm * (1.0 - f))
+        # Paseo aleatorio; baja con el miedo hasta un residual (no se quedan estáticas:
+        # ese residual hace que la vaca lenta se rezague -> presa aislada para el remate).
+        wander_mag = self.wander_calm * (1.0 - f) + self.wander_panic * f
+        wander = self.rng.normal(0.0, 1.0, size=cows.shape) * wander_mag
 
         # Valla blanda ("correa"): retorno hacia la zona de pasto SOLO si salen de ella.
         # Sustituye al clamp duro provisional (bandera #3).
@@ -275,57 +287,67 @@ class World:
         self._push_outside_circle(self.cows, self.central_station)
 
     def _update_wolves(self) -> None:
-        """Modelo de caza de Muro et al. (2011): dos reglas descentralizadas por lobo.
+        """Modelo de caza de Muro et al. (2011) + remate ("pounce") biológico.
 
-        Cada lobo solo usa la posición de su presa y la de los demás lobos
-        (sin comunicación ni jerarquía). NO hay busca-huecos, amago ni evasión de
-        drones: eso es para cuando los drones se muevan.
+        Reglas descentralizadas por lobo (sin comunicación ni jerarquía):
+          1. Mantener d_safe respecto al rebaño (versión simétrica: se acerca si lejos,
+             retrocede si una vaca entra) -> cerca desde fuera sin atravesar.
+          2. Repulsión entre lobos en el anillo -> reparto angular (cerco emergente).
+        Remate: si la PRESA está realmente cortada del rebaño (su vaca más próxima a más
+        de wolf_pounce_isolation), la jauría abandona el standoff y CIERRA A MATAR
+        (persecución pura). Solo se dispara con una vaca de verdad aislada -> captura a
+        tasa sensata, no por atravesar el grupo. NO hay busca-huecos ni evasión de drones.
         """
         if self.n_wolves == 0:
             return
 
-        # --- Capa biológica: selección de presa ---
-        # Cada lobo apunta a la vaca más expuesta = la más alejada del centroide
-        # (el individuo rezagado). Versión simple: la misma presa para todos.
+        # --- Capa biológica: selección de presa (la vaca más expuesta) ---
         centroid = self.cows.mean(axis=0)
         exposure = np.linalg.norm(self.cows - centroid, axis=1)
-        prey = self.cows[int(np.argmax(exposure))]                  # (2,)
+        prey_idx = int(np.argmax(exposure))
+        prey = self.cows[prey_idx]                                  # (2,)
 
         to_prey = prey - self.wolves                                # (n_wolves, 2)
         dist_prey = np.linalg.norm(to_prey, axis=1, keepdims=True)  # (n_wolves, 1)
-        # Vaca MÁS PRÓXIMA a cada lobo (no solo su presa): vector y distancia.
-        d_cows = np.linalg.norm(self.cows[None, :, :] - self.wolves[:, None, :], axis=2)  # (n_wolves, n_cows)
-        nearest = self.cows[d_cows.argmin(axis=1)]                  # (n_wolves, 2)
-        to_nearest = nearest - self.wolves
-        dist_nearest = np.linalg.norm(to_nearest, axis=1, keepdims=True)                  # (n_wolves, 1)
-
-        # --- Regla 1 (Muro): MANTENER d_safe respecto al rebaño ---
-        # Si está lejos (dist_nearest > d_safe) se acerca a la presa (la rezagada);
-        # si una vaca entra dentro de d_safe, RETROCEDE de la más próxima. Así cerca el
-        # grupo desde fuera sin atravesarlo, manteniendo su distancia de seguridad.
-        # (No es evasión de obstáculos/rutas: es el standoff del depredador.)
         dir_prey = to_prey / np.maximum(dist_prey, 1e-9)
-        dir_nearest = to_nearest / np.maximum(dist_nearest, 1e-9)
-        approach = dir_prey * (dist_nearest > self.d_safe) - dir_nearest * (dist_nearest < self.d_safe)
 
-        # --- Regla 2: repulsión entre lobos próximos al anillo de seguridad ---
-        # Un lobo "en el anillo" (dist_prey <= d_safe + banda) se aparta de los
-        # OTROS lobos que también estén en el anillo y dentro del radio de repulsión.
-        # Es lo que produce el cerco emergente (se reparten alrededor de la presa).
+        # ¿Presa cortada del rebaño? Distancia de la presa a su vaca más próxima del resto.
+        if self.n_cows > 1:
+            d_prey_cows = np.linalg.norm(self.cows - prey, axis=1)
+            d_prey_cows[prey_idx] = np.inf
+            prey_isolation = float(d_prey_cows.min())
+        else:
+            prey_isolation = np.inf
+        pounce = prey_isolation > self.wolf_pounce_isolation
+
+        # "engaged": lobo en el anillo (para la repulsión y el hook de velocidad).
         engaged = (dist_prey <= self.d_safe + self.wolf_engage_band).ravel()   # (n_wolves,)
-        delta = self.wolves[:, None, :] - self.wolves[None, :, :]              # (n,n,2): i - j (alejarse de j)
-        dd = np.linalg.norm(delta, axis=2)                                     # (n,n)
-        near = (dd < self.wolf_repulsion_radius) & engaged[None, :]            # j en el anillo y cerca de i
-        np.fill_diagonal(near, False)
-        rep_units = delta / np.maximum(dd[:, :, None], 1e-9)
-        repulsion = (rep_units * near[:, :, None]).sum(axis=1)                 # (n,2)
-        repulsion *= engaged[:, None] * self.wolf_repulsion_strength           # solo repele quien está en el anillo
 
-        # --- Acción combinada, normalizada a la velocidad del lobo ---
-        action = approach + repulsion
+        if pounce:
+            # --- REMATE: persecución pura a la presa aislada (sin standoff ni repulsión) ---
+            action = np.broadcast_to(dir_prey, self.wolves.shape).copy()
+        else:
+            # --- Regla 1 (simétrica): MANTENER d_safe respecto a la vaca más próxima ---
+            d_cows = np.linalg.norm(self.cows[None, :, :] - self.wolves[:, None, :], axis=2)
+            nearest = self.cows[d_cows.argmin(axis=1)]
+            to_nearest = nearest - self.wolves
+            dist_nearest = np.linalg.norm(to_nearest, axis=1, keepdims=True)
+            dir_nearest = to_nearest / np.maximum(dist_nearest, 1e-9)
+            approach = dir_prey * (dist_nearest > self.d_safe) - dir_nearest * (dist_nearest < self.d_safe)
+
+            # --- Regla 2: repulsión entre lobos en el anillo -> cerco emergente ---
+            delta = self.wolves[:, None, :] - self.wolves[None, :, :]          # (n,n,2): i - j
+            dd = np.linalg.norm(delta, axis=2)                                 # (n,n)
+            near = (dd < self.wolf_repulsion_radius) & engaged[None, :]
+            np.fill_diagonal(near, False)
+            rep_units = delta / np.maximum(dd[:, :, None], 1e-9)
+            repulsion = (rep_units * near[:, :, None]).sum(axis=1)
+            repulsion *= engaged[:, None] * self.wolf_repulsion_strength
+            action = approach + repulsion
+
+        # --- Desplazamiento, normalizado a la velocidad del lobo ---
         norm = np.linalg.norm(action, axis=1, keepdims=True)
         move_dir = action / np.maximum(norm, 1e-9)
-        # Hook preparado: velocidad distinta cerca/lejos de la presa (por defecto, igual).
         speed = np.where(engaged[:, None], self.wolf_speed_near, self.wolf_speed)
         self.wolves = self.wolves + move_dir * speed * self.dt
         self._clip_to_parcel(self.wolves)
