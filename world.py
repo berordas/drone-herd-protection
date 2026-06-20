@@ -13,8 +13,9 @@ Convenciones de diseño:
     de trocear por agente cuando llegue el MARL.
   - Toda la aleatoriedad pasa por self.rng -> episodios reproducibles con seed.
 
-FASE 1: dinámicas deliberadamente tontas (vacas en paseo aleatorio acotado, lobos
-yendo recto al centroide, drones quietos). Sin batería, sin caza de Muro, sin miedo.
+ESTADO: vacas con cohesión + miedo (apiñamiento, rezagado emergente) contenidas por
+valla blanda; lobos con caza de Muro et al. (2011); drones quietos. Pendiente:
+escolta/conducción al refugio, batería/carga, observación real y MARL.
 """
 
 from __future__ import annotations
@@ -38,8 +39,17 @@ class World:
         cow_spread: float | None = None,      # radio del cluster de vacas (límite provisional)
         dt: float = 0.1,
         max_steps: int = 600,
-        cow_step: float = 1.5,        # m/s, magnitud del paseo aleatorio de las vacas
         drone_speed: float = 6.0,     # m/s, escala/tope de las acciones de los drones
+        # --- Comportamiento de las vacas: cohesión + miedo (TUNE = lo que tocarás) ---
+        cow_speed: float = 1.2,            # m/s base, < wolf_speed (no escapan a la carrera). TUNE
+        cow_speed_jitter: float = 0.4,     # heterogeneidad ±frac por vaca -> emerge el rezagado. TUNE
+        k_cohesion_calm: float = 0.4,      # cohesión leve en calma. TUNE
+        k_cohesion_panic: float = 1.2,     # cohesión en miedo (apiñamiento sin colapsar). TUNE
+        k_separation: float = 3.0,         # peso de separación (evita apilarse). TUNE
+        r_separation: float | None = None, # m, radio de separación (default ~0.3*cow_spread). TUNE
+        wander_calm: float = 1.0,          # peso del paseo aleatorio en calma. TUNE
+        r_fear: float | None = None,       # m, alcance del miedo al lobo (default ~0.25*min(W,H)). TUNE
+        k_fence: float = 1.5,              # rigidez de la valla blanda (la "correa"). TUNE
         capture_radius: float | None = None,  # m, a qué distancia MATA (default derivado de geometría)
         # --- Modelo de caza de Muro et al. (2011) ---
         wolf_speed: float = 4.0,                       # m/s del lobo (lejos de la presa)
@@ -82,8 +92,18 @@ class World:
 
         self.dt = dt
         self.max_steps = max_steps
-        self.cow_step = cow_step
         self.drone_speed = drone_speed
+
+        # Comportamiento de las vacas (la valla blanda usa la zona de pasto: cow_spawn/cow_spread).
+        self.cow_speed = cow_speed
+        self.cow_speed_jitter = cow_speed_jitter
+        self.k_cohesion_calm = k_cohesion_calm
+        self.k_cohesion_panic = k_cohesion_panic
+        self.k_separation = k_separation
+        self.r_separation = r_separation if r_separation is not None else 0.4 * self.cow_spread
+        self.wander_calm = wander_calm
+        self.r_fear = r_fear if r_fear is not None else 0.25 * m
+        self.k_fence = k_fence
 
         # capture_radius (a qué distancia MATA) y d_safe (a qué distancia se ATREVE a
         # quedarse) son INDEPENDIENTES: cada uno derivado de la geometría del campo,
@@ -105,6 +125,7 @@ class World:
         # --- estado mutable (se inicializa en reset) ---
         self.rng: np.random.Generator | None = None
         self.cows: np.ndarray | None = None
+        self.cow_speeds: np.ndarray | None = None   # velocidad por vaca (heterogénea, por episodio)
         self.wolves: np.ndarray | None = None
         self.drones: np.ndarray | None = None
         self.n_wolves: int = 0          # se sortea en cada reset
@@ -124,6 +145,12 @@ class World:
         ang = self.rng.uniform(0.0, 2 * np.pi, size=self.n_cows)
         rad = self.cow_spread * np.sqrt(self.rng.uniform(0.0, 1.0, size=self.n_cows))
         self.cows = self.cow_spawn + np.column_stack([rad * np.cos(ang), rad * np.sin(ang)])
+
+        # Heterogeneidad leve: cada vaca con una velocidad algo distinta (una vez por
+        # episodio). La más lenta se rezaga al apiñarse -> queda expuesta = presa del lobo.
+        self.cow_speeds = self.cow_speed * self.rng.uniform(
+            1.0 - self.cow_speed_jitter, 1.0 + self.cow_speed_jitter, size=self.n_cows
+        )
 
         # Drones activos: en las esquinas del bounding box INICIAL del rebaño.
         # (Solo posición de partida; cuando haya coordinación, las decidirá el coordinador.)
@@ -190,20 +217,62 @@ class World:
         self._clip_to_parcel(self.drones)
 
     def _update_cows(self) -> None:
-        # Paseo aleatorio gaussiano.
-        self.cows = self.cows + self.rng.normal(0.0, self.cow_step, size=self.cows.shape) * self.dt
+        """Comportamiento del rebaño (desplazamiento directo, sin velocidad en estado).
 
-        # TODO provisional: sustituir por modelo de cohesión/collar.
-        # Sin cohesión, el paseo aleatorio dispersaría al rebaño y el bounding box
-        # se dispararía. Límite blando temporal: mantener cada vaca dentro del
-        # cluster de spawn recortándola al borde del círculo (radio cow_spread).
-        off = self.cows - self.cow_spawn
-        dist = np.linalg.norm(off, axis=1, keepdims=True)
-        outside = (dist > self.cow_spread).ravel()
-        if outside.any():
-            self.cows[outside] = (
-                self.cow_spawn + off[outside] / np.maximum(dist[outside], 1e-9) * self.cow_spread
-            )
+        Calma: cohesión leve + separación + paseo + valla blanda hacia la zona de pasto.
+        Miedo: la cercanía del lobo sube la cohesión y baja el paseo -> el rebaño se
+        APIÑA (no huye). Con la heterogeneidad de velocidades, la vaca más lenta se
+        rezaga y queda expuesta (la presa del lobo). SIN término de huida del lobo.
+        """
+        cows = self.cows
+        centroid = cows.mean(axis=0)
+
+        # Miedo por vaca f∈[0,1]: 1 si un lobo está encima, 0 más allá de r_fear.
+        if self.n_wolves > 0:
+            d_wolf = np.linalg.norm(
+                self.wolves[None, :, :] - cows[:, None, :], axis=2
+            ).min(axis=1)                                              # (n_cows,)
+            f = np.clip((self.r_fear - d_wolf) / self.r_fear, 0.0, 1.0)
+        else:
+            f = np.zeros(self.n_cows)
+        f = f[:, None]                                                 # (n_cows, 1)
+
+        # Cohesión hacia el centroide; ganancia interpolada calma->pánico según el miedo.
+        k_coh = self.k_cohesion_calm + (self.k_cohesion_panic - self.k_cohesion_calm) * f
+        cohesion = k_coh * (centroid - cows)
+
+        # Separación: empuje desde vecinas dentro de r_separation (más fuerte cuanto más cerca).
+        delta = cows[:, None, :] - cows[None, :, :]                    # (n,n,2): i - j
+        dd = np.linalg.norm(delta, axis=2)                            # (n,n)
+        close = (dd < self.r_separation) & (dd > 1e-9)
+        push = np.where(
+            close[:, :, None],
+            delta / np.maximum(dd[:, :, None], 1e-9) * (1.0 - dd[:, :, None] / self.r_separation),
+            0.0,
+        )
+        separation = self.k_separation * push.sum(axis=1)             # (n,2)
+
+        # Paseo aleatorio; se atenúa con el miedo (no deambulan al apiñarse).
+        wander = self.rng.normal(0.0, 1.0, size=cows.shape) * (self.wander_calm * (1.0 - f))
+
+        # Valla blanda ("correa"): retorno hacia la zona de pasto SOLO si salen de ella.
+        # Sustituye al clamp duro provisional (bandera #3).
+        off = cows - self.cow_spawn
+        dist_f = np.linalg.norm(off, axis=1, keepdims=True)
+        excess = np.maximum(dist_f - self.cow_spread, 0.0)
+        fence = -self.k_fence * off / np.maximum(dist_f, 1e-9) * excess
+
+        # Combinación -> dirección, normalizada a la velocidad (heterogénea) de cada vaca.
+        total = cohesion + separation + wander + fence
+        norm = np.linalg.norm(total, axis=1, keepdims=True)
+        move = np.where(norm > 1e-9, total / np.maximum(norm, 1e-9) * self.cow_speeds[:, None] * self.dt, 0.0)
+        self.cows = cows + move
+
+        # Contención DURA solo en límites reales (parcela + zonas prohibidas), reutilizando
+        # el clamp existente. La zona de pasto la contiene la valla BLANDA, no un clamp.
+        self._clip_to_parcel(self.cows)
+        self._push_outside_circle(self.cows, self.safe_zone)
+        self._push_outside_circle(self.cows, self.central_station)
 
     def _update_wolves(self) -> None:
         """Modelo de caza de Muro et al. (2011): dos reglas descentralizadas por lobo.

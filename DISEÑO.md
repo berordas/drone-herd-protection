@@ -4,8 +4,10 @@
 > decisiones tomadas, las herramientas, el plan, las referencias y —muy importante— las
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
-> **Última actualización:** tras cerrar el modelo del lobo (Muro). Siguiente paso pendiente:
-> miedo y cohesión de las vacas.
+> **Última actualización:** implementado el comportamiento de las vacas (calma + miedo,
+> apiñamiento, valla blanda = bandera #3 resuelta). **Abierto:** el lobo simétrico nunca alcanza
+> `capture_radius` contra un rebaño apiñado → la captura del rezagado requiere decidir el "pounce"
+> del lobo (ver §4.2 y bandera #11).
 
 ---
 
@@ -141,14 +143,26 @@ Capa biológica añadida:
 busca-huecos → con amago. Los dos últimos explotan los huecos de cobertura de los drones, así
 que **solo tienen sentido cuando los drones se muevan** (fases muy posteriores).
 
-### 4.2. Vacas y escolta — PENDIENTE (siguiente paso)
+### 4.2. Vacas — calma + miedo  ✅ IMPLEMENTADO (escolta aún PENDIENTE)
 
-- **Sin amenaza:** en un espacio pequeño, moviéndose poco (paseo aleatorio acotado) con cohesión
-  leve; los collares hacen de valla virtual.
-- **Con amenaza:** respuesta de miedo. NO huyen como ciervos: se **agrupan** (la periférica queda
-  expuesta = el rezagado que el lobo elige).
-- **Escolta:** los **collares** conducen el rebaño al refugio (guided herding); los **drones
-  escoltan** (pantalla protectora + disuasión). "Escolta" = proteger el traslado, no empujar.
+- **Sin amenaza (calma):** pastan en la zona de pasto con cohesión leve hacia el centroide,
+  separación (no se apilan) y paseo aleatorio; una **valla blanda** (la "correa") las devuelve a
+  la zona si se alejan — **sustituye al clamp duro provisional (bandera #3 RESUELTA).**
+- **Con amenaza (miedo):** intensidad `f∈[0,1]` por vaca según la cercanía del lobo (`r_fear`);
+  `f` sube la cohesión (calma→pánico) y baja el paseo → el rebaño se **apiña** (radio medio
+  ~4.5 m en calma → ~2.0 m en miedo). **NO hay término de huida**: se agrupan, no corren.
+- **Rezagado emergente:** cada vaca tiene una velocidad algo distinta (`cow_speed_jitter`); la más
+  lenta se queda atrás al apiñarse y queda expuesta = la presa que el lobo selecciona. (Sin nada
+  que lo fuerce: emerge de la heterogeneidad.)
+- **Desplazamiento directo** (sin velocidad en el estado), vectorizado, RNG sembrado.
+- **⚠️ Conflicto abierto (captura):** con el lobo **simétrico** (mantiene `d_safe=6` y corre más
+  que las vacas) la distancia lobo-vaca **nunca baja de ~5.6 m** < `capture_radius=3` → **captura
+  = 0%** contra un rebaño que se apiña y no huye. El rezagado queda expuesto pero el lobo solo
+  guarda la distancia. Las capturas previas (2/30) venían del paseo aleatorio, que la cohesión
+  ahora elimina. Resolverlo exige tocar el lobo (un **"pounce"**: cerrar a matar cuando la presa
+  está realmente aislada). **Decisión pendiente del arquitecto (bandera #11).**
+- **Escolta — PENDIENTE:** los **collares** conducen el rebaño al refugio (guided herding); los
+  **drones escoltan** (pantalla protectora + disuasión). "Escolta" = proteger el traslado, no empujar.
 
 ### 4.3. Batería y estación de carga — PENDIENTE
 
@@ -333,8 +347,17 @@ Decisiones de diseño ratificadas:
    velocidad en el estado)**. Hook `wolf_speed_near` preparado (no activo).
 5. Zonas prohibidas: **clamp geométrico** por paso fuera de establo y central (NO navegación).
 - `capture_radius` y `d_safe` **independientes** (desacoplados).
-- Verificado: 30 seeds → 28 timeout / 2 predation (cerco se asienta; las 2 son capturas legítimas
-  de vaca aislada). 0 frames-lobo dentro de establo/central. Captura del rezagado funciona.
+- Verificado: 30 seeds → 28 timeout / 2 predation (cerco se asienta; las 2 son capturas por paseo
+  aleatorio). 0 frames-lobo dentro de establo/central.
+
+✅ **Vacas (calma + miedo) — IMPLEMENTADO:**
+- Calma: cohesión leve + separación + paseo + **valla blanda** (bandera #3 resuelta).
+- Miedo: `f∈[0,1]` por cercanía del lobo sube cohesión y baja paseo → apiñamiento (radio ~4.5→2.0 m),
+  sin huida. Rezagado emergente por heterogeneidad de velocidad (`cow_speed_jitter`).
+- Desplazamiento directo (sin velocidad en estado), vectorizado, reproducible. Contención: 0
+  violaciones (parcela + zonas).
+- ⚠️ Captura = **0%** con el lobo simétrico (min lobo-vaca 5.6 m > `capture_radius` 3): la cohesión
+  eliminó las capturas por paseo aleatorio y el lobo no penetra. Decisión abierta (bandera #11).
 
 ---
 
@@ -347,9 +370,9 @@ Decisiones de diseño ratificadas:
 2. **Altura/z como estado.** Conceptual ahora; **añadir al modelar el cono de visión de la
    cámara** (más altura = más área, peor resolución = el compromiso de detección de objetos
    pequeños, donde YOLO26 con su STAL viene bien).
-3. **Límite provisional de las vacas (clamp duro al spawn).** Es temporal (`# TODO provisional`).
-   **Sustituir por el modelo de cohesión/collar** cuando se implemente el comportamiento de las
-   vacas (siguiente paso).
+3. ✅ **RESUELTA — Límite provisional de las vacas.** El clamp duro al spawn se ha sustituido por
+   la **valla blanda** (fuerza de retorno hacia la zona de pasto) + cohesión. Contención dura solo
+   en límites reales (parcela + establo/central, reutilizando el clamp de exclusión existente).
 4. **Variedad de escenarios para el MARL.** El spawn de las vacas es fijo `(0.25W, 0.75H)` y los
    lobos entran por un lado aleatorio. **Aleatorizar también el spawn del rebaño** (y consolidar
    variedad de ataques) para que la política **no memorice** "el ataque viene de tal sitio". Para
@@ -376,9 +399,14 @@ Decisiones de diseño ratificadas:
     comparten el renderizado → la brecha sim-to-real de percepción casi desaparece. Dataset del
     lobo: renderizar lobos sintéticos (Blender / Isaac) — no hay detector de "lobo aéreo" de
     estantería.
-11. **Captura tras cerco.** El cerco de Muro por sí solo inmoviliza; ahora la captura es por
-    `capture_radius`. Cuando las vacas tengan miedo y una quede aislada, el lobo la cazará de
-    forma natural (ya funciona). Revisable si se quiere modelar la captura del cerco.
+11. **⚠️ Captura del rezagado — DECISIÓN ABIERTA** (lo de "ya funciona" resultó **falso**). Con el
+    lobo simétrico, mantener `d_safe=6` > `capture_radius=3` + correr más que las vacas = el lobo
+    **nunca** alcanza la distancia letal contra un rebaño apiñado (verificado: mín. lobo-vaca
+    5.6 m, captura 0/30). El rezagado queda expuesto pero no se le caza. Opciones: **(A) pounce**
+    del lobo — cerrar a matar cuando la presa esté suficientemente aislada del resto (biológico, da
+    capturas solo de vacas realmente cortadas; toca el lobo); (B) bajar `d_safe`→`capture_radius`
+    (pierde el standoff limpio); (C) aceptar 0% ahora (la captura llegaría con la escolta/drones).
+    Recomendación: **(A)**. Pendiente de ratificar antes de seguir.
 12. **Pure pursuit y filtro de estimación del lobo.** Reutilizar el pure pursuit (de Robots) en la
     capa de guiado; implementar un **EKF/filtro de partículas** para estimar la trayectoria del
     lobo a partir de detecciones ruidosas (análogo al MCL de la asignatura — el GPS da la
@@ -391,14 +419,12 @@ Decisiones de diseño ratificadas:
 
 ## 11. SIGUIENTE PASO
 
-**Miedo y cohesión de las vacas.** Implementar el comportamiento de las vacas:
-- Cohesión leve sin amenaza (sustituye el límite provisional por clamp → bandera #3).
-- Respuesta de miedo con amenaza: se **agrupan** (no se dispersan), lo que naturalmente deja a
-  una rezagada/aislada... que es a la que el lobo (ya implementado) podrá cazar. Las piezas
-  encajan: el cerco simétrico desde fuera + vacas que huyen apiñándose = el rezagado aislado.
+**Decidir la captura del rezagado (bandera #11).** Las vacas (calma + miedo) ya están; pero el
+cerco simétrico **no** cierra a matar, así que la captura es 0% (la pieza que se asumía "ya
+funciona" no lo hace). Antes de seguir, ratificar cómo se modela la captura — recomendado: un
+**"pounce"** del lobo cuando la presa esté realmente aislada (cambio pequeño y enfocado en el lobo).
 
-Construir primero la amenaza (hecho) y luego las respuestas. Orden: vacas → batería/carga →
-escolta → percepción (sustituto) → coordinador clásico → MARL → comparación.
+Después: batería/carga → escolta → percepción (sustituto) → coordinador clásico → MARL → comparación.
 
 ---
 
