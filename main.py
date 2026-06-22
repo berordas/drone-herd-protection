@@ -58,24 +58,31 @@ def main():
     for k, v in metrics.items():
         print(f"  {k}: {v}")
 
-    # Coordinación de la manada (presa común) + instrumentación del flanqueo (#3).
+    # Manada (presa común): coordinación + instrumentación del flanqueo (#3) + retoque por exposición.
     mean_simul = world._simul_sum / max(world._simul_steps, 1)
-    print("Manada (presa común):")
-    print(f"  vacas atacadas a la vez: máx={world.max_simul_targets} media={mean_simul:.2f} (ideal ~1) | "
+    print(f"Manada (presa común): terneros={world.n_calves}")
+    pp = world._prey_pos()
+    if pp is not None and world.pack_prey_kind == "adult":
+        centroid = world.cows.mean(axis=0)
+        d_prey = float(np.linalg.norm(pp - centroid))
+        d_mean = float(np.linalg.norm(world.cows - centroid, axis=1).mean())
+        print(f"  presa adulta: dist al centroide del rebaño={d_prey:.1f} m vs media del rebaño={d_mean:.1f} m "
+              f"(retoque: la presa debe estar MÁS lejos = del borde)")
+    print(f"  presas atacadas a la vez: máx={world.max_simul_targets} media={mean_simul:.2f} | "
           f"re-fijaciones={world.n_refix}")
     q = world.flank_first_quorum
     if q is not None:
         print(f"  primer quórum de flanqueadores: paso={q['step']} flanqueadores={q['flankers']} -> muerte={q['killed']}")
-    else:
-        print("  primer quórum de flanqueadores: NUNCA se alcanzó (no hubo >= n_min_adult a la vez)")
     print(f"  desglose de toques (lobo en capture_radius): {world.touch_breakdown}")
 
     c = world.capture_info
     if c is not None:
-        print("Procedencia de la captura (flanqueo):")
-        print(f"  presa={c['prey_idx']} (presa fijada={c['is_pack_prey']}, era la más lenta={c['is_weakest']}) | "
-              f"flanqueadores={c['n_flankers']} (lobos {c['flankers']}) | "
-              f"lobo más cercano={c['min_wolf_dist']:.2f} m")
+        if c["kind"] == "calf":
+            print(f"Captura de TERNERO {c['prey_idx']} (defensora={c['defender_idx']}, presa fijada={c['is_pack_prey']}) | "
+                  f"flanqueadores={c['n_flankers']} (lobos {c['flankers']}) | lobo más cercano={c['min_wolf_dist']:.2f} m")
+        else:
+            print(f"Captura de ADULTA {c['prey_idx']} (presa fijada={c['is_pack_prey']}, la más lenta={c['is_weakest']}) | "
+                  f"flanqueadores={c['n_flankers']} (lobos {c['flankers']}) | lobo más cercano={c['min_wolf_dist']:.2f} m")
     if world.guard_violations:
         print(f"Guardia de teletransporte: {len(world.guard_violations)} violaciones (detalle en face_check.py)")
 

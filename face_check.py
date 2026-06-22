@@ -1,30 +1,33 @@
 """
-face_check.py — Verificación del modelo "DAR LA CARA" (vacas adultas + lobos).
+face_check.py — Verificación del modelo "DAR LA CARA" + presa común + TERNEROS/defensoras.
 
-Comprueba el pivote de amenaza (sin apiñamiento; confrontación direccional + flanqueo) y la
-PRESA COMÚN de la manada (commitment):
-  1) LOBO SOLO -> no puede tumbar a una adulta (regla de nº mínimo + la mantiene a raya).
-  2) MANADA -> escenario construido: encara a uno, flanquean los demás, y al juntarse el quórum
-     de flanqueadores válidos MUERE; confirma la instrumentación de #3 (quórum -> muerte).
-  3) MOVIMIENTO FIRME -> métrica de tembleque (giro medio por paso) baja.
-  4) COORDINACIÓN -> con manada, todos confluyen en UNA presa (~1 vaca atacada a la vez),
-     pocas re-fijaciones (commitment).
-  5) TASA sin drones sobre range(100) + standoff-vs-ataque + desglose de toques + quórum->muerte.
-  6) REPRODUCIBILIDAD: misma seed -> misma secuencia.
+  1) LOBO SOLO vs ADULTA (sin terneros) -> no puede tumbarla (regla de nº mínimo).
+  2) MANADA vs ADULTA (escenario) -> flanquean -> muere; confirma instrumentación de #3.
+  3) MOVIMIENTO FIRME -> tembleque bajo (vacas, lobos y terneros).
+  4) RETOQUE -> sin terneros, la presa adulta es del BORDE (lejos del centroide del rebaño).
+  5) TERNEROS -> la manada va al ternero (muere con 1 flanqueador); lobo solo vs ternero disputado
+     (se reporta, NO se tunea); con 2 terneros la manada se compromete con UNO.
+  6) COORDINACIÓN (sin terneros) -> confluyen en UNA presa, re-fijaciones ~0.
+  7) TASA sin drones range(100) (terneros por defecto) + split ternero/adulta + toques.
+  8) REPRODUCIBILIDAD (incluido nº de terneros y defensoras).
 """
 
 import numpy as np
 from world import World
 from coordinators import DummyCoordinator
 
+NO_CALVES = (1.0, 0.0, 0.0)     # forzar 0 terneros
+ONE_CALF = (0.0, 1.0, 0.0)      # forzar 1 ternero
+TWO_CALVES = (0.0, 0.0, 1.0)    # forzar 2 terneros
+
 
 def run_ep(seed, record=False, **kw):
-    """Un episodio con drones quietos. Devuelve outcome, pasos de ataque/standoff, capture_info
-    y (si record) las velocidades por paso de vacas y lobos (para la métrica de tembleque)."""
+    """Un episodio con drones quietos. Devuelve (world, outcome, pasos_ataque, pasos_lobo,
+    (cow_vels, wolf_vels, calf_vels)) — velocidades por paso solo si record=True."""
     w = World(seed=seed, **kw)
     c = DummyCoordinator(w.n_drones)
     attack_steps = wolf_steps = 0
-    cow_v, wolf_v = [], []
+    cow_v, wolf_v, calf_v = [], [], []
     while True:
         _, _, term, trunc, info = w.step(c.act(None))
         if w.n_wolves > 0:
@@ -33,151 +36,159 @@ def run_ep(seed, record=False, **kw):
         if record:
             cow_v.append(w.cow_vel.copy())
             wolf_v.append(w.wolf_vel.copy())
+            if w.n_calves > 0:
+                calf_v.append(w.calf_vel.copy())
         if term or trunc:
             break
-    return w, info["status"], attack_steps, wolf_steps, (cow_v, wolf_v)
+    return w, info["status"], attack_steps, wolf_steps, (cow_v, wolf_v, calf_v)
+
+
+def _mean_turn(vels):
+    """Giro medio / p95 por paso (rad) de una secuencia de velocidades (T, N, 2). Bajo = firme."""
+    V = np.array(vels)
+    sp = np.linalg.norm(V, axis=2)
+    moving = (sp[:-1] > 1e-3) & (sp[1:] > 1e-3)
+    cos = np.clip(np.sum(V[:-1] * V[1:], axis=2) / np.maximum(sp[:-1] * sp[1:], 1e-9), -1.0, 1.0)
+    ang = np.arccos(cos)
+    if not moving.any():
+        return 0.0, 0.0
+    return float(ang[moving].mean()), float(np.percentile(ang[moving], 95))
 
 
 # ---------------------------------------------------------------------------- #
 def test_lone_wolf_no_kill():
-    print("=== 1) Lobo SOLO: no puede tumbar a una adulta ===")
-    preds, min_dists = 0, []
+    print("=== 1) Lobo SOLO vs ADULTA (sin terneros): no puede tumbarla ===")
+    preds = 0
     for s in range(30):
-        w, status, *_ = run_ep(s, wolves_min=1, wolves_max=1, teleport_guard=True)
+        w, status, *_ = run_ep(s, wolves_min=1, wolves_max=1, calf_count_probs=NO_CALVES, teleport_guard=True)
         preds += int(status == "predation")
-        prey = int(np.argmin(w.cow_speeds))
-        min_dists.append(float(np.linalg.norm(w.wolves - w.cows[prey], axis=1).min()))
     print("  depredaciones con 1 lobo (30 seeds): %d  (esperado 0)" % preds)
-    print("  dist lobo-presa al final: media=%.1f mín=%.1f  (r_face_safe=%.1f r_standoff=%.1f)"
-          % (np.mean(min_dists), np.min(min_dists), w.r_face_safe, w.r_standoff))
     assert preds == 0, "FALLO: un lobo solo tumbó a una adulta"
     print("  OK\n")
 
 
 def test_pack_flank_kill():
-    print("=== 2) MANADA: encara a uno, flanquean los demás -> la débil muere ===")
-    w = World(seed=1, wolves_min=3, wolves_max=3, teleport_guard=True)
+    print("=== 2) MANADA vs ADULTA (escenario): flanquean -> muere; #3 quórum->muerte ===")
+    w = World(seed=1, wolves_min=3, wolves_max=3, calf_count_probs=NO_CALVES, teleport_guard=True)
     c = DummyCoordinator(w.n_drones)
-    # Escenario construido: la presa (la más lenta) sola en el centro; el resto del rebaño lejos
-    # (para que la manada se centre en ella). 3 lobos: uno al frente, dos a los flancos.
     w.cow_speeds[:] = w.cow_speed
-    w.cow_speeds[0] = 0.5 * w.cow_speed            # la 0 es claramente la más débil
+    w.cow_speeds[0] = 0.5 * w.cow_speed
     w.cows[0] = np.array([50.0, 50.0])
     w.cows[1:] = np.array([15.0, 85.0]) + w.rng.uniform(-2, 2, size=(w.n_cows - 1, 2))
-    w.cow_heading[0] = 0.0                          # mira a +x (al lobo del frente)
+    w.cow_heading[0] = 0.0
     w.cow_vel[:] = 0.0
-    w.wolves[:] = np.array([[60.0, 50.0],          # frente (en el cono)
-                            [50.0, 40.0],          # flanco
-                            [40.0, 50.0]])         # grupa
+    w.wolves[:] = np.array([[60.0, 50.0], [50.0, 40.0], [40.0, 50.0]])
     w.wolf_vel[:] = 0.0
-
-    killed_step, n_flankers = None, 0
-    for t in range(400):
-        _, _, term, trunc, _ = w.step(c.act(None))
+    killed = None
+    for _ in range(400):
+        _, _, term, _, _ = w.step(c.act(None))
         if term and w.status == "predation":
-            killed_step = w.step_count
-            n_flankers = w.capture_info["n_flankers"]
+            killed = w.step_count
             break
-    if killed_step is not None:
-        ci = w.capture_info
-        q = w.flank_first_quorum
-        print("  MUERTE en paso %d: presa=%d (presa fijada=%s) con %d flanqueadores (>= n_min_adult=%d)"
-              % (killed_step, ci["prey_idx"], ci["is_pack_prey"], n_flankers, w.n_min_adult))
-        print("  #3 instrumentación: primer quórum en paso %s -> muerte=%s"
-              % (q["step"] if q else None, q["killed"] if q else None))
-        assert ci["is_pack_prey"], "FALLO: la víctima no era la presa fijada de la manada"
-        assert n_flankers >= w.n_min_adult, "FALLO: muerte sin suficientes flanqueadores"
-        assert q is not None and q["killed"], "FALLO(#3): hubo quórum de flanqueadores pero NO disparó la muerte"
-        print("  OK\n")
-    else:
-        print("  ATASCO: la manada NO consiguió flanquear (revisar parámetros del cono/flanco).\n")
-        raise AssertionError("FALLO: la manada no tumbó a la adulta en el escenario construido")
-
-
-def _mean_turn(vels):
-    """Giro medio por paso (rad) de una secuencia de velocidades (T, N, 2). Tembleque bajo = firme."""
-    V = np.array(vels)                             # (T, N, 2)
-    sp = np.linalg.norm(V, axis=2)                 # (T, N)
-    moving = (sp[:-1] > 1e-3) & (sp[1:] > 1e-3)
-    dots = np.sum(V[:-1] * V[1:], axis=2)
-    cos = np.clip(dots / np.maximum(sp[:-1] * sp[1:], 1e-9), -1.0, 1.0)
-    ang = np.arccos(cos)                           # (T-1, N)
-    return float(ang[moving].mean()), float(np.percentile(ang[moving], 95))
+    assert killed is not None, "FALLO: la manada no tumbó a la adulta en el escenario construido"
+    ci, q = w.capture_info, w.flank_first_quorum
+    print("  MUERTE paso %d: adulta=%d (presa fijada=%s) con %d flanqueadores (>= %d)"
+          % (killed, ci["prey_idx"], ci["is_pack_prey"], ci["n_flankers"], w.n_min_adult))
+    print("  #3: primer quórum paso %s -> muerte=%s" % (q["step"] if q else None, q["killed"] if q else None))
+    assert ci["is_pack_prey"] and ci["n_flankers"] >= w.n_min_adult
+    assert q is not None and q["killed"], "FALLO(#3): quórum sin muerte"
+    print("  OK\n")
 
 
 def test_firm_motion():
-    print("=== 3) Movimiento firme (métrica de tembleque: giro por paso, rad) ===")
-    # Pastoreo PURO (sin lobo): aísla la firmeza del deambular de la dinámica de acoso.
-    wg, _s, _a, _ws, (gcow_v, _) = run_ep(2, record=True, wolves_min=0, wolves_max=0)
-    gm, gp95 = _mean_turn(gcow_v)
-    print("  vacas pastando (sin lobo): media=%.3f / p95=%.3f" % (gm, gp95))
-    # Episodio con MANADA: vacas (incluye la presa acosada) + lobos.
-    w, status, _a, _ws, (cow_v, wolf_v) = run_ep(2, record=True, wolves_min=3, wolves_max=3)
-    cm, cp95 = _mean_turn(cow_v)
-    wm, wp95 = _mean_turn(wolf_v)
-    print("  vacas con manada (presa incluida): media=%.3f / p95=%.3f" % (cm, cp95))
-    print("  lobos: media=%.3f / p95=%.3f" % (wm, wp95))
-    print("  (firme si la media es pequeña, p. ej. << 0.3 rad ~ 17°/paso; la vibración daría ~pi/2)")
-    assert gm < 0.35 and wm < 0.5, "FALLO: movimiento con tembleque (giro medio por paso alto)"
+    print("=== 3) Movimiento firme (giro por paso, rad) ===")
+    _w, _s, _a, _ws, (gcow_v, _wv, _cv) = run_ep(2, record=True, wolves_min=0, wolves_max=0, calf_count_probs=NO_CALVES)
+    gm, _ = _mean_turn(gcow_v)
+    print("  vacas pastando (sin lobo): media=%.3f" % gm)
+    _w, _s, _a, _ws, (cow_v, wolf_v, calf_v) = run_ep(2, record=True, wolves_min=3, wolves_max=3, calf_count_probs=TWO_CALVES)
+    cm, _ = _mean_turn(cow_v)
+    wm, _ = _mean_turn(wolf_v)
+    km, _ = _mean_turn(calf_v) if calf_v else (0.0, 0.0)
+    print("  con manada+terneros: vacas=%.3f lobos=%.3f terneros=%.3f  (vibración daría ~pi/2)" % (cm, wm, km))
+    assert gm < 0.35 and wm < 0.5 and km < 0.5, "FALLO: movimiento con tembleque"
+    print("  OK\n")
+
+
+def test_retoque_exposure():
+    print("=== 4) Retoque: la presa ADULTA es del BORDE (lejos del centroide), no céntrica ===")
+    dps, dms = [], []
+    for s in range(30):
+        w = World(seed=s, wolves_min=3, wolves_max=3, calf_count_probs=NO_CALVES)
+        c = DummyCoordinator(w.n_drones)
+        rec = None
+        while True:
+            _, _, term, trunc, _ = w.step(c.act(None))
+            if rec is None and w.pack_prey >= 0 and w.pack_prey_kind == "adult":
+                centroid = w.cows.mean(axis=0)
+                rec = (float(np.linalg.norm(w.cows[w.pack_prey] - centroid)),
+                       float(np.linalg.norm(w.cows - centroid, axis=1).mean()))
+            if term or trunc:
+                break
+        if rec:
+            dps.append(rec[0]); dms.append(rec[1])
+    print("  al FIJAR la presa: dist presa->centroide=%.1f m  vs media del rebaño=%.1f m (n=%d)"
+          % (np.mean(dps), np.mean(dms), len(dps)))
+    assert np.mean(dps) > np.mean(dms), "FALLO: la presa no es la más expuesta (debería estar más lejos que la media)"
+    print("  OK\n")
+
+
+def test_calves():
+    print("=== 5) Terneros: la manada va al ternero (muere con 1 flanqueador) ===")
+    calf_deaths = 0
+    for s in range(40):
+        w, status, *_ = run_ep(s, wolves_min=3, wolves_max=3, calf_count_probs=ONE_CALF)
+        calf_deaths += int(w.capture_info is not None and w.capture_info["kind"] == "calf")
+    print("  ternero + manada (1 ternero, 3 lobos, 40 seeds): %d muertes de ternero" % calf_deaths)
+    assert calf_deaths > 20, "FALLO: la manada no caza al ternero de forma fiable"
+    # Lobo solo vs ternero: DISPUTADO (reportar, NO tunear).
+    lone = 0
+    for s in range(50):
+        w, *_ = run_ep(s, wolves_min=1, wolves_max=1, calf_count_probs=ONE_CALF)
+        lone += int(w.capture_info is not None and w.capture_info["kind"] == "calf")
+    print("  lobo SOLO vs ternero (50 seeds): %d%% muertes de ternero  (disputado; NO se tunea aquí)" % (100 * lone // 50))
+    # 2 terneros: la manada se compromete con UNO (re-fijaciones bajas).
+    refix = [run_ep(s, wolves_min=4, wolves_max=4, calf_count_probs=TWO_CALVES)[0].n_refix for s in range(10)]
+    print("  2 terneros: re-fijaciones media=%.1f máx=%d  (commitment con uno)" % (np.mean(refix), max(refix)))
     print("  OK\n")
 
 
 def test_coordination():
-    print("=== 4) Coordinación: la manada confluye en UNA presa (commitment) ===")
-    simul_means, simul_maxes, refixes = [], [], []
+    print("=== 6) Coordinación sin terneros: confluyen en UNA presa (commitment) ===")
+    means, refixes = [], []
     for s in range(20):
-        w, *_ = run_ep(s, wolves_min=3, wolves_max=3)
+        w, *_ = run_ep(s, wolves_min=3, wolves_max=3, calf_count_probs=NO_CALVES)
         if w._simul_steps:
-            simul_means.append(w._simul_sum / w._simul_steps)
-            simul_maxes.append(w.max_simul_targets)
+            means.append(w._simul_sum / w._simul_steps)
             refixes.append(w.n_refix)
-    print("  vacas atacadas a la vez (20 seeds, 3 lobos): media=%.2f máx=%d  (ideal ~1)"
-          % (np.mean(simul_means), max(simul_maxes)))
-    print("  re-fijaciones de presa por episodio: media=%.2f máx=%d  (commitment: debe ser bajo)"
-          % (np.mean(refixes), max(refixes)))
-    assert np.mean(simul_means) < 1.4, "FALLO: la manada NO confluye (ataca varias vacas a la vez)"
+    print("  vacas atacadas a la vez: media=%.2f  | re-fijaciones: media=%.2f máx=%d"
+          % (np.mean(means), np.mean(refixes), max(refixes)))
+    assert np.mean(means) < 1.4, "FALLO: la manada no confluye"
     print("  OK\n")
 
 
-def test_rate_and_standoff():
-    print("=== 5) Tasa sin drones (range(100)) + standoff/ataque + toques + quórum->muerte ===")
+def test_rate():
+    print("=== 7) Tasa sin drones range(100) (terneros por defecto 1/3 c/u) ===")
     from collections import Counter
-    out = Counter()
-    attack = wolf = 0
-    flank_counts = []
-    touch = Counter()
-    quorum_eps = quorum_killed = 0
+    out, kind = Counter(), Counter()
     for s in range(100):
-        w, status, a, ws, _ = run_ep(s)
+        w, status, *_ = run_ep(s)
         out[status] += 1
-        attack += a
-        wolf += ws
-        touch.update(w.touch_breakdown)
-        if w.flank_first_quorum is not None:
-            quorum_eps += 1
-            quorum_killed += int(bool(w.flank_first_quorum["killed"]))
         if w.capture_info is not None:
-            flank_counts.append(w.capture_info["n_flankers"])
-    n = 100
+            kind[w.capture_info["kind"]] += 1
     print("  outcomes:", dict(out))
-    print("  depredación = %d/%d = %d%%  (no se persigue una tasa; el lobo completo llega en v2)"
-          % (out["predation"], n, 100 * out["predation"] // n))
-    print("  lobo: ATAQUE %d%% / STANDOFF %d%% de los pasos"
-          % (100 * attack // max(wolf, 1), 100 * (wolf - attack) // max(wolf, 1)))
-    print("  desglose de TOQUES (lobo en capture_radius):", dict(touch))
-    print("  #3 quórum->muerte: %d/%d episodios con quórum acabaron en muerte en ese paso"
-          % (quorum_killed, quorum_eps))
-    if flank_counts:
-        print("  flanqueadores por captura: media=%.1f máx=%d" % (np.mean(flank_counts), max(flank_counts)))
+    print("  depredación = %d/100  (sube respecto al 84%% sin terneros: el ternero es objetivo blando)"
+          % out["predation"])
+    print("  split de capturas: ternero=%d adulta=%d" % (kind["calf"], kind["adult"]))
 
 
 def test_reproducible():
-    print("\n=== 6) Reproducibilidad (misma seed) ===")
+    print("\n=== 8) Reproducibilidad (misma seed, incluido nº de terneros y defensoras) ===")
     w1, *_ = run_ep(7)
     w2, *_ = run_ep(7)
     same = (np.array_equal(w1.cows, w2.cows) and np.array_equal(w1.wolves, w2.wolves)
-            and w1.status == w2.status and w1.step_count == w2.step_count)
-    print("  estado final idéntico:", same)
+            and w1.n_calves == w2.n_calves and np.array_equal(w1.calf_defender, w2.calf_defender)
+            and np.array_equal(w1.calves, w2.calves) and w1.status == w2.status)
+    print("  estado final idéntico:", same, "| n_calves:", w1.n_calves)
     assert same, "FALLO: no reproducible"
     print("  OK")
 
@@ -186,6 +197,8 @@ if __name__ == "__main__":
     test_lone_wolf_no_kill()
     test_pack_flank_kill()
     test_firm_motion()
+    test_retoque_exposure()
+    test_calves()
     test_coordination()
-    test_rate_and_standoff()
+    test_rate()
     test_reproducible()

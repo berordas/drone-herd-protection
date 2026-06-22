@@ -16,9 +16,10 @@ Convenciones de diseño:
 MODELO DE AMENAZA = "DAR LA CARA" (no apiñamiento): las vacas adultas no se apiñan;
 plantan cara (giran a encarar al lobo y lo mantienen a raya por delante). El lobo
 respeta ese cono frontal y ataca por el FLANCO; un lobo solo no puede tumbar a una
-adulta (regla de número mínimo), una manada sí (flanqueo simultáneo). Vacas y lobos
-con INERCIA (velocidad en el estado) -> movimiento firme. Drones quietos; batería
-como mecánica. Pendiente: terneros/defensores, escolta, observación real y MARL.
+adulta (regla de número mínimo), una manada sí (flanqueo simultáneo). Hay TERNEROS
+(objetivo blando preferente) con una adulta DEFENSORA cada uno: el flanco que la madre
+no cubre llega a la cría. Vacas y lobos con INERCIA (velocidad en el estado) ->
+movimiento firme. Drones quietos; batería como mecánica. Pendiente: escolta, MARL.
 """
 
 from __future__ import annotations
@@ -64,6 +65,10 @@ class World:
         face_cooldown: float = 1.0,        # s: tras encarar a un lobo, espera esto antes de re-encarar a otro. TUNE
         turn_rate: float = 2.0,            # rad/s: velocidad angular máx al girar a encarar (firme, no salto). TUNE
         cow_inertia: float = 0.25,         # suavizado de velocidad de la vaca (firmeza; bajo = más inercia). TUNE
+        # --- Terneros (0/1/2) + defensoras: objetivo blando preferente del lobo ---
+        calf_count_probs: tuple[float, float, float] = (1/3, 1/3, 1/3),  # prob de 0 / 1 / 2 terneros por episodio. TUNE
+        k_calf_cohesion: float = 1.0,      # cohesión ternero->defensora (se pega a la madre). TUNE
+        k_defender_anchor: float = 0.6,    # cohesión defensora->su ternero (se queda con la cría). TUNE
         # --- Lobo (reutilizado, ahora DIRECCIONAL): cono frontal + flanqueo + nº mínimo ---
         wolf_speed: float = 4.0,                       # m/s del lobo
         wolf_repulsion_radius: float | None = None,    # reparto angular de la manada (pincer; default 2*r_face_safe)
@@ -145,6 +150,12 @@ class World:
         self.turn_rate = turn_rate
         self.cow_inertia = cow_inertia
 
+        # --- Terneros + defensoras ---
+        self.calf_count_probs = np.asarray(calf_count_probs, dtype=float)
+        self.calf_count_probs = self.calf_count_probs / self.calf_count_probs.sum()  # normaliza
+        self.k_calf_cohesion = k_calf_cohesion
+        self.k_defender_anchor = k_defender_anchor
+
         # --- Lobo direccional ---
         self.wolf_speed = wolf_speed
         self.n_min_adult = n_min_adult
@@ -186,6 +197,12 @@ class World:
         self.cow_target_wolf: np.ndarray | None = None  # (n_cows,) lobo que encara ahora (-1 = ninguno)
         self.cow_face_cd: np.ndarray | None = None   # (n_cows,) enfriamiento antes de re-encarar a otro
         self._cow_graze_dir: np.ndarray | None = None  # (n_cows,) rumbo de pasto (paseo angular lento -> firme)
+        self.n_calves: int = 0                       # nº de terneros este episodio (0/1/2, RNG)
+        self.calves: np.ndarray | None = None        # (n_calves,2) posición de los terneros
+        self.calf_vel: np.ndarray | None = None      # (n_calves,2) velocidad (inercia)
+        self.calf_defender: np.ndarray | None = None # (n_calves,) índice de la adulta defensora ("madre")
+        self.adult_calf: np.ndarray | None = None    # (n_cows,) ternero que defiende cada adulta (-1 = ninguno)
+        self._calf_graze_dir: np.ndarray | None = None  # (n_calves,) deambular leve del ternero
         self.wolves: np.ndarray | None = None
         self.wolf_vel: np.ndarray | None = None      # (n_wolves,2) velocidad (inercia)
         self.drones: np.ndarray | None = None
@@ -194,7 +211,8 @@ class World:
         self.battery_activity: np.ndarray | None = None # (n_drones,) HOOK persecución (bandera #7): multiplica el drenaje
         self.drone_stranded: np.ndarray | None = None   # (n_drones,) HOOK "dron tirado" (sin travel-time no se activa)
         self._wolf_attacking: bool = False              # ¿la manada flanquea de verdad este paso? (instrumentación)
-        self.pack_prey: int = -1                        # presa COMÚN fijada de la manada (-1 = ninguna)
+        self.pack_prey: int = -1                        # índice de la presa COMÚN fijada (-1 = ninguna)
+        self.pack_prey_kind: str | None = None          # "adult" | "calf" | None (a qué array indexa pack_prey)
         self._ever_committed: bool = False              # ¿se fijó ya alguna presa este episodio?
         self.n_refix: int = 0                           # re-fijaciones de presa (commitment; debe ser bajo)
         self.max_simul_targets: int = 0                 # máx nº de vacas atacadas a la vez (coordinación; ~1 ideal)
@@ -231,10 +249,24 @@ class World:
         self._cow_graze_dir = self.rng.uniform(0.0, 2 * np.pi, size=self.n_cows)
 
         # Heterogeneidad leve: cada vaca con una velocidad algo distinta (una vez por episodio).
-        # La más LENTA es la débil -> objetivo del lobo (sin terneros aún).
+        # La más LENTA tiende a quedarse en el borde -> emerge como presa (sin terneros).
         self.cow_speeds = self.cow_speed * self.rng.uniform(
             1.0 - self.cow_speed_jitter, 1.0 + self.cow_speed_jitter, size=self.n_cows
         )
+
+        # Terneros (0/1/2, RNG sembrado: no aparecen/desaparecen a mitad). Cada uno con una adulta
+        # DEFENSORA fija (su "madre"), asignada en el spawn; el ternero nace pegado a ella.
+        self.n_calves = int(self.rng.choice(3, p=self.calf_count_probs))
+        if self.n_calves > 0:
+            self.calf_defender = self.rng.choice(self.n_cows, size=self.n_calves, replace=False)
+            self.calves = self.cows[self.calf_defender] + self.rng.uniform(-1.0, 1.0, size=(self.n_calves, 2))
+        else:
+            self.calf_defender = np.zeros(0, dtype=int)
+            self.calves = np.zeros((0, 2))
+        self.calf_vel = np.zeros((self.n_calves, 2))
+        self._calf_graze_dir = self.rng.uniform(0.0, 2 * np.pi, size=self.n_calves)
+        self.adult_calf = np.full(self.n_cows, -1, dtype=int)
+        self.adult_calf[self.calf_defender] = np.arange(self.n_calves)
 
         # Drones activos: en las esquinas del bounding box INICIAL del rebaño.
         # (Solo posición de partida; cuando haya coordinación, las decidirá el coordinador.)
@@ -261,6 +293,7 @@ class World:
 
         self._wolf_attacking = False
         self.pack_prey = -1
+        self.pack_prey_kind = None
         self._ever_committed = False
         self.n_refix = 0
         self.max_simul_targets = 0
@@ -303,6 +336,7 @@ class World:
         self._prev_wolves = self.wolves.copy()
         self._apply_drone_actions(actions)  # fase 1: control
         self._update_cows()                 # fase 2: pastar + encarar + inercia
+        self._update_calves()               #         terneros pegados a su defensora
         self._update_wolves()               #         lobo direccional + flanqueo + inercia
         self._enforce_face_cones()          #         la vaca planta cara: empuja al lobo frontal a r_face_safe
         self._step_battery()                # fase 3: batería/relevos (independiente de vacas/lobo)
@@ -479,8 +513,15 @@ class World:
         excess = np.maximum(dist_f - self.cow_spread, 0.0)
         fence = -self.k_fence * off / np.maximum(dist_f, 1e-9) * excess
 
+        # 4b) Anclaje de las DEFENSORAS a su ternero: se quedan con la cría (solo encara, sin
+        #     maniobras de interposición). Las demás adultas pastan libres.
+        anchor = np.zeros_like(cows)
+        if self.n_calves > 0:
+            d = self.calf_defender
+            anchor[d] = self.k_defender_anchor * (self.calves - cows[d])
+
         # 5) Dirección deseada -> velocidad con INERCIA (suavizado), desplazamiento directo.
-        total = separation + wander + fence
+        total = separation + wander + fence + anchor
         norm = np.linalg.norm(total, axis=1, keepdims=True)
         desired_dir = np.where(norm > 1e-9, total / np.maximum(norm, 1e-9), 0.0)
         desired_vel = desired_dir * self.cow_speeds[:, None]
@@ -492,6 +533,23 @@ class World:
         self._clip_to_parcel(self.cows)
         self._push_outside_circle(self.cows, self.safe_zone)
         self._push_outside_circle(self.cows, self.central_station)
+
+    def _update_calves(self) -> None:
+        """Ternero: pegado a su DEFENSORA (cohesión a su posición) + deambular leve, con INERCIA.
+        NO encara, NO huye (indefenso; su protección es la defensora)."""
+        if self.n_calves == 0:
+            return
+        to_def = self.cows[self.calf_defender] - self.calves          # hacia la madre (ya movida este paso)
+        self._calf_graze_dir = self._calf_graze_dir + self.rng.normal(0.0, self.wander_drift, size=self.n_calves)
+        wander = np.column_stack([np.cos(self._calf_graze_dir), np.sin(self._calf_graze_dir)])
+        desired = self.k_calf_cohesion * to_def + 0.3 * wander        # la cohesión a la madre domina
+        dn = np.linalg.norm(desired, axis=1, keepdims=True)
+        desired_dir = np.where(dn > 1e-9, desired / np.maximum(dn, 1e-9), 0.0)
+        self.calf_vel += self.cow_inertia * (desired_dir * self.cow_speed - self.calf_vel)
+        self.calves = self.calves + self.calf_vel * self.dt
+        self._clip_to_parcel(self.calves)
+        self._push_outside_circle(self.calves, self.safe_zone)
+        self._push_outside_circle(self.calves, self.central_station)
 
     def _update_wolves(self) -> None:
         """Lobo DIRECCIONAL con PRESA COMÚN de la manada (corazón del flanqueo).
@@ -512,21 +570,24 @@ class World:
             return
 
         d_wc = np.linalg.norm(self.cows[None, :, :] - self.wolves[:, None, :], axis=2)  # (nw, nc)
-        hunt = self.n_wolves >= self.n_min_adult
+        # Modo caza: con ternero basta 1 lobo (objetivo blando); sin ternero, >= n_min_adult.
+        hunt = (self.n_calves > 0) or (self.n_wolves >= self.n_min_adult)
 
         # --- Compromiso de manada (commitment) con HISTÉRESIS ---
         # Fija SOLO si un lobo ya está sobre la presa elegida (a <= r_notice); abandona a
         # > prey_abandon_dist (banda de histéresis: prey_abandon_dist > r_notice). Así no se
         # compromete con una presa lejana ni baila de objetivo cada paso.
-        if self.pack_prey >= 0 and not self._prey_viable(self.pack_prey):
-            self.pack_prey = -1                          # presa perdida (refugiada o escapada)
+        if self.pack_prey >= 0 and not self._prey_viable():
+            self.pack_prey = -1; self.pack_prey_kind = None   # presa perdida (refugiada o escapada)
         if self.pack_prey < 0 and hunt:
-            cand = self._select_prey()
-            if cand >= 0 and float(d_wc[:, cand].min()) <= self.r_notice:
-                if self._ever_committed:
-                    self.n_refix += 1                    # re-fijación (debe ser rara)
-                self.pack_prey = cand
-                self._ever_committed = True
+            kind, cand = self._select_prey()
+            if cand >= 0:
+                prey_pos = self.calves[cand] if kind == "calf" else self.cows[cand]
+                if float(np.linalg.norm(self.wolves - prey_pos, axis=1).min()) <= self.r_notice:
+                    if self._ever_committed:
+                        self.n_refix += 1                # re-fijación (debe ser rara)
+                    self.pack_prey, self.pack_prey_kind = cand, kind
+                    self._ever_committed = True
 
         if self.pack_prey < 0:
             # Rondar sin comprometerse: standoff amplio a la vaca más cercana de cada lobo.
@@ -537,14 +598,16 @@ class World:
             desired = -rhat * (dist - self.r_standoff)
             self._wolf_attacking = False
         else:
-            prey = self.cows[self.pack_prey]
-            f = self._heading_units()[self.pack_prey]    # mirada de la presa común
-            rel = self.wolves - prey
+            # El cono que estorba es el de la presa adulta o el de la DEFENSORA del ternero; el lobo
+            # CIERRA hacia la presa (ternero o adulta). Para una adulta, cono y presa coinciden.
+            prey_pos = self._prey_pos()
+            cone_pos, f = self._prey_cone()
+            rel = self.wolves - cone_pos                 # ángulo respecto al cono (defensora/adulta)
             dist = np.linalg.norm(rel, axis=1, keepdims=True)
             rhat = rel / np.maximum(dist, 1e-9)
             cosphi = rhat @ f
             at_flank = cosphi < np.cos(self.cone_half_angle + self.cone_band)   # fuera del cono (banda muerta)
-            close_in = -rel                              # hacia la presa (cerrar a matar)
+            close_in = prey_pos - self.wolves            # hacia la PRESA (cerrar a matar)
             cross = f[0] * rhat[:, 1] - f[1] * rhat[:, 0]    # signo de phi -> circular hacia el flanco
             tang = np.where((cross >= 0.0)[:, None],
                             np.column_stack([-rhat[:, 1], rhat[:, 0]]),
@@ -579,28 +642,45 @@ class World:
         in_station = np.linalg.norm(pts - self.central_station[:2], axis=1) < self.central_station[2]
         return in_safe | in_station
 
-    def _select_prey(self) -> int:
-        """Presa COMÚN de la manada (FACTORIZADA para enchufar terneros luego sin reescribir).
-
-        Sin terneros: la adulta VIABLE que minimiza la distancia al CENTROIDE de los lobos (la que
-        la manada tiene 'más rodeada' = oportunista). La lentitud importa EMERGENTE: la lenta se
-        descuelga -> acaba siendo la más rodeada, sin que el lobo 'sepa' que es la débil.
-        HUECO terneros: cuando los haya, la presa será un ternero (debilidad visible); con varios, el
-        más accesible. Esa preferencia iría AQUÍ, antes del fallback a adultas."""
+    def _select_prey(self) -> tuple[str | None, int]:
+        """Presa COMÚN de la manada -> (tipo, índice). FACTORIZADO:
+          - Si hay TERNEROS: la presa es un ternero (override duro, con cualquier nº de lobos); con
+            varios, el más accesible (más cercano al centroide de los lobos).
+          - Si NO hay terneros: la adulta más EXPUESTA = la más LEJOS del centroide del REBAÑO (la
+            del borde/descolgada; reengancha con la heterogeneidad: la lenta se queda fuera). NO la
+            más céntrica (esa está protegida por las demás)."""
+        if self.n_calves > 0:
+            wolves_centroid = self.wolves.mean(axis=0)
+            d = np.linalg.norm(self.calves - wolves_centroid, axis=1)
+            return ("calf", int(np.argmin(d)))            # el ternero más accesible
         viable = ~self._in_forbidden(self.cows)
         if not viable.any():
-            return -1
-        wolves_centroid = self.wolves.mean(axis=0)
-        d = np.linalg.norm(self.cows - wolves_centroid, axis=1)
-        d[~viable] = np.inf
-        return int(np.argmin(d))
+            return (None, -1)
+        herd_centroid = self.cows.mean(axis=0)
+        d = np.linalg.norm(self.cows - herd_centroid, axis=1)
+        d[~viable] = -np.inf
+        return ("adult", int(np.argmax(d)))               # la adulta más expuesta (borde)
 
-    def _prey_viable(self, idx: int) -> bool:
+    def _prey_pos(self) -> np.ndarray | None:
+        """Posición de la presa fijada (ternero o adulta), o None."""
+        if self.pack_prey < 0:
+            return None
+        return self.calves[self.pack_prey] if self.pack_prey_kind == "calf" else self.cows[self.pack_prey]
+
+    def _prey_cone(self) -> tuple[np.ndarray, np.ndarray]:
+        """Posición y mirada (unitaria) del cono que DEFIENDE a la presa: el de la defensora si es
+        ternero, el de la propia adulta si es adulta."""
+        d = int(self.calf_defender[self.pack_prey]) if self.pack_prey_kind == "calf" else int(self.pack_prey)
+        head = self.cow_heading[d]
+        return self.cows[d], np.array([np.cos(head), np.sin(head)])
+
+    def _prey_viable(self) -> bool:
         """¿Sigue cazable la presa fijada? Inviable si se refugia (zona prohibida) o si escapó
         (lobo más cercano > prey_abandon_dist). Es la histéresis que sostiene el compromiso."""
-        if bool(self._in_forbidden(self.cows[idx:idx + 1])[0]):
+        pos = self._prey_pos()
+        if bool(self._in_forbidden(pos[None, :])[0]):
             return False
-        nearest_wolf = float(np.linalg.norm(self.wolves - self.cows[idx], axis=1).min())
+        nearest_wolf = float(np.linalg.norm(self.wolves - pos, axis=1).min())
         return nearest_wolf <= self.prey_abandon_dist
 
     def _enforce_face_cones(self) -> None:
@@ -640,11 +720,26 @@ class World:
     # Condiciones terminales
     # ------------------------------------------------------------------ #
     def _check_terminal(self) -> tuple[bool, bool]:
-        # 1) Depredación por FLANQUEO: una vaca con >= n_min_adult lobos a la vez dentro de
-        #    capture_radius y FUERA de su cono (no puede dar la cara a todos). Con 1 lobo, va
-        #    encarado -> 0 flanqueadores -> no muere.
+        cos_cone = np.cos(self.cone_half_angle)
+
+        # 1) Depredación de TERNERO: basta >=1 lobo dentro de capture_radius del ternero y FUERA del
+        #    cono de su DEFENSORA (flanqueándola). Un lobo solo PUEDE (disputado por la madre).
+        if self.n_wolves > 0 and self.n_calves > 0:
+            for j in range(self.n_calves):
+                d = int(self.calf_defender[j])
+                fdef = np.array([np.cos(self.cow_heading[d]), np.sin(self.cow_heading[d])])
+                dist_calf = np.linalg.norm(self.wolves - self.calves[j], axis=1)
+                rel_def = self.wolves - self.cows[d]
+                cos_def = (rel_def / np.maximum(np.linalg.norm(rel_def, axis=1)[:, None], 1e-9)) @ fdef
+                flank = (dist_calf <= self.capture_radius) & (cos_def < cos_cone)
+                if flank.sum() >= 1:
+                    self.status = "predation"
+                    self._record_capture_calf(j, np.where(flank)[0], float(dist_calf.min()))
+                    return True, False
+
+        # 2) Depredación de ADULTA por FLANQUEO: >= n_min_adult lobos a la vez dentro de capture_radius
+        #    y FUERA de su cono (no puede dar la cara a todos). Con 1 lobo, va encarado -> no muere.
         if self.n_wolves > 0:
-            cos_cone = np.cos(self.cone_half_angle)
             f = self._heading_units()                                  # (nc, 2)
             rel = self.wolves[None, :, :] - self.cows[:, None, :]      # (nc, nw, 2)
             dist = np.linalg.norm(rel, axis=2)                         # (nc, nw)
@@ -657,14 +752,14 @@ class World:
                 self._record_capture(dist, flankers, count)
                 return True, False
 
-        # 2) Éxito: todas las vacas dentro de la zona segura y todos los lobos fuera.
+        # 3) Éxito: todas las vacas dentro de la zona segura y todos los lobos fuera.
         cows_safe = self._in_safe_zone(self.cows).all()
         wolves_out = (~self._in_safe_zone(self.wolves)).all()
         if cows_safe and wolves_out:
             self.status = "success"
             return True, False
 
-        # 3) Fin por tiempo.
+        # 4) Fin por tiempo.
         if self.step_count >= self.max_steps:
             self.status = "timeout"
             return False, True
@@ -676,11 +771,21 @@ class World:
         ci = int(np.argmax(count))                       # vaca tumbada
         fl = np.where(flankers[ci])[0]
         self.capture_info = {
-            "step": self.step_count, "prey_idx": ci,
+            "step": self.step_count, "kind": "adult", "prey_idx": ci,
             "n_flankers": int(count[ci]), "flankers": fl.tolist(),
-            "is_pack_prey": bool(ci == self.pack_prey),
+            "is_pack_prey": bool(self.pack_prey_kind == "adult" and ci == self.pack_prey),
             "is_weakest": bool(ci == int(np.argmin(self.cow_speeds))),
             "min_wolf_dist": float(dist[ci].min()),
+        }
+
+    def _record_capture_calf(self, j: int, flankers: np.ndarray, min_dist: float) -> None:
+        """Procedencia de la captura de un TERNERO: qué ternero, su defensora, flanqueadores."""
+        self.capture_info = {
+            "step": self.step_count, "kind": "calf", "prey_idx": int(j),
+            "defender_idx": int(self.calf_defender[j]),
+            "n_flankers": int(len(flankers)), "flankers": [int(x) for x in flankers],
+            "is_pack_prey": bool(self.pack_prey_kind == "calf" and self.pack_prey == j),
+            "min_wolf_dist": float(min_dist),
         }
 
     # ------------------------------------------------------------------ #
@@ -731,32 +836,36 @@ class World:
         if self.pack_prey < 0 or self.n_wolves == 0:
             self._prey_close_count = self._prey_flanker_count = 0
             return
-        prey = self.cows[self.pack_prey]
-        f = self._heading_units()[self.pack_prey]
-        rel = self.wolves - prey
-        dist = np.linalg.norm(rel, axis=1)
-        cosphi = (rel / np.maximum(dist[:, None], 1e-9)) @ f
+        # Flanqueador VÁLIDO = dentro de capture_radius de la PRESA y fuera del cono (de la defensora
+        # si es ternero, de la propia adulta si no). Quórum = 1 para ternero, n_min_adult para adulta.
+        prey_pos = self._prey_pos()
+        cone_pos, f = self._prey_cone()
+        dist = np.linalg.norm(self.wolves - prey_pos, axis=1)
+        rel_cone = self.wolves - cone_pos
+        cosphi = (rel_cone / np.maximum(np.linalg.norm(rel_cone, axis=1)[:, None], 1e-9)) @ f
         close = dist <= self.capture_radius
         out_cone = cosphi < np.cos(self.cone_half_angle)
         n_close = int(close.sum())
         n_flank = int((close & out_cone).sum())          # flanqueadores válidos (= regla de muerte)
         self._prey_close_count, self._prey_flanker_count = n_close, n_flank
+        quorum_n = 1 if self.pack_prey_kind == "calf" else self.n_min_adult
 
-        # Coordinación: nº de vacas distintas atacadas a la vez (un lobo dentro de r_face_safe).
-        d_all = np.linalg.norm(self.cows[:, None, :] - self.wolves[None, :, :], axis=2)
+        # Coordinación: nº de presas distintas (adultas + terneros) atacadas a la vez (lobo a <= r_face_safe).
+        targets = np.vstack([self.cows, self.calves]) if self.n_calves > 0 else self.cows
+        d_all = np.linalg.norm(targets[:, None, :] - self.wolves[None, :, :], axis=2)
         n_targets = int((d_all.min(axis=1) <= self.r_face_safe).sum())
         self.max_simul_targets = max(self.max_simul_targets, n_targets)
         self._simul_sum += n_targets
         self._simul_steps += 1
 
         # Primer instante de quórum: la muerte DEBERÍA dispararse aquí (se rellena 'killed' tras terminal).
-        if n_flank >= self.n_min_adult and self.flank_first_quorum is None:
+        if n_flank >= quorum_n and self.flank_first_quorum is None:
             self.flank_first_quorum = {"step": self.step_count, "flankers": n_flank, "killed": None}
 
         # Desglose de 'toques' (algún lobo dentro de capture_radius) que NO son quórum.
         if n_close >= 1:
             n_front = int((close & ~out_cone).sum())     # tocó por el FRENTE (dentro del cono)
-            if n_flank >= self.n_min_adult:
+            if n_flank >= quorum_n:
                 self.touch_breakdown["quorum"] += 1
             elif n_front >= 1:
                 self.touch_breakdown["cerca_en_cono"] += 1   # close pero dentro del cono (2º en cono / frente)
@@ -831,14 +940,27 @@ class World:
 
     def snapshot(self) -> dict:
         """Copia del estado para el render. Copias obligatorias: los arrays mutan.
-        Incluye cow_heading para dibujar la mirada (el render solo LEE, nunca avanza)."""
+        Incluye mirada de las vacas, terneros y la presa fijada (el render solo LEE)."""
+        prey_pos = self._prey_pos()
+        if prey_pos is not None:
+            cone_pos, fvec = self._prey_cone()
+            prey_pos = prey_pos.copy()
+            cone_pos = cone_pos.copy()
+            cone_head = float(np.arctan2(fvec[1], fvec[0]))
+        else:
+            cone_pos = cone_head = None
         return {
             "step": self.step_count,
             "t": self.step_count * self.dt,
             "cows": self.cows.copy(),
             "cow_heading": self.cow_heading.copy(),
+            "calves": self.calves.copy(),
+            "calf_defender": self.calf_defender.copy(),
             "wolves": self.wolves.copy(),
             "drones": self.drones.copy(),
-            "pack_prey": int(self.pack_prey),
+            "prey_pos": prey_pos,                # posición de la presa fijada (realce), o None
+            "prey_cone_pos": cone_pos,           # centro del cono que la defiende (para colorear lobos)
+            "prey_cone_head": cone_head,
+            "prey_is_calf": bool(self.pack_prey_kind == "calf"),
             "status": self.status,
         }
