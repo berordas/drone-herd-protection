@@ -38,15 +38,21 @@ def render_episode(world, history, interval: int = 40, save_path: str | None = N
 
     # --- elementos dinámicos ---
     empty = np.empty((0, 2))
-    cow_sc = ax.scatter(*empty.T, c="saddlebrown", s=60, label="vacas")
-    # Mirada de las vacas (a quién "dan la cara"): flecha desde cada vaca en su heading.
-    # Se crea ya con n_cows flechas (el primer snapshot) -> set_UVC casa en cada frame.
-    face_len = 0.06 * min(W, H)
-    c0, h0 = history[0]["cows"], history[0]["cow_heading"]
-    cow_face = ax.quiver(c0[:, 0], c0[:, 1], np.cos(h0) * face_len, np.sin(h0) * face_len,
-                         color="saddlebrown", alpha=0.5, angles="xy",
-                         scale_units="xy", scale=1.0, width=0.004)
-    wolf_sc = ax.scatter(*empty.T, c="red", s=110, marker="X", label="lobos")
+    # Cono de seguridad frontal de cada vaca (cuña ±cone_half_angle, radio r_face_safe). Es lo que
+    # de verdad cubre al "dar la cara" (sustituye a la flecha). Se dibuja como polígono actualizable.
+    cone_half, r_face = float(world.cone_half_angle), float(world.r_face_safe)
+    K_ARC = 14
+    cone_polys = [patches.Polygon(np.zeros((K_ARC + 1, 2)), closed=True, fc="green", ec="none", alpha=0.13)
+                  for _ in range(world.n_cows)]
+    for p in cone_polys:
+        ax.add_patch(p)
+    cone_polys[0].set_label("cono de seguridad (±45°)")
+    # Realce de la presa fijada de la manada (commitment).
+    prey_hl = ax.scatter(*empty.T, s=260, facecolors="none", edgecolors="black", linewidths=1.6,
+                         marker="o", label="presa fijada", zorder=4)
+    cow_sc = ax.scatter(*empty.T, c="saddlebrown", s=60, label="vacas", zorder=5)
+    # Lobos: el color se actualiza por frame (oro = frenado en el cono / rojo = flanqueando).
+    wolf_sc = ax.scatter(*empty.T, c="red", s=110, marker="X", label="lobos", zorder=6)
     active_sc = ax.scatter(*empty.T, c="royalblue", s=90, marker="^", label="drones activos")
     reserve_sc = ax.scatter(*empty.T, c="lightskyblue", s=70, marker="^",
                             edgecolors="royalblue", label="drones reserva")
@@ -58,12 +64,31 @@ def render_episode(world, history, interval: int = 40, save_path: str | None = N
         snap = history[frame]
         cows = snap["cows"]
         drones = snap["drones"]
-        cow_sc.set_offsets(cows)
-        # Flecha de mirada: origen en cada vaca, dirección = su heading.
         head = snap["cow_heading"]
-        cow_face.set_offsets(cows)
-        cow_face.set_UVC(np.cos(head) * face_len, np.sin(head) * face_len)
-        wolf_sc.set_offsets(snap["wolves"])
+        wolves = snap["wolves"]
+        prey = snap["pack_prey"]
+        cow_sc.set_offsets(cows)
+
+        # Cuña del cono frontal: centrada en cada vaca, orientada a su heading, radio r_face_safe.
+        for i in range(len(cows)):
+            a = np.linspace(head[i] - cone_half, head[i] + cone_half, K_ARC)
+            arc = cows[i] + r_face * np.column_stack([np.cos(a), np.sin(a)])
+            cone_polys[i].set_xy(np.vstack([cows[i], arc]))
+
+        # Presa fijada de la manada (si la hay).
+        prey_hl.set_offsets(cows[prey][None, :] if prey >= 0 else empty)
+
+        # Lobos: color según su relación con el cono de la presa (oro = a raya / rojo = flanqueando).
+        wolf_sc.set_offsets(wolves)
+        if prey >= 0 and len(wolves):
+            f = np.array([np.cos(head[prey]), np.sin(head[prey])])
+            rel = wolves - cows[prey]
+            d = np.maximum(np.linalg.norm(rel, axis=1), 1e-9)
+            in_cone = (rel / d[:, None]) @ f >= np.cos(cone_half)
+            wolf_sc.set_color(np.where(in_cone, "gold", "red").tolist())
+        else:
+            wolf_sc.set_color("red")
+
         active_sc.set_offsets(drones[:world.n_active])
         reserve_sc.set_offsets(drones[world.n_active:])
 
@@ -72,8 +97,8 @@ def render_episode(world, history, interval: int = 40, save_path: str | None = N
         cow_box.set_bounds(xmin, ymin, xmax - xmin, ymax - ymin)
 
         txt.set_text(f"t={snap['t']:.1f}s   paso={snap['step']}   "
-                     f"lobos={len(snap['wolves'])}   estado={snap['status']}")
-        return cow_sc, cow_face, wolf_sc, active_sc, reserve_sc, cow_box, txt
+                     f"lobos={len(snap['wolves'])}   presa={prey}   estado={snap['status']}")
+        return (cow_sc, prey_hl, wolf_sc, active_sc, reserve_sc, cow_box, txt, *cone_polys)
 
     anim = FuncAnimation(fig, update, frames=len(history),
                          interval=interval, blit=False, repeat=False)

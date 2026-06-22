@@ -4,13 +4,13 @@
 > decisiones tomadas, las herramientas, el plan, las referencias y —muy importante— las
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
-> **Última actualización:** **PIVOTE de modelo de amenaza → "DAR LA CARA"** (se descarta el
-> apiñamiento: el huddle quedaba más apretado que el pasto y se tragaba a la rezagada). Ahora las
-> vacas adultas **plantan cara** (giran a encarar al lobo, cono de seguridad frontal ±45°,
-> enfriamiento de giro) y el lobo es **direccional**: respeta el frente y **ataca por el flanco**;
-> **un lobo solo NO puede** tumbar a una adulta (regla de nº mínimo = 2), una **manada flanquea** y
-> mata a la más débil (la más lenta). Vacas y lobos con **inercia** → movimiento firme (giro medio
-> ~0.1 rad/paso). Verificado en `face_check.py`. Tasa sin drones = **83%** (no se persigue; el lobo
+> **Última actualización:** **PRESA COMÚN de la manada** (commitment) sobre el modelo "dar la cara":
+> la manada fija UNA presa (la más rodeada = min dist al centroide de lobos; lentitud emergente) y la
+> MANTIENE (histéresis: abandona solo si se refugia o escapa) → todos confluyen y **flanquean** en vez
+> de N duelos. Re-fijaciones ≈ **0**, ~1 vaca atacada a la vez. **Instrumentado el flanqueo (#3):
+> quórum de 2 flanqueadores → muerte CONFIRMADA (84/84)**. Render: el cono se dibuja como **cuña ±45°**
+> y los lobos se colorean (oro=a raya / rojo=flanqueando), con realce de la presa fijada. Tasa sin
+> drones = **84%** (no se persigue; el lobo
 > completo y los drones llegan en v2). Baseline v1 (49%) ya no aplica; se re-congela como v2.
 
 ---
@@ -117,22 +117,29 @@ Notas:
 ### 4.1. Lobo — caza direccional (cono frontal + flanqueo + nº mínimo)  ✅ IMPLEMENTADO
 
 Reutiliza el lobo de **Muro et al. (2011)** (*"Wolf-pack hunting strategies emerge from simple
-rules…"*, Behavioural Processes 88(3), 192–197) pero lo hace **DIRECCIONAL**: respeta el frente de
-la presa y ataca por el flanco. Reglas descentralizadas por lobo (sin comunicación ni jerarquía):
-1. **Selección de objetivo (sin terneros aún):** la adulta **más débil = la más LENTA**
-   (`cow_speeds`, heterogénea y fija por episodio). Es lo que hace que proteger tenga sentido.
-2. **Aproximación respetando el cono frontal:** si el lobo está **en el cono** de la presa (±45°
-   de su mirada) **circula** hacia el flanco manteniendo `r_face_safe`; si está en el **flanco/grupa**
-   (fuera del cono) **cierra a matar**. El standoff de Muro pasa de omnidireccional a **solo en el cono**.
-3. **Regla de número mínimo (`n_min_adult`=2):** un lobo solo **NO ataca** a una adulta — se queda en
-   **standoff amplio** (`r_standoff`), sin intentarlo. Con ≥ `n_min_adult` lobos, la **manada sí**.
-   *(No hay cifra dura en la literatura; 2 es lo fiable y es un parámetro.)*
-4. **Repulsión entre lobos** (reutilizada) → reparto angular = **pincer visible**.
-5. **Banda muerta** (`cone_band`) en la decisión cono/flanco → no entra-sale-entra en el borde.
+rules…"*, Behavioural Processes 88(3), 192–197) pero lo hace **DIRECCIONAL** y con **PRESA COMÚN**:
+1. **Presa COMÚN de la manada (commitment):** toda la manada comparte UNA presa fijada (`pack_prey`),
+   no "cada lobo la suya" (sin eso → N duelos 1-contra-1, no pincer). **Selección** (`_select_prey`,
+   factorizada para enchufar terneros luego): la adulta **más rodeada** = la que minimiza la dist al
+   **centroide de los lobos** (oportunista); la lentitud importa **emergente** (la lenta se descuelga →
+   acaba siendo la más rodeada). **Fijación** en modo caza (≥ `n_min_adult` lobos y un lobo a ≤ `r_notice`
+   de la presa elegida). **Histéresis**: se mantiene hasta volverse **inviable** (se refugia en zona
+   prohibida, o escapa > `prey_abandon_dist` del lobo más cercano; `prey_abandon_dist` > `r_notice`).
+   Verificado: re-fijaciones ≈ 0, ~1 vaca atacada a la vez (`face_check.py`).
+2. **Aproximación respetando el cono frontal:** si el lobo está **en el cono** de la presa (±45°)
+   **circula** hacia el flanco manteniendo `r_face_safe`; si está en el **flanco/grupa** **cierra a
+   matar**. El standoff de Muro pasa de omnidireccional a **solo en el cono**.
+3. **Regla de número mínimo (`n_min_adult`=2):** un lobo solo **NO ataca** (standoff amplio
+   `r_standoff`, sin fijar presa). Con ≥ `n_min_adult` lobos, la **manada sí**.
+4. **Repulsión entre lobos** alrededor de la presa única → reparto angular = **pincer** (uno de
+   frente, los demás a los flancos). **Banda muerta** (`cone_band`) → no entra-sale en el borde.
 
-**Muerte por FLANQUEO:** la adulta objetivo muere cuando **≥ `n_min_adult` lobos** están **a la vez**
-dentro de `capture_radius` **y fuera de su cono**. Con 1 lobo (siempre encarado) → 0 flanqueadores →
-**no muere** (validado: 0 depredaciones con 1 lobo, `face_check.py`). Con manada → flanquean → muere.
+**Muerte por FLANQUEO:** la adulta muere cuando **≥ `n_min_adult` lobos** están **a la vez** dentro de
+`capture_radius` **y fuera de su cono**. Con 1 lobo (encarado) → 0 flanqueadores → **no muere**.
+**Instrumentado (#3)** (`_instrument_flanking`): cada paso cuenta lobos en `capture_radius` y
+flanqueadores válidos, loggea el primer quórum y si dispara la muerte, y desglosa los "toques" que no
+matan. **Confirmado: 84/84 episodios con quórum → muerte** en ese paso (era síntoma de #2: sin presa
+común casi nunca confluían 2 flanqueadores en la misma vaca).
 
 **Número de lobos aleatorio por episodio** (1–5): de lobo solitario (no puede) a manada (sí puede).
 **Escalera de adversarios:** ingenuo → **manada direccional (ACTUAL)** → busca-huecos → con amago
@@ -340,12 +347,12 @@ recompensa↔métricas no es opcional; currículo; **la línea base clásica es 
 
 Carpeta `AI_LAB/` (proyecto Python local). Estructura:
 - `world.py` — clase `World`: estado, dinámica, recompensa, terminal. **Sin** ROS/render dentro.
-- `render.py` — animación matplotlib (por reproducción: lee estado, nunca llama a `step`).
+- `render.py` — animación matplotlib (por reproducción: lee estado, nunca llama a `step`). Dibuja el **cono** como cuña ±45°, colorea los lobos por su relación con el cono de la presa, y realza la **presa fijada**.
 - `coordinators.py` — `DummyCoordinator` (ignora obs, devuelve "todos quietos"); FSM y MARL después.
 - `main.py` — bucle: reset → obs → coordinador → acciones → step → terminal → métricas.
 - `baseline.py` — **adversario congelado** (config + seeds + métrica de referencia); `build_baseline_world(seed)` y self-check de deriva.
 - `battery_check.py` — verificación macro del subsistema de batería (régimen permanente 4/2/2, escalonado, reproducible).
-- `face_check.py` — verificación del modelo "dar la cara": lobo solo no mata, manada flanquea y mata a la débil, métrica de tembleque (movimiento firme), tasa sobre range(100), reproducibilidad.
+- `face_check.py` — verificación del modelo "dar la cara": lobo solo no mata, manada flanquea (con presa común) y mata, **coordinación** (~1 vaca a la vez, re-fijaciones≈0), **instrumentación de #3** (quórum→muerte), tembleque, tasa sobre range(100), reproducibilidad.
 
 Decisiones de diseño ratificadas:
 - Cada grupo de entidades = array `(N, 2)` de NumPy (vectoriza y se trocea por agente para MAPPO).
@@ -364,15 +371,19 @@ Decisiones de diseño ratificadas:
   apiñarse, sin huir**); **encara** al lobo dentro de `r_notice` girando a `turn_rate`; **cono frontal**
   ±`cone_half_angle` lo mantiene a `r_face_safe` (empuje acotado, no salta); **enfriamiento** de giro
   → el flanco queda abierto. Débil = la más LENTA (`cow_speed_jitter`).
-- **Lobo direccional:** objetivo = la más débil; **respeta el cono** (circula manteniendo `r_face_safe`)
-  y **cierra por el flanco/grupa**; **lobo solo NO ataca** (standoff `r_standoff`); ≥ `n_min_adult`=2
-  → manada flanquea; repulsión entre lobos → pincer. **Muerte por flanqueo**: ≥ `n_min_adult` lobos a
-  la vez dentro de `capture_radius` y fuera del cono.
+- **Lobo direccional con PRESA COMÚN:** la manada fija UNA presa (`pack_prey` = la más rodeada =
+  min dist al centroide de lobos; lentitud emergente) y la **mantiene** (commitment con histéresis:
+  abandona solo si se refugia o escapa > `prey_abandon_dist`). **Respeta el cono** (circula
+  manteniendo `r_face_safe`) y **cierra por el flanco/grupa**; **lobo solo NO ataca** (standoff
+  `r_standoff`, sin fijar presa); ≥ `n_min_adult`=2 → manada flanquea; repulsión → **pincer**.
+  **Muerte por flanqueo**: ≥ `n_min_adult` lobos a la vez en `capture_radius` y fuera del cono.
+- **Instrumentación de #3** (`_instrument_flanking`): lobos en `capture_radius`, flanqueadores válidos,
+  primer quórum→muerte, desglose de toques, y nº de vacas atacadas a la vez (coordinación).
 - **Inercia** en vaca y lobo (velocidad en el estado; bandera #1 avanzada) → movimiento **firme**.
 - **Zonas prohibidas:** clamp geométrico por paso fuera de establo/central (NO navegación).
-- **Verificado (`face_check.py`):** lobo solo = **0 muertes** (a `r_standoff`=12 m); manada = **muere
-  la débil** con ≥2 flanqueadores; tembleque bajo (~0.10 rad/paso vacas y lobos); **tasa 83%** sin
-  drones; guardia de teletransporte limpia; reproducible.
+- **Verificado (`face_check.py`):** lobo solo = **0 muertes**; manada = **muere** (presa fijada) con
+  ≥2 flanqueadores; **coordinación** ~1 vaca a la vez, **re-fijaciones≈0**; **#3 quórum→muerte 84/84**;
+  tembleque bajo (~0.10 rad/paso); **tasa 84%** sin drones; guardia limpia; reproducible.
 - *(Descartado el modelo de apiñamiento/Muro-pounce: el huddle se tragaba a la rezagada. Parámetros
   del modelo viejo —`k_cohesion_*`, `r_alarm/r_calm`, `d_safe`, `pounce_*`— quedan **deprecados pero
   aceptados** para no romper baseline.py v1; ignorados en la dinámica.)*

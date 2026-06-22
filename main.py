@@ -58,10 +58,22 @@ def main():
     for k, v in metrics.items():
         print(f"  {k}: {v}")
 
+    # Coordinación de la manada (presa común) + instrumentación del flanqueo (#3).
+    mean_simul = world._simul_sum / max(world._simul_steps, 1)
+    print("Manada (presa común):")
+    print(f"  vacas atacadas a la vez: máx={world.max_simul_targets} media={mean_simul:.2f} (ideal ~1) | "
+          f"re-fijaciones={world.n_refix}")
+    q = world.flank_first_quorum
+    if q is not None:
+        print(f"  primer quórum de flanqueadores: paso={q['step']} flanqueadores={q['flankers']} -> muerte={q['killed']}")
+    else:
+        print("  primer quórum de flanqueadores: NUNCA se alcanzó (no hubo >= n_min_adult a la vez)")
+    print(f"  desglose de toques (lobo en capture_radius): {world.touch_breakdown}")
+
     c = world.capture_info
     if c is not None:
         print("Procedencia de la captura (flanqueo):")
-        print(f"  presa={c['prey_idx']} (era la más débil={c['is_weakest']}) | "
+        print(f"  presa={c['prey_idx']} (presa fijada={c['is_pack_prey']}, era la más lenta={c['is_weakest']}) | "
               f"flanqueadores={c['n_flankers']} (lobos {c['flankers']}) | "
               f"lobo más cercano={c['min_wolf_dist']:.2f} m")
     if world.guard_violations:

@@ -1,14 +1,16 @@
 """
 face_check.py — Verificación del modelo "DAR LA CARA" (vacas adultas + lobos).
 
-Comprueba el pivote de amenaza (sin apiñamiento; confrontación direccional + flanqueo):
-  1) LOBO SOLO -> no puede tumbar a una adulta (regla de nº mínimo + la mantiene encarada
-     a distancia). Sobre semillas forzadas a 1 lobo: 0 depredaciones, lobo a raya.
-  2) MANADA (>= n_min_adult) -> escenario construido: la vaca encara a uno, los otros entran
-     por el flanco y con >= n_min_adult flanqueadores la adulta MUERE (la débil).
-  3) MOVIMIENTO FIRME -> métrica de tembleque (giro medio por paso de vaca/lobo) baja.
-  4) TASA de depredación sin drones sobre range(100) (config actual) + standoff-vs-ataque.
-  5) REPRODUCIBILIDAD: misma seed -> misma secuencia.
+Comprueba el pivote de amenaza (sin apiñamiento; confrontación direccional + flanqueo) y la
+PRESA COMÚN de la manada (commitment):
+  1) LOBO SOLO -> no puede tumbar a una adulta (regla de nº mínimo + la mantiene a raya).
+  2) MANADA -> escenario construido: encara a uno, flanquean los demás, y al juntarse el quórum
+     de flanqueadores válidos MUERE; confirma la instrumentación de #3 (quórum -> muerte).
+  3) MOVIMIENTO FIRME -> métrica de tembleque (giro medio por paso) baja.
+  4) COORDINACIÓN -> con manada, todos confluyen en UNA presa (~1 vaca atacada a la vez),
+     pocas re-fijaciones (commitment).
+  5) TASA sin drones sobre range(100) + standoff-vs-ataque + desglose de toques + quórum->muerte.
+  6) REPRODUCIBILIDAD: misma seed -> misma secuencia.
 """
 
 import numpy as np
@@ -78,10 +80,14 @@ def test_pack_flank_kill():
             break
     if killed_step is not None:
         ci = w.capture_info
-        print("  MUERTE en paso %d: presa=%d (la débil=%s) con %d flanqueadores (>= n_min_adult=%d)"
-              % (killed_step, ci["prey_idx"], ci["is_weakest"], n_flankers, w.n_min_adult))
-        assert ci["is_weakest"], "FALLO: la víctima no era la adulta más débil"
+        q = w.flank_first_quorum
+        print("  MUERTE en paso %d: presa=%d (presa fijada=%s) con %d flanqueadores (>= n_min_adult=%d)"
+              % (killed_step, ci["prey_idx"], ci["is_pack_prey"], n_flankers, w.n_min_adult))
+        print("  #3 instrumentación: primer quórum en paso %s -> muerte=%s"
+              % (q["step"] if q else None, q["killed"] if q else None))
+        assert ci["is_pack_prey"], "FALLO: la víctima no era la presa fijada de la manada"
         assert n_flankers >= w.n_min_adult, "FALLO: muerte sin suficientes flanqueadores"
+        assert q is not None and q["killed"], "FALLO(#3): hubo quórum de flanqueadores pero NO disparó la muerte"
         print("  OK\n")
     else:
         print("  ATASCO: la manada NO consiguió flanquear (revisar parámetros del cono/flanco).\n")
@@ -116,17 +122,40 @@ def test_firm_motion():
     print("  OK\n")
 
 
+def test_coordination():
+    print("=== 4) Coordinación: la manada confluye en UNA presa (commitment) ===")
+    simul_means, simul_maxes, refixes = [], [], []
+    for s in range(20):
+        w, *_ = run_ep(s, wolves_min=3, wolves_max=3)
+        if w._simul_steps:
+            simul_means.append(w._simul_sum / w._simul_steps)
+            simul_maxes.append(w.max_simul_targets)
+            refixes.append(w.n_refix)
+    print("  vacas atacadas a la vez (20 seeds, 3 lobos): media=%.2f máx=%d  (ideal ~1)"
+          % (np.mean(simul_means), max(simul_maxes)))
+    print("  re-fijaciones de presa por episodio: media=%.2f máx=%d  (commitment: debe ser bajo)"
+          % (np.mean(refixes), max(refixes)))
+    assert np.mean(simul_means) < 1.4, "FALLO: la manada NO confluye (ataca varias vacas a la vez)"
+    print("  OK\n")
+
+
 def test_rate_and_standoff():
-    print("=== 4) Tasa sin drones (range(100)) + standoff-vs-ataque ===")
+    print("=== 5) Tasa sin drones (range(100)) + standoff/ataque + toques + quórum->muerte ===")
     from collections import Counter
     out = Counter()
     attack = wolf = 0
     flank_counts = []
+    touch = Counter()
+    quorum_eps = quorum_killed = 0
     for s in range(100):
         w, status, a, ws, _ = run_ep(s)
         out[status] += 1
         attack += a
         wolf += ws
+        touch.update(w.touch_breakdown)
+        if w.flank_first_quorum is not None:
+            quorum_eps += 1
+            quorum_killed += int(bool(w.flank_first_quorum["killed"]))
         if w.capture_info is not None:
             flank_counts.append(w.capture_info["n_flankers"])
     n = 100
@@ -135,12 +164,15 @@ def test_rate_and_standoff():
           % (out["predation"], n, 100 * out["predation"] // n))
     print("  lobo: ATAQUE %d%% / STANDOFF %d%% de los pasos"
           % (100 * attack // max(wolf, 1), 100 * (wolf - attack) // max(wolf, 1)))
+    print("  desglose de TOQUES (lobo en capture_radius):", dict(touch))
+    print("  #3 quórum->muerte: %d/%d episodios con quórum acabaron en muerte en ese paso"
+          % (quorum_killed, quorum_eps))
     if flank_counts:
         print("  flanqueadores por captura: media=%.1f máx=%d" % (np.mean(flank_counts), max(flank_counts)))
 
 
 def test_reproducible():
-    print("\n=== 5) Reproducibilidad (misma seed) ===")
+    print("\n=== 6) Reproducibilidad (misma seed) ===")
     w1, *_ = run_ep(7)
     w2, *_ = run_ep(7)
     same = (np.array_equal(w1.cows, w2.cows) and np.array_equal(w1.wolves, w2.wolves)
@@ -154,5 +186,6 @@ if __name__ == "__main__":
     test_lone_wolf_no_kill()
     test_pack_flank_kill()
     test_firm_motion()
+    test_coordination()
     test_rate_and_standoff()
     test_reproducible()
