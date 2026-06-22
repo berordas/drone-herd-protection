@@ -23,7 +23,12 @@ TWO_CALVES = (0.0, 0.0, 1.0)    # forzar 2 terneros
 
 def run_ep(seed, record=False, **kw):
     """Un episodio con drones quietos. Devuelve (world, outcome, pasos_ataque, pasos_lobo,
-    (cow_vels, wolf_vels, calf_vels)) — velocidades por paso solo si record=True."""
+    (cow_vels, wolf_vels, calf_vels)) — velocidades por paso solo si record=True.
+
+    Cap de pasos corto por defecto: estos tests verifican la DINÁMICA (cono/flanqueo/firmeza), no el
+    timeout largo de la escolta. La depredación ya NO termina el episodio (multi-muerte): las muertes
+    se detectan por w.captures / w.capture_info, no por 'terminated'."""
+    kw.setdefault("max_episode_steps", 600)
     w = World(seed=seed, **kw)
     c = DummyCoordinator(w.n_drones)
     attack_steps = wolf_steps = 0
@@ -83,9 +88,9 @@ def test_pack_flank_kill():
     assert w.pack_prey == 0    # más expuesta es la cow[0] aislada)
     killed = None
     for _ in range(400):
-        _, _, term, _, _ = w.step(c.act(None))
-        if term and w.status == "predation":
-            killed = w.step_count
+        w.step(c.act(None))
+        if w.capture_info is not None:   # primera captura (la muerte ya NO termina el episodio)
+            killed = w.capture_info["step"]
             break
     assert killed is not None, "FALLO: la manada no tumbó a la adulta en el escenario construido"
     ci, q = w.capture_info, w.flank_first_quorum
@@ -123,10 +128,11 @@ def test_retoque_exposure():
         rec = None
         while True:
             _, _, term, trunc, _ = w.step(c.act(None))
-            if rec is None and w.pack_prey >= 0 and w.pack_prey_kind == "adult":
+            if w.pack_prey >= 0 and w.pack_prey_kind == "adult":
                 centroid = w.cows.mean(axis=0)
                 rec = (float(np.linalg.norm(w.cows[w.pack_prey] - centroid)),
                        float(np.linalg.norm(w.cows - centroid, axis=1).mean()))
+                break    # solo necesitamos la exposición al FIJAR (paso ~0); no agotamos el episodio
             if term or trunc:
                 break
         if rec:
@@ -155,14 +161,14 @@ def test_calves():
     calf_deaths = 0
     for s in range(40):
         w, status, *_ = run_ep(s, wolves_min=3, wolves_max=3, calf_count_probs=ONE_CALF)
-        calf_deaths += int(w.capture_info is not None and w.capture_info["kind"] == "calf")
+        calf_deaths += int(any(c["kind"] == "calf" for c in w.captures))   # ¿murió EL ternero alguna vez?
     print("  ternero + manada (1 ternero, 3 lobos, 40 seeds): %d muertes de ternero" % calf_deaths)
     assert calf_deaths > 20, "FALLO: la manada no caza al ternero de forma fiable"
     # Lobo solo vs ternero: DISPUTADO (reportar, NO tunear).
     lone = 0
     for s in range(50):
         w, *_ = run_ep(s, wolves_min=1, wolves_max=1, calf_count_probs=ONE_CALF)
-        lone += int(w.capture_info is not None and w.capture_info["kind"] == "calf")
+        lone += int(any(c["kind"] == "calf" for c in w.captures))
     print("  lobo SOLO vs ternero (50 seeds): %d%% muertes de ternero  (disputado; NO se tunea aquí)" % (100 * lone // 50))
     # 2 terneros: la manada se compromete con UNO (re-fijaciones bajas).
     refix = [run_ep(s, wolves_min=4, wolves_max=4, calf_count_probs=TWO_CALVES)[0].n_refix for s in range(10)]
@@ -197,14 +203,13 @@ def test_rate():
     from collections import Counter
     out, kind = Counter(), Counter()
     for s in range(100):
-        w, status, *_ = run_ep(s)
+        w, status, *_ = run_ep(s)               # cap 600 pasos; depredación = episodio con >=1 res cazada
         out[status] += 1
-        if w.capture_info is not None:
-            kind[w.capture_info["kind"]] += 1
+        for c in w.captures:                    # multi-muerte: cuenta TODAS las capturas
+            kind[c["kind"]] += 1
     print("  outcomes:", dict(out))
-    print("  depredación = %d/100  (sube respecto al 84%% sin terneros: el ternero es objetivo blando)"
-          % out["predation"])
-    print("  split de capturas: ternero=%d adulta=%d" % (kind["calf"], kind["adult"]))
+    print("  depredación (>=1 res cazada) = %d/100 episodios  (no es objetivo; se mide)" % out["predation"])
+    print("  capturas totales: ternero=%d adulta=%d" % (kind["calf"], kind["adult"]))
 
 
 def test_grazing_spread():

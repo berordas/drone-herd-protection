@@ -37,7 +37,11 @@ def run_episode(world: World, coordinator: DummyCoordinator):
 
     metrics = {
         "outcome": world.status,
+        "phase_final": world.phase,
         "n_wolves": world.n_wolves,
+        "n_safe": int(world.cow_safe.sum() + world.calf_safe.sum()),
+        "n_depredadas": world.n_depredadas,
+        "n_fuera": int((world.cow_alive & ~world.cow_safe).sum() + (world.calf_alive & ~world.calf_safe).sum()),
         "steps": world.step_count,
         "sim_time_s": round(world.step_count * world.dt, 2),
         "total_reward": round(total_reward, 3),

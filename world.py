@@ -85,6 +85,11 @@ class World:
         capture_radius: float | None = None,  # m, a qué distancia (un flanqueador) puede tumbar (default 0.03*min)
         teleport_guard: bool = False,      # log si una entidad se desplaza > su máx por paso * motion_tol
         motion_tol: float = 1.5,           # tolerancia de desplazamiento por paso (guardia)
+        # --- Escolta / terminal del episodio (máquina de fases VIGILANCIA->ESCOLTA + refugio) ---
+        r_escort_trigger: float | None = None,   # m: lobo dentro de esto del centroide del rebaño -> ESCOLTA (default 0.30*min). TUNE
+        episode_time_factor: float = 4.0,        # holgura del límite de tiempo (~k * diag / cow_speed). TUNE
+        max_episode_steps: int | None = None,    # límite de pasos (default DERIVADO de geometría/cow_speed; ver __init__)
+        refuge_margin: float | None = None,      # m: histéresis de borde del establo para contar "refugiada" (default 0.1*safe_radius). TUNE
         # --- DEPRECATED: modelo anterior (apiñamiento + Muro-pounce). Se ACEPTAN para no romper
         #     baseline.py v1 (los pasa explícitos) pero se IGNORAN en la dinámica nueva. ---
         k_cohesion_calm: float = 0.0, k_cohesion_panic: float = 0.0, wander_panic: float = 0.0,
@@ -187,6 +192,20 @@ class World:
         self.teleport_guard = teleport_guard
         self.motion_tol = motion_tol
 
+        # --- Escolta / terminal del episodio ---
+        # Disparador VIGILANCIA->ESCOLTA: lobo dentro de r_escort_trigger del centroide del rebaño vivo.
+        self.r_escort_trigger = r_escort_trigger if r_escort_trigger is not None else 0.30 * m
+        # Límite de tiempo: holgura (~episode_time_factor) para que el rebaño cruce el campo a cow_speed.
+        # Derivado de la diagonal y cow_speed (sin número mágico): k * diag / cow_speed / dt pasos.
+        self.episode_time_factor = episode_time_factor
+        self.max_episode_steps = (
+            max_episode_steps if max_episode_steps is not None
+            else int(self.episode_time_factor * np.hypot(self.W, self.H) / self.cow_speed / self.dt)
+        )
+        # Histéresis de borde del establo: se cuenta "refugiada" al estar refuge_margin DENTRO del borde
+        # (latched: una vez a salvo, sigue a salvo) -> sin parpadeo en la frontera.
+        self.refuge_margin = refuge_margin if refuge_margin is not None else 0.1 * self.safe_radius
+
         # Batería: tasas DERIVADAS de las capacidades (sin números mágicos). La batería es
         # una fracción [0,1]; drena 1->0 en battery_capacity s, carga 0->1 en charge_full s.
         self.battery_capacity = battery_capacity
@@ -238,8 +257,17 @@ class World:
         self._prey_flanker_count: int = 0               # de ésos, flanqueadores válidos (fuera del cono)
         self._prev_cows: np.ndarray | None = None       # posiciones previas (guardia de teletransporte)
         self._prev_wolves: np.ndarray | None = None
-        self.capture_info: dict | None = None           # procedencia de la última captura (flanqueo)
+        self.capture_info: dict | None = None           # procedencia de la ÚLTIMA captura (flanqueo)
+        self.captures: list = []                         # todas las capturas del episodio (multi-muerte)
         self.guard_violations: list = []                # log de la guardia de teletransporte
+        # --- Escolta / terminal del episodio ---
+        self.phase: str = "VIGILANCIA"                  # VIGILANCIA -> ESCOLTA (no vuelve atrás)
+        self.cow_alive: np.ndarray | None = None        # (n_cows,) viva (no cazada)
+        self.cow_safe: np.ndarray | None = None         # (n_cows,) refugiada en el establo (no cazable)
+        self.calf_alive: np.ndarray | None = None       # (n_calves,) vivo
+        self.calf_safe: np.ndarray | None = None        # (n_calves,) refugiado
+        self.n_depredadas: int = 0                       # reses cazadas en el episodio (cuenta; más = peor)
+        self.terminal_step: int | None = None           # paso en que se resolvió el episodio
         self.n_wolves: int = 0          # se sortea en cada reset
         self.step_count: int = 0
         self.status: str = "running"    # running | success | predation | timeout
@@ -325,7 +353,17 @@ class World:
         self._prev_cows = self.cows.copy()
         self._prev_wolves = self.wolves.copy()
         self.capture_info = None
+        self.captures = []
         self.guard_violations = []
+
+        # Escolta / terminal: máquina de fases + vivas/refugiadas (gancho de refugio).
+        self.phase = "VIGILANCIA"
+        self.cow_alive = np.ones(self.n_cows, dtype=bool)
+        self.cow_safe = np.zeros(self.n_cows, dtype=bool)
+        self.calf_alive = np.ones(self.n_calves, dtype=bool)
+        self.calf_safe = np.zeros(self.n_calves, dtype=bool)
+        self.n_depredadas = 0
+        self.terminal_step = None
 
         # Presa COMÚN fijada en t=0 (no se espera a que un lobo se acerque): la manada se dirige a
         # ella desde el primer paso. Mantiene el commitment todo el episodio (sin re-fijación).
@@ -362,17 +400,25 @@ class World:
         self._update_calves()               #         terneros pegados a su defensora
         self._update_wolves()               #         lobo direccional + flanqueo + inercia
         self._enforce_face_cones()          #         la vaca planta cara: empuja al lobo frontal a r_face_safe
+        # Clamp #5 tiene la ÚLTIMA palabra: el empuje del cono (vacas que pastan cerca del borde) puede
+        # meter un lobo en el establo -> se le vuelve a expulsar (invariante "ningún lobo dentro").
+        self._push_outside_circle(self.wolves, self.safe_zone)
+        self._push_outside_circle(self.wolves, self.central_station)
         self._step_battery()                # fase 3: batería/relevos (independiente de vacas/lobo)
         self.step_count += 1
-        self._instrument_flanking()         # mide el flanqueo sobre la presa fijada (#3; no cambia la regla)
+        self._update_phase()                # VIGILANCIA -> ESCOLTA (informativa; seam para el guiado)
+        self._instrument_flanking()         # mide el flanqueo sobre la presa (ANTES de aplicar muertes)
+        prey_killed = self._process_predation()  # aplica muertes (regla SIN cambios) y cuenta n_depredadas
         self._update_instrumentation()      # guardia de teletransporte
 
+        # Enlace de #3: en el PRIMER paso con quórum de flanqueadores, ¿disparó la muerte de la presa?
+        if (self.flank_first_quorum is not None and self.flank_first_quorum["killed"] is None
+                and self.flank_first_quorum["step"] == self.step_count):
+            self.flank_first_quorum["killed"] = prey_killed
+
         terminated, truncated = self._check_terminal()
-        # Enlace de #3: en el PRIMER paso con quórum de flanqueadores, ¿disparó la muerte?
-        if self.flank_first_quorum is not None and self.flank_first_quorum["killed"] is None:
-            self.flank_first_quorum["killed"] = (self.status == "predation")
         reward = self._compute_reward(terminated, truncated)
-        info = {"status": self.status}
+        info = self._terminal_info(terminated or truncated)
         return self.get_observation(), reward, terminated, truncated, info
 
     # ------------------------------------------------------------------ #
@@ -484,6 +530,8 @@ class World:
 
         turn = self.turn_rate * self.dt
         for i in range(self.n_cows):
+            if not self.cow_alive[i] or self.cow_safe[i]:
+                continue   # res fuera de juego (cazada/refugiada): no encara
             near = np.where(within[i])[0]
             if near.size == 0:
                 continue   # sin lobo cerca: mantiene la mirada (no re-orienta)
@@ -557,11 +605,27 @@ class World:
         self.cow_vel += self.cow_inertia * (desired_vel - self.cow_vel)
         self.cows = cows + self.cow_vel * self.dt
 
-        # Contención DURA solo en límites reales (parcela + zonas prohibidas). La zona de pasto
-        # la contiene la valla BLANDA, no un clamp.
+        # Reses ya resueltas (CAZADAS o REFUGIADAS de pasos previos) no se mueven: congeladas en su
+        # sitio. La refugiada se queda DENTRO del establo. 'cows' = posición al inicio del paso.
+        frozen = (~self.cow_alive) | self.cow_safe
+        if frozen.any():
+            self.cows[frozen] = cows[frozen]
+            self.cow_vel[frozen] = 0.0
         self._clip_to_parcel(self.cows)
-        self._push_outside_circle(self.cows, self.safe_zone)
-        self._push_outside_circle(self.cows, self.central_station)
+
+        # Gancho (a) REFUGIO: marca a salvo las vivas que han entrado al establo (umbral con histéresis
+        # de borde) ANTES de expulsar a las que pastan -> una res que entra se queda (no se la expulsa).
+        d_safe = np.linalg.norm(self.cows - self.safe_zone[:2], axis=1)
+        self.cow_safe |= self.cow_alive & ~self.cow_safe & (d_safe <= self.safe_zone[2] - self.refuge_margin)
+
+        # Contención DURA (parcela + zonas prohibidas) SOLO para las CAZABLES (a una refugiada NO se la
+        # expulsa del establo). La zona de pasto la contiene la valla BLANDA, no un clamp.
+        active = self.cow_alive & ~self.cow_safe
+        if active.any():
+            sub = self.cows[active]
+            self._push_outside_circle(sub, self.safe_zone)
+            self._push_outside_circle(sub, self.central_station)
+            self.cows[active] = sub
 
     def _update_calves(self) -> None:
         """Ternero: se coloca AL LADO de su DEFENSORA (a ~calf_personal_space, no encima) + deambular
@@ -583,11 +647,23 @@ class World:
         total = cohesion + wander
         speed = np.linalg.norm(total, axis=1, keepdims=True)
         scale = np.minimum(1.0, self.cow_speed / np.maximum(speed, 1e-9))
+        prev = self.calves
         self.calf_vel += self.cow_inertia * (total * scale - self.calf_vel)
         self.calves = self.calves + self.calf_vel * self.dt
+        frozen = (~self.calf_alive) | self.calf_safe   # cazados/refugiados: congelados (no se expulsan del establo)
+        if frozen.any():
+            self.calves[frozen] = prev[frozen]
+            self.calf_vel[frozen] = 0.0
         self._clip_to_parcel(self.calves)
-        self._push_outside_circle(self.calves, self.safe_zone)
-        self._push_outside_circle(self.calves, self.central_station)
+        # Gancho (a) REFUGIO para terneros (igual que adultas).
+        d_safe = np.linalg.norm(self.calves - self.safe_zone[:2], axis=1)
+        self.calf_safe |= self.calf_alive & ~self.calf_safe & (d_safe <= self.safe_zone[2] - self.refuge_margin)
+        active = self.calf_alive & ~self.calf_safe
+        if active.any():
+            sub = self.calves[active]
+            self._push_outside_circle(sub, self.safe_zone)
+            self._push_outside_circle(sub, self.central_station)
+            self.calves[active] = sub
 
     def _update_wolves(self) -> None:
         """Lobo DIRECCIONAL con PRESA COMÚN de la manada (corazón del flanqueo).
@@ -596,8 +672,8 @@ class World:
         el episodio. Sin presa común no hay confluencia -> N duelos 1-contra-1, no pincer.
           - Fijación: en el reset, si hay caza (ternero, o >= n_min_adult lobos), se elige la presa
             (_select_prey) y TODA la manada va a por ESA desde el primer paso.
-          - Se suelta SOLO si se vuelve inviable (_prey_viable): se refugia / entra en zona prohibida.
-            Ya NO se abandona por distancia (la presa empieza lejos: los lobos entran del perímetro).
+          - Se suelta SOLO si deja de ser cazable (_prey_lost_reason): se REFUGIA o MUERE -> la manada
+            RE-SELECCIONA (única re-fijación). Ya NO se abandona por distancia (empieza lejos del perímetro).
           - Sin presa (lobo solo sin ternero): standoff AMPLIO a la vaca más cercana (no se compromete).
         Reparto de roles EMERGENTE: repulsión entre lobos alrededor de la presa única -> uno de frente
         (ella lo encara), los demás a los flancos/grupa. Si el rebaño se interpone, el lobo lo BORDEA
@@ -610,9 +686,15 @@ class World:
 
         d_wc = np.linalg.norm(self.cows[None, :, :] - self.wolves[:, None, :], axis=2)  # (nw, nc)
 
-        # La presa ya viene fijada de t=0; solo se SUELTA si deja de ser viable (se refugió).
-        if self.pack_prey >= 0 and not self._prey_viable():
+        # La presa viene fijada de t=0. Se SUELTA solo si deja de ser cazable: se REFUGIA (gancho b)
+        # o muere. En ambos casos la manada RE-SELECCIONA (única re-fijación permitida); el contador
+        # n_refix sube SOLO al refugiarse (la muerte fuerza la re-selección, no es oscilación).
+        reason = self._prey_lost_reason()
+        if reason is not None:
             self.pack_prey = -1; self.pack_prey_kind = None
+            if reason == "refuge":
+                self.n_refix += 1
+            self._try_commit_prey()
 
         if self.pack_prey < 0:
             # Rondar sin comprometerse: standoff amplio a la vaca más cercana de cada lobo.
@@ -649,7 +731,7 @@ class World:
         #     repulsión radial, que lo dejaría parado de frente) y comprometido con un lado (sign de s).
         if self.pack_prey >= 0:
             prey_pos = self._prey_pos()
-            mask = np.ones(self.n_cows, dtype=bool)
+            mask = self.cow_alive & ~self.cow_safe           # solo las CAZABLES son obstáculo (las muertas/refugiadas no)
             if self.pack_prey_kind == "adult":
                 mask[self.pack_prey] = False                 # la presa adulta no es obstáculo de sí misma
             herd = self.cows[mask]
@@ -695,16 +777,21 @@ class World:
         return in_safe | in_station
 
     def _commit_initial_prey(self) -> None:
-        """Fija la presa COMÚN de la manada en t=0 (no espera a que un lobo cruce r_notice).
-          - Con ternero -> ternero (objetivo blando, con cualquier nº de lobos).
-          - Sin ternero y >= n_min_adult lobos -> la adulta más expuesta.
-          - Lobo solo sin ternero -> sin presa (standoff amplio: no se compromete).
-        Una vez fijada se mantiene todo el episodio (la suelta solo el refugio, en _prey_viable)."""
+        """Fija la presa COMÚN de la manada en t=0 (no espera a que un lobo cruce r_notice). Delega en
+        _try_commit_prey; una vez fijada se mantiene (la suelta solo el refugio/la muerte de la presa)."""
         self.pack_prey = -1
         self.pack_prey_kind = None
-        if self.n_wolves == 0:
+        self._try_commit_prey()
+
+    def _try_commit_prey(self) -> None:
+        """Si no hay presa y hay caza, fija una entre las CAZABLES (viva y no refugiada):
+          - Con ternero cazable -> ternero (objetivo blando, con cualquier nº de lobos).
+          - Sin ternero y >= n_min_adult lobos -> la adulta cazable más expuesta.
+          - Lobo solo sin ternero -> sin presa (standoff amplio: no se compromete).
+        NO toca n_refix (la contabilidad de re-fijación la lleva quien llama, solo en refugio)."""
+        if self.pack_prey >= 0 or self.n_wolves == 0:
             return
-        hunt = (self.n_calves > 0) or (self.n_wolves >= self.n_min_adult)
+        hunt = bool((self.calf_alive & ~self.calf_safe).any()) or (self.n_wolves >= self.n_min_adult)
         if not hunt:
             return
         kind, cand = self._select_prey()
@@ -713,23 +800,24 @@ class World:
             self._ever_committed = True
 
     def _select_prey(self) -> tuple[str | None, int]:
-        """Presa COMÚN de la manada -> (tipo, índice). FACTORIZADO:
-          - Si hay TERNEROS: la presa es un ternero (override duro, con cualquier nº de lobos); con
-            varios, el más accesible (más cercano al centroide de los lobos).
-          - Si NO hay terneros: la adulta más EXPUESTA = la más LEJOS del centroide del REBAÑO (la
-            del borde/descolgada; reengancha con la heterogeneidad: la lenta se queda fuera). NO la
-            más céntrica (esa está protegida por las demás)."""
-        if self.n_calves > 0:
+        """Presa COMÚN de la manada -> (tipo, índice), solo entre las CAZABLES (viva y no refugiada).
+          - Si hay TERNERO cazable: la presa es un ternero (override duro, con cualquier nº de lobos);
+            con varios, el más accesible (más cercano al centroide de los lobos).
+          - Si NO: la adulta cazable más EXPUESTA = la más LEJOS del centroide del REBAÑO vivo (la del
+            borde/descolgada; reengancha con la heterogeneidad). NO la más céntrica (esa va protegida)."""
+        cazable_calf = self.calf_alive & ~self.calf_safe
+        if cazable_calf.any():
             wolves_centroid = self.wolves.mean(axis=0)
             d = np.linalg.norm(self.calves - wolves_centroid, axis=1)
-            return ("calf", int(np.argmin(d)))            # el ternero más accesible
-        viable = ~self._in_forbidden(self.cows)
-        if not viable.any():
+            d[~cazable_calf] = np.inf
+            return ("calf", int(np.argmin(d)))            # el ternero cazable más accesible
+        cazable = (self.cow_alive & ~self.cow_safe) & ~self._in_forbidden(self.cows)
+        if not cazable.any():
             return (None, -1)
-        herd_centroid = self.cows.mean(axis=0)
+        herd_centroid = self.cows[self.cow_alive & ~self.cow_safe].mean(axis=0)
         d = np.linalg.norm(self.cows - herd_centroid, axis=1)
-        d[~viable] = -np.inf
-        return ("adult", int(np.argmax(d)))               # la adulta más expuesta (borde)
+        d[~cazable] = -np.inf
+        return ("adult", int(np.argmax(d)))               # la adulta cazable más expuesta (borde)
 
     def _prey_pos(self) -> np.ndarray | None:
         """Posición de la presa fijada (ternero o adulta), o None."""
@@ -744,11 +832,23 @@ class World:
         head = self.cow_heading[d]
         return self.cows[d], np.array([np.cos(head), np.sin(head)])
 
-    def _prey_viable(self) -> bool:
-        """¿Sigue cazable la presa fijada? Solo INVIABLE si se REFUGIA (entra en zona prohibida).
-        Ya NO se abandona por distancia: la presa se fija en t=0 y empieza lejos (los lobos entran
-        del perímetro); abandonarla por estar lejos reintroduciría el bucle de re-fijación."""
-        return not bool(self._in_forbidden(self._prey_pos()[None, :])[0])
+    def _prey_lost_reason(self) -> str | None:
+        """Por qué la presa fijada deja de ser cazable: 'dead' / 'refuge' / None. Es la ÚNICA
+        condición de re-fijación (la presa se mantiene si no muere ni se refugia; sin abandono por
+        distancia, que reintroduciría el bucle de oscilación)."""
+        if self.pack_prey < 0:
+            return None
+        if self.pack_prey_kind == "calf":
+            if not self.calf_alive[self.pack_prey]:
+                return "dead"
+            if self.calf_safe[self.pack_prey]:
+                return "refuge"
+        else:
+            if not self.cow_alive[self.pack_prey]:
+                return "dead"
+            if self.cow_safe[self.pack_prey]:
+                return "refuge"
+        return None
 
     def _enforce_face_cones(self) -> None:
         """La vaca PLANTA CARA: cualquier lobo dentro de su cono frontal (±cone_half_angle) y a
@@ -762,6 +862,8 @@ class World:
         max_push = self.wolf_speed * self.dt        # tope por paso = no salta (guardia limpia)
         f = self._heading_units()
         for i in range(self.n_cows):
+            if not self.cow_alive[i] or self.cow_safe[i]:
+                continue   # res fuera de juego: su cono ya no estorba al lobo
             rel = self.wolves - self.cows[i]
             dist = np.linalg.norm(rel, axis=1)
             rhat = rel / np.maximum(dist[:, None], 1e-9)
@@ -784,70 +886,117 @@ class World:
         return reward
 
     # ------------------------------------------------------------------ #
-    # Condiciones terminales
+    # Máquina de fases + depredación + terminal (el refugio va en _update_cows/_update_calves)
     # ------------------------------------------------------------------ #
-    def _check_terminal(self) -> tuple[bool, bool]:
-        cos_cone = np.cos(self.cone_half_angle)
+    def _update_phase(self) -> None:
+        """VIGILANCIA -> ESCOLTA: la PRIMERA vez que un lobo entra en r_escort_trigger del centroide
+        del rebaño VIVO. No vuelve a VIGILANCIA. Informativa (seam para el guiado del paso siguiente;
+        todavía NO cambia la dinámica de las vacas)."""
+        if self.phase == "ESCOLTA" or self.n_wolves == 0:
+            return
+        live = self.cow_alive & ~self.cow_safe
+        if not live.any():
+            return
+        centroid = self.cows[live].mean(axis=0)
+        if float(np.linalg.norm(self.wolves - centroid, axis=1).min()) <= self.r_escort_trigger:
+            self.phase = "ESCOLTA"
 
-        # 1) Depredación de TERNERO: basta >=1 lobo dentro de capture_radius del ternero y FUERA del
-        #    cono de su DEFENSORA (flanqueándola). Un lobo solo PUEDE (disputado por la madre).
-        if self.n_wolves > 0 and self.n_calves > 0:
-            for j in range(self.n_calves):
-                d = int(self.calf_defender[j])
+    def _process_predation(self) -> bool:
+        """Aplica la muerte por FLANQUEO (regla SIN cambios) a las reses CAZABLES y las marca cazadas
+        (multi-muerte: NO termina el episodio). Cuenta n_depredadas y registra cada captura. Devuelve
+        si la PRESA fijada murió este paso (para enlazar el quórum de #3)."""
+        if self.n_wolves == 0:
+            return False
+        cos_cone = np.cos(self.cone_half_angle)
+        prey_killed = False
+
+        # Terneros cazables: >= 1 flanqueador del cono de su DEFENSORA (si la madre sigue en juego;
+        # si murió, el ternero queda indefenso = cualquier lobo dentro de capture_radius lo caza).
+        for j in range(self.n_calves):
+            if not (self.calf_alive[j] and not self.calf_safe[j]):
+                continue
+            d = int(self.calf_defender[j])
+            dist_calf = np.linalg.norm(self.wolves - self.calves[j], axis=1)
+            if self.cow_alive[d] and not self.cow_safe[d]:
                 fdef = np.array([np.cos(self.cow_heading[d]), np.sin(self.cow_heading[d])])
-                dist_calf = np.linalg.norm(self.wolves - self.calves[j], axis=1)
                 rel_def = self.wolves - self.cows[d]
                 cos_def = (rel_def / np.maximum(np.linalg.norm(rel_def, axis=1)[:, None], 1e-9)) @ fdef
                 flank = (dist_calf <= self.capture_radius) & (cos_def < cos_cone)
-                if flank.sum() >= 1:
-                    self.status = "predation"
-                    self._record_capture_calf(j, np.where(flank)[0], float(dist_calf.min()))
-                    return True, False
+            else:
+                flank = dist_calf <= self.capture_radius
+            if flank.sum() >= 1:
+                self.calf_alive[j] = False
+                self.n_depredadas += 1
+                self._add_capture(self._make_capture_calf(j, np.where(flank)[0], float(dist_calf.min())))
+                if self.pack_prey_kind == "calf" and self.pack_prey == j:
+                    prey_killed = True
 
-        # 2) Depredación de ADULTA por FLANQUEO: >= n_min_adult lobos a la vez dentro de capture_radius
-        #    y FUERA de su cono (no puede dar la cara a todos). Con 1 lobo, va encarado -> no muere.
-        if self.n_wolves > 0:
+        # Adultas cazables: >= n_min_adult flanqueadores a la vez (fuera del cono). Con 1 lobo no muere.
+        cazable = self.cow_alive & ~self.cow_safe
+        if cazable.any():
             f = self._heading_units()                                  # (nc, 2)
             rel = self.wolves[None, :, :] - self.cows[:, None, :]      # (nc, nw, 2)
             dist = np.linalg.norm(rel, axis=2)                         # (nc, nw)
             rhat = rel / np.maximum(dist[:, :, None], 1e-9)
             cosphi = np.einsum('ij,ikj->ik', f, rhat)                 # (nc, nw)
             flankers = (dist <= self.capture_radius) & (cosphi < cos_cone)
-            count = flankers.sum(axis=1)                              # flanqueadores por vaca
-            if count.max() >= self.n_min_adult:
-                self.status = "predation"
-                self._record_capture(dist, flankers, count)
-                return True, False
+            count = flankers.sum(axis=1)
+            count[~cazable] = 0                                        # las no cazables no mueren
+            for ci in np.where(count >= self.n_min_adult)[0]:
+                self.cow_alive[ci] = False
+                self.n_depredadas += 1
+                self._add_capture(self._make_capture_adult(int(ci), dist, flankers, int(count[ci])))
+                if self.pack_prey_kind == "adult" and self.pack_prey == ci:
+                    prey_killed = True
+        return prey_killed
 
-        # 3) Éxito: todas las vacas dentro de la zona segura y todos los lobos fuera.
-        cows_safe = self._in_safe_zone(self.cows).all()
-        wolves_out = (~self._in_safe_zone(self.wolves)).all()
-        if cows_safe and wolves_out:
-            self.status = "success"
+    def _check_terminal(self) -> tuple[bool, bool]:
+        """Terminal del episodio de escolta (3 estados). El episodio se RESUELVE cuando no queda
+        ninguna res cazable (todas a salvo o cazadas), o por tiempo.
+          - ÉXITO        = todas las reses vivas a salvo, ninguna cazada y ningún lobo dentro del establo.
+          - DEPREDACIÓN  = se resuelve / agota el tiempo con >= 1 res cazada (cuanta más, peor).
+          - TIMEOUT      = se agota max_episode_steps sin éxito y sin cazadas."""
+        in_play = int((self.cow_alive & ~self.cow_safe).sum() + (self.calf_alive & ~self.calf_safe).sum())
+        wolf_in_establo = bool(self.n_wolves > 0 and self._in_safe_zone(self.wolves).any())
+
+        if in_play == 0:                                  # todas las reses resueltas (a salvo o cazadas)
+            self.status = "success" if (self.n_depredadas == 0 and not wolf_in_establo) else "predation"
+            self.terminal_step = self.step_count
             return True, False
-
-        # 4) Fin por tiempo.
-        if self.step_count >= self.max_steps:
-            self.status = "timeout"
+        if self.step_count >= self.max_episode_steps:     # se acaba el tiempo
+            self.status = "predation" if self.n_depredadas >= 1 else "timeout"
+            self.terminal_step = self.step_count
             return False, True
-
         return False, False
 
-    def _record_capture(self, dist: np.ndarray, flankers: np.ndarray, count: np.ndarray) -> None:
-        """Procedencia de la captura por flanqueo: qué vaca, cuántos flanqueadores, si era la débil."""
-        ci = int(np.argmax(count))                       # vaca tumbada
+    def _terminal_info(self, terminal: bool) -> dict:
+        """Resumen que devuelve step(): estado + fase + contadores (n_safe, n_depredadas, n_fuera)."""
+        n_safe = int(self.cow_safe.sum() + self.calf_safe.sum())
+        n_fuera = int((self.cow_alive & ~self.cow_safe).sum() + (self.calf_alive & ~self.calf_safe).sum())
+        return {
+            "status": self.status, "phase": self.phase,
+            "n_safe": n_safe, "n_depredadas": int(self.n_depredadas), "n_fuera": n_fuera,
+            "terminal_step": self.terminal_step if terminal else None,
+        }
+
+    def _add_capture(self, cap: dict) -> None:
+        self.captures.append(cap)
+        self.capture_info = cap          # capture_info = última captura (compat con la instrumentación)
+
+    def _make_capture_adult(self, ci: int, dist: np.ndarray, flankers: np.ndarray, n_flankers: int) -> dict:
+        """Procedencia de una captura de ADULTA por flanqueo."""
         fl = np.where(flankers[ci])[0]
-        self.capture_info = {
-            "step": self.step_count, "kind": "adult", "prey_idx": ci,
-            "n_flankers": int(count[ci]), "flankers": fl.tolist(),
+        return {
+            "step": self.step_count, "kind": "adult", "prey_idx": int(ci),
+            "n_flankers": int(n_flankers), "flankers": fl.tolist(),
             "is_pack_prey": bool(self.pack_prey_kind == "adult" and ci == self.pack_prey),
             "is_weakest": bool(ci == int(np.argmin(self.cow_speeds))),
             "min_wolf_dist": float(dist[ci].min()),
         }
 
-    def _record_capture_calf(self, j: int, flankers: np.ndarray, min_dist: float) -> None:
-        """Procedencia de la captura de un TERNERO: qué ternero, su defensora, flanqueadores."""
-        self.capture_info = {
+    def _make_capture_calf(self, j: int, flankers: np.ndarray, min_dist: float) -> dict:
+        """Procedencia de una captura de TERNERO (su defensora + flanqueadores)."""
+        return {
             "step": self.step_count, "kind": "calf", "prey_idx": int(j),
             "defender_idx": int(self.calf_defender[j]),
             "n_flankers": int(len(flankers)), "flankers": [int(x) for x in flankers],
@@ -917,13 +1066,17 @@ class World:
         self._prey_close_count, self._prey_flanker_count = n_close, n_flank
         quorum_n = 1 if self.pack_prey_kind == "calf" else self.n_min_adult
 
-        # Coordinación: nº de presas distintas (adultas + terneros) atacadas a la vez (lobo a <= r_face_safe).
-        targets = np.vstack([self.cows, self.calves]) if self.n_calves > 0 else self.cows
-        d_all = np.linalg.norm(targets[:, None, :] - self.wolves[None, :, :], axis=2)
-        n_targets = int((d_all.min(axis=1) <= self.r_face_safe).sum())
-        self.max_simul_targets = max(self.max_simul_targets, n_targets)
-        self._simul_sum += n_targets
-        self._simul_steps += 1
+        # Coordinación: nº de presas CAZABLES distintas atacadas a la vez (lobo a <= r_face_safe).
+        parts = [self.cows[self.cow_alive & ~self.cow_safe]]
+        if self.n_calves > 0:
+            parts.append(self.calves[self.calf_alive & ~self.calf_safe])
+        targets = np.vstack(parts)
+        if targets.shape[0]:
+            d_all = np.linalg.norm(targets[:, None, :] - self.wolves[None, :, :], axis=2)
+            n_targets = int((d_all.min(axis=1) <= self.r_face_safe).sum())
+            self.max_simul_targets = max(self.max_simul_targets, n_targets)
+            self._simul_sum += n_targets
+            self._simul_steps += 1
 
         # Primer instante de quórum: la muerte DEBERÍA dispararse aquí (se rellena 'killed' tras terminal).
         if n_flank >= quorum_n and self.flank_first_quorum is None:
@@ -1039,13 +1192,21 @@ class World:
             "t": self.step_count * self.dt,
             "cows": self.cows.copy(),
             "cow_heading": self.cow_heading.copy(),
+            "cow_safe": self.cow_safe.copy(),
+            "cow_alive": self.cow_alive.copy(),
             "calves": self.calves.copy(),
             "calf_defender": self.calf_defender.copy(),
+            "calf_safe": self.calf_safe.copy(),
+            "calf_alive": self.calf_alive.copy(),
             "wolves": self.wolves.copy(),
             "drones": self.drones.copy(),
             "prey_pos": prey_pos,                # posición de la presa fijada (realce), o None
             "prey_cone_pos": cone_pos,           # centro del cono que la defiende (para colorear lobos)
             "prey_cone_head": cone_head,
             "prey_is_calf": bool(self.pack_prey_kind == "calf"),
+            "phase": self.phase,                 # VIGILANCIA / ESCOLTA
+            "n_safe": int(self.cow_safe.sum() + self.calf_safe.sum()),
+            "n_depredadas": int(self.n_depredadas),
+            "n_fuera": int((self.cow_alive & ~self.cow_safe).sum() + (self.calf_alive & ~self.calf_safe).sum()),
             "status": self.status,
         }

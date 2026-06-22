@@ -4,18 +4,18 @@
 > decisiones tomadas, las herramientas, el plan, las referencias y —muy importante— las
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
-> **Última actualización:** **Tres retoques pre-escolta** sobre el modelo "dar la cara" + presa común:
-> (1) **rebaño más repartido al pastar** (sube `r_separation`→0.55·`cow_spread` y `cow_spread`→0.20·min):
-> vecino más cercano medio **6.1→10.2 m**; (2) **lobos salen AGRUPADOS de un sector** del perímetro
-> (`_spawn_wolves_sector`, sorteado por episodio): la manada llega junta y de una dirección, y se
-> aleatoriza la **dirección de ataque** entre episodios (avanza bandera #4); dispersión del cúmulo
-> ~4 m; (3) **el lobo BORDEA el rebaño** en vez de atravesarlo: si las no-presa se interponen entre
-> lobo y presa, una **componente tangencial** (`wolf_skirt_gain`) lo hace arquear alrededor del cúmulo
-> hasta el costado de la presa — verificado: con el rebaño en medio, dist mín lobo→presa **45.7 m (sin
-> rodeo) → 6.0 m (con rodeo)**. Sin regresiones: lobo solo vs adulta 0, manada flanquea→muere, ternero
-> 38/40, lobo solo vs ternero **0%**, firmeza intacta, batería 4/2/2. **NO se tocó** flanqueo/cono/muerte
-> /fijación de presa en t=0. Tasa sin drones ≈ **88%** (medida, NO objetivo; v1 congelado=49% OBSOLETO,
-v2 tras la escolta).
+> **Última actualización:** **Escolta · paso 1 — el TERMINAL (el "juez").** Antes de añadir guiado al
+> refugio (bandera #13), se construye y verifica el terminal del episodio: **máquina de fases**
+> `VIGILANCIA→ESCOLTA` (disparador: lobo dentro de `r_escort_trigger` del centroide del rebaño vivo,
+> sin retorno, informativa) + **terminal de 3 estados** evaluado cada step — **ÉXITO** (todas las reses
+> vivas a salvo, ninguna cazada, ningún lobo dentro), **DEPREDACIÓN** (≥1 res cazada; **multi-muerte**:
+> una captura ya NO termina el episodio → cuenta `n_depredadas`), **TIMEOUT** (`max_episode_steps`). Dos
+> ganchos: (a) res en el establo = **a salvo** y no cazable (histéresis `refuge_margin`); (b) presa
+> refugiada → la manada **re-selecciona** (única re-fijación). **Exclusión del lobo** re-asegurada tras
+> el cono. Render: fase + reses refugiadas (verde) / cazadas (gris) + **banner del terminal**. Verificado
+> en **`escort_check.py` (7 tests)** + **sin regresiones** (`face_check` 12/`battery_check` 4/2/2 verdes).
+> Drones aún quietos, **SIN guiado** (es el paso 2). Tasa sin drones ≈ **88%** (medida; v1 congelado=49%
+> OBSOLETO, v2 al final de la escolta).
 
 ---
 
@@ -254,20 +254,37 @@ Diseño de referencia (sigue válido):
   seguridad por construcción del ratio 2:1 solo vale en patrulla; persiguiendo se puede quedar
   tirado).
 
-### 4.4. Estructura de episodio y criterio de éxito (DECIDIDO)
+### 4.4. Estructura de episodio + TERMINAL (el "juez")  ✅ IMPLEMENTADO (guiado PENDIENTE)
 
-Tarea **episódica** (terminal claro, bueno para RL):
+Tarea **episódica** (terminal claro, bueno para RL). **Máquina de fases** (`world.phase`):
 
-`Fase 0 vigilancia` (vacas pastando, drones monitorizando) → **disparador** (aparece el lobo y se
-aproxima) → `Fase 1 escolta/defensa` (collares conducen al refugio, drones apantallan y disuaden)
-→ **terminal**.
+`VIGILANCIA` (vacas pastando, drones monitorizando) → **disparador** (un lobo entra en
+`r_escort_trigger` del centroide del rebaño vivo) → `ESCOLTA` → **terminal**. La fase es informativa y
+**no vuelve atrás**; es el **seam** para el guiado del paso siguiente (todavía NO cambia la dinámica).
 
-- **ÉXITO** = todas las vacas dentro de la zona segura **y** todos los lobos fuera del recinto.
-- **FRACASO/parcial** = vacas cazadas; **cuantas más cace el lobo, más negativo**.
-- Clavar: qué pasa si un lobo entra en el recinto tras las vacas (por eso "lobos fuera" importa),
-  y un **límite de tiempo** para que el episodio no sea infinito.
-- La **disuasión (ladrido)** es una **táctica durante la escolta** (ganar tiempo subiendo la
-  `d_safe` del lobo), no la condición de victoria. La victoria es resguardar.
+**Terminal (3 estados, evaluado cada step; multi-muerte: una captura ya NO termina el episodio):**
+- **ÉXITO** = todas las reses **vivas** a salvo (refugiadas) **y** ninguna cazada **y** ningún lobo
+  dentro del establo.
+- **DEPREDACIÓN** (fracaso/parcial) = se resuelve / agota el tiempo con **≥ 1 res cazada**. Cuanta
+  más, peor → se devuelve como **cuenta** (`n_depredadas`); el escalado de recompensa es de la Fase 3.
+- **TIMEOUT** = se agota `max_episode_steps` sin éxito y sin cazadas (p. ej. lobo solo que no puede).
+- El episodio **se RESUELVE** cuando no queda ninguna res cazable (todas a salvo o cazadas) o por tiempo.
+  `step()`/`info` devuelven **estado, n_safe, n_depredadas, n_fuera, terminal_step**.
+
+**Dos ganchos del refugio** (lo único que toca el flanqueo/presa, por diseño):
+- (a) Toda res que entra al establo se marca **a salvo** (`cow_safe`/`calf_safe`, con histéresis de
+  borde `refuge_margin`) y sale del conjunto **cazable** (`_select_prey` y el flanqueo la ignoran; se
+  congela dentro del establo, no se la expulsa).
+- (b) Si la **presa fijada** se refugia, la manada **re-selecciona** presa — la **ÚNICA re-fijación**
+  permitida (`n_refix`+1 solo al refugiarse; la muerte de la presa también re-selecciona, pero no cuenta).
+
+**Exclusión del lobo (clamp #5):** ningún lobo entra nunca al establo; el empuje del cono (vacas que
+pastan cerca del borde) podría meterlo, así que se re-aplica el clamp como ÚLTIMA palabra del step.
+
+- `r_escort_trigger`=0.30·min(W,H); `max_episode_steps`=`episode_time_factor`·diag/`cow_speed`/`dt`
+  (~4× el tiempo de cruzar el campo a `cow_speed`); `refuge_margin`=0.1·`safe_radius`. Sin números mágicos.
+- La **disuasión (ladrido)** es una **táctica durante la escolta** (ganar tiempo), no la condición de
+  victoria. La victoria es resguardar. (Guiado al refugio + drones + disuasión = PASOS SIGUIENTES.)
 
 ---
 
@@ -401,13 +418,14 @@ el DGX va sobrado.
 ## 9. Estado actual del código
 
 Carpeta `AI_LAB/` (proyecto Python local). Estructura:
-- `world.py` — clase `World`: estado, dinámica, recompensa, terminal. **Sin** ROS/render dentro.
-- `render.py` — animación matplotlib (por reproducción: lee estado, nunca llama a `step`). Dibuja el **cono** como cuña ±45°, colorea los lobos por su relación con el cono de la presa, realza la **presa fijada**, y pinta **terneros** (color propio) con **línea a su defensora** (realzada).
+- `world.py` — clase `World`: estado, dinámica, recompensa, **terminal de escolta + máquina de fases**. **Sin** ROS/render dentro.
+- `render.py` — animación matplotlib (por reproducción: lee estado, nunca llama a `step`). Dibuja el **cono** como cuña ±45°, colorea los lobos por su relación con el cono de la presa, realza la **presa fijada**, pinta **terneros** (color propio) con **línea a su defensora**, **colorea las reses refugiadas (verde) / cazadas (gris)**, muestra la **FASE** y un **banner del terminal** (ÉXITO/DEPREDACIÓN/TIMEOUT + contadores).
 - `coordinators.py` — `DummyCoordinator` (ignora obs, devuelve "todos quietos"); reflejo trivial y MARL después.
-- `main.py` — bucle: reset → obs → coordinador → acciones → step → terminal → métricas.
+- `main.py` — bucle: reset → obs → coordinador → acciones → step → terminal → métricas (incluye fase final, n_safe/n_depredadas/n_fuera).
 - `baseline.py` — **adversario congelado** (config + seeds + métrica de referencia); `build_baseline_world(seed)` y self-check de deriva.
 - `battery_check.py` — verificación macro del subsistema de batería (régimen permanente 4/2/2, escalonado, reproducible).
-- `face_check.py` — verificación del modelo (12 tests): lobo solo no mata adultas, manada flanquea, **retoque** (presa expuesta), **terneros** (manada caza al ternero / lobo-solo-vs-ternero disputado / 2 terneros), coordinación, instrumentación de #3, tembleque, tasa range(100), **espaciado del rebaño (#1)**, **spawn de lobos por sector (#2)**, **rodeo del rebaño (#3)**, reproducibilidad.
+- `face_check.py` — verificación del modelo (12 tests): lobo solo no mata adultas, manada flanquea, **retoque** (presa expuesta), **terneros** (manada caza al ternero / lobo-solo-vs-ternero disputado / 2 terneros), coordinación, instrumentación de #3, tembleque, tasa range(100), **espaciado del rebaño (#1)**, **spawn de lobos por sector (#2)**, **rodeo del rebaño (#3)**, reproducibilidad. *(Las muertes se detectan por `captures`, ya que la depredación NO termina el episodio; cap de pasos corto.)*
+- `escort_check.py` — verificación del **TERMINAL de escolta** (7 tests): ÉXITO / DEPREDACIÓN / TIMEOUT forzados, **refugio = soltar presa** (re-fijación solo al refugiarse), **exclusión del lobo** (nunca dentro del establo), reproducibilidad, y **sin regresiones** (corre `face_check.py` + `battery_check.py`). Guarda una animación por terminal.
 
 Decisiones de diseño ratificadas:
 - **Rama clásica = reflejo trivial, NO un FSM completo** (descartado por coste de programar/afinar
@@ -532,9 +550,10 @@ movimiento de drones todavía (el relevo es un swap de puesto instantáneo).
     capa de guiado; implementar un **EKF/filtro de partículas** para estimar la trayectoria del
     lobo a partir de detecciones ruidosas (análogo al MCL de la asignatura — el GPS da la
     posición propia, así que la estimación es del *lobo*, no del ego).
-13. **Tests del "juez".** Conviene añadir tests que fuercen cada terminal (vaca en zona segura →
-    success; lobo encima de vaca → predation; agotar tiempo → timeout). Verificar el terminal
-    antes de construir comportamientos encima.
+13. ✅ **RESUELTA — Tests del "juez".** El terminal de escolta (3 estados + contadores) y la máquina
+    de fases VIGILANCIA→ESCOLTA están **implementados y verificados** (`escort_check.py`, 7 tests:
+    ÉXITO/DEPREDACIÓN/TIMEOUT forzados, refugio=soltar presa, exclusión del lobo, reproducibilidad,
+    sin regresiones). Hecho ANTES del guiado al refugio. Ver §4.4.
 
 ---
 
@@ -547,12 +566,20 @@ más expuesta), **bordea el rebaño** si se interpone y va a por ella desde el p
 **al lado** de su madre, muere con 1 flanqueador, la adulta con `n_min_adult`. Movimiento firme.
 Verificado en `face_check.py` (12 tests); tasa **88%** sin drones (no perseguida).
 
-**Siguiente paso = ESCOLTA / capa de movimiento** (ya con los drones): collares que conducen el rebaño
-al refugio (guided herding), drones que **apantallan/disuaden** (pantalla protectora); activa los hooks
-de batería (travel-time del relevo, hueco de cobertura, coste de persecución, dron tirado). Luego:
-percepción (sustituto rápido) → coordinador clásico (**reflejo trivial**) → MARL → comparación.
-**Congelar baseline v2** cuando la dinámica vaca/lobo quede definitiva (es decir, tras decidir si se
-afina el caso lobo-solo-vs-ternero, hoy 0%).
+**Escolta · paso 1 HECHO — el TERMINAL (el "juez").** Máquina de fases VIGILANCIA→ESCOLTA + terminal de
+3 estados (ÉXITO/DEPREDACIÓN/TIMEOUT) con contadores (`n_safe`/`n_depredadas`/`n_fuera`), multi-muerte,
+ganchos de refugio (res a salvo = no cazable; presa refugiada → re-selección) y exclusión del lobo.
+Verificado en `escort_check.py` (7 tests) + sin regresiones (`face_check`/`battery_check` verdes). Drones
+todavía quietos (DummyCoordinator), aún SIN guiado. Ver §4.4.
+
+**Escolta · paso 2 (SIGUIENTE) = GUIADO al refugio.** Collares que conducen el rebaño al establo
+(guided herding: `k_herd_to_refuge`, suprimir el wander de calma en ESCOLTA, etc.) para que la fase
+ESCOLTA de verdad mueva a las vacas al refugio (y el terminal de ÉXITO sea alcanzable sin forzar).
+Después: drones que **apantallan/disuaden** (pantalla protectora) + hooks de batería (travel-time,
+hueco de cobertura, coste de persecución, dron tirado). Luego: percepción (sustituto rápido) →
+coordinador clásico (**reflejo trivial**) → MARL → comparación. **Congelar baseline v2** al FINAL de la
+escolta (con guiado + drones + disuasión), reescribiendo `baseline.py` y aterrizando el ~50% sin drones
+con el adversario completo.
 
 *(Pendiente de decisión menor, NO en este paso: lobo solo vs ternero salió 0% — la madre frena siempre.
 Si se quiere que sea disputado (a veces se cuela), afinar `face_cooldown`/`r_face_safe`. Parámetros del

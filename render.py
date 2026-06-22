@@ -66,7 +66,19 @@ def render_episode(world, history, interval: int = 40, save_path: str | None = N
                             edgecolors="royalblue", label="drones reserva")
     txt = ax.text(0.02, 0.98, "", transform=ax.transAxes, va="top", fontsize=9,
                   bbox=dict(boxstyle="round", fc="white", alpha=0.8))
+    # Banner del terminal (ÉXITO / DEPREDACIÓN / TIMEOUT + contadores), visible al resolverse.
+    banner = ax.text(0.5, 0.02, "", transform=ax.transAxes, ha="center", va="bottom",
+                     fontsize=12, weight="bold", color="white", zorder=10,
+                     bbox=dict(boxstyle="round", fc="gray", alpha=0.9))
     ax.legend(loc="upper right", fontsize=7)
+
+    # Colores de las reses según su estado: en juego (marrón) / refugiada (verde) / cazada (gris).
+    def _herd_colors(alive, safe, base):
+        return [("dimgray" if not a else ("forestgreen" if s else base))
+                for a, s in zip(alive, safe)]
+
+    _TERMINAL = {"success": ("ÉXITO", "forestgreen"), "predation": ("DEPREDACIÓN", "firebrick"),
+                 "timeout": ("TIMEOUT", "darkorange")}
 
     def update(frame):
         snap = history[frame]
@@ -77,6 +89,8 @@ def render_episode(world, history, interval: int = 40, save_path: str | None = N
         calves = snap["calves"]
         cdef = snap["calf_defender"]
         cow_sc.set_offsets(cows)
+        # Color por estado: refugiadas (verde) y cazadas (gris) se distinguen de las en juego.
+        cow_sc.set_color(_herd_colors(snap["cow_alive"], snap["cow_safe"], "saddlebrown"))
 
         # Cuña del cono frontal: centrada en cada vaca, orientada a su heading, radio r_face_safe.
         for i in range(len(cows)):
@@ -86,6 +100,8 @@ def render_episode(world, history, interval: int = 40, save_path: str | None = N
 
         # Terneros + línea a su defensora + realce de la madre.
         calf_sc.set_offsets(calves if len(calves) else empty)
+        if len(calves):
+            calf_sc.set_color(_herd_colors(snap["calf_alive"], snap["calf_safe"], "navajowhite"))
         defender_hl.set_offsets(cows[cdef] if len(cdef) else empty)
         for k, ln in enumerate(calf_lines):
             ln.set_data([calves[k, 0], cows[cdef[k], 0]], [calves[k, 1], cows[cdef[k], 1]])
@@ -114,10 +130,19 @@ def render_episode(world, history, interval: int = 40, save_path: str | None = N
         cow_box.set_bounds(xmin, ymin, xmax - xmin, ymax - ymin)
 
         prey_lbl = "ternero" if snap["prey_is_calf"] else ("adulta" if prey_pos is not None else "-")
-        txt.set_text(f"t={snap['t']:.1f}s   paso={snap['step']}   lobos={len(wolves)}   "
-                     f"terneros={len(calves)}   presa={prey_lbl}   estado={snap['status']}")
+        txt.set_text(f"FASE: {snap['phase']}    t={snap['t']:.1f}s   paso={snap['step']}   "
+                     f"lobos={len(wolves)}   presa={prey_lbl}\n"
+                     f"a salvo={snap['n_safe']}   cazadas={snap['n_depredadas']}   fuera={snap['n_fuera']}")
+
+        # Banner del terminal: aparece cuando el episodio se ha resuelto (status != running).
+        if snap["status"] in _TERMINAL:
+            label, color = _TERMINAL[snap["status"]]
+            banner.set_text(f"{label}   ·   a salvo {snap['n_safe']} / cazadas {snap['n_depredadas']} / fuera {snap['n_fuera']}")
+            banner.get_bbox_patch().set_facecolor(color)
+        else:
+            banner.set_text("")
         return (cow_sc, calf_sc, prey_hl, defender_hl, wolf_sc, active_sc, reserve_sc,
-                cow_box, txt, *cone_polys, *calf_lines)
+                cow_box, txt, banner, *cone_polys, *calf_lines)
 
     anim = FuncAnimation(fig, update, frames=len(history),
                          interval=interval, blit=False, repeat=False)
