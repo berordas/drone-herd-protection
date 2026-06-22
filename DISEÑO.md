@@ -4,14 +4,17 @@
 > decisiones tomadas, las herramientas, el plan, las referencias y —muy importante— las
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
-> **Última actualización:** **TERNEROS + defensoras** (objetivo blando) + retoque de presa. Si hay
-> terneros (0/1/2 por episodio), la presa es un ternero (override; basta 1 lobo) con una adulta
-> DEFENSORA fija; el flanco que la madre no cubre llega a la cría → muere con **1 flanqueador**. Sin
-> terneros, la presa es ahora la adulta más **EXPUESTA** (lejos del centroide del rebaño = del borde),
-> no la céntrica. Verificado (`face_check.py`): manada caza al ternero (36/40), lobo solo vs ternero
-> **disputado = 0%** (la madre frena; spec: reportar, no tunear), retoque OK (presa a 14.9 m vs media
-> 10.3), firmeza intacta. Render: terneros en color, línea a la madre, realce de defensora. Tasa sin
-> drones = **85%** (sube por el ternero blando; no se persigue). Baseline v1 ya no aplica.
+> **Última actualización:** **Tres retoques de pulido** sobre terneros + defensoras + presa común:
+> (1) el **ternero se coloca AL LADO de la defensora** (no encima): muelle a longitud natural =
+> `calf_personal_space` (~1.5 m), verificado dist media **1.46 m**; (2) la **presa se fija en t=0**
+> (no al acercarse el lobo): la manada va a por ella desde el primer paso, y se quita el abandono por
+> distancia (`prey_abandon_dist` DEPRECADO) → re-fijaciones **0**; sin presa solo el lobo solo sin
+> ternero (standoff); (3) **vacas mucho más quietas al pastar**: el deambular ya NO se normaliza a
+> tope (antes pastaban a `cow_speed` siempre); ahora `wander_calm` fija la rapidez de pastoreo →
+> desplazamiento/paso **0.019 m** vs 0.120 a tope. Sin regresiones: lobo solo vs adulta 0, manada
+> flanquea→muere, ternero 38/40, lobo solo vs ternero **0%** (madre frena; reportar, no tunear),
+> firmeza intacta, batería 4/2/2. Tasa sin drones = **88%** (se movió +3 pp por los retoques; no se
+> persigue). Render sin cambios (terneros en color + línea a la madre + realce de defensora).
 
 ---
 
@@ -124,9 +127,13 @@ rules…"*, Behavioural Processes 88(3), 192–197) pero lo hace **DIRECCIONAL**
    varios, el más accesible al centroide de lobos). Si NO → la adulta más **EXPUESTA** = la más LEJOS
    del centroide del **rebaño** (la del borde/descolgada; la "más céntrica" estaba protegida por las
    demás — era la queja). La lentitud reengancha **emergente** (la lenta se queda en el borde).
-   **Fijación** en modo caza (con ternero basta **1 lobo**; sin ternero, ≥ `n_min_adult`) y un lobo a
-   ≤ `r_notice` de la presa. **Histéresis**: se mantiene hasta volverse **inviable** (se refugia, o
-   escapa > `prey_abandon_dist`; `prey_abandon_dist` > `r_notice`). Verificado: re-fijaciones ≈ 0.
+   **Fijación en t=0** (`_commit_initial_prey` en el reset, no se espera a que un lobo cruce
+   `r_notice`): en modo caza (con ternero basta **1 lobo**; sin ternero, ≥ `n_min_adult`) la manada
+   elige la presa y va a por ella **desde el primer paso**; el lobo solo sin ternero no se compromete.
+   Se **mantiene** todo el episodio: solo se suelta si se **refugia** (zona prohibida). Se quitó el
+   abandono por distancia (`prey_abandon_dist` **DEPRECADO**: parche de la fijación tardía; con la
+   presa fija en t=0 empieza lejos —los lobos entran del perímetro— y no debe abandonarse por eso).
+   Verificado: re-fijaciones **= 0**.
 2. **Aproximación respetando el cono frontal:** si el lobo está **en el cono** de la presa (±45°)
    **circula** hacia el flanco manteniendo `r_face_safe`; si está en el **flanco/grupa** **cierra a
    matar**. El standoff de Muro pasa de omnidireccional a **solo en el cono**.
@@ -142,8 +149,8 @@ rules…"*, Behavioural Processes 88(3), 192–197) pero lo hace **DIRECCIONAL**
   **defensora** (la madre encara a uno; un lobo por el flanco que no cubre llega a la cría).
 **Instrumentado (#3)** (`_instrument_flanking`): cuenta lobos en `capture_radius` y flanqueadores
 válidos (umbral 1 para ternero, `n_min_adult` para adulta), primer quórum y si dispara la muerte, y
-desglosa los "toques". **Confirmado: 84/84 con quórum → muerte** (era síntoma de #2). **TERNEROS**
-(§4.2): la manada caza al ternero 36/40; **lobo solo vs ternero = 0%** (la madre siempre frena con los
+desglosa los "toques". **Confirmado: con quórum → muerte** (era síntoma de #2). **TERNEROS**
+(§4.2): la manada caza al ternero 38/40; **lobo solo vs ternero = 0%** (la madre siempre frena con los
 parámetros actuales; spec: reportar, **no tunear** `face_cooldown`/`r_face_safe` aquí).
 
 **Número de lobos aleatorio por episodio** (1–5): de lobo solitario (no puede) a manada (sí puede).
@@ -161,17 +168,22 @@ disperso y heterogeneidad de velocidad.)*
 
 **🐮 TERNEROS (0/1/2) + DEFENSORAS  ✅ IMPLEMENTADO:** nº de terneros sorteado en el reset (RNG
 sembrado, fijo en el episodio; array `calves`). Cada ternero recibe en el spawn una adulta
-**defensora** fija (`calf_defender`, su "madre"). El **ternero** se pega a su defensora (cohesión
-`k_calf_cohesion`) + deambular leve, con inercia; **NO encara, NO huye** (indefenso; su protección es
-la madre). La **defensora** se ancla a su cría (`k_defender_anchor`) y la encara con la lógica normal
-de encare — sin maniobras de interposición, solo "quédate con tu cría y dale la cara". El lobo
+**defensora** fija (`calf_defender`, su "madre"), y nace **a un lado** de ella (a `calf_personal_space`,
+no encima). El **ternero** se mantiene **AL LADO** de su defensora mediante un **muelle a longitud
+natural = `calf_personal_space`** (~1.5 m; tira si se aleja, separa si se le echa encima) + deambular
+leve, con inercia; **NO encara, NO huye** (indefenso; su protección es la madre). La **defensora** se
+ancla a su cría con el **mismo muelle recíproco** (`k_defender_anchor`) → se queda junto a ella
+(dist media verificada **1.46 m**) y la encara con la lógica normal — sin interposición, solo
+"quédate junto a tu cría y dale la cara". El lobo
 prefiere al ternero (override en `_select_prey`) y, al rodear el cono de la madre, el flanco que ella
 no cubre llega a la cría → muere con **1 flanqueador**. **Nota (a verificar, NO tunear):** lobo solo
 vs ternero salió **0%** (la madre frena siempre con los parámetros actuales); se afina en otro paso.
 
-- **Pasto (sin amenaza cerca):** disperso y tranquilo = separación + **deambular firme** (paseo
-  **angular lento** del rumbo, no aleatorio fresco cada paso) + valla blanda. **SIN cohesión/apiñamiento
-  y SIN huida.**
+- **Pasto (sin amenaza cerca):** disperso, tranquilo y **casi quieto** = separación + **deambular firme**
+  (paseo **angular lento** del rumbo) + valla blanda. **SIN cohesión/apiñamiento y SIN huida.** La suma
+  de fuerzas ya **NO se normaliza a `cow_speed`** (antes pastaban a tope siempre); su **magnitud** es la
+  rapidez (capada a `cow_speed`), así que `wander_calm` fija la rapidez de pastoreo (verificado
+  **0.019 m/paso** vs 0.120 a tope), mientras separación/valla/ancla siguen reaccionando fuerte.
 - **Dirección de confrontación (`cow_heading`, estado nuevo):** con un lobo dentro de `r_notice`, la
   vaca **gira a encarar** al más amenazante (el más cercano que se acerca) a velocidad angular máx
   `turn_rate` (suave, no salto instantáneo).
@@ -185,10 +197,11 @@ vs ternero salió **0%** (la madre frena siempre con los parámetros actuales); 
   objetivo del lobo (sin terneros).
 - **Inercia (bandera #1, ahora para vaca y lobo):** llevan **velocidad en el estado**; el
   desplazamiento suaviza la dirección hacia la deseada (no salta). Movimiento **firme**, verificado:
-  giro medio ~**0.10 rad/paso** (vacas) y ~**0.10** (lobos); la vibración daría ~π/2.
+  giro medio ~**0.05 rad/paso** (vacas, terneros y lobos); la vibración daría ~π/2.
 - **Verificación (`face_check.py`):** 1) lobo solo → 0 muertes, lo mantiene a `r_standoff`=12 m;
   2) manada → encara a uno, los demás flanquean, **muere la débil** con ≥2 flanqueadores; 3) métrica
-  de tembleque baja; 4) **tasa sin drones = 83%** (no se persigue); 5) reproducible.
+  de tembleque baja + pastoreo casi quieto (0.019 m/paso); 4) **tasa sin drones = 88%** (no se
+  persigue); 5) reproducible.
 - **Escolta — PENDIENTE:** **collares** conducen el rebaño al refugio; **drones escoltan** (pantalla
   + disuasión). "Escolta" = proteger el traslado, no empujar.
 
@@ -388,17 +401,21 @@ Decisiones de diseño ratificadas:
   → el flanco queda abierto. Débil = la más LENTA (`cow_speed_jitter`).
 - **Terneros (0/1/2) + defensoras:** presa preferente (override en `_select_prey`); cada ternero con
   una adulta defensora fija que lo encara; el flanco no cubierto llega a la cría → muere con **1
-  flanqueador**. Ternero pegado a la madre (cohesión + inercia, no encara/no huye).
-- **Lobo direccional con PRESA COMÚN:** la manada fija UNA presa (`pack_prey`/`pack_prey_kind`): un
-  **ternero** si lo hay, si no la adulta más **EXPUESTA** (lejos del centroide del rebaño). La
-  **mantiene** (histéresis: abandona si se refugia o escapa > `prey_abandon_dist`). Respeta el cono
-  (circula a `r_face_safe`) y cierra por el flanco. Modo caza: ternero → basta **1 lobo**; adulta →
-  ≥ `n_min_adult`=2. Repulsión → **pincer**. Inercia en vaca/lobo/ternero → movimiento **firme**.
+  flanqueador**. Ternero **AL LADO** de la madre (muelle a `calf_personal_space` ~1.5 m, recíproco con
+  el anclaje de la defensora; + inercia; no encara/no huye).
+- **Lobo direccional con PRESA COMÚN:** la manada fija UNA presa **en t=0** (`_commit_initial_prey`):
+  un **ternero** si lo hay, si no la adulta más **EXPUESTA** (lejos del centroide del rebaño); va a por
+  ella **desde el primer paso**. La **mantiene** todo el episodio (solo la suelta si se **refugia**;
+  abandono por distancia DEPRECADO). Respeta el cono (circula a `r_face_safe`) y cierra por el flanco.
+  Modo caza: ternero → basta **1 lobo**; adulta → ≥ `n_min_adult`=2. Repulsión → **pincer**. Inercia en
+  vaca/lobo/ternero → movimiento **firme**; el pastoreo en calma es **casi quieto** (magnitud del
+  deambular = rapidez, ya no se normaliza a tope).
 - **Instrumentación de #3** (`_instrument_flanking`): flanqueadores válidos (umbral 1 ternero /
   `n_min_adult` adulta), primer quórum→muerte, desglose de toques, presas atacadas a la vez.
-- **Verificado (`face_check.py`):** lobo solo vs adulta = **0**; manada flanquea→muere (#3 quórum→muerte
-  84/84); **retoque** presa expuesta (14.9 vs 10.3 m); **ternero**: manada caza 36/40, **lobo solo vs
-  ternero 0%** (madre frena; reportado, sin tunear); firmeza intacta; **tasa 85%**; reproducible.
+- **Verificado (`face_check.py`):** lobo solo vs adulta = **0**; manada flanquea→muere (#3 quórum→muerte);
+  **retoque** presa expuesta (13.7 vs 8.9 m), fijada en **t=0** (re-fijaciones 0); **ternero**: AL LADO
+  (dist 1.46 m), manada caza 38/40, **lobo solo vs ternero 0%** (madre frena; reportado, sin tunear);
+  pastoreo casi quieto (0.019 m/paso); firmeza intacta; **tasa 88%**; reproducible.
 - *(Descartado el modelo de apiñamiento/Muro-pounce: el huddle se tragaba a la rezagada. Parámetros
   del modelo viejo —`k_cohesion_*`, `r_alarm/r_calm`, `d_safe`, `pounce_*`— quedan **deprecados pero
   aceptados** para no romper baseline.py v1; ignorados en la dinámica.)*
@@ -468,7 +485,7 @@ movimiento de drones todavía (el relevo es un swap de puesto instantáneo).
     (relativo o absoluto) se **descartó**: el huddle se tragaba a la rezagada y no había a quién
     cazar limpiamente. Ahora la captura es por **FLANQUEO** (≥ `n_min_adult` lobos a la vez dentro de
     `capture_radius` y fuera del cono frontal de la adulta): un lobo solo no puede, la manada sí.
-    Tasa 83% sin drones. Ver §4.1/§4.2.
+    Tasa 88% sin drones. Ver §4.1/§4.2.
 12. **Pure pursuit y filtro de estimación del lobo.** Reutilizar el pure pursuit (de Robots) en la
     capa de guiado; implementar un **EKF/filtro de partículas** para estimar la trayectoria del
     lobo a partir de detecciones ruidosas (análogo al MCL de la asignatura — el GPS da la
@@ -481,10 +498,11 @@ movimiento de drones todavía (el relevo es un swap de puesto instantáneo).
 
 ## 11. SIGUIENTE PASO
 
-**Adversario vaca+lobo CERRADO ("dar la cara" + presa común + terneros/defensoras).** Las adultas
-plantan cara, la manada confluye en una presa (ternero si lo hay, si no la adulta más expuesta) y
-flanquea; el ternero muere con 1 flanqueador, la adulta con `n_min_adult`. Movimiento firme.
-Verificado en `face_check.py`; tasa 85% sin drones (no perseguida).
+**Adversario vaca+lobo CERRADO ("dar la cara" + presa común + terneros/defensoras, pulido).** Las
+adultas plantan cara y pastan **casi quietas**; la manada **fija la presa en t=0** (ternero si lo hay,
+si no la adulta más expuesta) y va a por ella desde el primer paso; el ternero, **al lado** de su
+madre, muere con 1 flanqueador, la adulta con `n_min_adult`. Movimiento firme. Verificado en
+`face_check.py`; tasa **88%** sin drones (no perseguida).
 
 **Siguiente paso = ESCOLTA / capa de movimiento** (ya con los drones): collares que conducen el rebaño
 al refugio (guided herding), drones que **apantallan/disuaden** (pantalla protectora); activa los hooks
@@ -494,9 +512,11 @@ v2** cuando la dinámica vaca/lobo quede definitiva (es decir, tras decidir si s
 lobo-solo-vs-ternero, hoy 0%).
 
 *(Pendiente de decisión menor, NO en este paso: lobo solo vs ternero salió 0% — la madre frena siempre.
-Si se quiere que sea disputado (a veces se cuela), afinar `face_cooldown`/`r_face_safe`. Decisiones de
-este paso: terneros `calf_count_probs`=(1/3,1/3,1/3), `k_calf_cohesion`=1.0, `k_defender_anchor`=0.6;
-presa adulta por exposición; presa ternero override con 1 lobo.)*
+Si se quiere que sea disputado (a veces se cuela), afinar `face_cooldown`/`r_face_safe`. Parámetros del
+modelo vaca/ternero: `calf_count_probs`=(1/3,1/3,1/3), `k_calf_cohesion`=1.0, `k_defender_anchor`=0.6,
+`calf_personal_space`=0.5·`capture_radius`≈1.5 m (ternero al lado), `wander_calm`=0.2 (rapidez de
+pastoreo, afinable por render); presa adulta por exposición, fijada en t=0; presa ternero override con
+1 lobo; `prey_abandon_dist` DEPRECADO.)*
 
 ---
 

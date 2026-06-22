@@ -73,12 +73,14 @@ def test_pack_flank_kill():
     c = DummyCoordinator(w.n_drones)
     w.cow_speeds[:] = w.cow_speed
     w.cow_speeds[0] = 0.5 * w.cow_speed
-    w.cows[0] = np.array([50.0, 50.0])
+    w.cows[0] = np.array([75.0, 50.0])   # aislada y EXPUESTA, pero fuera del establo (no refugiada)
     w.cows[1:] = np.array([15.0, 85.0]) + w.rng.uniform(-2, 2, size=(w.n_cows - 1, 2))
     w.cow_heading[0] = 0.0
     w.cow_vel[:] = 0.0
-    w.wolves[:] = np.array([[60.0, 50.0], [50.0, 40.0], [40.0, 50.0]])
+    w.wolves[:] = np.array([[85.0, 50.0], [75.0, 40.0], [65.0, 50.0]])
     w.wolf_vel[:] = 0.0
+    w._commit_initial_prey()   # presa fijada en t=0: re-fijar tras recolocar el escenario (la presa
+    assert w.pack_prey == 0    # más expuesta es la cow[0] aislada)
     killed = None
     for _ in range(400):
         _, _, term, _, _ = w.step(c.act(None))
@@ -99,7 +101,10 @@ def test_firm_motion():
     print("=== 3) Movimiento firme (giro por paso, rad) ===")
     _w, _s, _a, _ws, (gcow_v, _wv, _cv) = run_ep(2, record=True, wolves_min=0, wolves_max=0, calf_count_probs=NO_CALVES)
     gm, _ = _mean_turn(gcow_v)
-    print("  vacas pastando (sin lobo): media=%.3f" % gm)
+    calm_disp = float(np.linalg.norm(np.array(gcow_v), axis=2).mean()) * _w.dt   # desplazamiento medio/paso (m)
+    print("  vacas pastando (sin lobo): giro medio=%.3f | desplazamiento/paso=%.3f m "
+          "(a tope sería %.3f m -> más quietas)" % (gm, calm_disp, _w.cow_speed * _w.dt))
+    assert calm_disp < 0.5 * _w.cow_speed * _w.dt, "FALLO: las vacas pastan demasiado rápido (poco quietas)"
     _w, _s, _a, _ws, (cow_v, wolf_v, calf_v) = run_ep(2, record=True, wolves_min=3, wolves_max=3, calf_count_probs=TWO_CALVES)
     cm, _ = _mean_turn(cow_v)
     wm, _ = _mean_turn(wolf_v)
@@ -134,6 +139,19 @@ def test_retoque_exposure():
 
 def test_calves():
     print("=== 5) Terneros: la manada va al ternero (muere con 1 flanqueador) ===")
+    # #1: el ternero se coloca AL LADO de la defensora (no encima): distancia media ternero-defensora.
+    w = World(seed=3, wolves_min=0, wolves_max=0, calf_count_probs=ONE_CALF)
+    cc = DummyCoordinator(w.n_drones)
+    dists = []
+    for _ in range(200):
+        _, _, term, trunc, _ = w.step(cc.act(None))
+        dists.append(float(np.linalg.norm(w.calves[0] - w.cows[w.calf_defender[0]])))
+        if term or trunc:
+            break
+    print("  dist media ternero<->defensora=%.2f m (espacio personal=%.2f m; al lado, no encima)"
+          % (np.mean(dists), w.calf_personal_space))
+    assert 0.3 * w.calf_personal_space < np.mean(dists) < 3.0 * w.calf_personal_space, \
+        "FALLO: el ternero no se coloca al lado de la defensora"
     calf_deaths = 0
     for s in range(40):
         w, status, *_ = run_ep(s, wolves_min=3, wolves_max=3, calf_count_probs=ONE_CALF)
@@ -154,6 +172,14 @@ def test_calves():
 
 def test_coordination():
     print("=== 6) Coordinación sin terneros: confluyen en UNA presa (commitment) ===")
+    # #2: la presa se fija en t=0 (antes de cualquier paso) -> la manada va a por ella desde el inicio.
+    w0 = World(seed=0, wolves_min=3, wolves_max=3, calf_count_probs=NO_CALVES)
+    assert w0.step_count == 0 and w0.pack_prey >= 0, "FALLO: la presa no se fija en t=0"
+    print("  presa fijada en t=0: pack_prey=%d kind=%s (paso=%d, esperado 0)"
+          % (w0.pack_prey, w0.pack_prey_kind, w0.step_count))
+    wl = World(seed=0, wolves_min=1, wolves_max=1, calf_count_probs=NO_CALVES)
+    assert wl.pack_prey < 0, "FALLO: lobo solo sin ternero no debe comprometerse en t=0"
+    print("  lobo solo sin ternero en t=0: pack_prey=%d (sin presa = standoff amplio)" % wl.pack_prey)
     means, refixes = [], []
     for s in range(20):
         w, *_ = run_ep(s, wolves_min=3, wolves_max=3, calf_count_probs=NO_CALVES)
