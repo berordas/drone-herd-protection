@@ -40,8 +40,10 @@ def render_episode(world, history, interval: int = 40, save_path: str | None = N
     empty = np.empty((0, 2))
     cow_sc = ax.scatter(*empty.T, c="saddlebrown", s=60, label="vacas")
     # Mirada de las vacas (a quién "dan la cara"): flecha desde cada vaca en su heading.
+    # Se crea ya con n_cows flechas (el primer snapshot) -> set_UVC casa en cada frame.
     face_len = 0.06 * min(W, H)
-    cow_face = ax.quiver(np.zeros(0), np.zeros(0), np.zeros(0), np.zeros(0),
+    c0, h0 = history[0]["cows"], history[0]["cow_heading"]
+    cow_face = ax.quiver(c0[:, 0], c0[:, 1], np.cos(h0) * face_len, np.sin(h0) * face_len,
                          color="saddlebrown", alpha=0.5, angles="xy",
                          scale_units="xy", scale=1.0, width=0.004)
     wolf_sc = ax.scatter(*empty.T, c="red", s=110, marker="X", label="lobos")
