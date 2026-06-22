@@ -14,7 +14,8 @@
 > hasta el costado de la presa — verificado: con el rebaño en medio, dist mín lobo→presa **45.7 m (sin
 > rodeo) → 6.0 m (con rodeo)**. Sin regresiones: lobo solo vs adulta 0, manada flanquea→muere, ternero
 > 38/40, lobo solo vs ternero **0%**, firmeza intacta, batería 4/2/2. **NO se tocó** flanqueo/cono/muerte
-> /fijación de presa en t=0. Tasa sin drones = **88%** (baseline self-check 86%; no se persigue).
+> /fijación de presa en t=0. Tasa sin drones ≈ **88%** (medida, NO objetivo; v1 congelado=49% OBSOLETO,
+v2 tras la escolta).
 
 ---
 
@@ -32,10 +33,15 @@ Sistema multi-dron que **protege un rebaño de vacas de ataques de lobos**, desa
   disuaden). No son los drones los que arrean a las vacas (una vaca no responde a un dron como
   una oveja a un perro).
 - **Objetivo del trabajo:** hacer **dos versiones del "cerebro" (coordinador)** y compararlas:
-  1. **Clásica**: reglas escritas a mano (FSM/comportamiento). Terreno conocido (viene de la
-     asignatura de Robots Móviles Autónomos).
+  1. **Clásica = reflejo trivial**: unas pocas reglas escritas a mano que reutilizan la capa de
+     movimiento (p. ej. cada dron va hacia el lobo más cercano e intenta interponerse entre él y la
+     presa). **NO un FSM completo afinado** — eso se **descartó por demasiado costoso de programar y
+     ajustar** para el alcance del TFG (ver §9/§11). Mantiene el eje *clásico* (controlador a mano).
   2. **Aprendida**: aprendizaje por refuerzo multiagente (MARL). Más avanzado.
-  La **comparación** clásico vs aprendido es el corazón del trabajo y la columna del paper.
+  La **comparación** clásico vs aprendido sigue siendo el corazón del trabajo. La **columna de la
+  evaluación** pasa a ser: **baseline sin drones + reflejo trivial vs MARL**, más las **ablaciones
+  aprendido-vs-aprendido** (MAPPO vs IPPO, codificador invariante, currículo) y la **rejilla de
+  robustez** (§5.1) — no la comparación contra un FSM elaborado.
 
 ---
 
@@ -49,7 +55,7 @@ Sistema multi-dron que **protege un rebaño de vacas de ataques de lobos**, desa
    velocidad. Se construye reutilizando el **pure pursuit** de la asignatura de robots.
    **Compartido** por las dos ramas.
 3. **Coordinación**: decide *modos y objetivos* de alto nivel para cada dron. Es **lo único que
-   se implementa dos veces** (FSM clásica vs política MARL) y **lo único que se compara**.
+   se implementa dos veces** (reflejo trivial vs política MARL) y **lo único que se compara**.
 
 > El espacio de acción de la capa 3 es de **alto nivel** (qué modo, qué objetivo), no
 > velocidades crudas. Esto aísla la comparación al nivel de *decisión* y le quita dificultad al
@@ -58,8 +64,9 @@ Sistema multi-dron que **protege un rebaño de vacas de ataques de lobos**, desa
 ### 2.2. Coordinador intercambiable
 
 Interfaz fija `coordinador(observación) → acciones`. Se construye **el mundo una sola vez** y
-detrás de esa interfaz se enchufan las dos implementaciones (FSM y MARL). Misma observación
-entra, mismo formato de acción sale, mismo juez (métricas). Es lo que hace válida la comparación.
+detrás de esa interfaz se enchufan las dos implementaciones (**reflejo trivial** y MARL). Misma
+observación entra, mismo formato de acción sale, mismo juez (métricas). Es lo que hace válida la
+comparación. (El coordinador intercambiable no cambia; solo la implementación clásica es mínima.)
 
 ### 2.3. Modelo de información: descentralizado con comunicación (DECIDIDO)
 
@@ -106,12 +113,12 @@ exactamente con este despliegue descentralizado.
 - **Eventos (discreto):** ladrar, pedir relevo de carga, iniciar/votar la escolta al refugio.
 
 Notas:
-- Empezar con acciones **discretas** (mejor para MARL y casi 1:1 con las salidas de la FSM →
-  misma interfaz real para ambas ramas). Velocidades continuas = extensión realista.
+- Empezar con acciones **discretas** (mejor para MARL y casi 1:1 con las salidas del **reflejo
+  trivial** → misma interfaz real para ambas ramas). Velocidades continuas = extensión realista.
 - **Número variable de vacas/compañeros:** la observación para el MARL debe ser de tamaño fijo
   → empezar con rasgos agregados (centroide, dispersión, k más cercanos); luego subir a un
   **codificador invariante a permutaciones** (Deep Sets o atención), que además da escalabilidad
-  (entrenar con N vacas, evaluar con 2N). Para la FSM clásica, basta iterar.
+  (entrenar con N vacas, evaluar con 2N). Para el reflejo trivial, basta iterar.
 
 ---
 
@@ -225,7 +232,8 @@ máquina de estados por dron `ACTIVE → RETURNING → CHARGING → READY → AC
 emparejamiento** (al liberarse un puesto sale el más cargado de la central, sin esperar al 100%);
 **arranque escalonado** (RNG, solo en operación continua). Régimen permanente verificado:
 **4 activos / 2 cargando / 2 listos**, relevos escalonados (~1 cada 125 s, 0 simultáneos), siempre
-4 puestos cubiertos, **baseline intacto** (49%). Es **automático por umbral** (regla del mundo), no
+4 puestos cubiertos, **dinámica vaca/lobo intacta** (no usa el RNG → no perturba la tasa sin drones).
+Es **automático por umbral** (regla del mundo), no
 acción del coordinador (seam para exponer "pedir relevo" luego). **Hooks**: `battery_activity`
 (coste de persecución, bandera #7), `relay_travel_time` (vuelo de vuelta + hueco de cobertura),
 `drone_stranded` (dron tirado), y stagger/randomización de batería inicial de episodio.
@@ -266,7 +274,7 @@ aproxima) → `Fase 1 escolta/defensa` (collares conducen al refugio, drones apa
 ## 5. Métricas (juez compartido) y recompensa (solo RL)
 
 > **Distinción clave:** las **métricas** juzgan ambas ramas; la **recompensa** solo entrena el
-> MARL. La FSM no usa recompensa (se ajusta a mano), pero se la juzga con las mismas métricas.
+> MARL. El reflejo trivial no usa recompensa (es a mano), pero se le juzga con las mismas métricas.
 
 ### 5.1. Métricas (perfil, no un número único)
 
@@ -280,8 +288,12 @@ aproxima) → `Fase 1 escolta/defensa` (collares conducen al refugio, drones apa
   (más tarde) pérdidas de comunicación. **Varias semillas e intervalos de confianza.**
 - Reportar resultado + adelantados juntos. Hay tensiones (protección vs energía; rapidez vs
   falsas alarmas) → el frente de Pareto es un resultado en sí mismo.
-- **Justicia:** ajustar la FSM honestamente contra estas mismas métricas (grid/random search o
-  CMA-ES sobre umbrales/ganancias). Si no, "el MARL gana" = "no afiné la base".
+- **Justicia:** medir **ambas ramas con las mismas métricas**. La rama clásica es un **reflejo
+  trivial** (no se afina a fondo: pocas reglas a mano), así que la equidad de la comparación no
+  descansa en "afinar un FSM" sino en contrastar el MARL contra **varios puntos de referencia
+  honestos**: el **baseline sin drones** (cota inferior), el **reflejo trivial** (controlador a mano
+  mínimo) y las **ablaciones aprendido-vs-aprendido** + la **rejilla de robustez**. El MARL tiene que
+  batir a esos referentes para que "gana el MARL" signifique algo.
 
 ### 5.2. Recompensa (solo MARL)
 
@@ -364,8 +376,10 @@ recompensa está hackeada — saberlo antes de la defensa.
   en el bucle), entidades, dinámica, episodio, registrador de métricas, **sustituto de
   percepción** (confianza de detección según distancia/altitud). Entregable: episodio ejecutable
   con métricas.
-- **Fase 2 — Coordinador clásico (la línea base).** FSM/comportamiento detrás de la interfaz +
-  pure pursuit. Ajustarlo honestamente contra las métricas. Entregable: sistema completo +
+- **Fase 2 — Coordinador clásico = reflejo trivial (línea base mínima).** Pocas reglas a mano
+  detrás de la interfaz, reutilizando la capa de movimiento (p. ej. cada dron va al lobo más
+  cercano e intenta interponerse entre él y la presa) + pure pursuit. **No** un FSM completo
+  afinado (descartado por coste). Medirlo con las mismas métricas. Entregable: sistema completo +
   números base. **Fases 1+2 = proyecto defendible por sí solo (red de seguridad).**
 - **Fase 3 — Coordinador MARL.** Envolver el mundo en PettingZoo (solo aquí; la rama clásica no
   lo necesita). Política con codificador invariante a permutaciones. Entrenar con MAPPO
@@ -378,8 +392,9 @@ recompensa está hackeada — saberlo antes de la defensa.
   desplegada. Entregable: validación cualitativa + vídeo.
 
 **Avisos de MARL:** mucha varianza entre semillas (reportar intervalos); la comprobación
-recompensa↔métricas no es opcional; currículo; **la línea base clásica es tu mejor depurador**
-(si el MARL no iguala a una FSM decente, hay un bug). Sin render en el bucle → el DGX va sobrado.
+recompensa↔métricas no es opcional; currículo; **los referentes son tu mejor depurador** (si el
+MARL **no bate al reflejo trivial / al baseline sin drones**, hay un bug). Sin render en el bucle →
+el DGX va sobrado.
 
 ---
 
@@ -388,13 +403,18 @@ recompensa↔métricas no es opcional; currículo; **la línea base clásica es 
 Carpeta `AI_LAB/` (proyecto Python local). Estructura:
 - `world.py` — clase `World`: estado, dinámica, recompensa, terminal. **Sin** ROS/render dentro.
 - `render.py` — animación matplotlib (por reproducción: lee estado, nunca llama a `step`). Dibuja el **cono** como cuña ±45°, colorea los lobos por su relación con el cono de la presa, realza la **presa fijada**, y pinta **terneros** (color propio) con **línea a su defensora** (realzada).
-- `coordinators.py` — `DummyCoordinator` (ignora obs, devuelve "todos quietos"); FSM y MARL después.
+- `coordinators.py` — `DummyCoordinator` (ignora obs, devuelve "todos quietos"); reflejo trivial y MARL después.
 - `main.py` — bucle: reset → obs → coordinador → acciones → step → terminal → métricas.
 - `baseline.py` — **adversario congelado** (config + seeds + métrica de referencia); `build_baseline_world(seed)` y self-check de deriva.
 - `battery_check.py` — verificación macro del subsistema de batería (régimen permanente 4/2/2, escalonado, reproducible).
 - `face_check.py` — verificación del modelo (12 tests): lobo solo no mata adultas, manada flanquea, **retoque** (presa expuesta), **terneros** (manada caza al ternero / lobo-solo-vs-ternero disputado / 2 terneros), coordinación, instrumentación de #3, tembleque, tasa range(100), **espaciado del rebaño (#1)**, **spawn de lobos por sector (#2)**, **rodeo del rebaño (#3)**, reproducibilidad.
 
 Decisiones de diseño ratificadas:
+- **Rama clásica = reflejo trivial, NO un FSM completo** (descartado por coste de programar/afinar
+  para el alcance del TFG). Pocas reglas a mano sobre la capa de movimiento (dron → lobo más cercano,
+  interponerse entre lobo y presa). Conserva el eje clásico-vs-aprendido. **Pendiente: revisar qué
+  pide la rúbrica sobre "comparar enfoques"** y, si hiciera falta más sustancia clásica, decidir
+  entonces; la columna de la evaluación se apoya además en baseline sin drones + ablaciones + robustez.
 - Cada grupo de entidades = array `(N, 2)` de NumPy (vectoriza y se trocea por agente para MAPPO).
 - Lobo como `(n_wolves, 2)` aunque varíe el número (no caso especial).
 - `step(actions)` estilo gym (transición atómica); la observación se construye aparte en el bucle.
@@ -438,20 +458,24 @@ Decisiones de diseño ratificadas:
   del modelo viejo —`k_cohesion_*`, `r_alarm/r_calm`, `d_safe`, `pounce_*`— quedan **deprecados pero
   aceptados** para no romper baseline.py v1; ignorados en la dinámica.)*
 
-🧊 **Baseline del mundo CONGELADO (`baseline.py`):** tras calibrar vacas + lobo, se fija el
-adversario (config + 100 seeds) para que FSM y MARL se midan contra lo mismo.
-- **Métrica de referencia (sin drones):** `predation = 49/100 = 49.0%` (Wilson 95% IC 39.4–58.7%).
-  Es lo que los coordinadores deben **mejorar** (bajar la depredación).
-- ⚠️ El baseline v1 (49%) era del **modelo de apiñamiento**, ahora **DESCARTADO** por el modelo
-  "dar la cara". v1 ya no aplica (su self-check deriva a propósito; mide ~72% con los kwargs viejos
-  ignorados). Se **re-congela como v2** tras la escolta, con la dinámica vaca/lobo definitiva.
+🧊 **Baseline del mundo (sin drones) — números UNIFICADOS:**
+- **v1 = 49% (`predation = 49/100`, Wilson 95% IC 39.4–58.7%) — CONGELADO pero OBSOLETO.** Era del
+  **modelo de apiñamiento**, **DESCARTADO** por el pivote a "dar la cara". Ya **no aplica**: su
+  self-check `baseline.py` está pensado para **derivar a propósito** (pasa los kwargs viejos, que la
+  dinámica nueva **ignora**), así que hoy mide ≈ la tasa del modelo actual, **no 49%**.
+- **Modelo actual ≈ 88% sin drones** (medida en `face_check.py` range(100); el self-check de
+  `baseline.py`, con su config y seeds congelados, da una cifra cercana). Es una **medida, NO un objetivo**:
+  no se persigue ni se aterriza; es la cota que los coordinadores (reflejo trivial / MARL) deben **bajar**.
+- **v2 se congelará tras la escolta**, con la dinámica vaca/lobo definitiva (config + 100 seeds), y
+  pasará a ser el adversario fijo contra el que se miden ambas ramas.
 - La batería es **ortogonal** (qué drones hay disponibles, no la dinámica vaca/lobo) → no mueve el
   baseline. busca-huecos/amago son adversarios posteriores de la escalera, no este baseline.
 - ⚠️ NO tocar estos parámetros una vez empiece la comparación; si se recalibra, re-medir ambas ramas.
 
 🔋 **Batería + cola de carga — IMPLEMENTADO** (`_init_battery`/`_step_battery`, `battery_check.py`):
 régimen permanente 4 activos / 2 cargando / 2 listos, relevos escalonados (~1 cada 125 s, 0
-simultáneos), invariante "4 puestos siempre cubiertos", reproducible, **baseline intacto (49%)**.
+simultáneos), invariante "4 puestos siempre cubiertos", reproducible, **dinámica vaca/lobo intacta**
+(la batería no usa el RNG → no mueve la tasa sin drones).
 Automático por umbral; arrays de batería paralelos a posiciones; hooks para persecución
 (`battery_activity`) / travel-time (`relay_travel_time`) / dron tirado (`drone_stranded`). Sin
 movimiento de drones todavía (el relevo es un swap de puesto instantáneo).
@@ -489,8 +513,8 @@ movimiento de drones todavía (el relevo es un swap de puesto instantáneo).
 8. **Alerta como acción aprendible.** En la v1 la alerta es **automática por umbral**. Dejar que
    la política aprenda *cuándo/qué* comunicar es **extensión avanzada** (y zona inestable del
    MARL: premiar/penalizar el avisar directamente puede enseñar a callar amenazas — ir con pies
-   de plomo). El **umbral de alerta** es un parámetro de diseño de primer orden: en la FSM se
-   fija a mano; el MARL puede aprenderlo (resultado bonito para la comparación).
+   de plomo). El **umbral de alerta** es un parámetro de diseño de primer orden: en el reflejo
+   trivial se fija a mano; el MARL puede aprenderlo (resultado bonito para la comparación).
 9. **Codificador invariante a permutaciones** (Deep Sets / atención) para el número variable de
    vacas/compañeros → da escalabilidad (entrenar con N, evaluar con 2N).
 10. **Percepción: sustituto vs YOLO real.** Entrenar la coordinación con un **sustituto rápido**
@@ -526,9 +550,9 @@ Verificado en `face_check.py` (12 tests); tasa **88%** sin drones (no perseguida
 **Siguiente paso = ESCOLTA / capa de movimiento** (ya con los drones): collares que conducen el rebaño
 al refugio (guided herding), drones que **apantallan/disuaden** (pantalla protectora); activa los hooks
 de batería (travel-time del relevo, hueco de cobertura, coste de persecución, dron tirado). Luego:
-percepción (sustituto rápido) → coordinador clásico (FSM) → MARL → comparación. **Re-congelar baseline
-v2** cuando la dinámica vaca/lobo quede definitiva (es decir, tras decidir si se afina el caso
-lobo-solo-vs-ternero, hoy 0%).
+percepción (sustituto rápido) → coordinador clásico (**reflejo trivial**) → MARL → comparación.
+**Congelar baseline v2** cuando la dinámica vaca/lobo quede definitiva (es decir, tras decidir si se
+afina el caso lobo-solo-vs-ternero, hoy 0%).
 
 *(Pendiente de decisión menor, NO en este paso: lobo solo vs ternero salió 0% — la madre frena siempre.
 Si se quiere que sea disputado (a veces se cuela), afinar `face_cooldown`/`r_face_safe`. Parámetros del
@@ -550,6 +574,15 @@ pastoreo); `r_separation`=0.55·`cow_spread`, `cow_spread`=0.20·min (rebaño re
   relation to prey availability. (Selección de presa / depredación de ganado.)
 - **Madden, J.D., Arkin, R.C., MacNulty, D.R. (2011).** Multi-robot system based on model of wolf
   hunting behavior. (Robótica inspirada en Muro.)
+- **ICWDM (Internet Center for Wildlife Damage Management), "Wolf Damage Identification".** El ataque
+  se concentra en **grupa, flancos y cuartos traseros**; **preferencia por terneros** frente a adultas.
+  (Fundamenta el ataque por flanco y el ternero como objetivo blando preferente — §4.1/§4.2.)
+- **BeefResearch.ca, "Cows & Wolves"** (estudio con collares GPS en Alberta): composición de presas de
+  lobo ~**40% terneros / 40% añojos / <20% adultas**. (Fundamenta la presencia de terneros y su peso
+  como presa preferente.)
+- **Wolf Song of Alaska, caza en manada de presa grande:** la manada caza en grupo y **rara vez toda
+  toca a la presa** a la vez. (Fundamenta la regla de **número mínimo** `n_min_adult` para tumbar a una
+  adulta — basta un subconjunto flanqueando, no toda la manada.)
 - **Ng, A., Harada, D., Russell, S. (1999).** Policy invariance under reward transformations:
   theory and application to reward shaping. (Shaping basado en potencial.)
 - **Yu, C., et al. (2022).** The surprising effectiveness of PPO in cooperative multi-agent games
