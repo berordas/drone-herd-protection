@@ -4,11 +4,10 @@
 > decisiones tomadas, las herramientas, el plan, las referencias y —muy importante— las
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
-> **Última actualización:** vacas **pastan dispersas** (cohesión-calma=0) + **alarma de rebaño con
-> histéresis** + **instrumentación de procedencia** (`provenance_check.py`). Hallazgo: 0
-> teletransportes (artefacto refutado), 86/99 capturas limpias, pero la tasa subió a **99% sin
-> drones** (separación de pasto > umbral de pounce). **Checkpoint para revisión: pendiente de
-> recalibrar** (no tocado aún). El baseline v1 (49%) ya no aplica; se re-congelará como v2.
+> **Última actualización:** umbral de remate **re-anclado** a `pounce_factor·r_separation` (+asersión)
+> → standoff restaurado (78%). Pero el barrido destapa que **NO hay ventana limpia**: el pasto está
+> MÁS disperso (~7.9 m) que el rezagado alarmado (~3.9 m) → **ventana invertida**. **Decisión conjunta
+> pendiente** (compactar el pasto). Baseline v1 (49%) ya no aplica; se re-congela como v2 más tarde.
 
 ---
 
@@ -163,12 +162,18 @@ que **solo tienen sentido cuando los drones se muevan** (fases muy posteriores).
 - **🔬 Instrumentación de procedencia** (`world.py` + `provenance_check.py`): por cada captura se
   registra aislamiento sostenido de la presa, si el lobo iba en persecución, salto de la presa y
   sobrepaso del lobo (teletransporte), + guardia de movimiento por paso.
-- **⚠️ Checkpoint (pendiente de recalibrar, NO tocado aún):** con el spawn disperso la tasa subió a
-  **99% sin drones** (era 49%). Hallazgo: la separación de pasto (~6 m) **supera** el umbral de
-  pounce (3.75 m = 0.25·cow_spread), así que las vacas ya están "aisladas" pastando → el lobo
-  remata casi siempre, **sin pasar por el huddle**. Lo bueno: **0 teletransportes**, sin saltos ni
-  sobrepasos (refuta el artefacto sospechado); 86/99 capturas limpias. Reconciliar separación vs
-  umbral de pounce es el **siguiente paso** (recalibración del trío).
+- **🔧 Umbral re-anclado:** `wolf_pounce_isolation = pounce_factor · r_separation` (NO a cow_spread),
+  con asersión `> r_separation` (una vaca pastando no puede contar como aislada). Restaura el
+  **STANDOFF**: 78% standoff / 22% remate (antes ~remate permanente → 99% de captura).
+- **⚠️ Checkpoint — NO HAY VENTANA LIMPIA (decisión conjunta pendiente):** el barrido de `pounce_factor`
+  (1.1–1.5) deja el % de capturas limpias clavado en **~70%** (no sube a 100%). Causa medida: la ventana
+  de aislamiento está **INVERTIDA** respecto a lo asumido. Real (media/p90/max): **pasto 7.9/11.6/18 m
+  > rezagada 3.9/8.1 > huddle 3.2**. Las vacas pastan MÁS dispersas (6 vacas en área de radio 15 →
+  ~8 m entre vecinas) que el rezagado alarmado (la huddle aprieta a TODAS, incluida la lenta, a ~4 m),
+  así que **ningún umbral absoluto separa "pasto" de "rezagada"** y el lobo remata durante el PASTO,
+  no en la huddle. Refutado el artefacto: 0 teletransportes/saltos. Hay que **compactar el pasto**
+  (cow_spread/n_cows o una cohesión-calma pequeña) o pasar a un pounce **relativo** al spread vivo del
+  rebaño. NO tocado aquí (excepción del spec): lo decidimos juntos.
 - **Escolta — PENDIENTE:** los **collares** conducen el rebaño al refugio (guided herding); los
   **drones escoltan** (pantalla protectora + disuasión). "Escolta" = proteger el traslado, no empujar.
 
@@ -461,11 +466,12 @@ movimiento de drones todavía (el relevo es un swap de puesto instantáneo).
 
 ## 11. SIGUIENTE PASO
 
-**Recalibrar el trío (dispersión vs umbral de pounce).** El spawn disperso destapó que la
-separación de pasto supera el umbral de pounce → vacas siempre "aisladas" → 99% de captura. Hay
-que reconciliar `cow_spread` / `r_separation` / `wolf_pounce_isolation` (y quizá `r_alarm`) para una
-tasa sensata y que el huddle-rezagado vuelva a ser el mecanismo. Las capturas ya son limpias (0
-teletransportes), así que es solo calibración. **Luego re-congelar baseline v2.**
+**Decisión conjunta: compactar el pasto (ventana invertida).** El umbral ya está re-anclado y el
+standoff vuelve, pero el pasto está más disperso que el rezagado alarmado → ningún umbral absoluto
+separa pasto de rezagada. Opciones a decidir juntos: (a) **pasto más compacto** (bajar `cow_spread`
+y/o subir `n_cows`, o una cohesión-calma pequeña > 0 que agrupe sin colapsar); (b) **pounce relativo**
+al spread vivo del rebaño (aislada = lejos *comparada con las demás ahora*, no umbral absoluto).
+Luego re-barrer, fijar el factor limpio, y **re-congelar baseline v2**.
 
 Después: escolta / capa de movimiento (pure pursuit, collares al refugio, drones apantallando;
 activa los hooks de batería) → percepción (sustituto) → coordinador clásico → MARL → comparación.

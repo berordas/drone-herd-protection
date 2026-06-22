@@ -72,7 +72,8 @@ class World:
         wolf_repulsion_radius: float | None = None,    # alcance de la repulsión entre lobos
         wolf_repulsion_strength: float = 1.0,          # peso del término de repulsión
         wolf_engage_band: float | None = None,         # margen sobre d_safe para contar como "en el anillo"
-        wolf_pounce_isolation: float | None = None,    # m: aislamiento de la presa que dispara el remate. TUNE
+        pounce_factor: float = 1.2,                    # umbral de remate = pounce_factor * r_separation (>1). TUNE
+        wolf_pounce_isolation: float | None = None,    # m: si None, = pounce_factor * r_separation. TUNE
         # --- Batería y cola de carga (operación continua; ver battery_check.py) ---
         battery_capacity: float = 600.0,   # s de vuelo a plena carga (batería ~10 min)
         charge_full: float = 300.0,        # s para cargar de 0 a full (~5 min) -> ratio vuelo:carga 2:1
@@ -148,13 +149,20 @@ class World:
         )
         self.wolf_repulsion_strength = wolf_repulsion_strength
         self.wolf_engage_band = wolf_engage_band if wolf_engage_band is not None else 0.5 * self.d_safe
-        # Remate ("pounce"): la presa cuenta como cortada del rebaño si su vaca más próxima
-        # está a más de esto. Default = 0.25*cow_spread (~un poco más que el espaciado del
-        # huddle) -> tasa de captura ~40% sin drones. KNOB SENSIBLE: pequeños cambios mueven
-        # mucho la tasa (2.25->58%, 2.5->40%, 2.75->12%); reafinar si cambian las vacas.
-        self.wolf_pounce_isolation = (
-            wolf_pounce_isolation if wolf_pounce_isolation is not None else 0.25 * self.cow_spread
-        )
+        # Remate ("pounce"): la presa cuenta como CORTADA si su vaca más próxima está a más de
+        # esto. Anclado a r_separation (NO a cow_spread): "aislada" = más separada de lo normal al
+        # pastar. (Con cow_spread = radio de PASTO, 0.25*cow_spread caía por debajo del pasto y el
+        # lobo entraba en remate permanente -> 99%.) El umbral sigue estático (una vez, aquí).
+        self.pounce_factor = pounce_factor
+        if wolf_pounce_isolation is not None:
+            self.wolf_pounce_isolation = wolf_pounce_isolation   # override explícito (p.ej. baseline v1)
+        else:
+            self.wolf_pounce_isolation = self.pounce_factor * self.r_separation
+            # Asersión de seguridad: una vaca PASTANDO no puede contar como aislada (pounce_factor > 1).
+            assert self.wolf_pounce_isolation > self.r_separation, (
+                "wolf_pounce_isolation (%.2f) debe ser > r_separation (%.2f): el umbral debe superar "
+                "el pasto (pounce_factor > 1)." % (self.wolf_pounce_isolation, self.r_separation)
+            )
 
         # Batería: tasas DERIVADAS de las capacidades (sin números mágicos). La batería es
         # una fracción [0,1]; drena 1->0 en battery_capacity s, carga 0->1 en charge_full s.
