@@ -6,14 +6,14 @@
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
 > **Última actualización:** **Escolta · paso 1 — el TERMINAL (el "juez").** Antes de añadir guiado al
 > refugio (bandera #13), se construye y verifica el terminal del episodio: **máquina de fases**
-> `VIGILANCIA→ESCOLTA` (disparador: lobo dentro de `r_escort_trigger` del centroide del rebaño vivo,
-> sin retorno, informativa) + **terminal de 3 estados** evaluado cada step — **ÉXITO** (todas las reses
+> `VIGILANCIA→ESCOLTA` (disparador = **DETECCIÓN por dron**: un dron EN VUELO ve un lobo a ≤ `r_detect`
+> ≈100 m; sin retorno, informativa) + **terminal de 3 estados** evaluado cada step — **ÉXITO** (todas las reses
 > vivas a salvo, ninguna cazada, ningún lobo dentro), **DEPREDACIÓN** (≥1 res cazada; **multi-muerte**:
 > una captura ya NO termina el episodio → cuenta `n_depredadas`), **TIMEOUT** (`max_episode_steps`). Dos
 > ganchos: (a) res en el establo = **a salvo** y no cazable (histéresis `refuge_margin`); (b) presa
 > refugiada → la manada **re-selecciona** (única re-fijación). **Exclusión del lobo** re-asegurada tras
 > el cono. Render: fase + reses refugiadas (verde) / cazadas (gris) + **banner del terminal**. Verificado
-> en **`escort_check.py` (7 tests)** + **sin regresiones** (`face_check` 12/`battery_check` 4/2/2 verdes).
+> en **`escort_check.py` (8 tests)** + **sin regresiones** (`face_check` 12/`battery_check` 4/2/2 verdes).
 > Drones aún quietos, **SIN guiado** (es el paso 2). Tasa sin drones ≈ **88%** (medida; v1 congelado=49%
 > OBSOLETO, v2 al final de la escolta).
 
@@ -258,9 +258,10 @@ Diseño de referencia (sigue válido):
 
 Tarea **episódica** (terminal claro, bueno para RL). **Máquina de fases** (`world.phase`):
 
-`VIGILANCIA` (vacas pastando, drones monitorizando) → **disparador** (un lobo entra en
-`r_escort_trigger` del centroide del rebaño vivo) → `ESCOLTA` → **terminal**. La fase es informativa y
-**no vuelve atrás**; es el **seam** para el guiado del paso siguiente (todavía NO cambia la dinámica).
+`VIGILANCIA` (vacas pastando, drones monitorizando) → **disparador = DETECCIÓN por dron** (algún dron
+**EN VUELO** —estado `ACTIVE`; los aparcados `CHARGING`/`READY` no vigilan— tiene un lobo a distancia
+horizontal ≤ `r_detect`) → `ESCOLTA` → **terminal**. La fase es informativa y **no vuelve atrás**; es el
+**seam** para el guiado del paso siguiente (todavía NO cambia la dinámica).
 
 **Terminal (3 estados, evaluado cada step; multi-muerte: una captura ya NO termina el episodio):**
 - **ÉXITO** = todas las reses **vivas** a salvo (refugiadas) **y** ninguna cazada **y** ningún lobo
@@ -281,8 +282,10 @@ Tarea **episódica** (terminal claro, bueno para RL). **Máquina de fases** (`wo
 **Exclusión del lobo (clamp #5):** ningún lobo entra nunca al establo; el empuje del cono (vacas que
 pastan cerca del borde) podría meterlo, así que se re-aplica el clamp como ÚLTIMA palabra del step.
 
-- `r_escort_trigger`=0.30·min(W,H); `max_episode_steps`=`episode_time_factor`·diag/`cow_speed`/`dt`
-  (~4× el tiempo de cruzar el campo a `cow_speed`); `refuge_margin`=0.1·`safe_radius`. Sin números mágicos.
+- `r_detect`=100 m (criterio DRI de Johnson reconocer/identificar — ~8-13 px sobre un lobo de ~1,2 m,
+  GSD ~1,2 cm/px a ~52 m AGL, patrulla ~40-50 m, margen por ángulo oblicuo/movimiento → ~80-120 m;
+  horizontal porque la z del dron aún es conceptual (flag #2); candidato a eje de robustez §5.1);
+  `max_episode_steps`=`episode_time_factor`·diag/`cow_speed`/`dt` (~4× cruzar el campo); `refuge_margin`=0.1·`safe_radius`.
 - La **disuasión (ladrido)** es una **táctica durante la escolta** (ganar tiempo), no la condición de
   victoria. La victoria es resguardar. (Guiado al refugio + drones + disuasión = PASOS SIGUIENTES.)
 
@@ -425,7 +428,7 @@ Carpeta `AI_LAB/` (proyecto Python local). Estructura:
 - `baseline.py` — **adversario congelado** (config + seeds + métrica de referencia); `build_baseline_world(seed)` y self-check de deriva.
 - `battery_check.py` — verificación macro del subsistema de batería (régimen permanente 4/2/2, escalonado, reproducible).
 - `face_check.py` — verificación del modelo (12 tests): lobo solo no mata adultas, manada flanquea, **retoque** (presa expuesta), **terneros** (manada caza al ternero / lobo-solo-vs-ternero disputado / 2 terneros), coordinación, instrumentación de #3, tembleque, tasa range(100), **espaciado del rebaño (#1)**, **spawn de lobos por sector (#2)**, **rodeo del rebaño (#3)**, reproducibilidad. *(Las muertes se detectan por `captures`, ya que la depredación NO termina el episodio; cap de pasos corto.)*
-- `escort_check.py` — verificación del **TERMINAL de escolta** (7 tests): ÉXITO / DEPREDACIÓN / TIMEOUT forzados, **refugio = soltar presa** (re-fijación solo al refugiarse), **exclusión del lobo** (nunca dentro del establo), reproducibilidad, y **sin regresiones** (corre `face_check.py` + `battery_check.py`). Guarda una animación por terminal.
+- `escort_check.py` — verificación del **TERMINAL de escolta** (8 tests): **disparador por DETECCIÓN de dron** (en vuelo dispara, aparcado no), ÉXITO / DEPREDACIÓN / TIMEOUT forzados, **refugio = soltar presa** (re-fijación solo al refugiarse), **exclusión del lobo** (nunca dentro del establo), reproducibilidad, y **sin regresiones** (corre `face_check.py` + `battery_check.py`). Guarda una animación por terminal.
 
 Decisiones de diseño ratificadas:
 - **Rama clásica = reflejo trivial, NO un FSM completo** (descartado por coste de programar/afinar
@@ -551,9 +554,9 @@ movimiento de drones todavía (el relevo es un swap de puesto instantáneo).
     lobo a partir de detecciones ruidosas (análogo al MCL de la asignatura — el GPS da la
     posición propia, así que la estimación es del *lobo*, no del ego).
 13. ✅ **RESUELTA — Tests del "juez".** El terminal de escolta (3 estados + contadores) y la máquina
-    de fases VIGILANCIA→ESCOLTA están **implementados y verificados** (`escort_check.py`, 7 tests:
-    ÉXITO/DEPREDACIÓN/TIMEOUT forzados, refugio=soltar presa, exclusión del lobo, reproducibilidad,
-    sin regresiones). Hecho ANTES del guiado al refugio. Ver §4.4.
+    de fases VIGILANCIA→ESCOLTA (disparador por **detección de dron**) están **implementados y verificados**
+    (`escort_check.py`, 8 tests: disparador, ÉXITO/DEPREDACIÓN/TIMEOUT forzados, refugio=soltar presa,
+    exclusión del lobo, reproducibilidad, sin regresiones). Hecho ANTES del guiado al refugio. Ver §4.4.
 
 ---
 
@@ -569,7 +572,7 @@ Verificado en `face_check.py` (12 tests); tasa **88%** sin drones (no perseguida
 **Escolta · paso 1 HECHO — el TERMINAL (el "juez").** Máquina de fases VIGILANCIA→ESCOLTA + terminal de
 3 estados (ÉXITO/DEPREDACIÓN/TIMEOUT) con contadores (`n_safe`/`n_depredadas`/`n_fuera`), multi-muerte,
 ganchos de refugio (res a salvo = no cazable; presa refugiada → re-selección) y exclusión del lobo.
-Verificado en `escort_check.py` (7 tests) + sin regresiones (`face_check`/`battery_check` verdes). Drones
+Verificado en `escort_check.py` (8 tests; disparador por detección de dron) + sin regresiones (`face_check`/`battery_check` verdes). Drones
 todavía quietos (DummyCoordinator), aún SIN guiado. Ver §4.4.
 
 **Escolta · paso 2 (SIGUIENTE) = GUIADO al refugio.** Collares que conducen el rebaño al establo

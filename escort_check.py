@@ -6,6 +6,7 @@ de construir comportamientos encima"). Cubre los tres terminales y sus contadore
 VIGILANCIA->ESCOLTA, y los DOS ganchos: (a) res en el establo = a salvo y NO cazable; (b) si la presa
 fijada se refugia, la manada RE-SELECCIONA (única re-fijación permitida). Drones quietos (DummyCoordinator).
 
+  0) Disparador VIGILANCIA->ESCOLTA por DETECCIÓN de un dron en vuelo (r_detect; aparcados no cuentan)
   1) ÉXITO forzado
   2) DEPREDACIÓN forzada (multi-muerte; cuanta más, peor -> cuenta)
   3) TIMEOUT forzado
@@ -21,7 +22,7 @@ matplotlib.use("Agg")   # sin ventana: guardamos las animaciones a disco
 import subprocess
 import sys
 import numpy as np
-from world import World
+from world import World, ACTIVE, CHARGING, READY
 from coordinators import DummyCoordinator
 from render import render_episode
 
@@ -42,6 +43,35 @@ def _run(w, cap=None):
 
 
 # ---------------------------------------------------------------------------- #
+def test_trigger_deteccion():
+    print("=== 0) Disparador VIGILANCIA->ESCOLTA por DETECCIÓN de dron (r_detect) ===")
+    corner = np.array([[0.0, 0.0], [0.0, 5.0], [5.0, 0.0], [5.0, 5.0]])   # 4 activos en una esquina
+
+    def fresh():
+        w = World(seed=0, wolves_min=1, wolves_max=1)
+        w.phase = "VIGILANCIA"
+        w.drone_state[:] = READY            # todos aparcados...
+        w.drone_state[:4] = ACTIVE          # ...salvo 4 EN VUELO, en una esquina
+        w.drones[:4] = corner
+        return w
+
+    rd = World(seed=0).r_detect
+    # (1) lobo lejos de TODOS los drones activos -> sigue VIGILANCIA.
+    w = fresh(); w.drones[4:] = 1.0; w.wolves[:] = [[100.0, 100.0]]   # ~134 m del activo más cercano
+    w._update_phase()
+    assert w.phase == "VIGILANCIA", "FALLO: disparó con el lobo fuera de r_detect"
+    # (2) acercar el lobo a < r_detect de un dron activo -> ESCOLTA en ese paso.
+    w.wolves[:] = [[60.0, 60.0]]                                      # ~78 m del activo (5,5) < 100
+    w._update_phase()
+    assert w.phase == "ESCOLTA", "FALLO: no disparó con un lobo dentro de r_detect de un dron activo"
+    # (3) lobo PEGADO a un dron APARCADO (CHARGING) pero lejos de los activos -> NO dispara.
+    w = fresh(); w.drone_state[4] = CHARGING; w.drones[4] = [100.0, 100.0]; w.wolves[:] = [[100.0, 100.0]]
+    w._update_phase()
+    assert w.phase == "VIGILANCIA", "FALLO: un dron aparcado (CHARGING/READY) disparó la detección"
+    print("  r_detect=%.0f m | lejos->VIGILANCIA, cerca de ACTIVE->ESCOLTA, cerca de APARCADO->VIGILANCIA" % rd)
+    print("  OK\n")
+
+
 def test_exito():
     print("=== 1) ÉXITO forzado (todas refugiadas, lobo lejos) ===")
     w = World(seed=5, wolves_min=1, wolves_max=1, calf_count_probs=NO_CALVES)
@@ -184,6 +214,7 @@ def save_animations():
 
 
 if __name__ == "__main__":
+    test_trigger_deteccion()
     test_exito()
     test_depredacion()
     test_timeout()

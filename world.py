@@ -86,7 +86,7 @@ class World:
         teleport_guard: bool = False,      # log si una entidad se desplaza > su máx por paso * motion_tol
         motion_tol: float = 1.5,           # tolerancia de desplazamiento por paso (guardia)
         # --- Escolta / terminal del episodio (máquina de fases VIGILANCIA->ESCOLTA + refugio) ---
-        r_escort_trigger: float | None = None,   # m: lobo dentro de esto del centroide del rebaño -> ESCOLTA (default 0.30*min). TUNE
+        r_detect: float = 100.0,                 # m: alcance de DETECCIÓN de un dron en vuelo -> dispara ESCOLTA. TUNE
         episode_time_factor: float = 4.0,        # holgura del límite de tiempo (~k * diag / cow_speed). TUNE
         max_episode_steps: int | None = None,    # límite de pasos (default DERIVADO de geometría/cow_speed; ver __init__)
         refuge_margin: float | None = None,      # m: histéresis de borde del establo para contar "refugiada" (default 0.1*safe_radius). TUNE
@@ -193,8 +193,13 @@ class World:
         self.motion_tol = motion_tol
 
         # --- Escolta / terminal del episodio ---
-        # Disparador VIGILANCIA->ESCOLTA: lobo dentro de r_escort_trigger del centroide del rebaño vivo.
-        self.r_escort_trigger = r_escort_trigger if r_escort_trigger is not None else 0.30 * m
+        # Disparador VIGILANCIA->ESCOLTA = DETECCIÓN por dron: un dron EN VUELO (ACTIVE) ve un lobo a
+        # <= r_detect (distancia horizontal 2D). r_detect=100 m sale del criterio DRI de Johnson a nivel
+        # reconocer/identificar (~8-13 px sobre un lobo de ~1,2 m) con GSD anclado a imágenes reales de
+        # dron (~1,2 cm/px a ~52 m AGL) y patrulla a ~40-50 m, con margen por ángulo oblicuo/movimiento/
+        # contraste -> ~80-120 m. Es horizontal porque la z del dron aún es conceptual (flag #2): r_detect
+        # absorbe el rango oblicuo a la altura de patrulla. Candidato a eje de la rejilla de robustez (§5.1).
+        self.r_detect = r_detect
         # Límite de tiempo: holgura (~episode_time_factor) para que el rebaño cruce el campo a cow_speed.
         # Derivado de la diagonal y cow_speed (sin número mágico): k * diag / cow_speed / dt pasos.
         self.episode_time_factor = episode_time_factor
@@ -889,16 +894,18 @@ class World:
     # Máquina de fases + depredación + terminal (el refugio va en _update_cows/_update_calves)
     # ------------------------------------------------------------------ #
     def _update_phase(self) -> None:
-        """VIGILANCIA -> ESCOLTA: la PRIMERA vez que un lobo entra en r_escort_trigger del centroide
-        del rebaño VIVO. No vuelve a VIGILANCIA. Informativa (seam para el guiado del paso siguiente;
-        todavía NO cambia la dinámica de las vacas)."""
+        """VIGILANCIA -> ESCOLTA por DETECCIÓN: la PRIMERA vez que algún dron EN VUELO (ACTIVE) tiene
+        un lobo a distancia horizontal (2D) <= r_detect. Los drones aparcados en la central
+        (CHARGING/READY) no vigilan; RETURNING se deja fuera por simplicidad (retorno transitorio).
+        No vuelve a VIGILANCIA. Informativa (seam para el guiado del paso siguiente; todavía NO cambia
+        la dinámica de las vacas)."""
         if self.phase == "ESCOLTA" or self.n_wolves == 0:
             return
-        live = self.cow_alive & ~self.cow_safe
-        if not live.any():
+        flying = self.drones[self.drone_state == ACTIVE]   # solo los ACTIVE detectan (en tierra no se vigila)
+        if flying.shape[0] == 0:
             return
-        centroid = self.cows[live].mean(axis=0)
-        if float(np.linalg.norm(self.wolves - centroid, axis=1).min()) <= self.r_escort_trigger:
+        d = np.linalg.norm(flying[:, None, :] - self.wolves[None, :, :], axis=2)  # (n_vuelo, n_lobo)
+        if float(d.min()) <= self.r_detect:
             self.phase = "ESCOLTA"
 
     def _process_predation(self) -> bool:
