@@ -46,17 +46,24 @@ class World:
         dt: float = 0.1,
         max_steps: int = 600,
         drone_speed: float = 6.0,     # m/s, escala/tope de las acciones de los drones
-        # --- Comportamiento de las vacas: cohesión + miedo (TUNE = lo que tocarás) ---
+        # --- Comportamiento de las vacas: pastar DISPERSO + miedo de rebaño por distancia ---
         cow_speed: float = 1.2,            # m/s base, < wolf_speed (no escapan a la carrera). TUNE
         cow_speed_jitter: float = 0.4,     # heterogeneidad ±frac por vaca -> emerge el rezagado. TUNE
-        k_cohesion_calm: float = 0.4,      # cohesión leve en calma. TUNE
-        k_cohesion_panic: float = 1.2,     # cohesión en miedo (apiñamiento sin colapsar). TUNE
-        k_separation: float = 3.0,         # peso de separación (evita apilarse). TUNE
-        r_separation: float | None = None, # m, radio de separación (default ~0.3*cow_spread). TUNE
-        wander_calm: float = 1.0,          # peso del paseo aleatorio en calma. TUNE
-        wander_panic: float = 0.35,        # paseo residual en pánico (rebaño algo móvil -> rezagado). TUNE
-        r_fear: float | None = None,       # m, alcance del miedo al lobo (default ~0.25*min(W,H)). TUNE
+        cow_spawn_min_sep: float | None = None,  # m, separación mínima al nacer (default ~0.25*cow_spread)
+        k_cohesion_calm: float = 0.0,      # SIN tirón al centroide en calma (no se juntan solas). TUNE
+        k_cohesion_panic: float = 1.2,     # cohesión en miedo (apiñamiento). TUNE
+        k_separation: float = 3.0,         # peso de separación (SIEMPRE activa). TUNE
+        r_separation: float | None = None, # m, radio de separación (default ~0.4*cow_spread). TUNE
+        wander_calm: float = 1.0,          # paseo aleatorio en calma. TUNE
+        wander_panic: float = 0.35,        # paseo residual en pánico (rebaño móvil -> rezagado). TUNE
+        r_alarm: float | None = None,      # m: lobo a < r_alarm de una vaca ALARMA al rebaño (default 0.12*min). TUNE
+        r_calm: float | None = None,       # m: el rebaño se calma solo si el lobo > r_calm (histéresis). TUNE
+        r_fear: float | None = None,       # DEPRECATED: sustituido por r_alarm/r_calm (se mantiene por baseline.py v1)
         k_fence: float = 1.5,              # rigidez de la valla blanda (la "correa"). TUNE
+        # --- Instrumentación (verificación de procedencia de capturas) ---
+        iso_sustain_steps: int = 10,       # K: pasos de aislamiento sostenido para "captura limpia"
+        teleport_guard: bool = False,      # log si una entidad se desplaza > su máx por paso * motion_tol
+        motion_tol: float = 1.5,           # tolerancia de desplazamiento por paso (salto/sobrepaso/guardia)
         capture_radius: float | None = None,  # m, a qué distancia MATA (default derivado de geometría)
         # --- Modelo de caza de Muro et al. (2011) ---
         wolf_speed: float = 4.0,                       # m/s del lobo (lejos de la presa)
@@ -101,7 +108,7 @@ class World:
             cow_spawn if cow_spawn is not None else (0.25 * self.W, 0.75 * self.H),
             dtype=float,
         )
-        self.cow_spread = cow_spread if cow_spread is not None else 0.10 * m
+        self.cow_spread = cow_spread if cow_spread is not None else 0.15 * m  # área de pasto (mayor: dispersa)
 
         self.dt = dt
         self.max_steps = max_steps
@@ -110,14 +117,22 @@ class World:
         # Comportamiento de las vacas (la valla blanda usa la zona de pasto: cow_spawn/cow_spread).
         self.cow_speed = cow_speed
         self.cow_speed_jitter = cow_speed_jitter
+        self.cow_spawn_min_sep = (
+            cow_spawn_min_sep if cow_spawn_min_sep is not None else 0.25 * self.cow_spread
+        )
         self.k_cohesion_calm = k_cohesion_calm
         self.k_cohesion_panic = k_cohesion_panic
         self.k_separation = k_separation
         self.r_separation = r_separation if r_separation is not None else 0.4 * self.cow_spread
         self.wander_calm = wander_calm
         self.wander_panic = wander_panic
-        self.r_fear = r_fear if r_fear is not None else 0.25 * m
+        self.r_alarm = r_alarm if r_alarm is not None else 0.12 * m
+        self.r_calm = r_calm if r_calm is not None else 0.20 * m
+        self.r_fear = r_fear  # DEPRECATED: no se usa (superseded por r_alarm/r_calm)
         self.k_fence = k_fence
+        self.iso_sustain_steps = iso_sustain_steps
+        self.teleport_guard = teleport_guard
+        self.motion_tol = motion_tol
 
         # capture_radius (a qué distancia MATA) y d_safe (a qué distancia se ATREVE a
         # quedarse) son INDEPENDIENTES: cada uno derivado de la geometría del campo,
@@ -165,6 +180,14 @@ class World:
         self.drone_state: np.ndarray | None = None      # (n_drones,) ACTIVE/RETURNING/CHARGING/READY
         self.battery_activity: np.ndarray | None = None # (n_drones,) HOOK persecución (bandera #7): multiplica el drenaje
         self.drone_stranded: np.ndarray | None = None   # (n_drones,) HOOK "dron tirado" (sin travel-time no se activa)
+        self.herd_alarmed: bool = False                 # alarma de rebaño (miedo) con histéresis
+        self._iso_streak: np.ndarray | None = None      # (n_cows,) pasos seguidos de aislamiento >= umbral pounce
+        self._cow_isolation: np.ndarray | None = None   # (n_cows,) dist a la vaca más cercana (instrumentación)
+        self._wolf_pounce: bool = False                 # ¿el lobo iba en remate este paso? (instrumentación)
+        self._prev_cows: np.ndarray | None = None       # posiciones previas (saltos/guardia)
+        self._prev_wolves: np.ndarray | None = None
+        self.capture_info: dict | None = None           # procedencia de la última captura
+        self.guard_violations: list = []                # log de la guardia de teletransporte
         self.n_wolves: int = 0          # se sortea en cada reset
         self.step_count: int = 0
         self.status: str = "running"    # running | success | predation | timeout
@@ -178,10 +201,9 @@ class World:
             self._seed = seed
         self.rng = np.random.default_rng(self._seed)
 
-        # Vacas: agrupadas dentro del cluster de spawn (círculo de radio cow_spread).
-        ang = self.rng.uniform(0.0, 2 * np.pi, size=self.n_cows)
-        rad = self.cow_spread * np.sqrt(self.rng.uniform(0.0, 1.0, size=self.n_cows))
-        self.cows = self.cow_spawn + np.column_stack([rad * np.cos(ang), rad * np.sin(ang)])
+        # Vacas: REPARTIDAS por el área de pasto (dispersas, no apiñadas), con separación
+        # mínima al nacer y fuera de establo/central. Determinista con la seed.
+        self.cows = self._spawn_cows()
 
         # Heterogeneidad leve: cada vaca con una velocidad algo distinta (una vez por
         # episodio). La más lenta se rezaga al apiñarse -> queda expuesta = presa del lobo.
@@ -211,6 +233,16 @@ class World:
         # drones actúan). HOOK: stagger=True (battery_check) reparte fases para operación continua.
         self._init_battery(stagger=False)
 
+        # Estado de miedo (alarma de rebaño con histéresis) e instrumentación.
+        self.herd_alarmed = False
+        self._iso_streak = np.zeros(self.n_cows, dtype=int)
+        self._cow_isolation = np.full(self.n_cows, np.inf)
+        self._wolf_pounce = False
+        self._prev_cows = self.cows.copy()
+        self._prev_wolves = self.wolves.copy()
+        self.capture_info = None
+        self.guard_violations = []
+
         self.step_count = 0
         self.status = "running"
         return self.get_observation()
@@ -235,11 +267,14 @@ class World:
         (se recorta a drone_speed). Devuelve la 5-tupla estilo gym:
             (obs, reward, terminated, truncated, info)
         """
+        self._prev_cows = self.cows.copy()   # para la instrumentación (saltos/teletransporte)
+        self._prev_wolves = self.wolves.copy()
         self._apply_drone_actions(actions)  # fase 1: control
         self._update_cows()                 # fase 2: dinámica del entorno
         self._update_wolves()
         self._step_battery()                # fase 3: batería/relevos (independiente de vacas/lobo)
         self.step_count += 1
+        self._update_instrumentation()      # aislamiento sostenido + guardia de teletransporte
 
         terminated, truncated = self._check_terminal()
         reward = self._compute_reward(terminated, truncated)
@@ -325,29 +360,35 @@ class World:
     def _update_cows(self) -> None:
         """Comportamiento del rebaño (desplazamiento directo, sin velocidad en estado).
 
-        Calma: cohesión leve + separación + paseo + valla blanda hacia la zona de pasto.
-        Miedo: la cercanía del lobo sube la cohesión y baja el paseo -> el rebaño se
-        APIÑA (no huye). Con la heterogeneidad de velocidades, la vaca más lenta se
-        rezaga y queda expuesta (la presa del lobo). SIN término de huida del lobo.
+        Calma: pastan DISPERSAS = paseo + separación + valla blanda. SIN tirón al centroide
+        (k_cohesion_calm=0): no se juntan solas, solo reaccionando.
+        Miedo: ALARMA DE REBAÑO por distancia con histéresis (contagio del susto: reacciona
+        el grupo entero). Con la alarma activa se enciende la cohesión de pánico y se mantiene
+        el paseo de pánico; la vaca más lenta se descuelga y queda expuesta. SIN huida del lobo.
         """
         cows = self.cows
-        centroid = cows.mean(axis=0)
 
-        # Miedo por vaca f∈[0,1]: 1 si un lobo está encima, 0 más allá de r_fear.
+        # --- Alarma de rebaño por distancia, con histéresis (enclavamiento) ---
         if self.n_wolves > 0:
-            d_wolf = np.linalg.norm(
-                self.wolves[None, :, :] - cows[:, None, :], axis=2
-            ).min(axis=1)                                              # (n_cows,)
-            f = np.clip((self.r_fear - d_wolf) / self.r_fear, 0.0, 1.0)
+            nearest_wolf = float(np.linalg.norm(
+                self.wolves[None, :, :] - cows[:, None, :], axis=2).min())
         else:
-            f = np.zeros(self.n_cows)
-        f = f[:, None]                                                 # (n_cows, 1)
+            nearest_wolf = np.inf
+        if not self.herd_alarmed and nearest_wolf < self.r_alarm:
+            self.herd_alarmed = True            # se enciende el miedo para TODO el rebaño
+        elif self.herd_alarmed and nearest_wolf > self.r_calm:
+            self.herd_alarmed = False           # solo se calma si el lobo se aleja > r_calm
 
-        # Cohesión hacia el centroide; ganancia interpolada calma->pánico según el miedo.
-        k_coh = self.k_cohesion_calm + (self.k_cohesion_panic - self.k_cohesion_calm) * f
-        cohesion = k_coh * (centroid - cows)
+        # Ganancias según la alarma (binario; añadir rampa solo si el salto se ve mal en render).
+        if self.herd_alarmed:
+            k_coh, wander_mag = self.k_cohesion_panic, self.wander_panic
+        else:
+            k_coh, wander_mag = self.k_cohesion_calm, self.wander_calm   # k_cohesion_calm = 0
 
-        # Separación: empuje desde vecinas dentro de r_separation (más fuerte cuanto más cerca).
+        # Cohesión hacia el centroide (nula en calma; pánico cuando hay alarma).
+        cohesion = k_coh * (cows.mean(axis=0) - cows)
+
+        # Separación: SIEMPRE activa (empuje desde vecinas dentro de r_separation).
         delta = cows[:, None, :] - cows[None, :, :]                    # (n,n,2): i - j
         dd = np.linalg.norm(delta, axis=2)                            # (n,n)
         close = (dd < self.r_separation) & (dd > 1e-9)
@@ -358,13 +399,10 @@ class World:
         )
         separation = self.k_separation * push.sum(axis=1)             # (n,2)
 
-        # Paseo aleatorio; baja con el miedo hasta un residual (no se quedan estáticas:
-        # ese residual hace que la vaca lenta se rezague -> presa aislada para el remate).
-        wander_mag = self.wander_calm * (1.0 - f) + self.wander_panic * f
+        # Paseo aleatorio (magnitud calma o pánico).
         wander = self.rng.normal(0.0, 1.0, size=cows.shape) * wander_mag
 
         # Valla blanda ("correa"): retorno hacia la zona de pasto SOLO si salen de ella.
-        # Sustituye al clamp duro provisional (bandera #3).
         off = cows - self.cow_spawn
         dist_f = np.linalg.norm(off, axis=1, keepdims=True)
         excess = np.maximum(dist_f - self.cow_spread, 0.0)
@@ -415,6 +453,7 @@ class World:
         else:
             prey_isolation = np.inf
         pounce = prey_isolation > self.wolf_pounce_isolation
+        self._wolf_pounce = bool(pounce)   # instrumentación: ¿remate o standoff?
 
         # "engaged": lobo en el anillo (para la repulsión y el hook de velocidad).
         engaged = (dist_prey <= self.d_safe + self.wolf_engage_band).ravel()   # (n_wolves,)
@@ -473,6 +512,7 @@ class World:
         d = np.linalg.norm(self.cows[None, :, :] - self.wolves[:, None, :], axis=2)  # (n_wolves, n_cows)
         if d.min() <= self.capture_radius:
             self.status = "predation"
+            self._record_capture(d)
             return True, False
 
         # 2) Éxito: todas las vacas dentro de la zona segura y todos los lobos fuera.
@@ -488,6 +528,89 @@ class World:
             return False, True
 
         return False, False
+
+    # ------------------------------------------------------------------ #
+    # Instrumentación (verificación de procedencia; NO usa RNG)
+    # ------------------------------------------------------------------ #
+    def _spawn_cows(self) -> np.ndarray:
+        """Reparte n_cows por el área de pasto (radio cow_spread alrededor de cow_spawn),
+        con separación mínima al nacer y fuera de establo/central. Rejection sampling con
+        el RNG del World -> disperso y reproducible (determinista con la seed)."""
+        pts = np.empty((self.n_cows, 2))
+        placed, tries = 0, 0
+        max_tries = 200 * self.n_cows
+
+        def _candidate():
+            ang = self.rng.uniform(0.0, 2 * np.pi)
+            rad = self.cow_spread * np.sqrt(self.rng.uniform(0.0, 1.0))
+            return self.cow_spawn + np.array([rad * np.cos(ang), rad * np.sin(ang)])
+
+        def _in_zone(p):
+            return (np.linalg.norm(p - self.safe_zone[:2]) < self.safe_zone[2]
+                    or np.linalg.norm(p - self.central_station[:2]) < self.central_station[2])
+
+        while placed < self.n_cows and tries < max_tries:
+            tries += 1
+            p = _candidate()
+            if _in_zone(p):
+                continue
+            if placed > 0 and np.linalg.norm(pts[:placed] - p, axis=1).min() < self.cow_spawn_min_sep:
+                continue
+            pts[placed] = p
+            placed += 1
+        # Si la separación mínima impidió colocar todas (raro), rellena sin esa restricción.
+        while placed < self.n_cows:
+            p = _candidate()
+            if _in_zone(p):
+                continue
+            pts[placed] = p
+            placed += 1
+        return pts
+
+    def _update_instrumentation(self) -> None:
+        """Aislamiento por vaca + racha sostenida; y guardia de teletransporte (si activa)."""
+        if self.n_cows > 1:
+            d = np.linalg.norm(self.cows[:, None, :] - self.cows[None, :, :], axis=2)
+            np.fill_diagonal(d, np.inf)
+            iso = d.min(axis=1)
+        else:
+            iso = np.full(self.n_cows, np.inf)
+        self._cow_isolation = iso
+        isolated = iso >= self.wolf_pounce_isolation
+        self._iso_streak = np.where(isolated, self._iso_streak + 1, 0)
+
+        if self.teleport_guard:
+            cow_disp = np.linalg.norm(self.cows - self._prev_cows, axis=1)
+            cow_max = self.cow_speeds * self.dt * self.motion_tol
+            for i in np.where(cow_disp > cow_max)[0]:
+                self.guard_violations.append({"entity": "cow", "idx": int(i), "step": self.step_count,
+                                              "disp": float(cow_disp[i]), "max": float(cow_max[i])})
+            wolf_disp = np.linalg.norm(self.wolves - self._prev_wolves, axis=1)
+            wolf_max = max(self.wolf_speed, self.wolf_speed_near) * self.dt * self.motion_tol
+            for w in np.where(wolf_disp > wolf_max)[0]:
+                self.guard_violations.append({"entity": "wolf", "idx": int(w), "step": self.step_count,
+                                              "disp": float(wolf_disp[w]), "max": float(wolf_max)})
+
+    def _record_capture(self, d: np.ndarray) -> None:
+        """Procedencia de la captura: aislamiento sostenido, persecución, salto/sobrepaso."""
+        wi, ci = np.unravel_index(int(d.argmin()), d.shape)   # lobo captor, vaca presa
+        streak = int(self._iso_streak[ci])
+        sustained = streak >= self.iso_sustain_steps
+        pouncing = bool(self._wolf_pounce)
+        prey_jump = float(np.linalg.norm(self.cows[ci] - self._prev_cows[ci]))
+        prey_jump_flag = prey_jump > self.cow_speeds[ci] * self.dt * self.motion_tol
+        wolf_over = float(np.linalg.norm(self.wolves[wi] - self._prev_wolves[wi]))
+        wolf_over_flag = wolf_over > max(self.wolf_speed, self.wolf_speed_near) * self.dt * self.motion_tol
+        self.capture_info = {
+            "step": self.step_count, "prey_idx": int(ci), "captor_idx": int(wi),
+            "isolation": float(self._cow_isolation[ci]),
+            "pounce_threshold": float(self.wolf_pounce_isolation),
+            "iso_streak": streak, "iso_sustained": bool(sustained),
+            "wolf_pouncing": pouncing,
+            "prey_jump": prey_jump, "prey_jump_flag": bool(prey_jump_flag),
+            "wolf_overshoot": wolf_over, "wolf_overshoot_flag": bool(wolf_over_flag),
+            "clean": bool(sustained and pouncing and not prey_jump_flag and not wolf_over_flag),
+        }
 
     # ------------------------------------------------------------------ #
     # Utilidades

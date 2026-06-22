@@ -4,10 +4,11 @@
 > decisiones tomadas, las herramientas, el plan, las referencias y —muy importante— las
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
-> **Última actualización:** **batería + cola de carga** implementadas (§4.3): régimen permanente
-> 4 activos / 2 cargando / 2 listos, relevos escalonados, **baseline intacto (49%)**. Antes: vacas
-> (calma+miedo) + lobo (Muro+remate) congelados (tag `world-baseline-v1`). Siguiente: escolta /
-> capa de movimiento.
+> **Última actualización:** vacas **pastan dispersas** (cohesión-calma=0) + **alarma de rebaño con
+> histéresis** + **instrumentación de procedencia** (`provenance_check.py`). Hallazgo: 0
+> teletransportes (artefacto refutado), 86/99 capturas limpias, pero la tasa subió a **99% sin
+> drones** (separación de pasto > umbral de pounce). **Checkpoint para revisión: pendiente de
+> recalibrar** (no tocado aún). El baseline v1 (49%) ya no aplica; se re-congelará como v2.
 
 ---
 
@@ -149,22 +150,25 @@ que **solo tienen sentido cuando los drones se muevan** (fases muy posteriores).
 
 ### 4.2. Vacas — calma + miedo  ✅ IMPLEMENTADO (escolta aún PENDIENTE)
 
-- **Sin amenaza (calma):** pastan en la zona de pasto con cohesión leve hacia el centroide,
-  separación (no se apilan) y paseo aleatorio; una **valla blanda** (la "correa") las devuelve a
-  la zona si se alejan — **sustituye al clamp duro provisional (bandera #3 RESUELTA).**
-- **Con amenaza (miedo):** intensidad `f∈[0,1]` por vaca según la cercanía del lobo (`r_fear`);
-  `f` sube la cohesión (calma→pánico) y baja el paseo → el rebaño se **apiña** (radio medio
-  ~4.5 m en calma → ~2.0 m en miedo). **NO hay término de huida**: se agrupan, no corren.
-- **Rezagado emergente:** cada vaca tiene una velocidad algo distinta (`cow_speed_jitter`); la más
-  lenta se queda atrás al apiñarse y queda expuesta = la presa que el lobo selecciona. (Sin nada
-  que lo fuerce: emerge de la heterogeneidad.)
-- **Desplazamiento directo** (sin velocidad en el estado), vectorizado, RNG sembrado.
-- **✅ Captura resuelta (remate):** el conflicto (el lobo simétrico nunca bajaba de ~5.6 m) se
-  resolvió con el **pounce** del lobo (opción A, ratificada): cuando la vaca lenta se rezaga y
-  queda cortada (aislamiento > `wolf_pounce_isolation` ≈ 2.5 m), la jauría cierra a matar.
-  Verificado: **16/40 (40%) predation**, de las cuales 15 son capturas de vaca aislada (no
-  atropello). Se añadió `wander_panic` (paseo residual en pánico) para que la rezagada se separe
-  de verdad. El huddle sigue apretado (radio 4.1→2.1 m). Ver bandera #11.
+- **Sin amenaza (calma):** pastan **DISPERSAS** = paseo + separación + valla blanda. **Cohesión en
+  calma = 0** (corregido: el tirón leve al centroide colapsaba el rebaño solo, sin miedo). Spawn
+  repartido por el área (rejection sampling con separación mínima al nacer, fuera de zonas).
+- **Con amenaza (miedo):** **alarma de REBAÑO por distancia con histéresis** (contagio del susto):
+  el lobo a < `r_alarm` de una vaca enciende el miedo para todo el grupo; solo se calma si el lobo
+  se aleja > `r_calm` (`r_calm>r_alarm`, evita parpadeo). Con la alarma: cohesión de pánico + paseo
+  de pánico → se **apiñan** (verificado: radio 7.6 m calma → 5.4 m alarmado). **NO hay huida.**
+- **Rezagado emergente:** velocidad heterogénea (`cow_speed_jitter`); la más lenta se descuelga al
+  apiñarse y queda expuesta.
+- **Desplazamiento directo** (sin velocidad en el estado), vectorizado, RNG sembrado, reproducible.
+- **🔬 Instrumentación de procedencia** (`world.py` + `provenance_check.py`): por cada captura se
+  registra aislamiento sostenido de la presa, si el lobo iba en persecución, salto de la presa y
+  sobrepaso del lobo (teletransporte), + guardia de movimiento por paso.
+- **⚠️ Checkpoint (pendiente de recalibrar, NO tocado aún):** con el spawn disperso la tasa subió a
+  **99% sin drones** (era 49%). Hallazgo: la separación de pasto (~6 m) **supera** el umbral de
+  pounce (3.75 m = 0.25·cow_spread), así que las vacas ya están "aisladas" pastando → el lobo
+  remata casi siempre, **sin pasar por el huddle**. Lo bueno: **0 teletransportes**, sin saltos ni
+  sobrepasos (refuta el artefacto sospechado); 86/99 capturas limpias. Reconciliar separación vs
+  umbral de pounce es el **siguiente paso** (recalibración del trío).
 - **Escolta — PENDIENTE:** los **collares** conducen el rebaño al refugio (guided herding); los
   **drones escoltan** (pantalla protectora + disuasión). "Escolta" = proteger el traslado, no empujar.
 
@@ -343,6 +347,7 @@ Carpeta `AI_LAB/` (proyecto Python local). Estructura:
 - `main.py` — bucle: reset → obs → coordinador → acciones → step → terminal → métricas.
 - `baseline.py` — **adversario congelado** (config + seeds + métrica de referencia); `build_baseline_world(seed)` y self-check de deriva.
 - `battery_check.py` — verificación macro del subsistema de batería (régimen permanente 4/2/2, escalonado, reproducible).
+- `provenance_check.py` — verifica que las capturas son remates legítimos (aislamiento sostenido + persecución + sin teletransporte), sobre las semillas de baseline.
 
 Decisiones de diseño ratificadas:
 - Cada grupo de entidades = array `(N, 2)` de NumPy (vectoriza y se trocea por agente para MAPPO).
@@ -456,13 +461,14 @@ movimiento de drones todavía (el relevo es un swap de puesto instantáneo).
 
 ## 11. SIGUIENTE PASO
 
-**Escolta / capa de movimiento.** Vacas + lobo + batería cerrados (el mundo respira: adversario al
-49%, relevos en régimen permanente). Falta que los drones se MUEVAN: capa de guiado (pure pursuit),
-los collares conduciendo el rebaño al refugio y los drones apantallando. Al haber movimiento se
-activan los hooks de batería (travel-time del relevo, hueco de cobertura, dron tirado, coste de
-persecución).
+**Recalibrar el trío (dispersión vs umbral de pounce).** El spawn disperso destapó que la
+separación de pasto supera el umbral de pounce → vacas siempre "aisladas" → 99% de captura. Hay
+que reconciliar `cow_spread` / `r_separation` / `wolf_pounce_isolation` (y quizá `r_alarm`) para una
+tasa sensata y que el huddle-rezagado vuelva a ser el mecanismo. Las capturas ya son limpias (0
+teletransportes), así que es solo calibración. **Luego re-congelar baseline v2.**
 
-Después: percepción (sustituto) → coordinador clásico → MARL → comparación.
+Después: escolta / capa de movimiento (pure pursuit, collares al refugio, drones apantallando;
+activa los hooks de batería) → percepción (sustituto) → coordinador clásico → MARL → comparación.
 
 ---
 

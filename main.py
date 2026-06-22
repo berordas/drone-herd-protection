@@ -49,7 +49,7 @@ def main():
     seed = int(sys.argv[1]) if len(sys.argv) > 1 else int(np.random.randint(0, 10000))
     print(f"seed = {seed}  (reproduce con: python main.py {seed})")
 
-    world = World(seed=seed)
+    world = World(seed=seed, teleport_guard=True)
     coordinator = DummyCoordinator(world.n_drones)
 
     history, metrics = run_episode(world, coordinator)
@@ -57,6 +57,16 @@ def main():
     print("Métricas del episodio:")
     for k, v in metrics.items():
         print(f"  {k}: {v}")
+
+    c = world.capture_info
+    if c is not None:
+        print("Procedencia de la captura:")
+        print(f"  presa={c['prey_idx']} aislamiento={c['isolation']:.2f} (umbral {c['pounce_threshold']:.2f}) "
+              f"racha={c['iso_streak']} sostenido={c['iso_sustained']}")
+        print(f"  lobo en persecución={c['wolf_pouncing']} | salto_presa={c['prey_jump']:.3f}({c['prey_jump_flag']}) "
+              f"sobrepaso_lobo={c['wolf_overshoot']:.3f}({c['wolf_overshoot_flag']})  ->  LIMPIA={c['clean']}")
+    if world.guard_violations:
+        print(f"Guardia de teletransporte: {len(world.guard_violations)} violaciones (detalle en provenance_check.py)")
 
     render_episode(world, history)
 
