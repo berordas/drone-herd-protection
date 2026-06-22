@@ -207,8 +207,73 @@ def test_rate():
     print("  split de capturas: ternero=%d adulta=%d" % (kind["calf"], kind["adult"]))
 
 
+def test_grazing_spread():
+    print("=== 9) Espaciado del rebaño al pastar (#1: más repartidas) ===")
+    def settle(**kw):
+        w = World(seed=2, wolves_min=0, wolves_max=0, calf_count_probs=NO_CALVES, **kw)
+        c = DummyCoordinator(w.n_drones)
+        for _ in range(150):
+            w.step(c.act(None))
+        D = np.linalg.norm(w.cows[:, None, :] - w.cows[None, :, :], axis=2)
+        np.fill_diagonal(D, np.inf)
+        return float(D.min(axis=1).mean()), w
+    nn_old, _ = settle(cow_spread=15.0, r_separation=6.0)   # config anterior
+    nn, w = settle()                                        # config nueva (defaults)
+    print("  dist media al vecino más cercano=%.1f m (antes %.1f m) | r_separation=%.1f m cow_spread=%.1f m"
+          % (nn, nn_old, w.r_separation, w.cow_spread))
+    assert nn > nn_old, "FALLO: el rebaño no quedó más repartido"
+    print("  OK\n")
+
+
+def test_wolf_spawn_sector():
+    print("=== 10) Lobos salen JUNTOS de un sector (#2) ===")
+    angles, disp = [], []
+    for s in range(8):
+        w = World(seed=s, wolves_min=4, wolves_max=4, calf_count_probs=NO_CALVES)
+        angles.append(float(np.degrees(w.wolf_spawn_angle)))
+        ctr = w.wolves.mean(axis=0)
+        disp.append(float(np.linalg.norm(w.wolves - ctr, axis=1).mean()))
+    wd = World(seed=0).wolf_spawn_dispersion
+    print("  dispersión media del cúmulo=%.1f m (wolf_spawn_dispersion=%.1f m; pequeña = juntos)"
+          % (np.mean(disp), wd))
+    print("  sector por seed (grados):", [round(a) for a in angles], "-> varía entre episodios")
+    assert np.mean(disp) < 0.25 * min(World(seed=0).W, World(seed=0).H), "FALLO: los lobos no salen agrupados"
+    assert np.std(angles) > 5.0, "FALLO: el sector de spawn no varía entre episodios"
+    print("  OK\n")
+
+
+def test_skirt_around_herd():
+    print("=== 11) El lobo RODEA el rebaño (no lo atraviesa) (#3, prueba clave) ===")
+    def run_skirt(skirt_gain):
+        w = World(seed=4, wolves_min=1, wolves_max=1, calf_count_probs=NO_CALVES,
+                  wolf_skirt_gain=skirt_gain)
+        c = DummyCoordinator(w.n_drones)
+        w.cow_speeds[:] = 0.02 * w.cow_speed                          # rebaño casi congelado (aísla el camino del lobo)
+        w.cows[0] = np.array([90.0, 25.0])                           # PRESA al otro lado del rebaño
+        w.cows[1:] = np.column_stack([np.full(w.n_cows - 1, 50.0),
+                                      np.linspace(19.0, 31.0, w.n_cows - 1)])  # MURO de vacas en medio
+        w.cow_vel[:] = 0.0
+        w.cow_heading[:] = np.pi                                      # de cara al lobo (viene por -x)
+        w.wolves[0] = np.array([10.0, 25.0])                         # lobo al otro lado
+        w.wolf_vel[:] = 0.0
+        w.pack_prey, w.pack_prey_kind, w._ever_committed = 0, "adult", True
+        min_d = np.inf
+        for _ in range(300):
+            w.step(c.act(None))
+            if w.pack_prey != 0:                                     # re-fijar (no debe soltarla, pero por si acaso)
+                w.pack_prey, w.pack_prey_kind = 0, "adult"
+            min_d = min(min_d, float(np.linalg.norm(w.wolves[0] - w.cows[0])))
+        return min_d, w.r_face_safe
+    d_off, _ = run_skirt(0.0)        # SIN rodeo: beelinea y se atasca contra el muro
+    d_on, rf = run_skirt(1.5)        # CON rodeo: bordea hasta el costado de la presa
+    print("  dist MÍN lobo->presa con el rebaño en medio: SIN rodeo=%.1f m | CON rodeo=%.1f m" % (d_off, d_on))
+    assert d_on < d_off, "FALLO: el rodeo no acerca el lobo a la presa"
+    assert d_on < 2.0 * rf, "FALLO: el lobo no alcanza el costado de la presa (%.1f m)" % d_on
+    print("  OK\n")
+
+
 def test_reproducible():
-    print("\n=== 8) Reproducibilidad (misma seed, incluido nº de terneros y defensoras) ===")
+    print("\n=== 12) Reproducibilidad (misma seed, incluido nº de terneros y defensoras) ===")
     w1, *_ = run_ep(7)
     w2, *_ = run_ep(7)
     same = (np.array_equal(w1.cows, w2.cows) and np.array_equal(w1.wolves, w2.wolves)
@@ -227,4 +292,7 @@ if __name__ == "__main__":
     test_calves()
     test_coordination()
     test_rate()
+    test_grazing_spread()
+    test_wolf_spawn_sector()
+    test_skirt_around_herd()
     test_reproducible()

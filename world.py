@@ -55,7 +55,7 @@ class World:
         cow_speed_jitter: float = 0.4,     # heterogeneidad ±frac por vaca -> emerge la débil (la lenta). TUNE
         cow_spawn_min_sep: float | None = None,  # m, separación mínima al nacer (default ~0.25*cow_spread)
         k_separation: float = 3.0,         # peso de separación entre vacas (SIEMPRE activa). TUNE
-        r_separation: float | None = None, # m, radio de separación (default ~0.4*cow_spread). TUNE
+        r_separation: float | None = None, # m, espacio personal al pastar (default ~0.55*cow_spread; sube = más repartidas). TUNE
         wander_calm: float = 0.2,          # velocidad de pastoreo en calma (~m/s; baja = casi quietas). TUNE
         wander_drift: float = 0.12,        # rad/paso: giro del rumbo de pasto (paseo angular lento -> firme). TUNE
         k_fence: float = 1.5,              # rigidez de la valla blanda (la "correa"). TUNE
@@ -74,6 +74,9 @@ class World:
         wolf_speed: float = 4.0,                       # m/s del lobo
         wolf_repulsion_radius: float | None = None,    # reparto angular de la manada (pincer; default 2*r_face_safe)
         wolf_repulsion_strength: float = 1.0,          # peso de la repulsión entre lobos
+        wolf_spawn_dispersion: float | None = None,    # m: dispersión del cúmulo de spawn (salen JUNTOS de un sector; default 0.05*min). TUNE
+        wolf_skirt_gain: float = 1.5,                  # ganancia de la componente TANGENCIAL para BORDEAR el rebaño (no atravesarlo). TUNE
+        wolf_skirt_margin: float | None = None,        # m: holgura sobre la extensión del rebaño-obstáculo (default = r_face_safe). TUNE
         n_min_adult: int = 2,              # nº mínimo de lobos para tumbar a una adulta. TUNE
         r_standoff: float | None = None,   # m: standoff AMPLIO del lobo solo (default 2*r_face_safe). TUNE
         prey_abandon_dist: float | None = None,  # DEPRECATED: abandono por distancia. La presa se fija en t=0 y solo se suelta si se refugia; se ACEPTA pero NO se usa.
@@ -124,7 +127,7 @@ class World:
             cow_spawn if cow_spawn is not None else (0.25 * self.W, 0.75 * self.H),
             dtype=float,
         )
-        self.cow_spread = cow_spread if cow_spread is not None else 0.15 * m  # área de pasto (disperso)
+        self.cow_spread = cow_spread if cow_spread is not None else 0.20 * m  # área de pasto (disperso, repartido)
 
         self.dt = dt
         self.max_steps = max_steps
@@ -137,7 +140,7 @@ class World:
             cow_spawn_min_sep if cow_spawn_min_sep is not None else 0.25 * self.cow_spread
         )
         self.k_separation = k_separation
-        self.r_separation = r_separation if r_separation is not None else 0.4 * self.cow_spread
+        self.r_separation = r_separation if r_separation is not None else 0.55 * self.cow_spread
         self.wander_calm = wander_calm
         self.wander_drift = wander_drift
         self.k_fence = k_fence
@@ -168,6 +171,10 @@ class World:
             wolf_repulsion_radius if wolf_repulsion_radius is not None else 2.0 * self.r_face_safe
         )
         self.wolf_repulsion_strength = wolf_repulsion_strength
+        # Spawn por sector (cúmulo) + rodeo del rebaño-obstáculo.
+        self.wolf_spawn_dispersion = wolf_spawn_dispersion if wolf_spawn_dispersion is not None else 0.05 * m
+        self.wolf_skirt_gain = wolf_skirt_gain
+        self.wolf_skirt_margin = wolf_skirt_margin if wolf_skirt_margin is not None else self.r_face_safe
 
         # capture_radius = a qué distancia un FLANQUEADOR puede tumbar (no mata de pasada: hace
         # falta n_min_adult flanqueadores a la vez fuera del cono). Derivado de la geometría.
@@ -211,6 +218,7 @@ class World:
         self._calf_graze_dir: np.ndarray | None = None  # (n_calves,) deambular leve del ternero
         self.wolves: np.ndarray | None = None
         self.wolf_vel: np.ndarray | None = None      # (n_wolves,2) velocidad (inercia)
+        self.wolf_spawn_angle: float = 0.0           # sector del perímetro por el que entró la manada (rad, RNG)
         self.drones: np.ndarray | None = None
         self.battery: np.ndarray | None = None          # (n_drones,) fracción [0,1]
         self.drone_state: np.ndarray | None = None      # (n_drones,) ACTIVE/RETURNING/CHARGING/READY
@@ -291,9 +299,11 @@ class World:
                                    np.full(self.n_reserve, scy)])
         self.drones = np.vstack([active, reserve])  # filas [0:n_active] activos, resto reserva
 
-        # Lobos: nº aleatorio por episodio; cada uno aparece en el perímetro del campo.
+        # Lobos: nº aleatorio por episodio; TODOS salen AGRUPADOS de un mismo sector del perímetro
+        # (sector sorteado por episodio) -> la manada llega junta y de una dirección (y se aleatoriza
+        # la dirección de ataque entre episodios, bandera #4).
         self.n_wolves = int(self.rng.integers(self.wolves_min, self.wolves_max + 1))
-        self.wolves = self._random_perimeter_points(self.n_wolves)
+        self.wolves = self._spawn_wolves_sector(self.n_wolves)
         self.wolf_vel = np.zeros((self.n_wolves, 2))
 
         # Batería a plena carga al reset (NO se aleatoriza en episodio: solo importa cuando los
@@ -590,7 +600,8 @@ class World:
             Ya NO se abandona por distancia (la presa empieza lejos: los lobos entran del perímetro).
           - Sin presa (lobo solo sin ternero): standoff AMPLIO a la vaca más cercana (no se compromete).
         Reparto de roles EMERGENTE: repulsión entre lobos alrededor de la presa única -> uno de frente
-        (ella lo encara), los demás a los flancos/grupa. Velocidad con INERCIA.
+        (ella lo encara), los demás a los flancos/grupa. Si el rebaño se interpone, el lobo lo BORDEA
+        (componente tangencial) en vez de atravesarlo. Velocidad con INERCIA.
         """
         if self.n_wolves == 0:
             self.pack_prey = -1
@@ -630,6 +641,33 @@ class World:
             circle = tang + radial_hold
             desired = np.where(at_flank[:, None], close_in, circle)
             self._wolf_attacking = bool(np.any(at_flank & (dist.ravel() <= self.r_face_safe)))
+
+        # --- RODEAR el rebaño (no atravesarlo): si las NO-presa se interponen entre el lobo y la
+        #     presa, añade una componente TANGENCIAL (perpendicular a lobo->presa) hacia el lado
+        #     OPUESTO al cúmulo -> el lobo ARQUEA alrededor del rebaño hasta el costado de la presa,
+        #     en vez de beelinear y atascarse contra las vacas que lo encaran. Tangencial (no solo
+        #     repulsión radial, que lo dejaría parado de frente) y comprometido con un lado (sign de s).
+        if self.pack_prey >= 0:
+            prey_pos = self._prey_pos()
+            mask = np.ones(self.n_cows, dtype=bool)
+            if self.pack_prey_kind == "adult":
+                mask[self.pack_prey] = False                 # la presa adulta no es obstáculo de sí misma
+            herd = self.cows[mask]
+            if herd.shape[0] >= 2:
+                C = herd.mean(axis=0)                                          # centroide del cúmulo
+                R_herd = float(np.linalg.norm(herd - C, axis=1).mean()) + self.wolf_skirt_margin
+                to_prey = prey_pos[None, :] - self.wolves
+                L = np.linalg.norm(to_prey, axis=1, keepdims=True)
+                u = to_prey / np.maximum(L, 1e-9)
+                perp = np.column_stack([-u[:, 1], u[:, 0]])
+                to_C = C[None, :] - self.wolves
+                proj = np.sum(to_C * u, axis=1)                               # avance hasta la proyección de C
+                s = np.sum(to_C * perp, axis=1)                               # offset perpendicular de C (con signo)
+                between = (proj > 0.0) & (proj < L.ravel())                   # C está ENTRE el lobo y la presa
+                gate = between * np.clip(1.0 - np.abs(s) / max(R_herd, 1e-9), 0.0, 1.0)  # cruza el cúmulo
+                side = np.where(s >= 0.0, -1.0, 1.0)                          # rodea por el lado OPUESTO a C (commit)
+                skirt = self.wolf_skirt_gain * (gate * L.ravel())[:, None] * (side[:, None] * perp)
+                desired = desired + skirt
 
         # Repulsión entre lobos cerca del rebaño -> reparto angular alrededor de la presa (pincer).
         engaged_w = d_wc.min(axis=1) <= self.r_notice
@@ -945,8 +983,26 @@ class World:
                                  np.array([1.0, 0.0]))
             pts[inside] = center + direction * (r * (1.0 + 1e-6))
 
+    def _spawn_wolves_sector(self, n: int) -> np.ndarray:
+        """Spawnea los n lobos AGRUPADOS en un mismo sector del perímetro (no cada uno en un punto
+        aleatorio distinto): la manada llega junta y de una dirección. El sector se sortea por
+        episodio (RNG sembrado) -> de paso aleatoriza la dirección de ataque (bandera #4).
+
+        Ancla = rayo desde el centro del campo en un ángulo aleatorio, proyectado al borde de la
+        parcela; los lobos se reparten en un cúmulo gaussiano (wolf_spawn_dispersion) alrededor."""
+        center = np.array([self.W / 2.0, self.H / 2.0])
+        self.wolf_spawn_angle = float(self.rng.uniform(0.0, 2 * np.pi))
+        d = np.array([np.cos(self.wolf_spawn_angle), np.sin(self.wolf_spawn_angle)])
+        # Escala del rayo hasta tocar el borde de la parcela (el menor de los dos cruces x/y).
+        t = min((self.W / 2.0) / max(abs(d[0]), 1e-9), (self.H / 2.0) / max(abs(d[1]), 1e-9))
+        anchor = center + d * t
+        pts = anchor + self.rng.normal(0.0, self.wolf_spawn_dispersion, size=(n, 2))
+        self._clip_to_parcel(pts)
+        return pts
+
     def _random_perimeter_points(self, n: int) -> np.ndarray:
-        """n puntos aleatorios sobre el perímetro de la parcela [0,W]x[0,H]."""
+        """n puntos aleatorios sobre el perímetro de la parcela [0,W]x[0,H]. (Conservado como utilidad;
+        el spawn de lobos usa ahora _spawn_wolves_sector, agrupado por sector.)"""
         side = self.rng.integers(0, 4, size=n)   # 0 abajo, 1 arriba, 2 izq, 3 der
         t = self.rng.uniform(0.0, 1.0, size=n)
         pts = np.empty((n, 2))

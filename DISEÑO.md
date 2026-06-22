@@ -4,17 +4,17 @@
 > decisiones tomadas, las herramientas, el plan, las referencias y —muy importante— las
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
-> **Última actualización:** **Tres retoques de pulido** sobre terneros + defensoras + presa común:
-> (1) el **ternero se coloca AL LADO de la defensora** (no encima): muelle a longitud natural =
-> `calf_personal_space` (~1.5 m), verificado dist media **1.46 m**; (2) la **presa se fija en t=0**
-> (no al acercarse el lobo): la manada va a por ella desde el primer paso, y se quita el abandono por
-> distancia (`prey_abandon_dist` DEPRECADO) → re-fijaciones **0**; sin presa solo el lobo solo sin
-> ternero (standoff); (3) **vacas mucho más quietas al pastar**: el deambular ya NO se normaliza a
-> tope (antes pastaban a `cow_speed` siempre); ahora `wander_calm` fija la rapidez de pastoreo →
-> desplazamiento/paso **0.019 m** vs 0.120 a tope. Sin regresiones: lobo solo vs adulta 0, manada
-> flanquea→muere, ternero 38/40, lobo solo vs ternero **0%** (madre frena; reportar, no tunear),
-> firmeza intacta, batería 4/2/2. Tasa sin drones = **88%** (se movió +3 pp por los retoques; no se
-> persigue). Render sin cambios (terneros en color + línea a la madre + realce de defensora).
+> **Última actualización:** **Tres retoques pre-escolta** sobre el modelo "dar la cara" + presa común:
+> (1) **rebaño más repartido al pastar** (sube `r_separation`→0.55·`cow_spread` y `cow_spread`→0.20·min):
+> vecino más cercano medio **6.1→10.2 m**; (2) **lobos salen AGRUPADOS de un sector** del perímetro
+> (`_spawn_wolves_sector`, sorteado por episodio): la manada llega junta y de una dirección, y se
+> aleatoriza la **dirección de ataque** entre episodios (avanza bandera #4); dispersión del cúmulo
+> ~4 m; (3) **el lobo BORDEA el rebaño** en vez de atravesarlo: si las no-presa se interponen entre
+> lobo y presa, una **componente tangencial** (`wolf_skirt_gain`) lo hace arquear alrededor del cúmulo
+> hasta el costado de la presa — verificado: con el rebaño en medio, dist mín lobo→presa **45.7 m (sin
+> rodeo) → 6.0 m (con rodeo)**. Sin regresiones: lobo solo vs adulta 0, manada flanquea→muere, ternero
+> 38/40, lobo solo vs ternero **0%**, firmeza intacta, batería 4/2/2. **NO se tocó** flanqueo/cono/muerte
+> /fijación de presa en t=0. Tasa sin drones = **88%** (baseline self-check 86%; no se persigue).
 
 ---
 
@@ -141,6 +141,16 @@ rules…"*, Behavioural Processes 88(3), 192–197) pero lo hace **DIRECCIONAL**
    `r_standoff`, sin fijar presa). Con ≥ `n_min_adult` lobos, la **manada sí**.
 4. **Repulsión entre lobos** alrededor de la presa única → reparto angular = **pincer** (uno de
    frente, los demás a los flancos). **Banda muerta** (`cone_band`) → no entra-sale en el borde.
+5. **Spawn por sector** (`_spawn_wolves_sector`): todos los lobos salen **agrupados** de un mismo
+   sector del perímetro (sorteado por episodio, RNG) → la manada llega **junta y de una dirección**
+   (dispersión del cúmulo `wolf_spawn_dispersion`). De paso **aleatoriza la dirección de ataque**
+   entre episodios (avanza la bandera #4, útil para que el MARL no memorice de dónde viene el ataque).
+6. **Bordear el rebaño, no atravesarlo** (`wolf_skirt_gain`): si las **no-presa** se interponen entre
+   el lobo y la presa, una **componente TANGENCIAL** (perpendicular a lobo→presa, hacia el lado opuesto
+   al cúmulo, comprometida con un lado) hace que el lobo **arquee alrededor** del rebaño-obstáculo
+   (centroide + extensión + `wolf_skirt_margin`) hasta el costado de la presa, en vez de beelinear y
+   atascarse contra las vacas que lo encaran. Tangencial (no repulsión radial, que lo dejaría parado de
+   frente). La repulsión entre lobos los reparte a lados distintos → flanqueo desde varios costados.
 
 **Muerte por FLANQUEO (según el tipo de presa):**
 - **Adulta:** muere con **≥ `n_min_adult` lobos** a la vez dentro de `capture_radius` y fuera de su
@@ -179,11 +189,13 @@ prefiere al ternero (override en `_select_prey`) y, al rodear el cono de la madr
 no cubre llega a la cría → muere con **1 flanqueador**. **Nota (a verificar, NO tunear):** lobo solo
 vs ternero salió **0%** (la madre frena siempre con los parámetros actuales); se afina en otro paso.
 
-- **Pasto (sin amenaza cerca):** disperso, tranquilo y **casi quieto** = separación + **deambular firme**
-  (paseo **angular lento** del rumbo) + valla blanda. **SIN cohesión/apiñamiento y SIN huida.** La suma
-  de fuerzas ya **NO se normaliza a `cow_speed`** (antes pastaban a tope siempre); su **magnitud** es la
-  rapidez (capada a `cow_speed`), así que `wander_calm` fija la rapidez de pastoreo (verificado
-  **0.019 m/paso** vs 0.120 a tope), mientras separación/valla/ancla siguen reaccionando fuerte.
+- **Pasto (sin amenaza cerca):** disperso, **repartido**, tranquilo y **casi quieto** = separación +
+  **deambular firme** (paseo **angular lento** del rumbo) + valla blanda. **SIN cohesión/apiñamiento y
+  SIN huida.** Espaciado de equilibrio amplio (`r_separation`=0.55·`cow_spread`, `cow_spread`=0.20·min):
+  vecino más cercano medio **~10 m** (antes ~6). La suma de fuerzas ya **NO se normaliza a `cow_speed`**
+  (antes pastaban a tope siempre); su **magnitud** es la rapidez (capada a `cow_speed`), así que
+  `wander_calm` fija la rapidez de pastoreo (verificado **0.019 m/paso** vs 0.120 a tope), mientras
+  separación/valla/ancla siguen reaccionando fuerte.
 - **Dirección de confrontación (`cow_heading`, estado nuevo):** con un lobo dentro de `r_notice`, la
   vaca **gira a encarar** al más amenazante (el más cercano que se acerca) a velocidad angular máx
   `turn_rate` (suave, no salto instantáneo).
@@ -380,7 +392,7 @@ Carpeta `AI_LAB/` (proyecto Python local). Estructura:
 - `main.py` — bucle: reset → obs → coordinador → acciones → step → terminal → métricas.
 - `baseline.py` — **adversario congelado** (config + seeds + métrica de referencia); `build_baseline_world(seed)` y self-check de deriva.
 - `battery_check.py` — verificación macro del subsistema de batería (régimen permanente 4/2/2, escalonado, reproducible).
-- `face_check.py` — verificación del modelo: lobo solo no mata adultas, manada flanquea, **retoque** (presa expuesta), **terneros** (manada caza al ternero / lobo-solo-vs-ternero disputado / 2 terneros), coordinación, instrumentación de #3, tembleque, tasa range(100), reproducibilidad.
+- `face_check.py` — verificación del modelo (12 tests): lobo solo no mata adultas, manada flanquea, **retoque** (presa expuesta), **terneros** (manada caza al ternero / lobo-solo-vs-ternero disputado / 2 terneros), coordinación, instrumentación de #3, tembleque, tasa range(100), **espaciado del rebaño (#1)**, **spawn de lobos por sector (#2)**, **rodeo del rebaño (#3)**, reproducibilidad.
 
 Decisiones de diseño ratificadas:
 - Cada grupo de entidades = array `(N, 2)` de NumPy (vectoriza y se trocea por agente para MAPPO).
@@ -409,13 +421,19 @@ Decisiones de diseño ratificadas:
   abandono por distancia DEPRECADO). Respeta el cono (circula a `r_face_safe`) y cierra por el flanco.
   Modo caza: ternero → basta **1 lobo**; adulta → ≥ `n_min_adult`=2. Repulsión → **pincer**. Inercia en
   vaca/lobo/ternero → movimiento **firme**; el pastoreo en calma es **casi quieto** (magnitud del
-  deambular = rapidez, ya no se normaliza a tope).
+  deambular = rapidez, ya no se normaliza a tope) y **más repartido** (`r_separation`↑).
+- **Spawn por sector + rodeo del rebaño:** los lobos salen **agrupados de un sector** del perímetro
+  (`_spawn_wolves_sector`, sorteado por episodio → dirección de ataque aleatoria, bandera #4); y cuando
+  el rebaño se interpone, el lobo lo **BORDEA** con una componente **tangencial** (`wolf_skirt_gain`,
+  obstáculo = cúmulo de no-presa + `wolf_skirt_margin`) en vez de atravesarlo.
 - **Instrumentación de #3** (`_instrument_flanking`): flanqueadores válidos (umbral 1 ternero /
   `n_min_adult` adulta), primer quórum→muerte, desglose de toques, presas atacadas a la vez.
-- **Verificado (`face_check.py`):** lobo solo vs adulta = **0**; manada flanquea→muere (#3 quórum→muerte);
-  **retoque** presa expuesta (13.7 vs 8.9 m), fijada en **t=0** (re-fijaciones 0); **ternero**: AL LADO
-  (dist 1.46 m), manada caza 38/40, **lobo solo vs ternero 0%** (madre frena; reportado, sin tunear);
-  pastoreo casi quieto (0.019 m/paso); firmeza intacta; **tasa 88%**; reproducible.
+- **Verificado (`face_check.py`, 12 tests):** lobo solo vs adulta = **0**; manada flanquea→muere (#3
+  quórum→muerte); **retoque** presa expuesta (18.2 vs 11.9 m), fijada en **t=0** (re-fijaciones 0);
+  **ternero**: AL LADO (dist ~1.5 m), manada caza 38/40, **lobo solo vs ternero 0%** (madre frena;
+  reportado, sin tunear); pastoreo casi quieto (0.019 m/paso) y **más repartido** (vecino ~10 vs 6 m);
+  **spawn por sector** (cúmulo ~4 m, sector varía); **rodeo del rebaño** (con el rebaño en medio, dist
+  mín lobo→presa **45.7→6.0 m**); firmeza intacta; **tasa 88%**; reproducible.
 - *(Descartado el modelo de apiñamiento/Muro-pounce: el huddle se tragaba a la rezagada. Parámetros
   del modelo viejo —`k_cohesion_*`, `r_alarm/r_calm`, `d_safe`, `pounce_*`— quedan **deprecados pero
   aceptados** para no romper baseline.py v1; ignorados en la dinámica.)*
@@ -453,10 +471,10 @@ movimiento de drones todavía (el relevo es un swap de puesto instantáneo).
 3. ✅ **RESUELTA — Límite provisional de las vacas.** El clamp duro al spawn se ha sustituido por
    la **valla blanda** (fuerza de retorno hacia la zona de pasto) + cohesión. Contención dura solo
    en límites reales (parcela + establo/central, reutilizando el clamp de exclusión existente).
-4. **Variedad de escenarios para el MARL.** El spawn de las vacas es fijo `(0.25W, 0.75H)` y los
-   lobos entran por un lado aleatorio. **Aleatorizar también el spawn del rebaño** (y consolidar
-   variedad de ataques) para que la política **no memorice** "el ataque viene de tal sitio". Para
-   la fase de entrenamiento, no antes.
+4. 🟡 **Variedad de escenarios para el MARL (PARCIAL).** Ya: los lobos entran **agrupados por un
+   sector aleatorio** del perímetro (`_spawn_wolves_sector`) → la **dirección de ataque varía** entre
+   episodios (la política no puede memorizar de dónde viene). Falta **aleatorizar el spawn del rebaño**
+   (hoy fijo `(0.25W, 0.75H)`) para la fase de entrenamiento (no antes).
 5. **Zonas prohibidas del lobo.** Ya implementadas como clamp, pero **cobran sentido real en la
    escolta** (cuando el lobo persiga a las vacas hacia el establo central). Enlaza con "lobos
    fuera del recinto" del criterio de éxito.
@@ -499,10 +517,11 @@ movimiento de drones todavía (el relevo es un swap de puesto instantáneo).
 ## 11. SIGUIENTE PASO
 
 **Adversario vaca+lobo CERRADO ("dar la cara" + presa común + terneros/defensoras, pulido).** Las
-adultas plantan cara y pastan **casi quietas**; la manada **fija la presa en t=0** (ternero si lo hay,
-si no la adulta más expuesta) y va a por ella desde el primer paso; el ternero, **al lado** de su
-madre, muere con 1 flanqueador, la adulta con `n_min_adult`. Movimiento firme. Verificado en
-`face_check.py`; tasa **88%** sin drones (no perseguida).
+adultas plantan cara y pastan **casi quietas y repartidas**; los lobos entran **agrupados por un sector**
+(dirección de ataque variable); la manada **fija la presa en t=0** (ternero si lo hay, si no la adulta
+más expuesta), **bordea el rebaño** si se interpone y va a por ella desde el primer paso; el ternero,
+**al lado** de su madre, muere con 1 flanqueador, la adulta con `n_min_adult`. Movimiento firme.
+Verificado en `face_check.py` (12 tests); tasa **88%** sin drones (no perseguida).
 
 **Siguiente paso = ESCOLTA / capa de movimiento** (ya con los drones): collares que conducen el rebaño
 al refugio (guided herding), drones que **apantallan/disuaden** (pantalla protectora); activa los hooks
@@ -515,8 +534,10 @@ lobo-solo-vs-ternero, hoy 0%).
 Si se quiere que sea disputado (a veces se cuela), afinar `face_cooldown`/`r_face_safe`. Parámetros del
 modelo vaca/ternero: `calf_count_probs`=(1/3,1/3,1/3), `k_calf_cohesion`=1.0, `k_defender_anchor`=0.6,
 `calf_personal_space`=0.5·`capture_radius`≈1.5 m (ternero al lado), `wander_calm`=0.2 (rapidez de
-pastoreo, afinable por render); presa adulta por exposición, fijada en t=0; presa ternero override con
-1 lobo; `prey_abandon_dist` DEPRECADO.)*
+pastoreo); `r_separation`=0.55·`cow_spread`, `cow_spread`=0.20·min (rebaño repartido);
+`wolf_spawn_dispersion`=0.05·min (cúmulo de spawn); `wolf_skirt_gain`=1.5, `wolf_skirt_margin`=`r_face_safe`
+(rodeo del rebaño); presa adulta por exposición, fijada en t=0; presa ternero override con 1 lobo;
+`prey_abandon_dist` DEPRECADO. Todos afinables por render.)*
 
 ---
 

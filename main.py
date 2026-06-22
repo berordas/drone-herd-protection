@@ -61,6 +61,15 @@ def main():
     # Manada (presa común): coordinación + instrumentación del flanqueo (#3) + retoque por exposición.
     mean_simul = world._simul_sum / max(world._simul_steps, 1)
     print(f"Manada (presa común): terneros={world.n_calves}")
+    # Espaciado del rebaño (#1) + spawn de lobos por sector (#2), leídos del estado en t=0.
+    cows0, wolves0 = history[0]["cows"], history[0]["wolves"]
+    Dnn = np.linalg.norm(cows0[:, None, :] - cows0[None, :, :], axis=2)
+    np.fill_diagonal(Dnn, np.inf)
+    print(f"  rebaño al pastar: vecino más cercano medio={Dnn.min(axis=1).mean():.1f} m (repartido)")
+    if world.n_wolves > 0:
+        disp0 = float(np.linalg.norm(wolves0 - wolves0.mean(axis=0), axis=1).mean()) if world.n_wolves > 1 else 0.0
+        print(f"  lobos: entran agrupados por el sector {np.degrees(world.wolf_spawn_angle):.0f}° "
+              f"(dispersión del cúmulo={disp0:.1f} m)")
     pp = world._prey_pos()
     if pp is not None and world.pack_prey_kind == "adult":
         centroid = world.cows.mean(axis=0)
