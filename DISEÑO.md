@@ -4,10 +4,13 @@
 > decisiones tomadas, las herramientas, el plan, las referencias y —muy importante— las
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
-> **Última actualización:** umbral de remate **re-anclado** a `pounce_factor·r_separation` (+asersión)
-> → standoff restaurado (78%). Pero el barrido destapa que **NO hay ventana limpia**: el pasto está
-> MÁS disperso (~7.9 m) que el rezagado alarmado (~3.9 m) → **ventana invertida**. **Decisión conjunta
-> pendiente** (compactar el pasto). Baseline v1 (49%) ya no aplica; se re-congela como v2 más tarde.
+> **Última actualización:** **pounce RELATIVO** (outlier vs mediana del resto, `pounce_margin`) +
+> **cohesión-calma leve** (`k_cohesion_calm=0.30`, grupo suelto). Arregla la inversión de `nn`
+> (pasto 5.5 m > huddle 2.8 m, como debe ser) y el **standoff domina (94%)**. El test de outlier
+> inyectado pasa. Pero el rezagado NATURAL no se aísla lo bastante (outlier ~0.4 < transitorios de
+> pasto ~2.6) → no hay separación limpia a ningún margen ⇒ **excepción del spec: las capturas vendrán
+> de la INTERPOSICIÓN/escolta** (paso siguiente), no de afinar aquí. Tasa baja (22%) esperada (el
+> huddle defiende). Baseline v1 (49%) ya no aplica; se re-congela como v2 tras la escolta.
 
 ---
 
@@ -123,10 +126,14 @@ comunicación ni jerarquía**):
    cerca desde fuera sin atravesar el rebaño).
 2. **Repulsión entre lobos** que están en el "anillo" (a ~`d_safe`) → reparto angular = **cerco
    emergente**.
-3. **Remate ("pounce"):** si la presa queda **realmente cortada** del rebaño (su vaca más próxima
-   a > `wolf_pounce_isolation`), la jauría **abandona el standoff y persigue a matar**. Solo se
-   dispara con una vaca de verdad aislada → captura de la rezagada a tasa sensata (**~40% sin
-   drones**), no por atravesar el grupo. *(KNOB sensible: 2.25→58%, 2.5→40%, 2.75→12%.)*
+3. **Remate ("pounce") — criterio RELATIVO:** la presa cuenta como descolgada cuando su **aislamiento**
+   (dist a su vaca más próxima) supera por `pounce_margin` a la **MEDIANA del aislamiento del RESTO
+   del rebaño AHORA**. Si es así, la jauría **abandona el standoff y persigue a matar**. Relativo →
+   **robusto al espaciado absoluto del pasto** (un umbral fijo no separaba "pasto disperso" de
+   "rezagada": la ventana estaba invertida). Se recalcula cada paso, sin estado oculto. Validado con
+   un **test de outlier inyectado** (`pounce_check.py`): rebaño uniforme → outlier ~0 → standoff;
+   rezagada clara → outlier grande → remate y persecución. *(Deprecados `wolf_pounce_isolation`/
+   `pounce_factor`: el umbral absoluto ya no gobierna; se aceptan solo por baseline.py v1.)*
 
 Capa biológica añadida:
 - **Selección de presa:** el lobo apunta a la vaca **más expuesta** (la más alejada del
@@ -149,9 +156,11 @@ que **solo tienen sentido cuando los drones se muevan** (fases muy posteriores).
 
 ### 4.2. Vacas — calma + miedo  ✅ IMPLEMENTADO (escolta aún PENDIENTE)
 
-- **Sin amenaza (calma):** pastan **DISPERSAS** = paseo + separación + valla blanda. **Cohesión en
-  calma = 0** (corregido: el tirón leve al centroide colapsaba el rebaño solo, sin miedo). Spawn
-  repartido por el área (rejection sampling con separación mínima al nacer, fuera de zonas).
+- **Sin amenaza (calma):** pastan **AGRUPADAS SUELTAS** = **cohesión leve** (`k_cohesion_calm=0.30`,
+  ≪ pánico 1.2) + separación + paseo + valla blanda. El equilibrio cohesión-separación da un grupo de
+  espaciado **moderado** (regresión anti-colapso `pounce_check.py`: spread 3.7 m, vecina 4.3 m; ni
+  →0, el bug de cohesión 0.4, ni →radio del área, la sobre-corrección de cohesión 0 que daba ~8.7 m).
+  Spawn repartido por el área (rejection sampling con separación mínima al nacer, fuera de zonas).
 - **Con amenaza (miedo):** **alarma de REBAÑO por distancia con histéresis** (contagio del susto):
   el lobo a < `r_alarm` de una vaca enciende el miedo para todo el grupo; solo se calma si el lobo
   se aleja > `r_calm` (`r_calm>r_alarm`, evita parpadeo). Con la alarma: cohesión de pánico + paseo
@@ -162,18 +171,20 @@ que **solo tienen sentido cuando los drones se muevan** (fases muy posteriores).
 - **🔬 Instrumentación de procedencia** (`world.py` + `provenance_check.py`): por cada captura se
   registra aislamiento sostenido de la presa, si el lobo iba en persecución, salto de la presa y
   sobrepaso del lobo (teletransporte), + guardia de movimiento por paso.
-- **🔧 Umbral re-anclado:** `wolf_pounce_isolation = pounce_factor · r_separation` (NO a cow_spread),
-  con asersión `> r_separation` (una vaca pastando no puede contar como aislada). Restaura el
-  **STANDOFF**: 78% standoff / 22% remate (antes ~remate permanente → 99% de captura).
-- **⚠️ Checkpoint — NO HAY VENTANA LIMPIA (decisión conjunta pendiente):** el barrido de `pounce_factor`
-  (1.1–1.5) deja el % de capturas limpias clavado en **~70%** (no sube a 100%). Causa medida: la ventana
-  de aislamiento está **INVERTIDA** respecto a lo asumido. Real (media/p90/max): **pasto 7.9/11.6/18 m
-  > rezagada 3.9/8.1 > huddle 3.2**. Las vacas pastan MÁS dispersas (6 vacas en área de radio 15 →
-  ~8 m entre vecinas) que el rezagado alarmado (la huddle aprieta a TODAS, incluida la lenta, a ~4 m),
-  así que **ningún umbral absoluto separa "pasto" de "rezagada"** y el lobo remata durante el PASTO,
-  no en la huddle. Refutado el artefacto: 0 teletransportes/saltos. Hay que **compactar el pasto**
-  (cow_spread/n_cows o una cohesión-calma pequeña) o pasar a un pounce **relativo** al spread vivo del
-  rebaño. NO tocado aquí (excepción del spec): lo decidimos juntos.
+- **🔧 Pounce RELATIVO + cohesión-calma leve (este paso):** el umbral absoluto se sustituye por el
+  **outlier relativo** (ver §4.1.3) y se restaura una cohesión de pasto leve. **Inversión de `nn`
+  ARREGLADA** (media/p90/max): **pasto 5.5/8.6/18 m > huddle 2.8/3.1/16 > rezagada 3.1/3.3/16** — ahora
+  el huddle alarmado es **más apretado** que el pasto (orden correcto). **Standoff DOMINA: 94% standoff
+  / 6% remate.** 0 teletransportes/saltos (artefacto sigue refutado).
+- **⚠️ Checkpoint — el rezagado NATURAL no se aísla (excepción del spec → INTERPOSICIÓN):** el criterio
+  relativo es correcto (test de outlier inyectado pasa), pero contra un lobo **pasivo** el huddle es
+  buena defensa y la rezagada **no se descuelga lo suficiente**: outlier de la rezagada alarmada
+  ~**0.4** (p90 0.6) — POR DEBAJO de los transitorios de pasto (outlier p90 **2.6**, max 11, por el
+  spawn disperso antes de cohesionar). ⇒ **ningún `pounce_margin` separa rezagada de pasto** (a margen
+  3: 22% captura, 68% limpias; sube la limpieza solo subiendo margen y matando la tasa). Esto **es** la
+  excepción del spec: las capturas no salen de afinar la dinámica pasiva, sino de la **interposición/
+  escolta** (paso siguiente) que aísla **activamente** a una vaca. Barrido de margen en
+  `provenance_check.py`. NO se aterriza la tasa aquí.
 - **Escolta — PENDIENTE:** los **collares** conducen el rebaño al refugio (guided herding); los
   **drones escoltan** (pantalla protectora + disuasión). "Escolta" = proteger el traslado, no empujar.
 
@@ -352,7 +363,8 @@ Carpeta `AI_LAB/` (proyecto Python local). Estructura:
 - `main.py` — bucle: reset → obs → coordinador → acciones → step → terminal → métricas.
 - `baseline.py` — **adversario congelado** (config + seeds + métrica de referencia); `build_baseline_world(seed)` y self-check de deriva.
 - `battery_check.py` — verificación macro del subsistema de batería (régimen permanente 4/2/2, escalonado, reproducible).
-- `provenance_check.py` — verifica que las capturas son remates legítimos (aislamiento sostenido + persecución + sin teletransporte), sobre las semillas de baseline.
+- `provenance_check.py` — barre `pounce_margin` y verifica procedencia (aislamiento sostenido + persecución + sin teletransporte) + distribuciones de aislamiento/outlier, sobre las semillas de baseline.
+- `pounce_check.py` — test de **outlier inyectado** (el remate relativo dispara sobre una rezagada y no sobre un rebaño uniforme) + **regresión anti-colapso** del pasto (spread de equilibrio moderado).
 
 Decisiones de diseño ratificadas:
 - Cada grupo de entidades = array `(N, 2)` de NumPy (vectoriza y se trocea por agente para MAPPO).
@@ -374,8 +386,9 @@ Decisiones de diseño ratificadas:
 4. Combinación atracción+repulsión, normalizada a velocidad, **desplazamiento directo (sin
    velocidad en el estado)**. Hook `wolf_speed_near` preparado (no activo).
 5. Zonas prohibidas: **clamp geométrico** por paso fuera de establo y central (NO navegación).
-6. **Remate ("pounce")**: si la presa queda cortada del rebaño (> `wolf_pounce_isolation`), pasa
-   de standoff a persecución pura → caza a la rezagada (~40% sin drones, 15/16 de vaca aislada).
+6. **Remate ("pounce") RELATIVO**: la presa remata si su aislamiento es un **outlier** vs la mediana
+   del resto del rebaño (por `pounce_margin`) → robusto al espaciado del pasto. Contra lobo pasivo el
+   huddle defiende → standoff domina (94%), tasa baja (22%); las capturas limpias vendrán de la escolta.
 - `capture_radius` y `d_safe` **independientes** (desacoplados).
 - Verificado: 30 seeds → 28 timeout / 2 predation (cerco se asienta; las 2 son capturas por paseo
   aleatorio). 0 frames-lobo dentro de establo/central.
@@ -393,8 +406,9 @@ Decisiones de diseño ratificadas:
 adversario (config + 100 seeds) para que FSM y MARL se midan contra lo mismo.
 - **Métrica de referencia (sin drones):** `predation = 49/100 = 49.0%` (Wilson 95% IC 39.4–58.7%).
   Es lo que los coordinadores deben **mejorar** (bajar la depredación).
-- `wolf_pounce_isolation` = **umbral estático** `0.25·cow_spread` (=2.5): cuando entren los drones
-  cambiarán *si una vaca se aísla* (lo medido), no el listón → no contamina "los drones protegen".
+- ⚠️ El baseline v1 (49%) usaba el **umbral absoluto** `wolf_pounce_isolation=2.5`, ya **deprecado**
+  por el pounce relativo (`pounce_margin`); v1 ya no aplica (su self-check deriva a propósito). Se
+  **re-congela como v2** tras la escolta, con la dinámica vaca/lobo definitiva.
 - La batería es **ortogonal** (qué drones hay disponibles, no la dinámica vaca/lobo) → no mueve el
   baseline. busca-huecos/amago son adversarios posteriores de la escalera, no este baseline.
 - ⚠️ NO tocar estos parámetros una vez empiece la comparación; si se recalibra, re-medir ambas ramas.
@@ -452,8 +466,9 @@ movimiento de drones todavía (el relevo es un swap de puesto instantáneo).
     standoff salvo cuando la presa está **cortada** del rebaño (vaca más próxima > ~2.5 m): ahí
     persigue a matar. Da ~40% de captura sin drones (15/16 son de vaca aislada). Se añadió un
     paseo residual en pánico (`wander_panic`) para que la vaca lenta se rezague de verdad.
-    **KNOB sensible** (`wolf_pounce_isolation`): pequeños cambios mueven mucho la tasa → reafinar
-    si se cambian los parámetros de las vacas.
+    **Actualizado:** el umbral absoluto `wolf_pounce_isolation` (KNOB sensible) se sustituyó por el
+    **pounce relativo** (`pounce_margin`, outlier vs mediana del resto) → robusto al espaciado del
+    pasto. Contra lobo pasivo el huddle defiende (standoff 94%); las capturas vendrán de la interposición.
 12. **Pure pursuit y filtro de estimación del lobo.** Reutilizar el pure pursuit (de Robots) en la
     capa de guiado; implementar un **EKF/filtro de partículas** para estimar la trayectoria del
     lobo a partir de detecciones ruidosas (análogo al MCL de la asignatura — el GPS da la
@@ -466,15 +481,23 @@ movimiento de drones todavía (el relevo es un swap de puesto instantáneo).
 
 ## 11. SIGUIENTE PASO
 
-**Decisión conjunta: compactar el pasto (ventana invertida).** El umbral ya está re-anclado y el
-standoff vuelve, pero el pasto está más disperso que el rezagado alarmado → ningún umbral absoluto
-separa pasto de rezagada. Opciones a decidir juntos: (a) **pasto más compacto** (bajar `cow_spread`
-y/o subir `n_cows`, o una cohesión-calma pequeña > 0 que agrupe sin colapsar); (b) **pounce relativo**
-al spread vivo del rebaño (aislada = lejos *comparada con las demás ahora*, no umbral absoluto).
-Luego re-barrer, fijar el factor limpio, y **re-congelar baseline v2**.
+**Adversario vaca+lobo cerrado (pasivo): toca la INTERPOSICIÓN.** El pounce relativo + cohesión-calma
+leve arreglan la inversión (`nn` pasto 5.5 > huddle 2.8) y restauran el **standoff (94%)**; el criterio
+de remate está validado (test de outlier inyectado). Hallazgo: contra un lobo **pasivo** el huddle es
+buena defensa y la rezagada **no se descuelga lo suficiente** (outlier natural ~0.4 < transitorios de
+pasto ~2.6) → **ningún `pounce_margin` separa rezagada de pasto** (excepción del spec). Conclusión: las
+capturas no salen de seguir afinando la dinámica pasiva, sino de **presión activa**.
 
-Después: escolta / capa de movimiento (pure pursuit, collares al refugio, drones apantallando;
-activa los hooks de batería) → percepción (sustituto) → coordinador clásico → MARL → comparación.
+**Siguiente paso = INTERPOSICIÓN de la manada** (escalera de adversarios): el lobo (o la manada)
+**hostiga para partir el rebaño** y aislar activamente a una vaca, en vez de esperar a que se
+descuelgue. Eso genera el outlier real que el criterio relativo ya sabe rematar → capturas limpias a
+tasa sensata. Luego: escolta / capa de movimiento (pure pursuit, collares al refugio, drones
+apantallando; activa los hooks de batería) → percepción (sustituto) → coordinador clásico → MARL →
+comparación. **Re-congelar baseline v2** cuando la dinámica vaca/lobo quede definitiva (tras la escolta).
+
+*(Nota: el transitorio de pasto viene del **spawn disperso** (radio `cow_spread`=15) antes de
+cohesionar al equilibrio (~3.7); compactar el spawn reduciría los pounces tempranos, pero es cambio de
+spawn, fuera del scope de este paso.)*
 
 ---
 

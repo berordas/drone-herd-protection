@@ -46,13 +46,13 @@ class World:
         dt: float = 0.1,
         max_steps: int = 600,
         drone_speed: float = 6.0,     # m/s, escala/tope de las acciones de los drones
-        # --- Comportamiento de las vacas: pastar DISPERSO + miedo de rebaño por distancia ---
+        # --- Comportamiento de las vacas: pastar AGRUPADO (grupo suelto) + miedo de rebaño ---
         cow_speed: float = 1.2,            # m/s base, < wolf_speed (no escapan a la carrera). TUNE
         cow_speed_jitter: float = 0.4,     # heterogeneidad ±frac por vaca -> emerge el rezagado. TUNE
         cow_spawn_min_sep: float | None = None,  # m, separación mínima al nacer (default ~0.25*cow_spread)
-        k_cohesion_calm: float = 0.0,      # SIN tirón al centroide en calma (no se juntan solas). TUNE
+        k_cohesion_calm: float = 0.30,     # cohesión LEVE al pastar (grupo suelto, NO colapsa; << pánico). TUNE
         k_cohesion_panic: float = 1.2,     # cohesión en miedo (apiñamiento). TUNE
-        k_separation: float = 3.0,         # peso de separación (SIEMPRE activa). TUNE
+        k_separation: float = 3.0,         # peso de separación (SIEMPRE activa; equilibra la cohesión). TUNE
         r_separation: float | None = None, # m, radio de separación (default ~0.4*cow_spread). TUNE
         wander_calm: float = 1.0,          # paseo aleatorio en calma. TUNE
         wander_panic: float = 0.35,        # paseo residual en pánico (rebaño móvil -> rezagado). TUNE
@@ -72,8 +72,10 @@ class World:
         wolf_repulsion_radius: float | None = None,    # alcance de la repulsión entre lobos
         wolf_repulsion_strength: float = 1.0,          # peso del término de repulsión
         wolf_engage_band: float | None = None,         # margen sobre d_safe para contar como "en el anillo"
-        pounce_factor: float = 1.2,                    # umbral de remate = pounce_factor * r_separation (>1). TUNE
-        wolf_pounce_isolation: float | None = None,    # m: si None, = pounce_factor * r_separation. TUNE
+        # Remate ("pounce"): criterio RELATIVO al rebaño AHORA (sustituye al umbral absoluto).
+        pounce_margin: float = 3.0,                    # m: remata si el aislamiento de la presa supera la MEDIANA del resto por esto. TUNE
+        pounce_factor: float = 1.2,                    # DEPRECATED: superseded por pounce_margin (se acepta por baseline.py v1)
+        wolf_pounce_isolation: float | None = None,    # DEPRECATED: idem (umbral absoluto, ya no se usa)
         # --- Batería y cola de carga (operación continua; ver battery_check.py) ---
         battery_capacity: float = 600.0,   # s de vuelo a plena carga (batería ~10 min)
         charge_full: float = 300.0,        # s para cargar de 0 a full (~5 min) -> ratio vuelo:carga 2:1
@@ -149,20 +151,16 @@ class World:
         )
         self.wolf_repulsion_strength = wolf_repulsion_strength
         self.wolf_engage_band = wolf_engage_band if wolf_engage_band is not None else 0.5 * self.d_safe
-        # Remate ("pounce"): la presa cuenta como CORTADA si su vaca más próxima está a más de
-        # esto. Anclado a r_separation (NO a cow_spread): "aislada" = más separada de lo normal al
-        # pastar. (Con cow_spread = radio de PASTO, 0.25*cow_spread caía por debajo del pasto y el
-        # lobo entraba en remate permanente -> 99%.) El umbral sigue estático (una vez, aquí).
+        # Remate ("pounce"): criterio RELATIVO (ver _update_wolves). La presa cuenta como CORTADA
+        # cuando su aislamiento (dist a su vaca más próxima) supera por pounce_margin a la MEDIANA
+        # del aislamiento del RESTO del rebaño AHORA. Relativo -> robusto al espaciado absoluto del
+        # pasto (un umbral fijo no separaba "pasto disperso" de "rezagada": la ventana estaba
+        # invertida). Se recalcula cada paso, sin estado oculto.
+        self.pounce_margin = pounce_margin
+        # Deprecados: el umbral absoluto ya NO gobierna el remate. Se conservan para no romper
+        # baseline.py v1 (que los pasa explícitos); no se usan en la dinámica.
         self.pounce_factor = pounce_factor
-        if wolf_pounce_isolation is not None:
-            self.wolf_pounce_isolation = wolf_pounce_isolation   # override explícito (p.ej. baseline v1)
-        else:
-            self.wolf_pounce_isolation = self.pounce_factor * self.r_separation
-            # Asersión de seguridad: una vaca PASTANDO no puede contar como aislada (pounce_factor > 1).
-            assert self.wolf_pounce_isolation > self.r_separation, (
-                "wolf_pounce_isolation (%.2f) debe ser > r_separation (%.2f): el umbral debe superar "
-                "el pasto (pounce_factor > 1)." % (self.wolf_pounce_isolation, self.r_separation)
-            )
+        self.wolf_pounce_isolation = wolf_pounce_isolation
 
         # Batería: tasas DERIVADAS de las capacidades (sin números mágicos). La batería es
         # una fracción [0,1]; drena 1->0 en battery_capacity s, carga 0->1 en charge_full s.
@@ -191,6 +189,7 @@ class World:
         self.herd_alarmed: bool = False                 # alarma de rebaño (miedo) con histéresis
         self._iso_streak: np.ndarray | None = None      # (n_cows,) pasos seguidos de aislamiento >= umbral pounce
         self._cow_isolation: np.ndarray | None = None   # (n_cows,) dist a la vaca más cercana (instrumentación)
+        self._cow_outlier: np.ndarray | None = None     # (n_cows,) outlier relativo del aislamiento (criterio de remate)
         self._wolf_pounce: bool = False                 # ¿el lobo iba en remate este paso? (instrumentación)
         self._prev_cows: np.ndarray | None = None       # posiciones previas (saltos/guardia)
         self._prev_wolves: np.ndarray | None = None
@@ -245,6 +244,7 @@ class World:
         self.herd_alarmed = False
         self._iso_streak = np.zeros(self.n_cows, dtype=int)
         self._cow_isolation = np.full(self.n_cows, np.inf)
+        self._cow_outlier = np.zeros(self.n_cows)
         self._wolf_pounce = False
         self._prev_cows = self.cows.copy()
         self._prev_wolves = self.wolves.copy()
@@ -368,8 +368,9 @@ class World:
     def _update_cows(self) -> None:
         """Comportamiento del rebaño (desplazamiento directo, sin velocidad en estado).
 
-        Calma: pastan DISPERSAS = paseo + separación + valla blanda. SIN tirón al centroide
-        (k_cohesion_calm=0): no se juntan solas, solo reaccionando.
+        Calma: pastan AGRUPADAS SUELTAS = cohesión LEVE + separación + paseo + valla blanda.
+        El equilibrio cohesión-separación da un grupo de espaciado moderado (ni colapsa a un
+        punto ni llena el área): así hay un "rebaño" del que una rezagada pueda destacar.
         Miedo: ALARMA DE REBAÑO por distancia con histéresis (contagio del susto: reacciona
         el grupo entero). Con la alarma activa se enciende la cohesión de pánico y se mantiene
         el paseo de pánico; la vaca más lenta se descuelga y queda expuesta. SIN huida del lobo.
@@ -391,9 +392,9 @@ class World:
         if self.herd_alarmed:
             k_coh, wander_mag = self.k_cohesion_panic, self.wander_panic
         else:
-            k_coh, wander_mag = self.k_cohesion_calm, self.wander_calm   # k_cohesion_calm = 0
+            k_coh, wander_mag = self.k_cohesion_calm, self.wander_calm   # cohesión leve en calma
 
-        # Cohesión hacia el centroide (nula en calma; pánico cuando hay alarma).
+        # Cohesión hacia el centroide (leve en calma; fuerte en pánico).
         cohesion = k_coh * (cows.mean(axis=0) - cows)
 
         # Separación: SIEMPRE activa (empuje desde vecinas dentro de r_separation).
@@ -435,10 +436,10 @@ class World:
           1. Mantener d_safe respecto al rebaño (versión simétrica: se acerca si lejos,
              retrocede si una vaca entra) -> cerca desde fuera sin atravesar.
           2. Repulsión entre lobos en el anillo -> reparto angular (cerco emergente).
-        Remate: si la PRESA está realmente cortada del rebaño (su vaca más próxima a más
-        de wolf_pounce_isolation), la jauría abandona el standoff y CIERRA A MATAR
-        (persecución pura). Solo se dispara con una vaca de verdad aislada -> captura a
-        tasa sensata, no por atravesar el grupo. NO hay busca-huecos ni evasión de drones.
+        Remate: si la PRESA está realmente descolgada del rebaño (su aislamiento es un outlier
+        RELATIVO frente a la mediana del resto, por pounce_margin), la jauría abandona el standoff
+        y CIERRA A MATAR (persecución pura). Criterio relativo -> robusto al espaciado del pasto.
+        NO hay busca-huecos ni evasión de drones.
         """
         if self.n_wolves == 0:
             return
@@ -453,15 +454,13 @@ class World:
         dist_prey = np.linalg.norm(to_prey, axis=1, keepdims=True)  # (n_wolves, 1)
         dir_prey = to_prey / np.maximum(dist_prey, 1e-9)
 
-        # ¿Presa cortada del rebaño? Distancia de la presa a su vaca más próxima del resto.
-        if self.n_cows > 1:
-            d_prey_cows = np.linalg.norm(self.cows - prey, axis=1)
-            d_prey_cows[prey_idx] = np.inf
-            prey_isolation = float(d_prey_cows.min())
-        else:
-            prey_isolation = np.inf
-        pounce = prey_isolation > self.wolf_pounce_isolation
-        self._wolf_pounce = bool(pounce)   # instrumentación: ¿remate o standoff?
+        # ¿Presa REMATABLE? Criterio RELATIVO: su aislamiento (dist a la vaca más próxima) es un
+        # outlier respecto a la MEDIANA del resto del rebaño AHORA. Robusto al espaciado del pasto:
+        # pasto uniforme -> outlier ~0 -> standoff; rezagada -> destaca -> remate. (Recalculado cada
+        # paso desde self.cows, ya actualizado en _update_cows; sin estado oculto entre pasos.)
+        _, outlier = self._herd_isolation()
+        pounce = bool(outlier[prey_idx] >= self.pounce_margin)
+        self._wolf_pounce = pounce   # instrumentación: ¿remate o standoff?
 
         # "engaged": lobo en el anillo (para la repulsión y el hook de velocidad).
         engaged = (dist_prey <= self.d_safe + self.wolf_engage_band).ravel()   # (n_wolves,)
@@ -575,16 +574,28 @@ class World:
             placed += 1
         return pts
 
+    def _herd_isolation(self) -> tuple[np.ndarray, np.ndarray]:
+        """Aislamiento por vaca (dist a la vaca más próxima) y su OUTLIER relativo
+        (aislamiento_i - mediana del aislamiento del RESTO del rebaño). Base del remate
+        relativo y de la racha de instrumentación. Sin estado oculto: solo self.cows."""
+        n = self.n_cows
+        if n < 2:
+            return np.full(n, np.inf), np.zeros(n)
+        d = np.linalg.norm(self.cows[:, None, :] - self.cows[None, :, :], axis=2)
+        np.fill_diagonal(d, np.inf)
+        nn = d.min(axis=1)                       # vecina más próxima de cada vaca
+        if n < 3:
+            return nn, np.zeros(n)               # sin "resto" no hay outlier definible
+        # Outlier de cada vaca frente a la MEDIANA del resto (excluyéndose). n pequeño -> bucle claro.
+        outlier = np.array([nn[i] - np.median(np.delete(nn, i)) for i in range(n)])
+        return nn, outlier
+
     def _update_instrumentation(self) -> None:
-        """Aislamiento por vaca + racha sostenida; y guardia de teletransporte (si activa)."""
-        if self.n_cows > 1:
-            d = np.linalg.norm(self.cows[:, None, :] - self.cows[None, :, :], axis=2)
-            np.fill_diagonal(d, np.inf)
-            iso = d.min(axis=1)
-        else:
-            iso = np.full(self.n_cows, np.inf)
-        self._cow_isolation = iso
-        isolated = iso >= self.wolf_pounce_isolation
+        """Aislamiento por vaca + outlier relativo + racha sostenida; y guardia de teletransporte."""
+        nn, outlier = self._herd_isolation()
+        self._cow_isolation = nn
+        self._cow_outlier = outlier
+        isolated = outlier >= self.pounce_margin            # mismo criterio relativo que el remate
         self._iso_streak = np.where(isolated, self._iso_streak + 1, 0)
 
         if self.teleport_guard:
@@ -612,7 +623,8 @@ class World:
         self.capture_info = {
             "step": self.step_count, "prey_idx": int(ci), "captor_idx": int(wi),
             "isolation": float(self._cow_isolation[ci]),
-            "pounce_threshold": float(self.wolf_pounce_isolation),
+            "outlier": float(self._cow_outlier[ci]),
+            "pounce_margin": float(self.pounce_margin),
             "iso_streak": streak, "iso_sustained": bool(sustained),
             "wolf_pouncing": pouncing,
             "prey_jump": prey_jump, "prey_jump_flag": bool(prey_jump_flag),

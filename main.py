@@ -61,8 +61,8 @@ def main():
     c = world.capture_info
     if c is not None:
         print("Procedencia de la captura:")
-        print(f"  presa={c['prey_idx']} aislamiento={c['isolation']:.2f} (umbral {c['pounce_threshold']:.2f}) "
-              f"racha={c['iso_streak']} sostenido={c['iso_sustained']}")
+        print(f"  presa={c['prey_idx']} aislamiento={c['isolation']:.2f} outlier={c['outlier']:.2f} "
+              f"(margen {c['pounce_margin']:.2f}) racha={c['iso_streak']} sostenido={c['iso_sustained']}")
         print(f"  lobo en persecución={c['wolf_pouncing']} | salto_presa={c['prey_jump']:.3f}({c['prey_jump_flag']}) "
               f"sobrepaso_lobo={c['wolf_overshoot']:.3f}({c['wolf_overshoot_flag']})  ->  LIMPIA={c['clean']}")
     if world.guard_violations:
