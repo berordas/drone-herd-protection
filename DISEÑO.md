@@ -4,13 +4,14 @@
 > decisiones tomadas, las herramientas, el plan, las referencias y —muy importante— las
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
-> **Última actualización:** **pounce RELATIVO** (outlier vs mediana del resto, `pounce_margin`) +
-> **cohesión-calma leve** (`k_cohesion_calm=0.30`, grupo suelto). Arregla la inversión de `nn`
-> (pasto 5.5 m > huddle 2.8 m, como debe ser) y el **standoff domina (94%)**. El test de outlier
-> inyectado pasa. Pero el rezagado NATURAL no se aísla lo bastante (outlier ~0.4 < transitorios de
-> pasto ~2.6) → no hay separación limpia a ningún margen ⇒ **excepción del spec: las capturas vendrán
-> de la INTERPOSICIÓN/escolta** (paso siguiente), no de afinar aquí. Tasa baja (22%) esperada (el
-> huddle defiende). Baseline v1 (49%) ya no aplica; se re-congela como v2 tras la escolta.
+> **Última actualización:** **PIVOTE de modelo de amenaza → "DAR LA CARA"** (se descarta el
+> apiñamiento: el huddle quedaba más apretado que el pasto y se tragaba a la rezagada). Ahora las
+> vacas adultas **plantan cara** (giran a encarar al lobo, cono de seguridad frontal ±45°,
+> enfriamiento de giro) y el lobo es **direccional**: respeta el frente y **ataca por el flanco**;
+> **un lobo solo NO puede** tumbar a una adulta (regla de nº mínimo = 2), una **manada flanquea** y
+> mata a la más débil (la más lenta). Vacas y lobos con **inercia** → movimiento firme (giro medio
+> ~0.1 rad/paso). Verificado en `face_check.py`. Tasa sin drones = **83%** (no se persigue; el lobo
+> completo y los drones llegan en v2). Baseline v1 (49%) ya no aplica; se re-congela como v2.
 
 ---
 
@@ -113,80 +114,61 @@ Notas:
 
 ## 4. Modelo del mundo
 
-### 4.1. Lobo — modelo de Muro et al. (2011) + biología  ✅ IMPLEMENTADO
+### 4.1. Lobo — caza direccional (cono frontal + flanqueo + nº mínimo)  ✅ IMPLEMENTADO
 
-Referencia: **Muro, C., Escobedo, R., Spector, L. & Coppinger, R.P. (2011). "Wolf-pack
-(Canis lupus) hunting strategies emerge from simple rules in computational simulations".
-Behavioural Processes, 88(3), 192–197.** (Grupo de la Universidad de Cantabria.)
+Reutiliza el lobo de **Muro et al. (2011)** (*"Wolf-pack hunting strategies emerge from simple
+rules…"*, Behavioural Processes 88(3), 192–197) pero lo hace **DIRECCIONAL**: respeta el frente de
+la presa y ataca por el flanco. Reglas descentralizadas por lobo (sin comunicación ni jerarquía):
+1. **Selección de objetivo (sin terneros aún):** la adulta **más débil = la más LENTA**
+   (`cow_speeds`, heterogénea y fija por episodio). Es lo que hace que proteger tenga sentido.
+2. **Aproximación respetando el cono frontal:** si el lobo está **en el cono** de la presa (±45°
+   de su mirada) **circula** hacia el flanco manteniendo `r_face_safe`; si está en el **flanco/grupa**
+   (fuera del cono) **cierra a matar**. El standoff de Muro pasa de omnidireccional a **solo en el cono**.
+3. **Regla de número mínimo (`n_min_adult`=2):** un lobo solo **NO ataca** a una adulta — se queda en
+   **standoff amplio** (`r_standoff`), sin intentarlo. Con ≥ `n_min_adult` lobos, la **manada sí**.
+   *(No hay cifra dura en la literatura; 2 es lo fiable y es un parámetro.)*
+4. **Repulsión entre lobos** (reutilizada) → reparto angular = **pincer visible**.
+5. **Banda muerta** (`cone_band`) en la decisión cono/flanco → no entra-sale-entra en el borde.
 
-Dos reglas descentralizadas por lobo (reproducen rastrear, perseguir y rodear, **sin
-comunicación ni jerarquía**):
-1. **Acercarse a la presa hasta una distancia de seguridad `d_safe`** (versión **simétrica**:
-   si la vaca más próxima entra dentro de `d_safe`, el lobo retrocede → mantiene el *standoff* y
-   cerca desde fuera sin atravesar el rebaño).
-2. **Repulsión entre lobos** que están en el "anillo" (a ~`d_safe`) → reparto angular = **cerco
-   emergente**.
-3. **Remate ("pounce") — criterio RELATIVO:** la presa cuenta como descolgada cuando su **aislamiento**
-   (dist a su vaca más próxima) supera por `pounce_margin` a la **MEDIANA del aislamiento del RESTO
-   del rebaño AHORA**. Si es así, la jauría **abandona el standoff y persigue a matar**. Relativo →
-   **robusto al espaciado absoluto del pasto** (un umbral fijo no separaba "pasto disperso" de
-   "rezagada": la ventana estaba invertida). Se recalcula cada paso, sin estado oculto. Validado con
-   un **test de outlier inyectado** (`pounce_check.py`): rebaño uniforme → outlier ~0 → standoff;
-   rezagada clara → outlier grande → remate y persecución. *(Deprecados `wolf_pounce_isolation`/
-   `pounce_factor`: el umbral absoluto ya no gobierna; se aceptan solo por baseline.py v1.)*
+**Muerte por FLANQUEO:** la adulta objetivo muere cuando **≥ `n_min_adult` lobos** están **a la vez**
+dentro de `capture_radius` **y fuera de su cono**. Con 1 lobo (siempre encarado) → 0 flanqueadores →
+**no muere** (validado: 0 depredaciones con 1 lobo, `face_check.py`). Con manada → flanquean → muere.
 
-Capa biológica añadida:
-- **Selección de presa:** el lobo apunta a la vaca **más expuesta** (la más alejada del
-  centroide del rebaño = la rezagada/aislada). Esto es lo que hace que proteger tenga sentido.
-- **Aversión al riesgo:** los lobos mantienen la distancia; `d_safe` representa el respeto a las
-  defensas de la presa. La **disuasión** (ladrido/dron) se modelará subiendo la `d_safe` efectiva
-  (con **habituación**: si el ladrido se repite sin consecuencia, deja de funcionar). *(La
-  disuasión aún no está implementada; ver plan.)*
-- **Biología de soporte:** el ganado doméstico tiene huida disminuida y tiende a agruparse; un
-  lobo puede causar varias bajas si la presa no escapa; la depredación baja donde hay medidas de
-  protección (los drones SON esa medida). Refs: Janeiro-Otero et al. 2020 (selección de presa /
-  depredación de ganado); robótica derivada de Muro (Madden, Arkin & MacNulty 2011; asignación
-  de objetivos de UAVs basada en lobos, Science China 2018).
+**Número de lobos aleatorio por episodio** (1–5): de lobo solitario (no puede) a manada (sí puede).
+**Escalera de adversarios:** ingenuo → **manada direccional (ACTUAL)** → busca-huecos → con amago
+(los dos últimos cuando los drones se muevan). Disuasión (ladrido/dron subiendo la distancia
+efectiva, con habituación) y EKF de estimación del lobo: PENDIENTES (ver plan).
 
-**Número de lobos aleatorio por episodio** (1–5): simula desde lobo solitario a manada.
+### 4.2. Vacas adultas — "DAR LA CARA" (confrontación direccional)  ✅ IMPLEMENTADO (escolta PENDIENTE)
 
-**Escalera de adversarios (eje de robustez del paper):** ingenuo → **manada de Muro (ACTUAL)** →
-busca-huecos → con amago. Los dos últimos explotan los huecos de cobertura de los drones, así
-que **solo tienen sentido cuando los drones se muevan** (fases muy posteriores).
+Modelo de amenaza basado en cómo cazan los lobos de verdad: **el ganado grande no se apiña, planta
+cara** (se gira al lobo y lo confronta); el lobo va a la débil y ataca por el flanco/grupa, evitando
+la cabeza. *(Sustituye al modelo de apiñamiento: al medirlo, el huddle quedaba **más apretado** que
+el pasto y se tragaba a la rezagada → nadie aislado a quien cazar limpiamente. Se conservan pasto
+disperso y heterogeneidad de velocidad.)* Sin terneros aún (paso siguiente): solo vacas adultas.
 
-### 4.2. Vacas — calma + miedo  ✅ IMPLEMENTADO (escolta aún PENDIENTE)
-
-- **Sin amenaza (calma):** pastan **AGRUPADAS SUELTAS** = **cohesión leve** (`k_cohesion_calm=0.30`,
-  ≪ pánico 1.2) + separación + paseo + valla blanda. El equilibrio cohesión-separación da un grupo de
-  espaciado **moderado** (regresión anti-colapso `pounce_check.py`: spread 3.7 m, vecina 4.3 m; ni
-  →0, el bug de cohesión 0.4, ni →radio del área, la sobre-corrección de cohesión 0 que daba ~8.7 m).
-  Spawn repartido por el área (rejection sampling con separación mínima al nacer, fuera de zonas).
-- **Con amenaza (miedo):** **alarma de REBAÑO por distancia con histéresis** (contagio del susto):
-  el lobo a < `r_alarm` de una vaca enciende el miedo para todo el grupo; solo se calma si el lobo
-  se aleja > `r_calm` (`r_calm>r_alarm`, evita parpadeo). Con la alarma: cohesión de pánico + paseo
-  de pánico → se **apiñan** (verificado: radio 7.6 m calma → 5.4 m alarmado). **NO hay huida.**
-- **Rezagado emergente:** velocidad heterogénea (`cow_speed_jitter`); la más lenta se descuelga al
-  apiñarse y queda expuesta.
-- **Desplazamiento directo** (sin velocidad en el estado), vectorizado, RNG sembrado, reproducible.
-- **🔬 Instrumentación de procedencia** (`world.py` + `provenance_check.py`): por cada captura se
-  registra aislamiento sostenido de la presa, si el lobo iba en persecución, salto de la presa y
-  sobrepaso del lobo (teletransporte), + guardia de movimiento por paso.
-- **🔧 Pounce RELATIVO + cohesión-calma leve (este paso):** el umbral absoluto se sustituye por el
-  **outlier relativo** (ver §4.1.3) y se restaura una cohesión de pasto leve. **Inversión de `nn`
-  ARREGLADA** (media/p90/max): **pasto 5.5/8.6/18 m > huddle 2.8/3.1/16 > rezagada 3.1/3.3/16** — ahora
-  el huddle alarmado es **más apretado** que el pasto (orden correcto). **Standoff DOMINA: 94% standoff
-  / 6% remate.** 0 teletransportes/saltos (artefacto sigue refutado).
-- **⚠️ Checkpoint — el rezagado NATURAL no se aísla (excepción del spec → INTERPOSICIÓN):** el criterio
-  relativo es correcto (test de outlier inyectado pasa), pero contra un lobo **pasivo** el huddle es
-  buena defensa y la rezagada **no se descuelga lo suficiente**: outlier de la rezagada alarmada
-  ~**0.4** (p90 0.6) — POR DEBAJO de los transitorios de pasto (outlier p90 **2.6**, max 11, por el
-  spawn disperso antes de cohesionar). ⇒ **ningún `pounce_margin` separa rezagada de pasto** (a margen
-  3: 22% captura, 68% limpias; sube la limpieza solo subiendo margen y matando la tasa). Esto **es** la
-  excepción del spec: las capturas no salen de afinar la dinámica pasiva, sino de la **interposición/
-  escolta** (paso siguiente) que aísla **activamente** a una vaca. Barrido de margen en
-  `provenance_check.py`. NO se aterriza la tasa aquí.
-- **Escolta — PENDIENTE:** los **collares** conducen el rebaño al refugio (guided herding); los
-  **drones escoltan** (pantalla protectora + disuasión). "Escolta" = proteger el traslado, no empujar.
+- **Pasto (sin amenaza cerca):** disperso y tranquilo = separación + **deambular firme** (paseo
+  **angular lento** del rumbo, no aleatorio fresco cada paso) + valla blanda. **SIN cohesión/apiñamiento
+  y SIN huida.**
+- **Dirección de confrontación (`cow_heading`, estado nuevo):** con un lobo dentro de `r_notice`, la
+  vaca **gira a encarar** al más amenazante (el más cercano que se acerca) a velocidad angular máx
+  `turn_rate` (suave, no salto instantáneo).
+- **Cono de seguridad frontal (`cone_half_angle`=45°, `r_face_safe`):** un lobo dentro del cono y a
+  < `r_face_safe` es **empujado** (acotado por paso, sin teletransporte) a `r_face_safe` — le planta
+  cara. Fuera del cono (flancos/grupa) **no hay repulsión**: el lobo entra.
+- **Enfriamiento de giro (`face_cooldown`):** tras encarar a un lobo, espera antes de re-encarar a
+  otro → **mientras está comprometida con uno, el flanco queda abierto** (la ventana que la manada
+  explota). Es la clave del pincer: **no puede dar la cara a todos**.
+- **Débil emergente:** velocidad heterogénea (`cow_speed_jitter`); la **más lenta** es la débil →
+  objetivo del lobo (sin terneros).
+- **Inercia (bandera #1, ahora para vaca y lobo):** llevan **velocidad en el estado**; el
+  desplazamiento suaviza la dirección hacia la deseada (no salta). Movimiento **firme**, verificado:
+  giro medio ~**0.10 rad/paso** (vacas) y ~**0.10** (lobos); la vibración daría ~π/2.
+- **Verificación (`face_check.py`):** 1) lobo solo → 0 muertes, lo mantiene a `r_standoff`=12 m;
+  2) manada → encara a uno, los demás flanquean, **muere la débil** con ≥2 flanqueadores; 3) métrica
+  de tembleque baja; 4) **tasa sin drones = 83%** (no se persigue); 5) reproducible.
+- **Escolta — PENDIENTE:** **collares** conducen el rebaño al refugio; **drones escoltan** (pantalla
+  + disuasión). "Escolta" = proteger el traslado, no empujar.
 
 ### 4.3. Batería y estación de carga  ✅ IMPLEMENTADO (mecánica del mundo)
 
@@ -363,8 +345,7 @@ Carpeta `AI_LAB/` (proyecto Python local). Estructura:
 - `main.py` — bucle: reset → obs → coordinador → acciones → step → terminal → métricas.
 - `baseline.py` — **adversario congelado** (config + seeds + métrica de referencia); `build_baseline_world(seed)` y self-check de deriva.
 - `battery_check.py` — verificación macro del subsistema de batería (régimen permanente 4/2/2, escalonado, reproducible).
-- `provenance_check.py` — barre `pounce_margin` y verifica procedencia (aislamiento sostenido + persecución + sin teletransporte) + distribuciones de aislamiento/outlier, sobre las semillas de baseline.
-- `pounce_check.py` — test de **outlier inyectado** (el remate relativo dispara sobre una rezagada y no sobre un rebaño uniforme) + **regresión anti-colapso** del pasto (spread de equilibrio moderado).
+- `face_check.py` — verificación del modelo "dar la cara": lobo solo no mata, manada flanquea y mata a la débil, métrica de tembleque (movimiento firme), tasa sobre range(100), reproducibilidad.
 
 Decisiones de diseño ratificadas:
 - Cada grupo de entidades = array `(N, 2)` de NumPy (vectoriza y se trocea por agente para MAPPO).
@@ -378,37 +359,31 @@ Decisiones de diseño ratificadas:
   encierra a nadie). **8 drones**: 4 activos en las esquinas del bbox inicial + 4 reserva en fila
   dentro de la central.
 
-✅ **Lobo de Muro — TERMINADO (versión definitiva):**
-1. Selección de presa: vaca más expuesta (más lejos del centroide), misma para todos.
-2. Regla 1 **simétrica**: mantiene `d_safe` (se acerca si lejos, **retrocede si una vaca entra**)
-   → cerca desde fuera sin atravesar (penetración máx ~1.5 m).
-3. Regla 2: repulsión entre lobos en el anillo (`wolf_engage_band`) → cerco emergente.
-4. Combinación atracción+repulsión, normalizada a velocidad, **desplazamiento directo (sin
-   velocidad en el estado)**. Hook `wolf_speed_near` preparado (no activo).
-5. Zonas prohibidas: **clamp geométrico** por paso fuera de establo y central (NO navegación).
-6. **Remate ("pounce") RELATIVO**: la presa remata si su aislamiento es un **outlier** vs la mediana
-   del resto del rebaño (por `pounce_margin`) → robusto al espaciado del pasto. Contra lobo pasivo el
-   huddle defiende → standoff domina (94%), tasa baja (22%); las capturas limpias vendrán de la escolta.
-- `capture_radius` y `d_safe` **independientes** (desacoplados).
-- Verificado: 30 seeds → 28 timeout / 2 predation (cerco se asienta; las 2 son capturas por paseo
-  aleatorio). 0 frames-lobo dentro de establo/central.
-
-✅ **Vacas (calma + miedo) — IMPLEMENTADO:**
-- Calma: cohesión leve + separación + paseo + **valla blanda** (bandera #3 resuelta).
-- Miedo: `f∈[0,1]` por cercanía del lobo sube cohesión y baja paseo → apiñamiento (radio ~4.5→2.0 m),
-  sin huida. Rezagado emergente por heterogeneidad de velocidad (`cow_speed_jitter`).
-- Desplazamiento directo (sin velocidad en estado), vectorizado, reproducible. Contención: 0
-  violaciones (parcela + zonas).
-- ✅ Captura = **~40%** (16/40) tras añadir el **remate** del lobo (bandera #11 resuelta): caza a
-  la vaca rezagada cuando queda cortada del grupo (15/16 son de vaca aislada, no atropello).
+✅ **Modelo "DAR LA CARA" — IMPLEMENTADO (vacas adultas + lobos direccionales):**
+- **Vaca adulta:** pasta dispersa (separación + deambular angular firme + valla blanda, **sin
+  apiñarse, sin huir**); **encara** al lobo dentro de `r_notice` girando a `turn_rate`; **cono frontal**
+  ±`cone_half_angle` lo mantiene a `r_face_safe` (empuje acotado, no salta); **enfriamiento** de giro
+  → el flanco queda abierto. Débil = la más LENTA (`cow_speed_jitter`).
+- **Lobo direccional:** objetivo = la más débil; **respeta el cono** (circula manteniendo `r_face_safe`)
+  y **cierra por el flanco/grupa**; **lobo solo NO ataca** (standoff `r_standoff`); ≥ `n_min_adult`=2
+  → manada flanquea; repulsión entre lobos → pincer. **Muerte por flanqueo**: ≥ `n_min_adult` lobos a
+  la vez dentro de `capture_radius` y fuera del cono.
+- **Inercia** en vaca y lobo (velocidad en el estado; bandera #1 avanzada) → movimiento **firme**.
+- **Zonas prohibidas:** clamp geométrico por paso fuera de establo/central (NO navegación).
+- **Verificado (`face_check.py`):** lobo solo = **0 muertes** (a `r_standoff`=12 m); manada = **muere
+  la débil** con ≥2 flanqueadores; tembleque bajo (~0.10 rad/paso vacas y lobos); **tasa 83%** sin
+  drones; guardia de teletransporte limpia; reproducible.
+- *(Descartado el modelo de apiñamiento/Muro-pounce: el huddle se tragaba a la rezagada. Parámetros
+  del modelo viejo —`k_cohesion_*`, `r_alarm/r_calm`, `d_safe`, `pounce_*`— quedan **deprecados pero
+  aceptados** para no romper baseline.py v1; ignorados en la dinámica.)*
 
 🧊 **Baseline del mundo CONGELADO (`baseline.py`):** tras calibrar vacas + lobo, se fija el
 adversario (config + 100 seeds) para que FSM y MARL se midan contra lo mismo.
 - **Métrica de referencia (sin drones):** `predation = 49/100 = 49.0%` (Wilson 95% IC 39.4–58.7%).
   Es lo que los coordinadores deben **mejorar** (bajar la depredación).
-- ⚠️ El baseline v1 (49%) usaba el **umbral absoluto** `wolf_pounce_isolation=2.5`, ya **deprecado**
-  por el pounce relativo (`pounce_margin`); v1 ya no aplica (su self-check deriva a propósito). Se
-  **re-congela como v2** tras la escolta, con la dinámica vaca/lobo definitiva.
+- ⚠️ El baseline v1 (49%) era del **modelo de apiñamiento**, ahora **DESCARTADO** por el modelo
+  "dar la cara". v1 ya no aplica (su self-check deriva a propósito; mide ~72% con los kwargs viejos
+  ignorados). Se **re-congela como v2** tras la escolta, con la dinámica vaca/lobo definitiva.
 - La batería es **ortogonal** (qué drones hay disponibles, no la dinámica vaca/lobo) → no mueve el
   baseline. busca-huecos/amago son adversarios posteriores de la escalera, no este baseline.
 - ⚠️ NO tocar estos parámetros una vez empiece la comparación; si se recalibra, re-medir ambas ramas.
@@ -426,8 +401,9 @@ movimiento de drones todavía (el relevo es un swap de puesto instantáneo).
 
 > Lista deliberada de cosas aparcadas, para no perderlas.
 
-1. **Velocidad en el estado.** Ahora no está (Muro va por desplazamiento directo). **Meterla
-   cuando llegue la dinámica de dron real** (inercia, límites de aceleración).
+1. 🟡 **Velocidad en el estado (PARCIAL).** Ya está en **vacas y lobos** (inercia → movimiento
+   firme, `cow_vel`/`wolf_vel`). Falta para los **drones** cuando llegue su dinámica real (inercia,
+   límites de aceleración).
 2. **Altura/z como estado.** Conceptual ahora; **añadir al modelar el cono de visión de la
    cámara** (más altura = más área, peor resolución = el compromiso de detección de objetos
    pequeños, donde YOLO26 con su STAL viene bien).
@@ -462,13 +438,11 @@ movimiento de drones todavía (el relevo es un swap de puesto instantáneo).
     comparten el renderizado → la brecha sim-to-real de percepción casi desaparece. Dataset del
     lobo: renderizar lobos sintéticos (Blender / Isaac) — no hay detector de "lobo aéreo" de
     estantería.
-11. ✅ **RESUELTA — Captura del rezagado (opción A, pounce).** El lobo simétrico mantiene el
-    standoff salvo cuando la presa está **cortada** del rebaño (vaca más próxima > ~2.5 m): ahí
-    persigue a matar. Da ~40% de captura sin drones (15/16 son de vaca aislada). Se añadió un
-    paseo residual en pánico (`wander_panic`) para que la vaca lenta se rezague de verdad.
-    **Actualizado:** el umbral absoluto `wolf_pounce_isolation` (KNOB sensible) se sustituyó por el
-    **pounce relativo** (`pounce_margin`, outlier vs mediana del resto) → robusto al espaciado del
-    pasto. Contra lobo pasivo el huddle defiende (standoff 94%); las capturas vendrán de la interposición.
+11. ✅ **RESUELTA — Captura, vía "dar la cara" (pivote).** El modelo de apiñamiento + pounce
+    (relativo o absoluto) se **descartó**: el huddle se tragaba a la rezagada y no había a quién
+    cazar limpiamente. Ahora la captura es por **FLANQUEO** (≥ `n_min_adult` lobos a la vez dentro de
+    `capture_radius` y fuera del cono frontal de la adulta): un lobo solo no puede, la manada sí.
+    Tasa 83% sin drones. Ver §4.1/§4.2.
 12. **Pure pursuit y filtro de estimación del lobo.** Reutilizar el pure pursuit (de Robots) en la
     capa de guiado; implementar un **EKF/filtro de partículas** para estimar la trayectoria del
     lobo a partir de detecciones ruidosas (análogo al MCL de la asignatura — el GPS da la
@@ -481,23 +455,21 @@ movimiento de drones todavía (el relevo es un swap de puesto instantáneo).
 
 ## 11. SIGUIENTE PASO
 
-**Adversario vaca+lobo cerrado (pasivo): toca la INTERPOSICIÓN.** El pounce relativo + cohesión-calma
-leve arreglan la inversión (`nn` pasto 5.5 > huddle 2.8) y restauran el **standoff (94%)**; el criterio
-de remate está validado (test de outlier inyectado). Hallazgo: contra un lobo **pasivo** el huddle es
-buena defensa y la rezagada **no se descuelga lo suficiente** (outlier natural ~0.4 < transitorios de
-pasto ~2.6) → **ningún `pounce_margin` separa rezagada de pasto** (excepción del spec). Conclusión: las
-capturas no salen de seguir afinando la dinámica pasiva, sino de **presión activa**.
+**Adversario vaca+lobo cerrado con el modelo "dar la cara".** Las adultas plantan cara, el lobo
+flanquea, la regla de nº mínimo distingue lobo-solo (no mata) de manada (mata a la débil), y el
+movimiento es firme (inercia). Verificado en `face_check.py`; tasa 83% sin drones (no perseguida).
 
-**Siguiente paso = INTERPOSICIÓN de la manada** (escalera de adversarios): el lobo (o la manada)
-**hostiga para partir el rebaño** y aislar activamente a una vaca, en vez de esperar a que se
-descuelgue. Eso genera el outlier real que el criterio relativo ya sabe rematar → capturas limpias a
-tasa sensata. Luego: escolta / capa de movimiento (pure pursuit, collares al refugio, drones
+**Siguiente paso = TERNEROS + defensores** (el paso que se aparcó aquí a propósito): añadir terneros
+(presa preferente: "los lobos van siempre al ternero") y vacas **defensoras** que se interponen entre
+el ternero y el lobo. Es donde el "dar la cara" gana sentido de grupo (la madre/defensora encara, el
+ternero detrás). Luego: escolta / capa de movimiento (pure pursuit, collares al refugio, drones
 apantallando; activa los hooks de batería) → percepción (sustituto) → coordinador clásico → MARL →
 comparación. **Re-congelar baseline v2** cuando la dinámica vaca/lobo quede definitiva (tras la escolta).
 
-*(Nota: el transitorio de pasto viene del **spawn disperso** (radio `cow_spread`=15) antes de
-cohesionar al equilibrio (~3.7); compactar el spawn reduciría los pounces tempranos, pero es cambio de
-spawn, fuera del scope de este paso.)*
+*(Decisiones de diseño tomadas en este paso, a confirmar: `n_min_adult`=2, `cone_half_angle`=45°,
+`r_notice`=20, `r_face_safe`=6, `r_standoff`=12, `face_cooldown`=1 s, `turn_rate`=2 rad/s, inercia
+vaca/lobo 0.25/0.35, deambular angular `wander_drift`=0.12 rad/paso. Se conservó la repulsión entre
+lobos para el pincer. La tasa 83% se aterriza en v2 con terneros/defensores + drones.)*
 
 ---
 

@@ -60,13 +60,12 @@ def main():
 
     c = world.capture_info
     if c is not None:
-        print("Procedencia de la captura:")
-        print(f"  presa={c['prey_idx']} aislamiento={c['isolation']:.2f} outlier={c['outlier']:.2f} "
-              f"(margen {c['pounce_margin']:.2f}) racha={c['iso_streak']} sostenido={c['iso_sustained']}")
-        print(f"  lobo en persecución={c['wolf_pouncing']} | salto_presa={c['prey_jump']:.3f}({c['prey_jump_flag']}) "
-              f"sobrepaso_lobo={c['wolf_overshoot']:.3f}({c['wolf_overshoot_flag']})  ->  LIMPIA={c['clean']}")
+        print("Procedencia de la captura (flanqueo):")
+        print(f"  presa={c['prey_idx']} (era la más débil={c['is_weakest']}) | "
+              f"flanqueadores={c['n_flankers']} (lobos {c['flankers']}) | "
+              f"lobo más cercano={c['min_wolf_dist']:.2f} m")
     if world.guard_violations:
-        print(f"Guardia de teletransporte: {len(world.guard_violations)} violaciones (detalle en provenance_check.py)")
+        print(f"Guardia de teletransporte: {len(world.guard_violations)} violaciones (detalle en face_check.py)")
 
     render_episode(world, history)
 
