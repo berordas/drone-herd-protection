@@ -21,6 +21,12 @@ escolta/conducción al refugio, batería/carga, observación real y MARL.
 from __future__ import annotations
 import numpy as np
 
+# Estados de batería de cada dron (máquina de estados del MUNDO, distinta del futuro
+# coordinador FSM). RETURNING existe para el vuelo de vuelta real cuando haya movimiento;
+# por ahora es instantáneo (se colapsa dentro del relevo).
+ACTIVE, RETURNING, CHARGING, READY = 0, 1, 2, 3
+DRONE_STATE_NAMES = {ACTIVE: "ACTIVE", RETURNING: "RETURNING", CHARGING: "CHARGING", READY: "READY"}
+
 
 class World:
     def __init__(
@@ -60,6 +66,11 @@ class World:
         wolf_repulsion_strength: float = 1.0,          # peso del término de repulsión
         wolf_engage_band: float | None = None,         # margen sobre d_safe para contar como "en el anillo"
         wolf_pounce_isolation: float | None = None,    # m: aislamiento de la presa que dispara el remate. TUNE
+        # --- Batería y cola de carga (operación continua; ver battery_check.py) ---
+        battery_capacity: float = 600.0,   # s de vuelo a plena carga (batería ~10 min)
+        charge_full: float = 300.0,        # s para cargar de 0 a full (~5 min) -> ratio vuelo:carga 2:1
+        announce_threshold: float = 0.20,  # fracción de batería a la que se pide relevo. TUNE
+        charge_capacity: int | None = None,  # puestos de carga en paralelo (default = nº de reserva)
         seed: int | None = None,
     ):
         # --- configuración (inmutable durante el episodio) ---
@@ -130,6 +141,18 @@ class World:
             wolf_pounce_isolation if wolf_pounce_isolation is not None else 0.25 * self.cow_spread
         )
 
+        # Batería: tasas DERIVADAS de las capacidades (sin números mágicos). La batería es
+        # una fracción [0,1]; drena 1->0 en battery_capacity s, carga 0->1 en charge_full s.
+        self.battery_capacity = battery_capacity
+        self.charge_full = charge_full
+        self.drain_rate_active = 1.0 / battery_capacity   # fracción por segundo (patrulla)
+        self.charge_rate = 1.0 / charge_full              # fracción por segundo
+        self.announce_threshold = announce_threshold
+        self.charge_capacity = (
+            charge_capacity if charge_capacity is not None else self.n_drones - self.n_active
+        )
+        self.relay_travel_time = 0.0   # HOOK: tiempo de vuelo del relevo (0 = instantáneo por ahora)
+
         self._seed = seed
 
         # --- estado mutable (se inicializa en reset) ---
@@ -138,6 +161,10 @@ class World:
         self.cow_speeds: np.ndarray | None = None   # velocidad por vaca (heterogénea, por episodio)
         self.wolves: np.ndarray | None = None
         self.drones: np.ndarray | None = None
+        self.battery: np.ndarray | None = None          # (n_drones,) fracción [0,1]
+        self.drone_state: np.ndarray | None = None      # (n_drones,) ACTIVE/RETURNING/CHARGING/READY
+        self.battery_activity: np.ndarray | None = None # (n_drones,) HOOK persecución (bandera #7): multiplica el drenaje
+        self.drone_stranded: np.ndarray | None = None   # (n_drones,) HOOK "dron tirado" (sin travel-time no se activa)
         self.n_wolves: int = 0          # se sortea en cada reset
         self.step_count: int = 0
         self.status: str = "running"    # running | success | predation | timeout
@@ -180,6 +207,10 @@ class World:
         self.n_wolves = int(self.rng.integers(self.wolves_min, self.wolves_max + 1))
         self.wolves = self._random_perimeter_points(self.n_wolves)
 
+        # Batería a plena carga al reset (NO se aleatoriza en episodio: solo importa cuando los
+        # drones actúan). HOOK: stagger=True (battery_check) reparte fases para operación continua.
+        self._init_battery(stagger=False)
+
         self.step_count = 0
         self.status = "running"
         return self.get_observation()
@@ -207,6 +238,7 @@ class World:
         self._apply_drone_actions(actions)  # fase 1: control
         self._update_cows()                 # fase 2: dinámica del entorno
         self._update_wolves()
+        self._step_battery()                # fase 3: batería/relevos (independiente de vacas/lobo)
         self.step_count += 1
 
         terminated, truncated = self._check_terminal()
@@ -225,6 +257,70 @@ class World:
         scale = np.minimum(1.0, self.drone_speed / np.maximum(speed, 1e-9))
         self.drones = self.drones + vel * scale * self.dt
         self._clip_to_parcel(self.drones)
+
+    # ------------------------------------------------------------------ #
+    # Batería y cola de carga (mecánica del MUNDO, automática por umbral)
+    # ------------------------------------------------------------------ #
+    def _init_battery(self, stagger: bool = False) -> None:
+        """Inicializa batería/estado de los drones. Los primeros n_active son los puestos
+        activos; el resto, en la central. stagger=True reparte fases con el RNG (operación
+        continua); stagger=False = todos a plena carga (reset de episodio)."""
+        n, na = self.n_drones, self.n_active
+        self.battery = np.ones(n)
+        self.drone_state = np.full(n, READY, dtype=int)
+        self.drone_state[:na] = ACTIVE
+        self.battery_activity = np.ones(n)        # HOOK persecución (1.0 = patrulla)
+        self.drone_stranded = np.zeros(n, dtype=bool)  # HOOK "dron tirado" (no se activa sin travel-time)
+        if not stagger:
+            return
+
+        # Arranque escalonado (RNG sembrado) -> depleciones/relevos repartidos, no simultáneos.
+        a = self.announce_threshold
+        # Activos: baterías equiespaciadas en (a, 1], en orden RNG -> se vacían a tiempos distintos.
+        self.battery[:na] = a + (1.0 - a) * (self.rng.permutation(na) + 1) / na
+        # Central: mitad listos a tope, mitad cargando a niveles repartidos (quién es quién, RNG).
+        central = np.arange(na, n)
+        self.rng.shuffle(central)
+        n_ready = central.size // 2
+        self.drone_state[central[:n_ready]] = READY
+        self.battery[central[:n_ready]] = 1.0
+        self.drone_state[central[n_ready:]] = CHARGING
+        self.battery[central[n_ready:]] = self.rng.uniform(a, 1.0, size=central.size - n_ready)
+
+    def _step_battery(self) -> None:
+        """Avanza la batería y resuelve los relevos. Independiente de vacas/lobo: solo toca
+        batería/estado/posición de drones (drivable en aislado para battery_check.py).
+        NO usa el RNG (determinista) -> no perturba el stream de vacas/lobo (baseline intacto)."""
+        st, bat = self.drone_state, self.battery
+
+        # 1) Drenaje de activos. HOOK persecución (bandera #7): battery_activity multiplica.
+        active = st == ACTIVE
+        bat[active] -= self.drain_rate_active * self.battery_activity[active] * self.dt
+
+        # 2) Carga en paralelo hasta charge_capacity (si sobran, cargan los más vacíos).
+        charging = np.where(st == CHARGING)[0]
+        if charging.size:
+            slots = (charging if charging.size <= self.charge_capacity
+                     else charging[np.argsort(bat[charging])][:self.charge_capacity])
+            bat[slots] += self.charge_rate * self.dt
+        np.clip(bat, 0.0, 1.0, out=bat)
+
+        # 3) Cargado a tope -> READY (ni drena ni carga, espera puesto libre).
+        st[(st == CHARGING) & (bat >= 1.0 - 1e-9)] = READY
+
+        # 4) Activo bajo umbral -> relevo automático (regla del mundo; SEAM: exponer como
+        #    acción "pedir relevo" del coordinador más adelante).
+        for i in np.where(active & (bat <= self.announce_threshold))[0]:
+            central = np.where((st == CHARGING) | (st == READY))[0]
+            if central.size == 0:
+                break  # invariante: n_drones > n_active -> siempre hay drones en central
+            j = central[np.argmax(bat[central])]   # el MÁS cargado (no espera al 100%)
+            # Relevo INSTANTÁNEO = swap de rol + puesto (posición). HOOK travel-time
+            # (relay_travel_time): con movimiento, el saliente iría por RETURNING dejando el
+            # puesto descubierto (hueco de cobertura) y el entrante tardaría en llegar.
+            self.drones[[i, j]] = self.drones[[j, i]]
+            st[i] = CHARGING   # saliente -> central (carga desde ~announce_threshold)
+            st[j] = ACTIVE     # entrante cubre el puesto liberado
 
     def _update_cows(self) -> None:
         """Comportamiento del rebaño (desplazamiento directo, sin velocidad en estado).

@@ -4,10 +4,10 @@
 > decisiones tomadas, las herramientas, el plan, las referencias y —muy importante— las
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
-> **Última actualización:** vacas (calma + miedo, bandera #3) + **remate ("pounce") del lobo**
-> resuelto, y **baseline del mundo CONGELADO** (`baseline.py`): captura **49% sin drones**
-> (Wilson 95% IC 39–59%, 100 seeds) = referencia fija para comparar FSM vs MARL. El umbral del
-> pounce es **estático** (`0.25·cow_spread`), no se acopla al huddle vivo. Siguiente: batería (§4.3).
+> **Última actualización:** **batería + cola de carga** implementadas (§4.3): régimen permanente
+> 4 activos / 2 cargando / 2 listos, relevos escalonados, **baseline intacto (49%)**. Antes: vacas
+> (calma+miedo) + lobo (Muro+remate) congelados (tag `world-baseline-v1`). Siguiente: escolta /
+> capa de movimiento.
 
 ---
 
@@ -168,8 +168,20 @@ que **solo tienen sentido cuando los drones se muevan** (fases muy posteriores).
 - **Escolta — PENDIENTE:** los **collares** conducen el rebaño al refugio (guided herding); los
   **drones escoltan** (pantalla protectora + disuasión). "Escolta" = proteger el traslado, no empujar.
 
-### 4.3. Batería y estación de carga — PENDIENTE
+### 4.3. Batería y estación de carga  ✅ IMPLEMENTADO (mecánica del mundo)
 
+**Implementado** (`world.py: _init_battery/_step_battery`, verificado en `battery_check.py`):
+máquina de estados por dron `ACTIVE → RETURNING → CHARGING → READY → ACTIVE`; batería fracción
+[0,1] con tasas DERIVADAS de las capacidades (`drain=1/600 s⁻¹`, `charge=1/300 s⁻¹`); **cola sin
+emparejamiento** (al liberarse un puesto sale el más cargado de la central, sin esperar al 100%);
+**arranque escalonado** (RNG, solo en operación continua). Régimen permanente verificado:
+**4 activos / 2 cargando / 2 listos**, relevos escalonados (~1 cada 125 s, 0 simultáneos), siempre
+4 puestos cubiertos, **baseline intacto** (49%). Es **automático por umbral** (regla del mundo), no
+acción del coordinador (seam para exponer "pedir relevo" luego). **Hooks**: `battery_activity`
+(coste de persecución, bandera #7), `relay_travel_time` (vuelo de vuelta + hueco de cobertura),
+`drone_stranded` (dron tirado), y stagger/randomización de batería inicial de episodio.
+
+Diseño de referencia (sigue válido):
 - **8 drones**: 4 activos + 4 en reserva cargando. **Batería = 10 min, carga = 5 min** (elegido
   para ver bien los relevos). Ratio vuelo:carga = 2:1 → para 4 activos continuos hacen falta 6;
   con 8 hay holgura (en régimen permanente: 4 volando, ~2 cargando, ~2 listos).
@@ -330,6 +342,7 @@ Carpeta `AI_LAB/` (proyecto Python local). Estructura:
 - `coordinators.py` — `DummyCoordinator` (ignora obs, devuelve "todos quietos"); FSM y MARL después.
 - `main.py` — bucle: reset → obs → coordinador → acciones → step → terminal → métricas.
 - `baseline.py` — **adversario congelado** (config + seeds + métrica de referencia); `build_baseline_world(seed)` y self-check de deriva.
+- `battery_check.py` — verificación macro del subsistema de batería (régimen permanente 4/2/2, escalonado, reproducible).
 
 Decisiones de diseño ratificadas:
 - Cada grupo de entidades = array `(N, 2)` de NumPy (vectoriza y se trocea por agente para MAPPO).
@@ -376,6 +389,13 @@ adversario (config + 100 seeds) para que FSM y MARL se midan contra lo mismo.
   baseline. busca-huecos/amago son adversarios posteriores de la escalera, no este baseline.
 - ⚠️ NO tocar estos parámetros una vez empiece la comparación; si se recalibra, re-medir ambas ramas.
 
+🔋 **Batería + cola de carga — IMPLEMENTADO** (`_init_battery`/`_step_battery`, `battery_check.py`):
+régimen permanente 4 activos / 2 cargando / 2 listos, relevos escalonados (~1 cada 125 s, 0
+simultáneos), invariante "4 puestos siempre cubiertos", reproducible, **baseline intacto (49%)**.
+Automático por umbral; arrays de batería paralelos a posiciones; hooks para persecución
+(`battery_activity`) / travel-time (`relay_travel_time`) / dron tirado (`drone_stranded`). Sin
+movimiento de drones todavía (el relevo es un swap de puesto instantáneo).
+
 ---
 
 ## 10. 🚩 Banderas levantadas / pendientes para después
@@ -400,9 +420,11 @@ adversario (config + 100 seeds) para que FSM y MARL se midan contra lo mismo.
 6. **Disuasión con habituación.** No implementada. El ladrido sube la `d_safe` efectiva del lobo;
    el efecto **decae con el uso repetido**. Es lo que hace que la estrategia sea "ganar tiempo
    para escoltar", no "ladrar para siempre".
-7. **Batería: supuesto a relajar.** "No gasta batería mientras resuelve un problema" es irreal.
-   Mejor: perseguir gasta, y el dron nunca se compromete a una persecución que no pueda costear
-   (proteger reserva de retorno). El negativo por "dron tirado" sigue siendo necesario.
+7. **Batería: coste de persecución (HOOK puesto).** El subsistema base ya está (§4.3); falta el
+   coste extra al perseguir. Hook listo: `battery_activity` multiplica el drenaje (1.0 = patrulla).
+   Con movimiento, perseguir gastará más y el dron no debe comprometerse a una persecución que no
+   pueda costear (proteger reserva de retorno). El negativo por "dron tirado" (`drone_stranded`,
+   flag preparado) se activa cuando haya travel-time.
 8. **Alerta como acción aprendible.** En la v1 la alerta es **automática por umbral**. Dejar que
    la política aprenda *cuándo/qué* comunicar es **extensión avanzada** (y zona inestable del
    MARL: premiar/penalizar el avisar directamente puede enseñar a callar amenazas — ir con pies
@@ -434,12 +456,13 @@ adversario (config + 100 seeds) para que FSM y MARL se midan contra lo mismo.
 
 ## 11. SIGUIENTE PASO
 
-**Batería y estación de carga (§4.3).** Vacas (calma + miedo) y lobo (Muro + remate) cerrados, con
-captura ~40% sin drones → hay un problema real que resolver. Toca el ciclo de batería: 8 drones
-(4 activos + 4 reserva), batería ~10 min / carga ~5 min, **cola de carga** (sale el más cargado),
-arranque escalonado, y el negativo por "dron tirado sin batería".
+**Escolta / capa de movimiento.** Vacas + lobo + batería cerrados (el mundo respira: adversario al
+49%, relevos en régimen permanente). Falta que los drones se MUEVAN: capa de guiado (pure pursuit),
+los collares conduciendo el rebaño al refugio y los drones apantallando. Al haber movimiento se
+activan los hooks de batería (travel-time del relevo, hueco de cobertura, dron tirado, coste de
+persecución).
 
-Después: escolta → percepción (sustituto) → coordinador clásico → MARL → comparación.
+Después: percepción (sustituto) → coordinador clásico → MARL → comparación.
 
 ---
 
