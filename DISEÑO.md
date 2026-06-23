@@ -9,11 +9,12 @@
 > Ahora el campo es 300×300 (×3) y `r_detect` sigue 100 m (= ⅓ del campo): los lobos salen del perímetro
 > lejos, se acercan, y un dron los detecta a 100 m → **vigilancia previa real** (paso a ESCOLTA: mediana
 > **~281 pasos**, antes ~0). Para que agrandar el campo NO desparrame nada, la **escala biológica se fija
-> ABSOLUTA** (m, no fracción de `min(W,H)`): extensión del rebaño (`cow_spread`=20, `r_separation`=11),
+> ABSOLUTA** (m, no fracción de `min(W,H)`): extensión del rebaño (`cow_spread`=**40**, `r_separation`=**22**,
+> abiertos para que pasten DISPERSOS en el campo de 300 m — par afinable `HERD_SPREAD`/`HERD_SEPARATION`),
 > cúmulo de spawn (`wolf_spawn_dispersion`=5) y **radios de combate/percepción** (`r_notice`=20,
 > `r_face_safe`=6, `capture_radius`=3) — el lobo es un lobo a cualquier parcela. **Escala = LAYOUT**
 > (establo, central, spawn, perímetro, `max_episode_steps`). `face_check` (modelo, invariante de escala)
-> corre en el campo calibrado 100×100; la **fijación** se prueba a 300 (espaciado 10 m, dispersión 4 m).
+> corre en el campo calibrado 100×100; la **fijación** se prueba a 300 (espaciado **~20 m**, dispersión 4 m).
 > Tasa de episodio completo a 300 = **~87%** (igual que antes; solo tarda más). Todo verde.
 >
 > **Escolta · paso 1 — el TERMINAL (el "juez").** Antes de añadir guiado al
@@ -210,8 +211,9 @@ vs ternero salió **0%** (la madre frena siempre con los parámetros actuales); 
 
 - **Pasto (sin amenaza cerca):** disperso, **repartido**, tranquilo y **casi quieto** = separación +
   **deambular firme** (paseo **angular lento** del rumbo) + valla blanda. **SIN cohesión/apiñamiento y
-  SIN huida.** Espaciado de equilibrio amplio (`r_separation`=0.55·`cow_spread`, `cow_spread`=0.20·min):
-  vecino más cercano medio **~10 m** (antes ~6). La suma de fuerzas ya **NO se normaliza a `cow_speed`**
+  SIN huida.** Espaciado de equilibrio amplio y ABSOLUTO (`cow_spread`=40 m = zona de pasto/valla blanda,
+  `r_separation`=22 m ≈ 0.55·`cow_spread`; par `HERD_SPREAD`/`HERD_SEPARATION` afinable por render):
+  vecino más cercano medio **~20 m** en el campo de 300 (rebaño disperso, no apelotonado). La suma de fuerzas ya **NO se normaliza a `cow_speed`**
   (antes pastaban a tope siempre); su **magnitud** es la rapidez (capada a `cow_speed`), así que
   `wander_calm` fija la rapidez de pastoreo (verificado **0.019 m/paso** vs 0.120 a tope), mientras
   separación/valla/ancla siguen reaccionando fuerte.
@@ -603,7 +605,7 @@ con el adversario completo.
 Si se quiere que sea disputado (a veces se cuela), afinar `face_cooldown`/`r_face_safe`. Parámetros del
 modelo vaca/ternero: `calf_count_probs`=(1/3,1/3,1/3), `k_calf_cohesion`=1.0, `k_defender_anchor`=0.6,
 `calf_personal_space`=0.5·`capture_radius`≈1.5 m (ternero al lado), `wander_calm`=0.2 (rapidez de
-pastoreo); `r_separation`=0.55·`cow_spread`, `cow_spread`=0.20·min (rebaño repartido);
+pastoreo); `cow_spread`=`HERD_SPREAD`=40 m, `r_separation`=`HERD_SEPARATION`=22 m (rebaño disperso, ABSOLUTO);
 `wolf_spawn_dispersion`=0.05·min (cúmulo de spawn); `wolf_skirt_gain`=1.5, `wolf_skirt_margin`=`r_face_safe`
 (rodeo del rebaño); presa adulta por exposición, fijada en t=0; presa ternero override con 1 lobo;
 `prey_abandon_dist` DEPRECADO. Todos afinables por render.)*

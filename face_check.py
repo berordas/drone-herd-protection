@@ -229,11 +229,12 @@ def test_grazing_spread():
         D = np.linalg.norm(w.cows[:, None, :] - w.cows[None, :, :], axis=2)
         np.fill_diagonal(D, np.inf)
         return float(D.min(axis=1).mean()), w
-    nn_old, _ = settle(cow_spread=15.0, r_separation=6.0)   # config anterior
-    nn, w = settle()                                        # config nueva (defaults)
-    print("  dist media al vecino más cercano=%.1f m (antes %.1f m) | r_separation=%.1f m cow_spread=%.1f m"
+    nn_old, _ = settle(cow_spread=20.0, r_separation=11.0)  # huella anterior (campo 300 apelotonado)
+    nn, w = settle()                                        # huella nueva (defaults dispersos)
+    print("  dist media al vecino más cercano=%.1f m (huella anterior %.1f m) | r_separation=%.1f m cow_spread=%.1f m"
           % (nn, nn_old, w.r_separation, w.cow_spread))
     assert nn > nn_old, "FALLO: el rebaño no quedó más repartido"
+    assert nn > 15.0, "FALLO: el espaciado no subió a ~20 m con la huella nueva"
     print("  OK\n")
 
 

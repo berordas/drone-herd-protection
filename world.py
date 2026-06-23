@@ -31,6 +31,13 @@ import numpy as np
 ACTIVE, RETURNING, CHARGING, READY = 0, 1, 2, 3
 DRONE_STATE_NAMES = {ACTIVE: "ACTIVE", RETURNING: "RETURNING", CHARGING: "CHARGING", READY: "READY"}
 
+# --- HUELLA DEL REBAÑO AL PASTAR (escala biológica ABSOLUTA, en metros; NO depende del campo) ---
+# Par fácil de afinar por render: con un campo de 300 m el rebaño debe verse DISPERSO ("dar la cara,
+# no apiñamiento"), no apelotonado. HERD_SPREAD = radio de la zona de pasto (valla blanda);
+# HERD_SEPARATION = espacio personal entre vacas (~0.55 * HERD_SPREAD).
+HERD_SPREAD = 40.0        # m (cow_spread)
+HERD_SEPARATION = 22.0    # m (r_separation)
+
 
 class World:
     def __init__(
@@ -139,7 +146,7 @@ class World:
             cow_spawn if cow_spawn is not None else (0.25 * self.W, 0.75 * self.H),
             dtype=float,
         )
-        self.cow_spread = cow_spread if cow_spread is not None else 20.0  # m ABSOLUTOS: área de pasto (no escala)
+        self.cow_spread = cow_spread if cow_spread is not None else HERD_SPREAD  # m ABSOLUTOS: zona de pasto (no escala)
 
         self.dt = dt
         self.max_steps = max_steps
@@ -152,7 +159,7 @@ class World:
             cow_spawn_min_sep if cow_spawn_min_sep is not None else 0.25 * self.cow_spread
         )
         self.k_separation = k_separation
-        self.r_separation = r_separation if r_separation is not None else 11.0   # m ABSOLUTOS (espacio personal; era 0.55*cow_spread)
+        self.r_separation = r_separation if r_separation is not None else HERD_SEPARATION  # m ABSOLUTOS (~0.55*cow_spread)
         self.wander_calm = wander_calm
         self.wander_drift = wander_drift
         self.k_fence = k_fence
