@@ -4,7 +4,19 @@
 > decisiones tomadas, las herramientas, el plan, las referencias y —muy importante— las
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
-> **Última actualización:** **Escolta · paso 1 — el TERMINAL (el "juez").** Antes de añadir guiado al
+> **Escala del mundo: campo 300×300 m (~9 ha) con ESCALA BIOLÓGICA ABSOLUTA.** El campo era ~100 m ≈
+> `r_detect` (100 m) → no había sitio para que un lobo se acercara sin ser detectado (escolta en t≈0).
+> Ahora el campo es 300×300 (×3) y `r_detect` sigue 100 m (= ⅓ del campo): los lobos salen del perímetro
+> lejos, se acercan, y un dron los detecta a 100 m → **vigilancia previa real** (paso a ESCOLTA: mediana
+> **~281 pasos**, antes ~0). Para que agrandar el campo NO desparrame nada, la **escala biológica se fija
+> ABSOLUTA** (m, no fracción de `min(W,H)`): extensión del rebaño (`cow_spread`=20, `r_separation`=11),
+> cúmulo de spawn (`wolf_spawn_dispersion`=5) y **radios de combate/percepción** (`r_notice`=20,
+> `r_face_safe`=6, `capture_radius`=3) — el lobo es un lobo a cualquier parcela. **Escala = LAYOUT**
+> (establo, central, spawn, perímetro, `max_episode_steps`). `face_check` (modelo, invariante de escala)
+> corre en el campo calibrado 100×100; la **fijación** se prueba a 300 (espaciado 10 m, dispersión 4 m).
+> Tasa de episodio completo a 300 = **~87%** (igual que antes; solo tarda más). Todo verde.
+>
+> **Escolta · paso 1 — el TERMINAL (el "juez").** Antes de añadir guiado al
 > refugio (bandera #13), se construye y verifica el terminal del episodio: **máquina de fases**
 > `VIGILANCIA→ESCOLTA` (disparador = **DETECCIÓN por dron**: un dron EN VUELO ve un lobo a ≤ `r_detect`
 > ≈100 m; sin retorno, informativa) + **terminal de 3 estados** evaluado cada step — **ÉXITO** (todas las reses
@@ -427,8 +439,8 @@ Carpeta `AI_LAB/` (proyecto Python local). Estructura:
 - `main.py` — bucle: reset → obs → coordinador → acciones → step → terminal → métricas (incluye fase final, n_safe/n_depredadas/n_fuera).
 - `baseline.py` — **adversario congelado** (config + seeds + métrica de referencia); `build_baseline_world(seed)` y self-check de deriva.
 - `battery_check.py` — verificación macro del subsistema de batería (régimen permanente 4/2/2, escalonado, reproducible).
-- `face_check.py` — verificación del modelo (12 tests): lobo solo no mata adultas, manada flanquea, **retoque** (presa expuesta), **terneros** (manada caza al ternero / lobo-solo-vs-ternero disputado / 2 terneros), coordinación, instrumentación de #3, tembleque, tasa range(100), **espaciado del rebaño (#1)**, **spawn de lobos por sector (#2)**, **rodeo del rebaño (#3)**, reproducibilidad. *(Las muertes se detectan por `captures`, ya que la depredación NO termina el episodio; cap de pasos corto.)*
-- `escort_check.py` — verificación del **TERMINAL de escolta** (8 tests): **disparador por DETECCIÓN de dron** (en vuelo dispara, aparcado no), ÉXITO / DEPREDACIÓN / TIMEOUT forzados, **refugio = soltar presa** (re-fijación solo al refugiarse), **exclusión del lobo** (nunca dentro del establo), reproducibilidad, y **sin regresiones** (corre `face_check.py` + `battery_check.py`). Guarda una animación por terminal.
+- `face_check.py` — verificación del modelo (12 tests): lobo solo no mata adultas, manada flanquea, **retoque** (presa expuesta), **terneros**, coordinación, instrumentación de #3, tembleque, tasa, **espaciado del rebaño (#1)**, **spawn por sector (#2)**, **rodeo (#3)**, reproducibilidad. *(Combate en campo CALIBRADO 100×100 —el modelo es invariante de escala, radios biológicos absolutos—; la **fijación** se prueba a 300 en los tests de espaciado/dispersión. Muertes por `captures`; cap corto.)*
+- `escort_check.py` — verificación del **TERMINAL de escolta** (8 tests): **disparador por DETECCIÓN de dron** (en vuelo dispara, aparcado no), ÉXITO / DEPREDACIÓN / TIMEOUT forzados, **refugio = soltar presa**, **exclusión del lobo**, reproducibilidad, **sin regresiones** (`face_check`+`battery_check`), y **timing de detección** (paso a ESCOLTA, ya no ~0). Guarda una animación por terminal + una del arco vigilancia→detección.
 
 Decisiones de diseño ratificadas:
 - **Rama clásica = reflejo trivial, NO un FSM completo** (descartado por coste de programar/afinar
@@ -441,11 +453,14 @@ Decisiones de diseño ratificadas:
 - `step(actions)` estilo gym (transición atómica); la observación se construye aparte en el bucle.
 - **Render por reproducción** (separación limpia mundo↔dibujo; deja libre el adaptador ROS).
 - Unidades SI (m, s; `dt=0.1`), **RNG sembrado** dentro del World (reproducibilidad bit a bit).
-- Geometría sin números mágicos (derivada de `min(W,H)`): **establo (zona segura) en el centro**;
-  **central de carga pegada a su borde pero sin solaparse**; **vacas pastan fuera** (spawn hacia
-  una esquina); **"zona vacas" = bounding box dinámico** de las vacas (helper derivado, no
-  encierra a nadie). **8 drones**: 4 activos en las esquinas del bbox inicial + 4 reserva en fila
-  dentro de la central.
+- **Dos escalas separadas (clave tras pasar a 300×300):** el **LAYOUT** deriva de `min(W,H)`/`diag` y
+  **escala** con el campo (establo en el centro, central pegada a su borde, spawn de vacas hacia una
+  esquina `(0.25W,0.75H)`, perímetro de spawn de lobos, homes de drones en las esquinas del bbox,
+  `max_episode_steps`, `refuge_margin`); la **ESCALA BIOLÓGICA** es **ABSOLUTA en metros** y NO escala
+  (extensión del rebaño `cow_spread`/`r_separation`, cúmulo de spawn `wolf_spawn_dispersion`, y combate/
+  percepción `r_notice`/`r_face_safe`/`capture_radius` con sus derivados). Sin números mágicos: el layout
+  sigue derivado; lo biológico son constantes calibradas a `min(W,H)`=100. **8 drones**: 4 activos en las
+  esquinas del bbox inicial + 4 reserva en fila dentro de la central. `r_detect`=100 m (detección).
 
 ✅ **Modelo "DAR LA CARA" — IMPLEMENTADO (vacas adultas + lobos direccionales):**
 - **Vaca adulta:** pasta dispersa (separación + deambular angular firme + valla blanda, **sin

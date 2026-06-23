@@ -27,7 +27,14 @@ def run_ep(seed, record=False, **kw):
 
     Cap de pasos corto por defecto: estos tests verifican la DINÁMICA (cono/flanqueo/firmeza), no el
     timeout largo de la escolta. La depredación ya NO termina el episodio (multi-muerte): las muertes
-    se detectan por w.captures / w.capture_info, no por 'terminated'."""
+    se detectan por w.captures / w.capture_info, no por 'terminated'.
+
+    Campo CALIBRADO 100x100: el modelo de COMBATE es invariante de escala (radios biológicos absolutos),
+    así que se prueba en el campo donde se calibró —donde el cap de 600 basta para que el lobo
+    enganche—. El campo de PRODUCCIÓN (300x300, default del World) se verifica aparte: la FIJACIÓN de la
+    escala biológica en los tests 9/10 (a 300) y el timing de detección + tasa de episodio completo en
+    escort_check. (A 300 con cap 600 la tasa cae por artefacto: el lobo aún se acerca; episodio completo ~87%.)"""
+    kw.setdefault("parcel_size", (100.0, 100.0))
     kw.setdefault("max_episode_steps", 600)
     w = World(seed=seed, **kw)
     c = DummyCoordinator(w.n_drones)

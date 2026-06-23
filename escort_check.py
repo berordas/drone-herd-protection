@@ -14,7 +14,8 @@ fijada se refugia, la manada RE-SELECCIONA (única re-fijación permitida). Dron
   5) Exclusión del lobo (nunca dentro del establo)
   6) Reproducibilidad (mismo estado terminal + contadores)
   7) Sin regresiones (face_check.py + battery_check.py siguen verdes)
-  + Ojeo: una animación corta por terminal (ÉXITO / DEPREDACIÓN / TIMEOUT).
+  8) Timing de detección: paso en que la fase pasa a ESCOLTA (debe dejar de ser ~0 con el campo grande)
+  + Ojeo: una animación por terminal (ÉXITO/DEPREDACIÓN/TIMEOUT) + una del arco vigilancia->detección.
 """
 
 import matplotlib
@@ -184,6 +185,49 @@ def test_no_regressions():
     print("  OK\n")
 
 
+def test_timing_deteccion():
+    print("=== 8) Timing de detección: paso en que la fase pasa a ESCOLTA (campo %dx%d) ==="
+          % (World(seed=0).W, World(seed=0).H))
+    steps, best = [], (-1, None)   # (paso_escolta, seed) para una animación de aproximación larga
+    for s in range(20):
+        w = World(seed=s)
+        c = DummyCoordinator(w.n_drones)
+        esc = None
+        while True:
+            _, _, term, trunc, _ = w.step(c.act(None))
+            if esc is None and w.phase == "ESCOLTA":
+                esc = w.step_count
+            if term or trunc:
+                break
+        if esc is not None:
+            steps.append(esc)
+            if 120 <= esc <= 360 and esc > best[0]:   # aproximación larga pero gif manejable
+                best = (esc, s)
+    steps = np.array(steps)
+    print("  pasos a ESCOLTA (20 ep): min=%d  mediana=%d  máx=%d  media=%.0f  (n=%d)  [antes ~0 en casi todos]"
+          % (steps.min(), int(np.median(steps)), steps.max(), steps.mean(), len(steps)))
+    assert np.median(steps) > 20, "FALLO: la detección sigue siendo casi inmediata (campo demasiado pequeño)"
+    print("  OK\n")
+    return best[1] if best[1] is not None else int(np.argmax(steps))
+
+
+def save_detection_animation(seed):
+    print("=== Ojeo: arco VIGILANCIA -> DETECCIÓN -> ESCOLTA (sector lejano) ===")
+    w = World(seed=seed)
+    c = DummyCoordinator(w.n_drones)
+    hist = [w.snapshot()]
+    esc = None
+    for _ in range(400):
+        _, _, term, trunc, _ = w.step(c.act(None))
+        hist.append(w.snapshot())
+        if esc is None and w.phase == "ESCOLTA":
+            esc = w.step_count
+        if (esc is not None and w.step_count >= esc + 40) or term or trunc:
+            break
+    render_episode(w, hist, save_path="escort_vigilancia_deteccion.gif")
+    print("  escort_vigilancia_deteccion.gif: seed=%d, %d frames, ESCOLTA en paso %s\n" % (seed, len(hist), esc))
+
+
 def _save_episode(w, cap, path):
     c = DummyCoordinator(w.n_drones)
     hist = [w.snapshot()]
@@ -202,10 +246,18 @@ def save_animations():
     # ÉXITO: rebaño dentro del establo, lobo merodeando fuera.
     w = World(seed=5, wolves_min=1, wolves_max=1, calf_count_probs=NO_CALVES)
     w.cows[:] = w.safe_zone[:2] + w.rng.uniform(-6.0, 6.0, size=(w.n_cows, 2))
-    w.wolves[:] = np.array([[6.0, 6.0]])
+    w.wolves[:] = w.safe_zone[:2] + np.array([70.0, 0.0])     # lobo fuera del establo, en el campo
     _save_episode(w, 25, "escort_exito.gif")
-    # DEPREDACIÓN: episodio natural con manada (multi-muerte).
-    w = World(seed=1, wolves_min=3, wolves_max=3, calf_count_probs=NO_CALVES, max_episode_steps=250)
+    # DEPREDACIÓN: escenario construido (manada encima de una adulta expuesta) -> flanqueo -> muerte.
+    # Rebaño PEQUEÑO (n_cows=2) y lejos del establo para que se resuelva en pocos pasos (banner visible).
+    w = World(seed=1, n_cows=2, wolves_min=3, wolves_max=3, calf_count_probs=NO_CALVES, max_episode_steps=300)
+    cd = w.safe_zone[:2] + np.array([-60.0, -80.0])
+    w.cows[0] = cd
+    w.cows[1] = cd + np.array([-30.0, 20.0])
+    w.wolves[:] = np.array([cd + [12.0, 0.0], cd + [0.0, -12.0], cd + [-12.0, 0.0]])
+    w.cow_vel[:] = 0.0
+    w.wolf_vel[:] = 0.0
+    w._commit_initial_prey()
     _save_episode(w, 250, "escort_depredacion.gif")
     # TIMEOUT: lobo solo (no mata), límite de tiempo bajo.
     w = World(seed=2, wolves_min=1, wolves_max=1, calf_count_probs=NO_CALVES, max_episode_steps=60)
@@ -222,5 +274,7 @@ if __name__ == "__main__":
     test_wolf_exclusion()
     test_reproducible()
     test_no_regressions()
+    far_seed = test_timing_deteccion()
     save_animations()
+    save_detection_animation(far_seed)
     print("escort_check: TODO OK.")

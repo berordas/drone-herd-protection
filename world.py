@@ -40,7 +40,7 @@ class World:
         n_cows: int = 6,
         wolves_min: int = 1,            # nº de lobos sorteado en reset() ...
         wolves_max: int = 5,            # ... entre [wolves_min, wolves_max]
-        parcel_size: tuple[float, float] = (100.0, 100.0),
+        parcel_size: tuple[float, float] = (300.0, 300.0),   # ~9 ha (parcela realista); r_detect=100 m -> 1/3 del campo
         safe_radius: float | None = None,     # establo (centro del campo)
         station_radius: float | None = None,  # estación central de carga
         station_gap: float | None = None,     # separación establo<->estación
@@ -112,7 +112,14 @@ class World:
         self.wolves_min = wolves_min
         self.wolves_max = wolves_max
         self.W, self.H = parcel_size
-        m = min(self.W, self.H)  # escala de referencia para los defaults (sin números mágicos)
+        m = min(self.W, self.H)  # escala de LAYOUT (establo/central/spawn/perímetro derivan de m y SÍ escalan)
+
+        # ESCALA BIOLÓGICA = ABSOLUTA (en metros, NO escala con el campo). Si dependiera de m, agrandar
+        # el campo desparramaría el rebaño y el cúmulo de spawn, y agrandaría el alcance del lobo. Estos
+        # valores son los que tenía el modelo a min(W,H)=100 (calibrado allí) y se FIJAN: extensión del
+        # rebaño (cow_spread, r_separation), cúmulo de spawn de lobos (wolf_spawn_dispersion), y radios
+        # de COMBATE/percepción del animal (r_notice, r_face_safe, capture_radius) -> el lobo es un lobo
+        # a cualquier tamaño de parcela.
 
         # Geometría central: establo en el centro del campo; estación pegada a su
         # borde pero SIN solaparse (son cosas distintas).
@@ -132,7 +139,7 @@ class World:
             cow_spawn if cow_spawn is not None else (0.25 * self.W, 0.75 * self.H),
             dtype=float,
         )
-        self.cow_spread = cow_spread if cow_spread is not None else 0.20 * m  # área de pasto (disperso, repartido)
+        self.cow_spread = cow_spread if cow_spread is not None else 20.0  # m ABSOLUTOS: área de pasto (no escala)
 
         self.dt = dt
         self.max_steps = max_steps
@@ -145,16 +152,16 @@ class World:
             cow_spawn_min_sep if cow_spawn_min_sep is not None else 0.25 * self.cow_spread
         )
         self.k_separation = k_separation
-        self.r_separation = r_separation if r_separation is not None else 0.55 * self.cow_spread
+        self.r_separation = r_separation if r_separation is not None else 11.0   # m ABSOLUTOS (espacio personal; era 0.55*cow_spread)
         self.wander_calm = wander_calm
         self.wander_drift = wander_drift
         self.k_fence = k_fence
         # Confrontación: encara al lobo dentro de r_notice; lo mantiene a r_face_safe si cae en
         # el cono frontal (±cone_half_angle); gira a turn_rate; tras encarar, face_cooldown antes
         # de cambiar de objetivo (la ventana que la manada explota por el flanco).
-        self.r_notice = r_notice if r_notice is not None else 0.20 * m
+        self.r_notice = r_notice if r_notice is not None else 20.0     # m ABSOLUTOS: percepción del animal (no escala)
         self.cone_half_angle = cone_half_angle
-        self.r_face_safe = r_face_safe if r_face_safe is not None else 0.06 * m
+        self.r_face_safe = r_face_safe if r_face_safe is not None else 6.0   # m ABSOLUTOS: standoff frontal (no escala)
         self.face_cooldown = face_cooldown
         self.turn_rate = turn_rate
         self.cow_inertia = cow_inertia
@@ -177,13 +184,13 @@ class World:
         )
         self.wolf_repulsion_strength = wolf_repulsion_strength
         # Spawn por sector (cúmulo) + rodeo del rebaño-obstáculo.
-        self.wolf_spawn_dispersion = wolf_spawn_dispersion if wolf_spawn_dispersion is not None else 0.05 * m
+        self.wolf_spawn_dispersion = wolf_spawn_dispersion if wolf_spawn_dispersion is not None else 5.0  # m ABSOLUTOS (cúmulo apretado)
         self.wolf_skirt_gain = wolf_skirt_gain
         self.wolf_skirt_margin = wolf_skirt_margin if wolf_skirt_margin is not None else self.r_face_safe
 
         # capture_radius = a qué distancia un FLANQUEADOR puede tumbar (no mata de pasada: hace
-        # falta n_min_adult flanqueadores a la vez fuera del cono). Derivado de la geometría.
-        self.capture_radius = capture_radius if capture_radius is not None else 0.03 * m
+        # falta n_min_adult flanqueadores a la vez fuera del cono). ABSOLUTO (alcance de mordida, no escala).
+        self.capture_radius = capture_radius if capture_radius is not None else 3.0   # m ABSOLUTOS
         # El ternero se coloca AL LADO de la defensora (no superpuesto): se pega a un anillo a esta
         # distancia, no a su posición exacta. Atado a la geometría (media capture_radius ~1.5 m).
         self.calf_personal_space = (
