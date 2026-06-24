@@ -64,6 +64,9 @@ def render_episode(world, history, interval: int = 40, save_path: str | None = N
     active_sc = ax.scatter(*empty.T, c="royalblue", s=90, marker="^", label="drones activos")
     reserve_sc = ax.scatter(*empty.T, c="lightskyblue", s=70, marker="^",
                             edgecolors="royalblue", label="drones reserva")
+    # Línea dron INVESTIGANDO -> su contacto (cuando un dron se despega a verificar un lobo).
+    invest_line, = ax.plot([], [], color="royalblue", lw=1.4, ls="--", alpha=0.8, zorder=4,
+                           label="investigando")
     txt = ax.text(0.02, 0.98, "", transform=ax.transAxes, va="top", fontsize=9,
                   bbox=dict(boxstyle="round", fc="white", alpha=0.8))
     # Banner del terminal (ÉXITO / DEPREDACIÓN / TIMEOUT + contadores), visible al resolverse.
@@ -125,6 +128,14 @@ def render_episode(world, history, interval: int = 40, save_path: str | None = N
         active_sc.set_offsets(drones[:world.n_active])
         reserve_sc.set_offsets(drones[world.n_active:])
 
+        # Dron INVESTIGANDO -> línea a su contacto (despegar a verificar el lobo).
+        inv = np.where(snap["drone_investigating"])[0]
+        if inv.size:
+            i = int(inv[0]); cpos = snap["drone_contact"][i]
+            invest_line.set_data([drones[i, 0], cpos[0]], [drones[i, 1], cpos[1]])
+        else:
+            invest_line.set_data([], [])
+
         # Zona vacas: derivada de las posiciones actuales -> flota con el rebaño.
         xmin, ymin, xmax, ymax = world.cows_bbox(cows)
         cow_box.set_bounds(xmin, ymin, xmax - xmin, ymax - ymin)
@@ -142,7 +153,7 @@ def render_episode(world, history, interval: int = 40, save_path: str | None = N
         else:
             banner.set_text("")
         return (cow_sc, calf_sc, prey_hl, defender_hl, wolf_sc, active_sc, reserve_sc,
-                cow_box, txt, banner, *cone_polys, *calf_lines)
+                invest_line, cow_box, txt, banner, *cone_polys, *calf_lines)
 
     anim = FuncAnimation(fig, update, frames=len(history),
                          interval=interval, blit=False, repeat=False)

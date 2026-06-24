@@ -4,14 +4,23 @@
 > decisiones tomadas, las herramientas, el plan, las referencias y —muy importante— las
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
-> **Paso 3a — MOVIMIENTO de drones (mecánica aislada).** El dron es un cuadricóptero **holonómico** con
-> dinámica de vuelo (estado `drone_vel`): persigue un **waypoint** (`command_waypoint(i,(x,y))`) con
-> `DRONE_MAX_SPEED`=15 m/s y `DRONE_MAX_ACCEL`=4 m/s², **acelera/cruza/frena y se para** en el destino
-> (sin overshoot sostenido). **Coste de batería por moverse** (flag #7): el drenaje en ACTIVE = flote ×
-> (1 + `DRONE_MOVE_DRAIN`·v/vmax) → flotar es el suelo, reposicionar a tope gasta ~2.5×. El
-> `DummyCoordinator` no comanda nada → drones quietos → **sin cambios** en los checks. Verificado en
-> **`drone_check.py`** (punto-a-punto, topes 15/4 exactos, mover drena 2.2× flotar, reproducible) +
-> sin regresiones (face 12/battery 4-2-2/escort 8). **NO** se tocó el disparador (eso es 3b). 1 animación.
+> **Paso 3b — disparador realista: DETECTAR → ACERCARSE → CONFIRMAR.** El salto a ESCOLTA ya no es
+> instantáneo a 100 m. Dos radios, tres fases: `r_detect`=100 m ("hay algo") → **SOSPECHA**;
+> `r_confirm`=40 m ("es un lobo", confirmación **geométrica determinista**, placeholder hasta YOLO) →
+> **ESCOLTA**. **Reflejo de investigación** (infraestructura, no decisión del coordinador): el primer dron
+> ACTIVE que detecta entra en **INVESTIGANDO**, vuela hacia el contacto (lobo más cercano) con el
+> movimiento de 3a, y al llegar a `r_confirm` confirma y se **libera** al pool del coordinador. **Mensaje**
+> legible por el coordinador en la observación (`investigations`: {drone_id, contact_pos, state}).
+> **Precedencia**: mientras investiga, manda el reflejo (el coordinador no lo toca); el resto, el
+> coordinador (Dummy = quietos). Verificado en `escort_check.py` (dos etapas, el dron se mueve y confirma,
+> precedencia, mensaje, timing: SOSPECHA mediana ~251 → ESCOLTA ~298, hueco de investigación ~47 pasos) +
+> sin regresiones. **NO** corzos (3c), **NO** clasificador (YOLO), **NO** guiado (paso 2). Animación del arco.
+>
+> **Paso 3a — MOVIMIENTO de drones (mecánica aislada).** Cuadricóptero **holonómico** con dinámica de
+> vuelo (`drone_vel`): persigue un **waypoint** (`command_waypoint(i,(x,y))`) con `DRONE_MAX_SPEED`=15 m/s
+> y `DRONE_MAX_ACCEL`=4 m/s², **acelera/cruza/frena y se para**. **Coste de batería por moverse** (flag #7):
+> drenaje ACTIVE = flote × (1 + `DRONE_MOVE_DRAIN`·v/vmax) → flotar = suelo, reposicionar a tope ~2.5×.
+> Verificado en **`drone_check.py`** (topes 15/4 exactos, mover drena 2.2× flotar) + sin regresiones.
 >
 > **Escala del mundo: campo 300×300 m (~9 ha) con ESCALA BIOLÓGICA ABSOLUTA.** El campo era ~100 m ≈
 > `r_detect` (100 m) → no había sitio para que un lobo se acercara sin ser detectado (escolta en t≈0).
@@ -281,10 +290,14 @@ Diseño de referencia (sigue válido):
 
 Tarea **episódica** (terminal claro, bueno para RL). **Máquina de fases** (`world.phase`):
 
-`VIGILANCIA` (vacas pastando, drones monitorizando) → **disparador = DETECCIÓN por dron** (algún dron
-**EN VUELO** —estado `ACTIVE`; los aparcados `CHARGING`/`READY` no vigilan— tiene un lobo a distancia
-horizontal ≤ `r_detect`) → `ESCOLTA` → **terminal**. La fase es informativa y **no vuelve atrás**; es el
-**seam** para el guiado del paso siguiente (todavía NO cambia la dinámica).
+`VIGILANCIA` → **DETECTAR** (un dron **EN VUELO** `ACTIVE` tiene un lobo ≤ `r_detect`=100 m; los aparcados
+no vigilan) → `SOSPECHA` → **ACERCARSE** (REFLEJO de investigación: ese dron entra en `INVESTIGANDO` y
+vuela hacia el contacto con el movimiento de 3a) → **CONFIRMAR** (a ≤ `r_confirm`=40 m; geométrico,
+determinista — placeholder hasta YOLO) → `ESCOLTA` (el dron se libera al coordinador) → **terminal**.
+La fase es informativa y **no vuelve atrás** (sin SOSPECHA→VIGILANCIA: innecesario sin corzos, llega en 3c).
+Es el **seam** para el guiado (paso 2; todavía NO cambia la dinámica de las vacas). El reflejo emite un
+**mensaje** en la observación (`investigations`) que el coordinador podrá leer; **precedencia**: el reflejo
+manda sobre el dron que investiga, el coordinador sobre el resto.
 
 **Terminal (3 estados, evaluado cada step; multi-muerte: una captura ya NO termina el episodio):**
 - **ÉXITO** = todas las reses **vivas** a salvo (refugiadas) **y** ninguna cazada **y** ningún lobo
@@ -445,13 +458,13 @@ el DGX va sobrado.
 
 Carpeta `AI_LAB/` (proyecto Python local). Estructura:
 - `world.py` — clase `World`: estado, dinámica, recompensa, **terminal de escolta + máquina de fases**. **Sin** ROS/render dentro.
-- `render.py` — animación matplotlib (por reproducción: lee estado, nunca llama a `step`). Dibuja el **cono** como cuña ±45°, colorea los lobos por su relación con el cono de la presa, realza la **presa fijada**, pinta **terneros** (color propio) con **línea a su defensora**, **colorea las reses refugiadas (verde) / cazadas (gris)**, muestra la **FASE** y un **banner del terminal** (ÉXITO/DEPREDACIÓN/TIMEOUT + contadores).
+- `render.py` — animación matplotlib (por reproducción: lee estado, nunca llama a `step`). Dibuja el **cono** como cuña ±45°, colorea los lobos por su relación con el cono de la presa, realza la **presa fijada**, pinta **terneros** (color propio) con **línea a su defensora**, **colorea las reses refugiadas (verde) / cazadas (gris)**, muestra la **FASE** (VIGILANCIA/SOSPECHA/ESCOLTA), una **línea del dron que INVESTIGA a su contacto**, y un **banner del terminal** (ÉXITO/DEPREDACIÓN/TIMEOUT + contadores).
 - `coordinators.py` — `DummyCoordinator` (no comanda nada → drones mantienen waypoint = quietos); reflejo trivial y MARL después. El movimiento es capacidad del mundo (`command_waypoint`), que el coordinador usará en 3b+.
 - `main.py` — bucle: reset → obs → coordinador → acciones → step → terminal → métricas (incluye fase final, n_safe/n_depredadas/n_fuera).
 - `baseline.py` — **adversario congelado** (config + seeds + métrica de referencia); `build_baseline_world(seed)` y self-check de deriva.
 - `battery_check.py` — verificación macro del subsistema de batería (régimen permanente 4/2/2, escalonado, reproducible).
 - `face_check.py` — verificación del modelo (12 tests): lobo solo no mata adultas, manada flanquea, **retoque** (presa expuesta), **terneros**, coordinación, instrumentación de #3, tembleque, tasa, **espaciado del rebaño (#1)**, **spawn por sector (#2)**, **rodeo (#3)**, reproducibilidad. *(Combate en campo CALIBRADO 100×100 —el modelo es invariante de escala, radios biológicos absolutos—; la **fijación** se prueba a 300 en los tests de espaciado/dispersión. Muertes por `captures`; cap corto.)*
-- `escort_check.py` — verificación del **TERMINAL de escolta** (8 tests): **disparador por DETECCIÓN de dron** (en vuelo dispara, aparcado no), ÉXITO / DEPREDACIÓN / TIMEOUT forzados, **refugio = soltar presa**, **exclusión del lobo**, reproducibilidad, **sin regresiones** (`face_check`+`battery_check`), y **timing de detección** (paso a ESCOLTA, ya no ~0). Guarda una animación por terminal + una del arco vigilancia→detección.
+- `escort_check.py` — verificación del **TERMINAL de escolta + disparador en DOS ETAPAS**: detección→SOSPECHA + 1 dron investigando + mensaje, investigar (se mueve al contacto)→confirmar→ESCOLTA + dron liberado, **precedencia** reflejo>coordinador, ÉXITO/DEPREDACIÓN/TIMEOUT forzados, **refugio = soltar presa**, **exclusión del lobo**, reproducibilidad, **sin regresiones** (`face_check`+`battery_check`), y **timing** (SOSPECHA/ESCOLTA + hueco de investigación). Guarda una animación por terminal + una del arco detección→investigación→ESCOLTA.
 - `drone_check.py` — verificación de la **DINÁMICA DE VUELO del dron** (paso 3a): punto-a-punto (acelera/cruza/frena/para), topes (`DRONE_MAX_SPEED`/`DRONE_MAX_ACCEL`), **coste de moverse** (reposicionar drena más que flotar; flote=suelo), reproducibilidad, sin regresiones (face+battery+escort). Guarda una animación del dron en vuelo.
 
 Decisiones de diseño ratificadas:
@@ -601,18 +614,21 @@ Verificado en `face_check.py` (12 tests); tasa **88%** sin drones (no perseguida
 por **detección de dron**) + terminal de 3 estados (ÉXITO/DEPREDACIÓN/TIMEOUT) con contadores, multi-muerte,
 ganchos de refugio y exclusión del lobo. Verificado en `escort_check.py` (8 tests). Ver §4.4.
 
-**Escolta · paso 3a HECHO — MOVIMIENTO de drones (mecánica aislada).** Vuelo holonómico hacia waypoint
-(`drone_vel`, `command_waypoint`, `DRONE_MAX_SPEED`/`DRONE_MAX_ACCEL`, acelera/cruza/frena/para) + coste
-de batería por moverse (flag #7). DummyCoordinator no comanda → drones quietos → sin cambios. Verificado
-en `drone_check.py` + sin regresiones. **NO** se tocó el disparador. Ver §4.3 / banderas #1, #7.
+**Escolta · paso 3a+3b HECHOS — MOVIMIENTO de drones + disparador realista.** 3a: vuelo holonómico hacia
+waypoint (`drone_vel`, `command_waypoint`, `DRONE_MAX_SPEED`/`DRONE_MAX_ACCEL`, acelera/cruza/frena/para) +
+coste de batería por moverse (flag #7). 3b: disparador en dos etapas detectar(`r_detect`)→SOSPECHA→acercarse
+(reflejo de investigación, el dron vuela al contacto)→confirmar(`r_confirm`)→ESCOLTA, con mensaje al
+coordinador y precedencia reflejo>coordinador. Verificado en `drone_check.py` + `escort_check.py` + sin
+regresiones. DummyCoordinator no recoloca (solo Dummy + interfaz del mensaje). Ver §4.3/§4.4, banderas #1/#7.
 
-**SIGUIENTE = paso 3b: detectar → ACERCARSE → confirmar.** Rework del disparador para que un dron que ve
-un contacto **se acerque a verificar** (usando ya el movimiento de 3a): `r_confirm`, estado de SOSPECHA,
-comportamiento de investigar contactos. (Hoy el disparador sigue siendo detección instantánea a `r_detect`.)
-Después: **guiado al refugio** (collares conducen el rebaño al establo en ESCOLTA, `k_herd_to_refuge`, etc.,
-para que ÉXITO sea alcanzable sin forzar); drones que **apantallan/disuaden**; resto de hooks de batería
-(travel-time, hueco de cobertura, dron tirado). Luego: percepción → reflejo trivial → MARL → comparación.
-**Congelar baseline v2** al FINAL de la escolta, reescribiendo `baseline.py` con el adversario completo.
+**SIGUIENTE (opciones del paso 3/2):**
+- **3c — corzos / cuerpos no-amenaza:** contactos que NO son lobos → la confirmación geométrica deja de ser
+  trivial (falsa alarma) → rama SOSPECHA→VIGILANCIA (abortar) + lógica de descartar; aquí entra el coste de
+  investigar de más. (Sigue sin clasificador real; eso es la fase YOLO.)
+- **Paso 2 — GUIADO al refugio:** collares conducen el rebaño al establo en ESCOLTA (`k_herd_to_refuge`,
+  suprimir wander de calma, etc.) para que ÉXITO sea alcanzable sin forzar; luego drones que **apantallan/
+  disuaden** + resto de hooks de batería (travel-time, hueco de cobertura, dron tirado).
+Luego: percepción → reflejo trivial → MARL → comparación. **Congelar baseline v2** al FINAL de la escolta.
 
 *(Pendiente de decisión menor, NO en este paso: lobo solo vs ternero salió 0% — la madre frena siempre.
 Si se quiere que sea disputado (a veces se cuela), afinar `face_cooldown`/`r_face_safe`. Parámetros del

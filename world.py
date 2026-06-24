@@ -103,7 +103,8 @@ class World:
         teleport_guard: bool = False,      # log si una entidad se desplaza > su máx por paso * motion_tol
         motion_tol: float = 1.5,           # tolerancia de desplazamiento por paso (guardia)
         # --- Escolta / terminal del episodio (máquina de fases VIGILANCIA->ESCOLTA + refugio) ---
-        r_detect: float = 100.0,                 # m: alcance de DETECCIÓN de un dron en vuelo -> dispara ESCOLTA. TUNE
+        r_detect: float = 100.0,                 # m: DETECCIÓN ("hay algo") de un dron en vuelo -> SOSPECHA. TUNE
+        r_confirm: float = 40.0,                 # m: CONFIRMACIÓN ("es un lobo") tras acercarse -> ESCOLTA. TUNE
         episode_time_factor: float = 4.0,        # holgura del límite de tiempo (~k * diag / cow_speed). TUNE
         max_episode_steps: int | None = None,    # límite de pasos (default DERIVADO de geometría/cow_speed; ver __init__)
         refuge_margin: float | None = None,      # m: histéresis de borde del establo para contar "refugiada" (default 0.1*safe_radius). TUNE
@@ -217,13 +218,17 @@ class World:
         self.motion_tol = motion_tol
 
         # --- Escolta / terminal del episodio ---
-        # Disparador VIGILANCIA->ESCOLTA = DETECCIÓN por dron: un dron EN VUELO (ACTIVE) ve un lobo a
-        # <= r_detect (distancia horizontal 2D). r_detect=100 m sale del criterio DRI de Johnson a nivel
-        # reconocer/identificar (~8-13 px sobre un lobo de ~1,2 m) con GSD anclado a imágenes reales de
-        # dron (~1,2 cm/px a ~52 m AGL) y patrulla a ~40-50 m, con margen por ángulo oblicuo/movimiento/
-        # contraste -> ~80-120 m. Es horizontal porque la z del dron aún es conceptual (flag #2): r_detect
-        # absorbe el rango oblicuo a la altura de patrulla. Candidato a eje de la rejilla de robustez (§5.1).
+        # Disparador en DOS etapas (DETECCIÓN -> acercarse -> CONFIRMACIÓN): un dron EN VUELO (ACTIVE)
+        # DETECTA "hay algo" a <= r_detect (VIGILANCIA->SOSPECHA), investiga acercándose, y CONFIRMA
+        # "es un lobo" a <= r_confirm (SOSPECHA->ESCOLTA). Distancia horizontal 2D.
+        #   r_detect=100 m: criterio DRI de Johnson a nivel DETECTAR (~8-13 px sobre un lobo de ~1,2 m),
+        #   GSD ~1,2 cm/px a ~52 m AGL, patrulla ~40-50 m, margen oblicuo/movimiento -> ~80-120 m.
+        #   r_confirm=40 m: nivel IDENTIFICAR-especie (~100-300 px/animal); a ~1,2 cm/px un lobo de ~1,2 m
+        #   da ~130 px a 40 m. La confirmación es GEOMÉTRICA y determinista (no hay clasificador: como en
+        #   el mundo solo hay lobos, siempre confirma "sí"); la percepción imperfecta es la fase YOLO.
+        # Ambos son placeholders limpios hasta YOLO. Horizontal porque la z aún es conceptual (flag #2).
         self.r_detect = r_detect
+        self.r_confirm = r_confirm
         # Límite de tiempo: holgura (~episode_time_factor) para que el rebaño cruce el campo a cow_speed.
         # Derivado de la diagonal y cow_speed (sin número mágico): k * diag / cow_speed / dt pasos.
         self.episode_time_factor = episode_time_factor
@@ -270,6 +275,9 @@ class World:
         self.drones: np.ndarray | None = None
         self.drone_vel: np.ndarray | None = None        # (n_drones,2) velocidad (dinámica de vuelo, flag #1 para drones)
         self.drone_waypoint: np.ndarray | None = None   # (n_drones,2) destino comandado (command_waypoint); hold = posición
+        self.drone_investigating: np.ndarray | None = None  # (n_drones,) ¿en estado INVESTIGANDO? (reflejo manda sobre él)
+        self.drone_contact: np.ndarray | None = None    # (n_drones,2) posición del contacto que investiga (NaN si no)
+        self.investigations: list = []                  # mensaje al coordinador: investigaciones activas {id, contacto, estado}
         self.battery: np.ndarray | None = None          # (n_drones,) fracción [0,1]
         self.drone_state: np.ndarray | None = None      # (n_drones,) ACTIVE/RETURNING/CHARGING/READY
         self.battery_activity: np.ndarray | None = None # (n_drones,) HOOK persecución (bandera #7): multiplica el drenaje
@@ -359,6 +367,9 @@ class World:
         self.drones = np.vstack([active, reserve])  # filas [0:n_active] activos, resto reserva
         self.drone_vel = np.zeros((self.n_drones, 2))      # parados al inicio
         self.drone_waypoint = self.drones.copy()           # destino = posición actual (mantener/hold)
+        self.drone_investigating = np.zeros(self.n_drones, dtype=bool)
+        self.drone_contact = np.full((self.n_drones, 2), np.nan)
+        self.investigations = []
 
         # Lobos: nº aleatorio por episodio; TODOS salen AGRUPADOS de un mismo sector del perímetro
         # (sector sorteado por episodio) -> la manada llega junta y de una dirección (y se aleatoriza
@@ -415,7 +426,24 @@ class World:
             "cows": self.cows.copy(),
             "wolves": self.wolves.copy(),
             "step": self.step_count,
+            "phase": self.phase,
+            # Mensaje del reflejo: investigaciones activas {drone_id, contact_pos, state}. El coordinador
+            # podrá leerlo (cimiento de lo que observará); el DummyCoordinator lo ignora.
+            "investigations": self._build_investigations(),
         }
+
+    def _build_investigations(self) -> list:
+        """Mensaje legible por el coordinador: una entrada por dron INVESTIGANDO {drone_id, contact_pos
+        (lobo más cercano), state}. Se arma fresco -> correcto ya en el paso de detección."""
+        msg = []
+        for i in np.where(self.drone_investigating)[0]:
+            if self.n_wolves > 0:
+                cpos = self.wolves[int(np.argmin(np.linalg.norm(self.wolves - self.drones[i], axis=1)))].copy()
+            else:
+                cpos = self.drone_contact[i].copy()
+            msg.append({"drone_id": int(i), "contact_pos": cpos, "state": "investigando"})
+        self.investigations = msg
+        return [dict(d) for d in msg]
 
     # ------------------------------------------------------------------ #
     # Step: una transición de la dinámica (firma estilo gym/PettingZoo)
@@ -465,13 +493,17 @@ class World:
         self.drone_waypoint[i] = np.asarray(xy, dtype=float)
 
     def _apply_drone_actions(self, actions) -> None:
-        """Dinámica de vuelo HOLONÓMICA hacia el waypoint de cada dron (flag #1 para drones): velocidad
-        deseada = ir a por el waypoint pero pudiendo FRENAR a tiempo (v_freno = sqrt(2*a*dist)), capada a
-        DRONE_MAX_SPEED; se acelera hacia ella a <= DRONE_MAX_ACCEL por paso -> acelera, cruza, frena y se
-        para en el destino (sin overshoot sostenido). `actions`, si se pasa, fija TODOS los waypoints
-        (n_drones,2); si es None, se mantienen (hold). Además fija battery_activity por el esfuerzo (#7)."""
+        """Control + dinámica de vuelo de los drones. PRECEDENCIA: el REFLEJO de investigación manda
+        sobre el dron INVESTIGANDO (su waypoint = el contacto); el COORDINADOR comanda al resto. Luego
+        vuelo HOLONÓMICO hacia el waypoint: velocidad deseada = ir a por él pudiendo FRENAR a tiempo
+        (v_freno = sqrt(2*a*dist)), capada a DRONE_MAX_SPEED; se acelera a <= DRONE_MAX_ACCEL por paso ->
+        acelera, cruza, frena y se para (sin overshoot sostenido). `actions` (waypoints n_drones,2) solo
+        afecta a los drones NO investigando; None = mantener. Fija battery_activity por el esfuerzo (#7)."""
         if actions is not None:
-            self.drone_waypoint = np.asarray(actions, dtype=float).reshape(self.n_drones, 2)
+            wp = np.asarray(actions, dtype=float).reshape(self.n_drones, 2)
+            free = ~self.drone_investigating              # el coordinador NO toca al investigador (precedencia)
+            self.drone_waypoint[free] = wp[free]
+        self._update_investigation_waypoint()             # reflejo: el investigador persigue su contacto
 
         to_wp = self.drone_waypoint - self.drones
         dist = np.linalg.norm(to_wp, axis=1, keepdims=True)
@@ -558,6 +590,7 @@ class World:
             self.drone_waypoint[[i, j]] = self.drones[[i, j]]
             self.drone_vel[i] = 0.0
             self.drone_vel[j] = 0.0
+            self.drone_investigating[i] = False   # si investigaba, lo deja al irse a cargar (se re-detecta)
             st[i] = CHARGING   # saliente -> central (carga desde ~announce_threshold)
             st[j] = ACTIVE     # entrante cubre el puesto liberado
 
@@ -952,20 +985,46 @@ class World:
     # ------------------------------------------------------------------ #
     # Máquina de fases + depredación + terminal (el refugio va en _update_cows/_update_calves)
     # ------------------------------------------------------------------ #
+    def _update_investigation_waypoint(self) -> None:
+        """REFLEJO de investigación (infraestructura, NO decisión del coordinador): cada dron en estado
+        INVESTIGANDO persigue su CONTACTO = el lobo más cercano (la manada es un cúmulo ~5 m, así que de
+        lejos se lee como UN contacto). Actualiza su waypoint y su contacto cada paso (el MENSAJE al
+        coordinador se arma fresco en get_observation)."""
+        self.drone_contact[:] = np.nan
+        if self.drone_investigating.any() and self.n_wolves > 0:
+            for i in np.where(self.drone_investigating)[0]:
+                j = int(np.argmin(np.linalg.norm(self.wolves - self.drones[i], axis=1)))
+                self.drone_contact[i] = self.wolves[j]
+                self.drone_waypoint[i] = self.wolves[j]    # lo persigue (command_waypoint del reflejo)
+
     def _update_phase(self) -> None:
-        """VIGILANCIA -> ESCOLTA por DETECCIÓN: la PRIMERA vez que algún dron EN VUELO (ACTIVE) tiene
-        un lobo a distancia horizontal (2D) <= r_detect. Los drones aparcados en la central
-        (CHARGING/READY) no vigilan; RETURNING se deja fuera por simplicidad (retorno transitorio).
-        No vuelve a VIGILANCIA. Informativa (seam para el guiado del paso siguiente; todavía NO cambia
-        la dinámica de las vacas)."""
+        """Disparador en DOS etapas (reflejo). VIGILANCIA -> SOSPECHA -> ESCOLTA, sin retorno; informativa
+        (todavía NO cambia la dinámica de las vacas). Solo los drones EN VUELO (ACTIVE) detectan/confirman
+        (los aparcados CHARGING/READY no vigilan; RETURNING fuera por simplicidad).
+          - DETECCIÓN: el PRIMER dron ACTIVE con un lobo a <= r_detect -> SOSPECHA y ese dron pasa a
+            INVESTIGANDO (el reflejo lo lanza hacia el contacto). Si se queda sin investigador (p. ej. un
+            relevo), re-detecta.
+          - CONFIRMACIÓN: cuando el dron INVESTIGANDO llega a <= r_confirm de su contacto -> ESCOLTA y ese
+            dron se LIBERA (vuelve al pool del coordinador como defensor)."""
         if self.phase == "ESCOLTA" or self.n_wolves == 0:
             return
-        flying = self.drones[self.drone_state == ACTIVE]   # solo los ACTIVE detectan (en tierra no se vigila)
-        if flying.shape[0] == 0:
-            return
-        d = np.linalg.norm(flying[:, None, :] - self.wolves[None, :, :], axis=2)  # (n_vuelo, n_lobo)
-        if float(d.min()) <= self.r_detect:
-            self.phase = "ESCOLTA"
+        active = self.drone_state == ACTIVE
+        # Detección / re-detección: asegura UN investigador mientras no se confirme.
+        if not self.drone_investigating.any():
+            for i in np.where(active)[0]:
+                dist = np.linalg.norm(self.wolves - self.drones[i], axis=1)
+                if float(dist.min()) <= self.r_detect:
+                    self.drone_investigating[i] = True
+                    self.drone_contact[i] = self.wolves[int(np.argmin(dist))]   # contacto = lobo más cercano
+                    self.phase = "SOSPECHA"
+                    break
+        # Confirmación: el investigador a <= r_confirm de su contacto -> ESCOLTA, se libera.
+        if self.phase == "SOSPECHA":
+            for i in np.where(self.drone_investigating & active)[0]:
+                if float(np.linalg.norm(self.wolves - self.drones[i], axis=1).min()) <= self.r_confirm:
+                    self.phase = "ESCOLTA"
+                    self.drone_investigating[i] = False    # vuelve al control del coordinador
+                    break
 
     def _process_predation(self) -> bool:
         """Aplica la muerte por FLANQUEO (regla SIN cambios) a las reses CAZABLES y las marca cazadas
@@ -1266,6 +1325,8 @@ class World:
             "calf_alive": self.calf_alive.copy(),
             "wolves": self.wolves.copy(),
             "drones": self.drones.copy(),
+            "drone_investigating": self.drone_investigating.copy(),
+            "drone_contact": self.drone_contact.copy(),
             "prey_pos": prey_pos,                # posición de la presa fijada (realce), o None
             "prey_cone_pos": cone_pos,           # centro del cono que la defiende (para colorear lobos)
             "prey_cone_head": cone_head,

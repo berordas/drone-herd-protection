@@ -6,7 +6,9 @@ de construir comportamientos encima"). Cubre los tres terminales y sus contadore
 VIGILANCIA->ESCOLTA, y los DOS ganchos: (a) res en el establo = a salvo y NO cazable; (b) si la presa
 fijada se refugia, la manada RE-SELECCIONA (única re-fijación permitida). Drones quietos (DummyCoordinator).
 
-  0) Disparador VIGILANCIA->ESCOLTA por DETECCIÓN de un dron en vuelo (r_detect; aparcados no cuentan)
+  0) Disparador en DOS etapas: detección (r_detect)->SOSPECHA + 1 dron investigando (+ mensaje al
+     coordinador); confirmación (r_confirm)->ESCOLTA + dron liberado; aparcados no cuentan.
+  0b) El dron INVESTIGA (se mueve al contacto) y confirma; PRECEDENCIA reflejo>coordinador; buy-time.
   1) ÉXITO forzado
   2) DEPREDACIÓN forzada (multi-muerte; cuanta más, peor -> cuenta)
   3) TIMEOUT forzado
@@ -14,8 +16,8 @@ fijada se refugia, la manada RE-SELECCIONA (única re-fijación permitida). Dron
   5) Exclusión del lobo (nunca dentro del establo)
   6) Reproducibilidad (mismo estado terminal + contadores)
   7) Sin regresiones (face_check.py + battery_check.py siguen verdes)
-  8) Timing de detección: paso en que la fase pasa a ESCOLTA (debe dejar de ser ~0 con el campo grande)
-  + Ojeo: una animación por terminal (ÉXITO/DEPREDACIÓN/TIMEOUT) + una del arco vigilancia->detección.
+  8) Timing de las dos etapas: paso de SOSPECHA y paso de ESCOLTA (el hueco = tiempo de investigación).
+  + Ojeo: una animación por terminal (ÉXITO/DEPREDACIÓN/TIMEOUT) + una del arco detección->investigación->ESCOLTA.
 """
 
 import matplotlib
@@ -44,8 +46,8 @@ def _run(w, cap=None):
 
 
 # ---------------------------------------------------------------------------- #
-def test_trigger_deteccion():
-    print("=== 0) Disparador VIGILANCIA->ESCOLTA por DETECCIÓN de dron (r_detect) ===")
+def test_trigger_dos_etapas():
+    print("=== 0) Disparador en DOS etapas: detección->SOSPECHA, confirmación->ESCOLTA ===")
     corner = np.array([[0.0, 0.0], [0.0, 5.0], [5.0, 0.0], [5.0, 5.0]])   # 4 activos en una esquina
 
     def fresh():
@@ -54,22 +56,68 @@ def test_trigger_deteccion():
         w.drone_state[:] = READY            # todos aparcados...
         w.drone_state[:4] = ACTIVE          # ...salvo 4 EN VUELO, en una esquina
         w.drones[:4] = corner
+        w.drone_investigating[:] = False
         return w
 
-    rd = World(seed=0).r_detect
-    # (1) lobo lejos de TODOS los drones activos -> sigue VIGILANCIA.
+    w0 = World(seed=0)
+    rd, rc = w0.r_detect, w0.r_confirm
+    # (1) lobo lejos de TODOS los activos -> sigue VIGILANCIA, nadie investiga.
     w = fresh(); w.drones[4:] = 1.0; w.wolves[:] = [[100.0, 100.0]]   # ~134 m del activo más cercano
     w._update_phase()
-    assert w.phase == "VIGILANCIA", "FALLO: disparó con el lobo fuera de r_detect"
-    # (2) acercar el lobo a < r_detect de un dron activo -> ESCOLTA en ese paso.
-    w.wolves[:] = [[60.0, 60.0]]                                      # ~78 m del activo (5,5) < 100
+    assert w.phase == "VIGILANCIA" and not w.drone_investigating.any(), "FALLO: disparó fuera de r_detect"
+    # (2) lobo a < r_detect pero > r_confirm de un activo -> SOSPECHA (NO ESCOLTA todavía), un dron investiga.
+    w.wolves[:] = [[60.0, 60.0]]                                      # ~78 m del activo (5,5): <100, >40
     w._update_phase()
-    assert w.phase == "ESCOLTA", "FALLO: no disparó con un lobo dentro de r_detect de un dron activo"
-    # (3) lobo PEGADO a un dron APARCADO (CHARGING) pero lejos de los activos -> NO dispara.
+    assert w.phase == "SOSPECHA", "FALLO: detección no pasó a SOSPECHA"
+    assert int(w.drone_investigating.sum()) == 1, "FALLO: no hay exactamente un dron INVESTIGANDO"
+    inv = int(np.where(w.drone_investigating)[0][0])
+    msg = w.get_observation()["investigations"]
+    assert len(msg) == 1 and msg[0]["drone_id"] == inv and np.allclose(msg[0]["contact_pos"], [60.0, 60.0]), \
+        "FALLO: mensaje al coordinador incorrecto (id/contacto)"
+    # (3) acercar el contacto a <= r_confirm del investigador -> ESCOLTA y el dron se libera.
+    w.wolves[:] = [w.drones[inv] + [0.0, rc - 5.0]]                   # a r_confirm-5 del investigador
+    w._update_phase()
+    assert w.phase == "ESCOLTA", "FALLO: confirmación no pasó a ESCOLTA"
+    assert not w.drone_investigating.any(), "FALLO: el dron no se liberó tras confirmar"
+    # (4) lobo pegado a un dron APARCADO (CHARGING) pero lejos de los activos -> NO dispara.
     w = fresh(); w.drone_state[4] = CHARGING; w.drones[4] = [100.0, 100.0]; w.wolves[:] = [[100.0, 100.0]]
     w._update_phase()
-    assert w.phase == "VIGILANCIA", "FALLO: un dron aparcado (CHARGING/READY) disparó la detección"
-    print("  r_detect=%.0f m | lejos->VIGILANCIA, cerca de ACTIVE->ESCOLTA, cerca de APARCADO->VIGILANCIA" % rd)
+    assert w.phase == "VIGILANCIA", "FALLO: un dron aparcado disparó la detección"
+    print("  r_detect=%.0f m -> SOSPECHA + 1 dron investigando (+ mensaje); r_confirm=%.0f m -> ESCOLTA + liberado;"
+          " aparcado no dispara" % (rd, rc))
+    print("  OK\n")
+
+
+def test_investigar_confirmar():
+    print("=== 0b) El dron INVESTIGA (se mueve al contacto) y la PRECEDENCIA reflejo/coordinador ===")
+    w = World(seed=8)
+    c = DummyCoordinator(w.n_drones)
+    susp = esc = None
+    inv = inv_pos0 = d_confirm_herd = None
+    moved = 0.0
+    for _ in range(2000):
+        obs, _, term, trunc, info = w.step(c.act(None))
+        if susp is None and info["phase"] == "SOSPECHA":
+            susp = w.step_count
+            inv = int(np.where(w.drone_investigating)[0][0])
+            inv_pos0 = w.drones[inv].copy()
+            # PRECEDENCIA: el coordinador intenta mover al investigador a otro sitio -> debe IGNORARSE.
+            w.command_waypoint(inv, np.array([5.0, 5.0]))
+        if susp is not None and esc is None and w.drone_investigating.any():
+            moved = float(np.linalg.norm(w.drones[inv] - inv_pos0))
+        if esc is None and info["phase"] == "ESCOLTA":
+            esc = w.step_count
+            # "buy time": distancia del contacto (lobo) al rebaño al CONFIRMAR.
+            live = w.cow_alive & ~w.cow_safe
+            d_confirm_herd = float(np.linalg.norm(w.wolves.mean(axis=0) - w.cows[live].mean(axis=0)))
+            break
+    assert susp is not None and esc is not None and esc > susp, "FALLO: no recorrió SOSPECHA->ESCOLTA"
+    assert moved > 10.0, "FALLO: el dron investigador no se movió hacia el contacto (precedencia o reflejo roto)"
+    print("  SOSPECHA paso %d -> ESCOLTA paso %d (investigación=%d pasos) | el dron voló %.1f m al contacto"
+          % (susp, esc, esc - susp, moved))
+    print("  precedencia OK (el comando del coordinador al investigador se ignoró: voló al lobo, no a (5,5))")
+    print("  buy time: contacto a %.0f m del rebaño al confirmar (investigar activamente confirma lejos)"
+          % d_confirm_herd)
     print("  OK\n")
 
 
@@ -186,46 +234,53 @@ def test_no_regressions():
 
 
 def test_timing_deteccion():
-    print("=== 8) Timing de detección: paso en que la fase pasa a ESCOLTA (campo %dx%d) ==="
-          % (World(seed=0).W, World(seed=0).H))
-    steps, best = [], (-1, None)   # (paso_escolta, seed) para una animación de aproximación larga
+    print("=== 8) Timing de las dos etapas: SOSPECHA (detección) y ESCOLTA (confirmación) ===")
+    s_sosp, s_esc, gaps, best = [], [], [], (-1, None)
     for s in range(20):
         w = World(seed=s)
         c = DummyCoordinator(w.n_drones)
-        esc = None
+        susp = esc = None
         while True:
-            _, _, term, trunc, _ = w.step(c.act(None))
-            if esc is None and w.phase == "ESCOLTA":
+            _, _, term, trunc, info = w.step(c.act(None))
+            if susp is None and info["phase"] in ("SOSPECHA", "ESCOLTA"):
+                susp = w.step_count
+            if esc is None and info["phase"] == "ESCOLTA":
                 esc = w.step_count
             if term or trunc:
                 break
-        if esc is not None:
-            steps.append(esc)
-            if 120 <= esc <= 360 and esc > best[0]:   # aproximación larga pero gif manejable
+        if susp is not None and esc is not None:
+            s_sosp.append(susp); s_esc.append(esc); gaps.append(esc - susp)
+            if 120 <= esc <= 380 and esc > best[0]:   # arco largo pero gif manejable
                 best = (esc, s)
-    steps = np.array(steps)
-    print("  pasos a ESCOLTA (20 ep): min=%d  mediana=%d  máx=%d  media=%.0f  (n=%d)  [antes ~0 en casi todos]"
-          % (steps.min(), int(np.median(steps)), steps.max(), steps.mean(), len(steps)))
-    assert np.median(steps) > 20, "FALLO: la detección sigue siendo casi inmediata (campo demasiado pequeño)"
+    s_sosp, s_esc, gaps = np.array(s_sosp), np.array(s_esc), np.array(gaps)
+    print("  SOSPECHA (<=r_detect): mediana=%d  | ESCOLTA (tras confirmar a <=r_confirm): mediana=%d  (n=%d)"
+          % (int(np.median(s_sosp)), int(np.median(s_esc)), len(s_esc)))
+    print("  hueco investigación SOSPECHA->ESCOLTA: mediana=%d máx=%d pasos (el dron vuela al contacto)"
+          % (int(np.median(gaps)), int(gaps.max())))
+    assert np.median(s_sosp) > 20, "FALLO: la detección es casi inmediata (campo demasiado pequeño)"
+    assert np.median(gaps) >= 1, "FALLO: no hay hueco SOSPECHA->ESCOLTA (no se investiga)"
     print("  OK\n")
-    return best[1] if best[1] is not None else int(np.argmax(steps))
+    return best[1] if best[1] is not None else int(s_esc.argmax()) if len(s_esc) else 8
 
 
 def save_detection_animation(seed):
-    print("=== Ojeo: arco VIGILANCIA -> DETECCIÓN -> ESCOLTA (sector lejano) ===")
+    print("=== Ojeo: arco DETECCIÓN -> INVESTIGACIÓN -> CONFIRMACIÓN -> ESCOLTA (sector lejano) ===")
     w = World(seed=seed)
     c = DummyCoordinator(w.n_drones)
     hist = [w.snapshot()]
-    esc = None
-    for _ in range(400):
+    susp = esc = None
+    for _ in range(500):
         _, _, term, trunc, _ = w.step(c.act(None))
         hist.append(w.snapshot())
+        if susp is None and w.phase == "SOSPECHA":
+            susp = w.step_count
         if esc is None and w.phase == "ESCOLTA":
             esc = w.step_count
         if (esc is not None and w.step_count >= esc + 40) or term or trunc:
             break
     render_episode(w, hist, save_path="escort_vigilancia_deteccion.gif")
-    print("  escort_vigilancia_deteccion.gif: seed=%d, %d frames, ESCOLTA en paso %s\n" % (seed, len(hist), esc))
+    print("  escort_vigilancia_deteccion.gif: seed=%d, %d frames | SOSPECHA paso %s -> ESCOLTA paso %s\n"
+          % (seed, len(hist), susp, esc))
 
 
 def _save_episode(w, cap, path):
@@ -266,7 +321,8 @@ def save_animations():
 
 
 if __name__ == "__main__":
-    test_trigger_deteccion()
+    test_trigger_dos_etapas()
+    test_investigar_confirmar()
     test_exito()
     test_depredacion()
     test_timeout()
