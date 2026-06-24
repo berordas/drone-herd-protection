@@ -10,10 +10,12 @@ import numpy as np
 
 
 class DummyCoordinator:
-    """Ignora la observación y manda 'todos quietos' (velocidad cero)."""
+    """Ignora la observación y NO comanda nada (devuelve None) -> los drones MANTIENEN su waypoint, que
+    es su posición de partida, así que se quedan efectivamente quietos. El movimiento de drones es una
+    capacidad del mundo (command_waypoint); este coordinador simplemente no la usa."""
 
     def __init__(self, n_drones: int):
         self.n_drones = n_drones
 
-    def act(self, observation: dict) -> np.ndarray:
-        return np.zeros((self.n_drones, 2), dtype=float)
+    def act(self, observation: dict | None) -> None:
+        return None

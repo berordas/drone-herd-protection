@@ -38,6 +38,16 @@ DRONE_STATE_NAMES = {ACTIVE: "ACTIVE", RETURNING: "RETURNING", CHARGING: "CHARGI
 HERD_SPREAD = 40.0        # m (cow_spread)
 HERD_SEPARATION = 22.0    # m (r_separation)
 
+# --- DINÁMICA DE VUELO DEL DRON (constantes FÍSICAS absolutas en SI; cuadricóptero HOLONÓMICO: se
+# mueve en cualquier dirección, sin restricción de morro). Pareja afinable rapidez/aceleración de
+# crucero-aproximación de un dron de vigilancia. ---
+DRONE_MAX_SPEED = 15.0    # m/s (~54 km/h)
+DRONE_MAX_ACCEL = 4.0     # m/s^2
+# Coste de batería por MOVERSE (flag #7, "pursuit cost"): el drenaje en ACTIVE = base de flote
+# multiplicada por (1 + DRONE_MOVE_DRAIN * v/vmax). Flotar = SUELO de consumo; reposicionarse a tope
+# gasta (1+DRONE_MOVE_DRAIN)x -> perseguir/sobre-comprometer drones tiene coste táctico real. Afinable.
+DRONE_MOVE_DRAIN = 1.5
+
 
 class World:
     def __init__(
@@ -56,7 +66,7 @@ class World:
         cow_spread: float | None = None,      # radio del área de pasto
         dt: float = 0.1,
         max_steps: int = 600,
-        drone_speed: float = 6.0,     # m/s, escala/tope de las acciones de los drones
+        drone_speed: float = 6.0,     # DEPRECATED: la dinámica de vuelo usa DRONE_MAX_SPEED/ACCEL; se ACEPTA pero NO se usa
         # --- Vaca adulta: pastar DISPERSO + DAR LA CARA (confrontación direccional) + inercia ---
         cow_speed: float = 1.2,            # m/s base, < wolf_speed (no escapan a la carrera). TUNE
         cow_speed_jitter: float = 0.4,     # heterogeneidad ±frac por vaca -> emerge la débil (la lenta). TUNE
@@ -258,6 +268,8 @@ class World:
         self.wolf_vel: np.ndarray | None = None      # (n_wolves,2) velocidad (inercia)
         self.wolf_spawn_angle: float = 0.0           # sector del perímetro por el que entró la manada (rad, RNG)
         self.drones: np.ndarray | None = None
+        self.drone_vel: np.ndarray | None = None        # (n_drones,2) velocidad (dinámica de vuelo, flag #1 para drones)
+        self.drone_waypoint: np.ndarray | None = None   # (n_drones,2) destino comandado (command_waypoint); hold = posición
         self.battery: np.ndarray | None = None          # (n_drones,) fracción [0,1]
         self.drone_state: np.ndarray | None = None      # (n_drones,) ACTIVE/RETURNING/CHARGING/READY
         self.battery_activity: np.ndarray | None = None # (n_drones,) HOOK persecución (bandera #7): multiplica el drenaje
@@ -345,6 +357,8 @@ class World:
         reserve = np.column_stack([np.linspace(scx - half, scx + half, self.n_reserve),
                                    np.full(self.n_reserve, scy)])
         self.drones = np.vstack([active, reserve])  # filas [0:n_active] activos, resto reserva
+        self.drone_vel = np.zeros((self.n_drones, 2))      # parados al inicio
+        self.drone_waypoint = self.drones.copy()           # destino = posición actual (mantener/hold)
 
         # Lobos: nº aleatorio por episodio; TODOS salen AGRUPADOS de un mismo sector del perímetro
         # (sector sorteado por episodio) -> la manada llega junta y de una dirección (y se aleatoriza
@@ -408,8 +422,9 @@ class World:
     # ------------------------------------------------------------------ #
     def step(self, actions):
         """
-        Avanza dt. `actions`: array (n_drones, 2) = velocidad deseada en m/s
-        (se recorta a drone_speed). Devuelve la 5-tupla estilo gym:
+        Avanza dt. `actions`: array (n_drones, 2) = WAYPOINT (x,y) por dron (destino); cada dron lo
+        persigue con su dinámica de vuelo. Si es None, los drones mantienen su waypoint (el coordinador
+        también puede comandar uno a uno con command_waypoint). Devuelve la 5-tupla estilo gym:
             (obs, reward, terminated, truncated, info)
         """
         self._prev_cows = self.cows.copy()   # para la guardia de teletransporte
@@ -443,14 +458,39 @@ class World:
     # ------------------------------------------------------------------ #
     # Dinámicas
     # ------------------------------------------------------------------ #
+    def command_waypoint(self, i: int, xy) -> None:
+        """Interfaz limpia para el coordinador: ordena a UN dron volar a un waypoint (x,y). El dron lo
+        persigue con su dinámica de vuelo (acelera, cruza, frena y se para). Persistente hasta otro
+        comando. (El DummyCoordinator no comanda nada -> los drones MANTIENEN su waypoint = quietos.)"""
+        self.drone_waypoint[i] = np.asarray(xy, dtype=float)
+
     def _apply_drone_actions(self, actions) -> None:
-        if actions is None:
-            return
-        vel = np.asarray(actions, dtype=float).reshape(self.n_drones, 2)
-        speed = np.linalg.norm(vel, axis=1, keepdims=True)
-        scale = np.minimum(1.0, self.drone_speed / np.maximum(speed, 1e-9))
-        self.drones = self.drones + vel * scale * self.dt
+        """Dinámica de vuelo HOLONÓMICA hacia el waypoint de cada dron (flag #1 para drones): velocidad
+        deseada = ir a por el waypoint pero pudiendo FRENAR a tiempo (v_freno = sqrt(2*a*dist)), capada a
+        DRONE_MAX_SPEED; se acelera hacia ella a <= DRONE_MAX_ACCEL por paso -> acelera, cruza, frena y se
+        para en el destino (sin overshoot sostenido). `actions`, si se pasa, fija TODOS los waypoints
+        (n_drones,2); si es None, se mantienen (hold). Además fija battery_activity por el esfuerzo (#7)."""
+        if actions is not None:
+            self.drone_waypoint = np.asarray(actions, dtype=float).reshape(self.n_drones, 2)
+
+        to_wp = self.drone_waypoint - self.drones
+        dist = np.linalg.norm(to_wp, axis=1, keepdims=True)
+        direction = np.where(dist > 1e-9, to_wp / np.maximum(dist, 1e-9), 0.0)
+        # Rapidez desde la que aún se frena a tiempo con DRONE_MAX_ACCEL -> garantiza parada sin overshoot.
+        v_brake = np.sqrt(2.0 * DRONE_MAX_ACCEL * dist)
+        desired_speed = np.minimum(DRONE_MAX_SPEED, v_brake)
+        desired_vel = direction * desired_speed
+        # Aceleración acotada por paso (DRONE_MAX_ACCEL): no salta de velocidad.
+        dv = desired_vel - self.drone_vel
+        dvn = np.linalg.norm(dv, axis=1, keepdims=True)
+        dv *= np.minimum(1.0, (DRONE_MAX_ACCEL * self.dt) / np.maximum(dvn, 1e-9))
+        self.drone_vel = self.drone_vel + dv
+        self.drones = self.drones + self.drone_vel * self.dt
         self._clip_to_parcel(self.drones)
+
+        # Coste de batería por moverse (flag #7): flote = suelo; crece con la rapidez (v/vmax).
+        effort = np.minimum(np.linalg.norm(self.drone_vel, axis=1) / DRONE_MAX_SPEED, 1.0)
+        self.battery_activity = 1.0 + DRONE_MOVE_DRAIN * effort
 
     # ------------------------------------------------------------------ #
     # Batería y cola de carga (mecánica del MUNDO, automática por umbral)
@@ -513,6 +553,11 @@ class World:
             # (relay_travel_time): con movimiento, el saliente iría por RETURNING dejando el
             # puesto descubierto (hueco de cobertura) y el entrante tardaría en llegar.
             self.drones[[i, j]] = self.drones[[j, i]]
+            # El relevo es un salto de puesto (instantáneo; HOOK travel-time): los dos drones MANTIENEN
+            # su nuevo puesto (waypoint = nueva posición) y parten parados (no vuelan al puesto viejo).
+            self.drone_waypoint[[i, j]] = self.drones[[i, j]]
+            self.drone_vel[i] = 0.0
+            self.drone_vel[j] = 0.0
             st[i] = CHARGING   # saliente -> central (carga desde ~announce_threshold)
             st[j] = ACTIVE     # entrante cubre el puesto liberado
 
