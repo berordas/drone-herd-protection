@@ -4,6 +4,14 @@
 > decisiones tomadas, las herramientas, el plan, las referencias y —muy importante— las
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
+>
+> **Última actualización: 2026-06-24** · *escolta en construcción.* **Hecho:** terminal (el "juez") ·
+> disparador realista por detección de dron · reescalado a 300×300 (~9 ha) con escala biológica absoluta ·
+> dispersión del rebaño · movimiento de drones · detectar→acercarse→confirmar. **Pendiente:** guiado al
+> refugio · corzos · congelar baseline v2 · coordinadores (reflejo trivial, MARL).
+> **Commits:** `194a3ad` base · `37910b3` terminal · `e663504` disparador por dron · `4d1e708` campo
+> 300×300 + escala biológica absoluta · `886bd45` dispersión del rebaño · `a15e2df` movimiento de
+> drones (3a) · `fd893b8` detectar→confirmar (3b).
 > **Paso 3b — disparador realista: DETECTAR → ACERCARSE → CONFIRMAR.** El salto a ESCOLTA ya no es
 > instantáneo a 100 m. Dos radios, tres fases: `r_detect`=100 m ("hay algo") → **SOSPECHA**;
 > `r_confirm`=40 m ("es un lobo", confirmación **geométrica determinista**, placeholder hasta YOLO) →
@@ -322,6 +330,10 @@ pastan cerca del borde) podría meterlo, así que se re-aplica el clamp como ÚL
   GSD ~1,2 cm/px a ~52 m AGL, patrulla ~40-50 m, margen por ángulo oblicuo/movimiento → ~80-120 m;
   horizontal porque la z del dron aún es conceptual (flag #2); candidato a eje de robustez §5.1);
   `max_episode_steps`=`episode_time_factor`·diag/`cow_speed`/`dt` (~4× cruzar el campo); `refuge_margin`=0.1·`safe_radius`.
+- `r_confirm`=40 m (DRI **identificación de especie** — ~130 px sobre el lobo a esa distancia). La
+  **confirmación es geométrica y determinista**: como por ahora solo hay lobos, siempre confirma «sí»
+  (placeholder). Con YOLO pasará a una **curva de confianza-vs-distancia** (flag #10) y los **corzos** (3c)
+  harán que el «¿es un lobo o no?» signifique algo (y habilitan la rama de abortar SOSPECHA→VIGILANCIA).
 - La **disuasión (ladrido)** es una **táctica durante la escolta** (ganar tiempo), no la condición de
   victoria. La victoria es resguardar. (Guiado al refugio + drones + disuasión = PASOS SIGUIENTES.)
 
@@ -527,6 +539,11 @@ Decisiones de diseño ratificadas:
 - **Modelo actual ≈ 88% sin drones** (medida en `face_check.py` range(100); el self-check de
   `baseline.py`, con su config y seeds congelados, da una cifra cercana). Es una **medida, NO un objetivo**:
   no se persigue ni se aterriza; es la cota que los coordinadores (reflejo trivial / MARL) deben **bajar**.
+  En **episodio completo a 300×300** con el rebaño disperso (`HERD_SPREAD`=40) baja a **~82%** (era ~87%
+  antes de dispersar): el modelo es el mismo y en "dar la cara" cada vaca encara **sola**, así que aflojar
+  el rebaño apenas mueve la letalidad (no hay defensa colectiva que se "abra"). El **88%** es el combate
+  medido en el campo **calibrado 100×100** (invariante de escala); ambas cifras describen el mismo modelo.
+  ~1/5 de episodios son lobo-solo → TIMEOUT.
 - **v2 se congelará tras la escolta**, con la dinámica vaca/lobo definitiva (config + 100 seeds), y
   pasará a ser el adversario fijo contra el que se miden ambas ramas.
 - La batería es **ortogonal** (qué drones hay disponibles, no la dinámica vaca/lobo) → no mueve el
@@ -560,9 +577,11 @@ movimiento de drones todavía (el relevo es un swap de puesto instantáneo).
    sector aleatorio** del perímetro (`_spawn_wolves_sector`) → la **dirección de ataque varía** entre
    episodios (la política no puede memorizar de dónde viene). Falta **aleatorizar el spawn del rebaño**
    (hoy fijo `(0.25W, 0.75H)`) para la fase de entrenamiento (no antes).
-5. **Zonas prohibidas del lobo.** Ya implementadas como clamp, pero **cobran sentido real en la
-   escolta** (cuando el lobo persiga a las vacas hacia el establo central). Enlaza con "lobos
-   fuera del recinto" del criterio de éxito.
+5. 🟡 **Zonas prohibidas del lobo — ACTIVAS en la escolta.** El clamp de exclusión del lobo se
+   **re-aplica como ÚLTIMA palabra del step** (tras el empuje del cono, que si no podría meter un lobo
+   en el establo) y entra ya en el **terminal** ("ningún lobo dentro del establo" = condición de ÉXITO);
+   verificado en `escort_check`. Cobrará aún más sentido con el guiado (lobo persiguiendo a las vacas
+   hacia el establo central). Enlaza con "lobos fuera del recinto" del criterio de éxito.
 6. **Disuasión con habituación.** No implementada. El ladrido sube la `d_safe` efectiva del lobo;
    el efecto **decae con el uso repetido**. Es lo que hace que la estrategia sea "ganar tiempo
    para escoltar", no "ladrar para siempre".
@@ -571,7 +590,9 @@ movimiento de drones todavía (el relevo es un swap de puesto instantáneo).
    (1+`DRONE_MOVE_DRAIN`·v/vmax)): flotar es el suelo, reposicionar a tope gasta ~2.5×. Verificado en
    `drone_check.py` (mover drena 2.2× flotar). **Pendiente (relacionado):** que el coordinador no se
    comprometa a una persecución que no pueda costear (proteger reserva de retorno) — es política, no
-   mecánica. El negativo por "dron tirado" (`drone_stranded`) sigue esperando al travel-time del relevo.
+   mecánica. El **hueco de cobertura** lo **abre** ahora el dron que sale a investigar (deja su sector) y
+   lo **tapará** el coordinador reactivo (consumiendo el mensaje del reflejo). El negativo por "dron tirado"
+   (`drone_stranded`) y el `relay_travel_time` del relevo siguen pendientes.
 8. **Alerta como acción aprendible.** En la v1 la alerta es **automática por umbral**. Dejar que
    la política aprenda *cuándo/qué* comunicar es **extensión avanzada** (y zona inestable del
    MARL: premiar/penalizar el avisar directamente puede enseñar a callar amenazas — ir con pies
@@ -629,6 +650,10 @@ regresiones. DummyCoordinator no recoloca (solo Dummy + interfaz del mensaje). V
   suprimir wander de calma, etc.) para que ÉXITO sea alcanzable sin forzar; luego drones que **apantallan/
   disuaden** + resto de hooks de batería (travel-time, hueco de cobertura, dron tirado).
 Luego: percepción → reflejo trivial → MARL → comparación. **Congelar baseline v2** al FINAL de la escolta.
+
+**Ruta sugerida (orden tentativo, aún sin decidir):** 3a ✓ → 3b ✓ → **paso 2 (guiado al refugio)** →
+**3c (corzos)** → **congelar v2** (Dummy, ~50% con guiado) → **reflejo-reactivo** (consume el mensaje del
+reflejo para tapar el hueco de cobertura) → **MARL** → comparación.
 
 *(Pendiente de decisión menor, NO en este paso: lobo solo vs ternero salió 0% — la madre frena siempre.
 Si se quiere que sea disputado (a veces se cuela), afinar `face_cooldown`/`r_face_safe`. Parámetros del
