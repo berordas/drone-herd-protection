@@ -10,8 +10,8 @@ fijada se refugia, la manada RE-SELECCIONA (única re-fijación permitida). Dron
      coordinador); confirmación (r_confirm)->ESCOLTA + dron liberado; aparcados no cuentan.
   0b) El dron INVESTIGA (se mueve al contacto) y confirma; PRECEDENCIA reflejo>coordinador; buy-time.
   1) ÉXITO forzado
-  1b) ÉXITO ORGÁNICO: una vaca llega al establo ANTES de ser fijada (lobo-solo -> TIMEOUT por pin).
-  1c) Movimiento NO-HOLONÓMICO en ESCOLTA: HUIR (de frente al establo) / ENCARAR-PIN / REANUDAR; terneros anclados.
+  1b) ÉXITO ORGÁNICO (lobo-solo SIN terneros -> el rebaño escapa) + lobo-solo CON ternero -> TIMEOUT + Bug 2 (ternero entra tras su madre).
+  1c) NO-HOLONÓMICO en ESCOLTA: HUIR / ENCARAR-PIN (SOLO la presa) / REANUDAR + Bug 1 (no-fijada huye con lobo cerca); terneros anclados.
   2) DEPREDACIÓN forzada (multi-muerte; cuanta más, peor -> cuenta)
   3) TIMEOUT forzado
   4) Refugio = soltar presa (re-fijación SOLO al refugiarse; 0 en otro caso)
@@ -139,49 +139,60 @@ def test_exito():
 
 
 def test_exito_organico():
-    print("=== 1b) ÉXITO ORGÁNICO: una vaca llega al establo ANTES de ser fijada (no-holonómico) ===")
-    # Con la huida NO-HOLONÓMICA, el ÉXITO pleno ocurre cuando se llega ANTES de ser fijada (no por
-    # defecto): si ningún lobo entra en r_notice, la vaca HUYE de frente y se refugia -> ÉXITO.
-    w = World(seed=5, n_cows=1, wolves_min=1, wolves_max=1, calf_count_probs=NO_CALVES)
+    print("=== 1b) ÉXITO ORGÁNICO (rebaño escapa) + lobo-solo + Bug 2 (ternero entra tras su madre) ===")
+    # ÉXITO orgánico: un lobo SOLO SIN terneros NO fija presa (no se compromete) -> NINGUNA vaca es
+    # "pinnable" (Bug 1) -> todas HUYEN y se refugian -> ÉXITO sin forzar estados.
+    w = World(seed=1, wolves_min=1, wolves_max=1, calf_count_probs=NO_CALVES)
     c = DummyCoordinator(w.n_drones)
-    w.phase = "ESCOLTA"
-    w.cow_speeds[0] = w.cow_speed
-    w.cows[0] = w.safe_zone[:2] + np.array([60.0, 0.0])     # cerca del establo
-    w.cow_heading[0] = np.pi                                # mira al establo (oeste)
-    w.wolves[0] = w.safe_zone[:2] + np.array([250.0, 0.0])  # lobo detrás, lejos: no la fija a tiempo
-    w.wolf_vel[0] = 0.0
     info = {"status": w.status}
-    for _ in range(600):
+    while True:
         _, _, term, trunc, info = w.step(c.act(None))
         if term or trunc:
             break
-    print("  reach-before-fix: status=%s  n_safe=%d/%d  cazadas=%d  terminal=%s"
-          % (info["status"], info["n_safe"], w.n_cows, info["n_depredadas"], info["terminal_step"]))
-    assert info["status"] == "success" and info["n_depredadas"] == 0, \
-        "FALLO: la vaca no llegó al establo antes de ser fijada"
-    # Lobo-solo en episodio NORMAL -> TIMEOUT: clava a una res (la mantiene parada) pero no puede
-    # flanquearla (n_min_adult=2) -> ni muere ni llega. Es el resultado "sin ayuda" (antes era ÉXITO).
-    w2 = World(seed=1, wolves_min=1, wolves_max=1, calf_count_probs=NO_CALVES)
+    print("  lobo-solo SIN terneros: status=%s  n_safe=%d/%d  cazadas=%d  (no fija presa -> todas huyen -> ÉXITO)"
+          % (info["status"], info["n_safe"], w.n_cows, info["n_depredadas"]))
+    assert info["status"] == "success" and info["n_safe"] == w.n_cows, "FALLO: el rebaño no escapó al lobo solo"
+    # Lobo-solo CON ternero -> TIMEOUT: fija el ternero -> su DEFENSORA queda CLAVADA defendiéndolo (no
+    # puede flanquear -> no muere; la pareja no llega). Es el resultado "sin ayuda" (la presa fijada clavada).
+    w2 = World(seed=1, wolves_min=1, wolves_max=1, calf_count_probs=ONE_CALF)
     c2 = DummyCoordinator(w2.n_drones)
     info2 = {"status": w2.status}
     while True:
         _, _, term, trunc, info2 = w2.step(c2.act(None))
         if term or trunc:
             break
-    print("  lobo-solo (normal): status=%s  n_safe=%d/%d  cazadas=%d  (vaca CLAVADA -> TIMEOUT, sin ayuda)"
-          % (info2["status"], info2["n_safe"], w2.n_cows, info2["n_depredadas"]))
+    print("  lobo-solo CON ternero: status=%s  n_safe=%d  cazadas=%d  (fija el ternero -> defensora clavada -> TIMEOUT)"
+          % (info2["status"], info2["n_safe"], info2["n_depredadas"]))
     assert info2["status"] == "timeout" and info2["n_depredadas"] == 0, \
-        "FALLO: lobo-solo debería dar TIMEOUT (la vaca clavada no muere ni llega)"
+        "FALLO: lobo-solo+ternero debería dar TIMEOUT (defensora clavada, sin muerte)"
+    # Bug 2: un ternero cuya MADRE ya está a salvo (dentro) sigue migrando hasta ENTRAR él, y se marca a
+    # salvo SOLO cuando el ternero está dentro (no cuando lo está su madre).
+    w3 = World(seed=4, wolves_min=0, wolves_max=0, calf_count_probs=ONE_CALF)
+    c3 = DummyCoordinator(w3.n_drones)
+    w3.phase = "ESCOLTA"
+    dfn, ctr, thr = int(w3.calf_defender[0]), w3.safe_zone[:2], w3.safe_zone[2] - w3.refuge_margin
+    w3.cows[dfn] = ctr + np.array([thr - 2.0, 0.0]); w3.cow_safe[dfn] = True; w3.cow_vel[dfn] = 0.0
+    w3.calves[0] = ctr + np.array([thr + 1.5, 0.0]); w3.calf_vel[0] = 0.0   # ternero FUERA del umbral
+    assert not w3.calf_safe[0], "el ternero no debería estar a salvo por estar su madre dentro"
+    for _ in range(80):
+        w3.step(c3.act(None))
+        if w3.calf_safe[0]:
+            break
+    inside = float(np.linalg.norm(w3.calves[0] - ctr)) <= thr + 1e-6
+    print("  Bug 2: madre a salvo dentro; el ternero entra -> calf_safe=%s, ternero dentro=%s" % (bool(w3.calf_safe[0]), inside))
+    assert w3.calf_safe[0] and inside, "FALLO(Bug 2): el ternero no entró / no se marcó a salvo al entrar él mismo"
     print("  OK\n")
 
 
 def test_no_holonomico():
-    print("=== 1c) Movimiento NO-HOLONÓMICO en ESCOLTA: HUIR / ENCARAR-PIN / REANUDAR ===")
-    # La vaca corre HACIA DONDE MIRA; huir y dar la cara son EXCLUYENTES.
+    print("=== 1c) NO-HOLONÓMICO en ESCOLTA: HUIR / ENCARAR-PIN (solo la presa) / REANUDAR ===")
+    # La vaca PRESA corre HACIA DONDE MIRA; huir y dar la cara son EXCLUYENTES. (cow0 = presa fijada -> es
+    # la única "pinnable"; ver Bug 1 abajo para las no-fijadas.)
     w = World(seed=5, n_cows=1, wolves_min=1, wolves_max=1, calf_count_probs=NO_CALVES)
     c = DummyCoordinator(w.n_drones)
     w.phase = "ESCOLTA"
     w.cow_speeds[0] = w.cow_speed
+    w.pack_prey, w.pack_prey_kind = 0, "adult"             # la cow0 es la PRESA fijada -> puede ENCARAR (pin)
     w.cows[0] = w.safe_zone[:2] + np.array([120.0, 0.0])
     w.cow_heading[0] = 0.0                                  # mira AL ESTE (lejos del establo): debe girar
     w.wolves[0] = w.safe_zone[:2] + np.array([400.0, 400.0]); w.wolf_vel[0] = 0.0   # lobo MUY lejos
@@ -217,6 +228,30 @@ def test_no_holonomico():
     d3 = float(np.linalg.norm(w.cows[0] - w.safe_zone[:2]))
     print("  REANUDAR: dist al establo %.1f->%.1f m (baja de nuevo al apartar el lobo)" % (d2, d3))
     assert d3 < d2 - 2.0, "FALLO: la vaca no reanudó la huida tras apartar el lobo"
+    # Bug 1: SOLO la presa fijada se para. Una vaca NO-FIJADA con un lobo dentro de r_notice SIGUE
+    # huyendo (el paquete está comprometido con la presa, no con ella).
+    wb = World(seed=2, n_cows=3, wolves_min=2, wolves_max=2, calf_count_probs=NO_CALVES)
+    cb = DummyCoordinator(wb.n_drones)
+    wb.phase = "ESCOLTA"
+    wb.cow_speeds[:] = wb.cow_speed
+    ctr = wb.safe_zone[:2]
+    wb.cows[0] = ctr + np.array([80.0, 0.0])      # PRESA fijada
+    wb.cows[1] = ctr + np.array([0.0, 100.0])     # NO-fijada, lejos del establo
+    wb.cows[2] = ctr + np.array([0.0, -100.0])
+    wb.pack_prey, wb.pack_prey_kind = 0, "adult"
+    dn0 = float(np.linalg.norm(wb.cows[1] - ctr))
+    p_prey = wb.cows[0].copy()
+    for _ in range(20):
+        wb.pack_prey, wb.pack_prey_kind = 0, "adult"                   # mantener la presa fijada
+        wb.wolves[0] = wb.cows[0] + np.array([0.0, 10.0])              # lobo pegado a la PRESA
+        wb.wolves[1] = wb.cows[1] + np.array([10.0, 0.0]); wb.wolf_vel[:] = 0.0   # lobo pegado a la NO-fijada
+        wb.step(cb.act(None))
+    moved_prey = float(np.linalg.norm(wb.cows[0] - p_prey))
+    dn1 = float(np.linalg.norm(wb.cows[1] - ctr))
+    print("  Bug 1: PRESA con lobo cerca se para (%.2f m) | NO-FIJADA con lobo cerca SIGUE huyendo (%.1f->%.1f m)"
+          % (moved_prey, dn0, dn1))
+    assert moved_prey < 0.5, "FALLO: la presa fijada no se clavó"
+    assert dn1 < dn0 - 1.0, "FALLO(Bug 1): una vaca NO-fijada se paró por un lobo cercano (debería huir)"
     # Terneros: siguen ANCLADOS a su defensora durante la fuga (la pareja para/huye junta).
     w2 = World(seed=13, wolves_min=1, wolves_max=1, calf_count_probs=ONE_CALF)
     c2 = DummyCoordinator(w2.n_drones)
@@ -385,10 +420,11 @@ def test_tasa_escolta():
           % (n_g, dict(g_out), 100 * g_out["predation"] / n_g, np.mean(g_deaths), max(g_deaths)))
     print("  SIN guiado (n=%d): %s | depredación=%.0f%% | muertes/ep=%.2f (máx=%d)"
           % (n_u, dict(u_out), 100 * u_out["predation"] / n_u, np.mean(u_deaths), max(u_deaths)))
-    print("  -> NO-HOLONÓMICO: huir y dar la cara son EXCLUYENTES -> los lobos CLAVAN (pin) a la presa. TASA")
-    print("     ~80%% (la presa fijada, clavada, es muy cazable) y SEVERIDAD ~1 (máx. 1 caza/ep). El ÉXITO")
-    print("     pleno por defecto cae a ~0 (lobo-solo->TIMEOUT por pin); lo desbloqueará el apantallado de drones.")
+    print("  -> Bug 1 arreglado: SOLO la presa fijada se clava; las NO-FIJADAS llegan a salvo -> ÉXITO orgánico")
+    print("     SÍ ocurre (rebaño entero cuando el paquete no consigue su presa) y baja el TIMEOUT espurio. TASA")
+    print("     ~80%% (la presa clavada sigue muy cazable), SEVERIDAD ~1 (máx. 1 caza/ep). La TASA la bajará el dron.")
     assert max(g_deaths) <= 1 and max(u_deaths) <= 1, "FALLO: hubo >1 caza en algún episodio (máx. 1 caza/episodio)"
+    assert g_out["success"] >= 1, "FALLO: con Bug 1 arreglado debería haber ÉXITO orgánico en alguna seed"
     print("  OK\n")
 
 
@@ -419,18 +455,16 @@ def save_loop_animation(seed=9):
     hist = [w.snapshot()]
     susp = esc = None
     step = 0
-    stop_at = None
     while True:
         _, _, term, trunc, _ = w.step(c.act(None)); step += 1
         if susp is None and w.phase == "SOSPECHA": susp = w.step_count
         if esc is None and w.phase == "ESCOLTA": esc = w.step_count
-        if step % 2 == 0 or term or trunc:        # submuestreo x2 -> gif manejable
+        if step % 3 == 0 or term or trunc:        # submuestreo x3 -> gif manejable hasta el terminal
             hist.append(w.snapshot())
-        # Con el PIN el episodio se arrastra hasta el timeout (reses clavadas): corta poco después de la
-        # primera caza (el pin-and-flank ya se vio) o por terminal; tope duro para mantener el gif corto.
-        if stop_at is None and w.n_depredadas >= 1:
-            stop_at = w.step_count + 40
-        if term or trunc or (stop_at is not None and w.step_count >= stop_at) or step >= 700:
+        # Con Bug 1 arreglado las NO-FIJADAS llegan a salvo -> el episodio RESUELVE (no se arrastra al
+        # timeout): corre hasta el terminal para ver el arco entero (pin-and-flank + rebaño/terneros a salvo);
+        # tope de seguridad por si una seed se alarga.
+        if term or trunc or step >= 1800:
             break
     render_episode(w, hist, save_path="escort_bucle_completo.gif")
     print("  escort_bucle_completo.gif: seed=%d, %d frames | SOSPECHA=%s ESCOLTA=%s -> %s (a salvo %d, cazadas %d)\n"

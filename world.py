@@ -616,12 +616,16 @@ class World:
         diff = (target - current + np.pi) % (2 * np.pi) - np.pi   # diferencia envuelta a [-pi, pi]
         return current + np.clip(diff, -max_step, max_step)
 
-    def _update_cow_headings(self) -> None:
+    def _update_cow_headings(self, face_mask: np.ndarray | None = None) -> None:
         """Actualiza a quién encara cada vaca (heading) con enfriamiento.
 
         Encara al lobo más amenazante (el más cercano que se ACERCA) dentro de r_notice, girando
         a turn_rate. Una vez comprometida con un lobo, no cambia de objetivo hasta que pase
         face_cooldown -> mientras está fijada en uno, el flanco queda abierto a los demás.
+
+        face_mask: si se da, SOLO esas vacas reorientan al lobo (las demás no tocan su heading). En
+        pastoreo/combate todas dan la cara (mask=None); en ESCOLTA solo la PRESA fijada (y su defensora)
+        encara -> las no-fijadas siguen huyendo aunque tengan lobos en r_notice.
         """
         self.cow_face_cd = np.maximum(self.cow_face_cd - self.dt, 0.0)
         if self.n_wolves == 0:
@@ -638,6 +642,8 @@ class World:
         for i in range(self.n_cows):
             if not self.cow_alive[i] or self.cow_safe[i]:
                 continue   # res fuera de juego (cazada/refugiada): no encara
+            if face_mask is not None and not face_mask[i]:
+                continue   # ESCOLTA: solo la presa/defensora encara; las demás no reorientan al lobo
             near = np.where(within[i])[0]
             if near.size == 0:
                 continue   # sin lobo cerca: mantiene la mirada (no re-orienta)
@@ -669,19 +675,25 @@ class World:
         """
         cows = self.cows
 
-        # 1) A quién encara cada vaca (mirada + enfriamiento). En ESCOLTA esto es el modo ENCARAR: gira el
-        #    heading hacia el lobo amenazante dentro de r_notice (cono/face_cooldown aplican igual).
-        self._update_cow_headings()
-
         if self.escort_enabled and self.phase == "ESCOLTA":
             # --- NO-HOLONÓMICO (solo ESCOLTA) ---
+            active = self.cow_alive & ~self.cow_safe
+            # Solo la PRESA fijada por el paquete (o su DEFENSORA si la presa es un ternero) puede ENCARAR
+            # (pararse + dar la cara): el paquete está comprometido con UNA presa, no con las demás. Las
+            # no-fijadas siguen HUYENDO aunque tengan lobos en r_notice.
+            pinnable = np.zeros(self.n_cows, dtype=bool)
+            if self.pack_prey >= 0:
+                idx = int(self.pack_prey) if self.pack_prey_kind == "adult" else int(self.calf_defender[self.pack_prey])
+                pinnable[idx] = True
+            # ENCARAR: la presa/defensora reorienta al lobo (cono/face_cooldown igual); las demás NO.
+            self._update_cow_headings(face_mask=pinnable)
             if self.n_wolves > 0:
                 d_cw = np.linalg.norm(self.wolves[None, :, :] - cows[:, None, :], axis=2)   # (nc, nw)
                 wolf_near = (d_cw <= self.r_notice).any(axis=1)
             else:
                 wolf_near = np.zeros(self.n_cows, dtype=bool)
-            active = self.cow_alive & ~self.cow_safe
-            huir = active & ~wolf_near        # HUIR: sin lobo cerca (las demás ENCARAN -> paradas)
+            encarar = active & pinnable & wolf_near   # presa/defensora con un lobo cerca -> para + encara
+            huir = active & ~encarar                  # todas las demás (y la presa sin lobo cerca) -> huir
             # HUIR: gira el heading hacia el establo (las que ENCARAN ya lo giró _update_cow_headings al lobo).
             to_ref = self.safe_zone[:2] - cows
             ref_ang = np.arctan2(to_ref[:, 1], to_ref[:, 0])
@@ -693,7 +705,8 @@ class World:
             self.cows = cows + self.cow_vel * self.dt
         else:
             # --- HOLONÓMICO (pastoreo/combate, INTACTO) ---
-            # 2) Separación: empuje desde vecinas dentro de r_separation (no se solapan).
+            # 1) A quién encara cada vaca (todas dan la cara). 2) Separación (no se solapan).
+            self._update_cow_headings()
             delta = cows[:, None, :] - cows[None, :, :]                    # (n,n,2): i - j
             dd = np.linalg.norm(delta, axis=2)
             close = (dd < self.r_separation) & (dd > 1e-9)
@@ -766,19 +779,24 @@ class World:
         rapidez de pastoreo en calma (wander_calm) y mismo capado de magnitud que las adultas."""
         if self.n_calves == 0:
             return
-        to_def = self.cows[self.calf_defender] - self.calves          # hacia la madre (ya movida este paso)
+        escort = self.escort_enabled and self.phase == "ESCOLTA"
+        # Objetivo de cohesión = la DEFENSORA (el ternero se ancla a su lado). En ESCOLTA, si la defensora
+        # YA está a salvo (parada dentro del establo), el ternero apunta al CENTRO del establo para ENTRAR
+        # ÉL MISMO (Bug 2): si no, se quedaría a rest-length FUERA del umbral y nunca se marcaría a salvo.
+        # La madre a-salvo sigue siendo el ancla que lo trajo hasta aquí; ahora cruza el umbral y entra.
+        target = self.cows[self.calf_defender].copy()                 # madre (ya movida este paso)
+        if escort:
+            target[self.cow_safe[self.calf_defender]] = self.safe_zone[:2]
+        to_def = target - self.calves
         dist = np.linalg.norm(to_def, axis=1, keepdims=True)
-        # MUELLE a longitud natural = espacio personal: tira hacia la madre si está lejos, la separa
-        # si está encima -> el ternero se asienta a ~calf_personal_space (AL LADO, no superpuesto).
+        # MUELLE a longitud natural = espacio personal: tira hacia el objetivo si está lejos, separa si está
+        # encima -> el ternero se asienta a ~calf_personal_space (AL LADO de la madre; o entra al establo).
         cohesion = self.k_calf_cohesion * (dist - self.calf_personal_space) * to_def / np.maximum(dist, 1e-9)
         self._calf_graze_dir = self._calf_graze_dir + self.rng.normal(0.0, self.wander_drift, size=self.n_calves)
         wander = self.wander_calm * np.column_stack([np.cos(self._calf_graze_dir),
                                                      np.sin(self._calf_graze_dir)])
-        # En ESCOLTA el ternero MIGRA anclado a su defensora (el muelle de cohesión): la pareja va junta
-        # al establo. Se suprime su wander de pastoreo (igual que las adultas) para que la migración sea
-        # coherente. NO lleva atracción al refugio propia: SIGUE a la madre (y por eso, más lento de
-        # reacción, queda algo más expuesto -> tensión querida, no se toca).
-        escort = self.escort_enabled and self.phase == "ESCOLTA"
+        # En ESCOLTA el ternero MIGRA siguiendo a su defensora (cohesión): la pareja va junta al establo;
+        # se suprime su wander de pastoreo. Más lento de reacción -> queda algo más expuesto (no se toca).
         if escort:
             wander = np.zeros_like(wander)
         total = cohesion + wander
@@ -792,14 +810,11 @@ class World:
             self.calves[frozen] = prev[frozen]
             self.calf_vel[frozen] = 0.0
         self._clip_to_parcel(self.calves)
-        # Gancho (a) REFUGIO para terneros: por GEOMETRÍA (como las adultas) O porque su DEFENSORA ya
-        # está a salvo (la madre lo trajo al establo: la pareja llega junta -> el ternero, anclado a su
-        # lado a ~calf_personal_space < margen, cuenta como refugiado). Evita que se quede justo fuera
-        # del umbral pegado a una madre ya congelada dentro.
+        # Gancho (a) REFUGIO para terneros: a salvo SOLO cuando el PROPIO ternero está dentro (Bug 2:
+        # calf_safe <=> ternero dentro, NO cuando lo está su madre). Hasta entonces sigue migrando (arriba
+        # apunta al centro si la madre ya está dentro) -> entra él mismo y SE marca a salvo.
         d_safe = np.linalg.norm(self.calves - self.safe_zone[:2], axis=1)
-        defender_safe = self.cow_safe[self.calf_defender]
-        self.calf_safe |= self.calf_alive & ~self.calf_safe & (
-            (d_safe <= self.safe_zone[2] - self.refuge_margin) | defender_safe)
+        self.calf_safe |= self.calf_alive & ~self.calf_safe & (d_safe <= self.safe_zone[2] - self.refuge_margin)
         active = self.calf_alive & ~self.calf_safe
         if active.any():
             sub = self.calves[active]

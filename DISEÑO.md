@@ -13,7 +13,18 @@
 > **Commits:** `194a3ad` base · `37910b3` terminal · `e663504` disparador por dron · `4d1e708` campo
 > 300×300 + escala biológica absoluta · `886bd45` dispersión del rebaño · `a15e2df` movimiento de
 > drones (3a) · `fd893b8` detectar→confirmar (3b) · `49e0e22` consolidar DISEÑO+CLAUDE · `144b7bd` guiado (paso 2)
-> · `1d44cdc` máx. 1 caza/episodio.
+> · `1d44cdc` máx. 1 caza/episodio · `56ff75d` huida no-holonómica.
+>
+> **Patch — DOS CORRECCIONES EN LA HUIDA (ESCOLTA).** **Bug 1 (solo la presa se para):** SOLO la **presa
+> fijada** por el paquete (y su defensora si es ternero) entra en ENCARAR (parar+encarar); las **no-fijadas
+> siguen HUYENDO** aunque tengan lobos en `r_notice` (el paquete está comprometido con UNA presa). Antes se
+> paraban TODAS las vacas cerca de un lobo → ahora el **resto del rebaño llega a salvo** (`n_safe` medio
+> ~2.6→**6/6**). **Bug 2 (ternero entra tras su madre):** un ternero se marca a salvo (verde) **SOLO cuando él
+> mismo está dentro** (NO cuando lo está su madre); hasta entonces sigue migrando al establo (la madre a-salvo
+> dentro es el ancla; al apuntar al centro, cruza el umbral). Implicaciones medidas: el **ÉXITO orgánico SÍ
+> ocurre** (rebaño entero cuando el paquete falla); **lobo-solo SIN ternero → ÉXITO**, **CON ternero → TIMEOUT**
+> (defensora clavada). Tasa ~80%, severidad ~1 (sin cambios). **face_check 12/12.** **NO** toca disuasión
+> (siguiente), pastoreo/combate, 1-caza-por-episodio. Verificado en `escort_check` (Bug 1, Bug 2, tasa).
 >
 > **Patch — VACAS NO-HOLONÓMICAS EN ESCOLTA (correr de frente, o girar y parar a encarar).** Una vaca real
 > corre **hacia donde mira**; no puede correr mientras encara. En `ESCOLTA`, huir y dar la cara pasan a ser
@@ -305,10 +316,13 @@ vs ternero salió **0%** (la madre frena siempre con los parámetros actuales); 
   **HUIR** (sin lobo en `r_notice`) → gira el `cow_heading` al establo a `turn_rate` y avanza **de frente**
   a `cow_speed` (la velocidad es **siempre a lo largo del heading**, nunca lateral → el flanco/grupa queda
   expuesto a los perseguidores); **ENCARAR/PIN** (lobo dentro de `r_notice`) → gira a encararlo y **se PARA**
-  (no avanza al refugio hasta que el lobo se va). Esto crea el **pin**: los lobos **CLAVAN** a la vaca (uno la
+  (no avanza al refugio hasta que el lobo se va). **Solo la PRESA fijada** por el paquete (y su defensora si
+  es ternero) puede ENCARAR; las **no-fijadas siguen HUYENDO** aunque tengan lobos en `r_notice` (el paquete
+  está comprometido con UNA presa, no con ellas). Esto crea el **pin**: los lobos **CLAVAN** a la presa (uno la
   fija, otro la flanquea = pin-and-flank), y hace concreto el trabajo del dron: **despejar lobos para que la
   vaca reanude la huida**. El cono/`face_cooldown` aplican igual; los terneros migran **anclados** a su
-  defensora (la pareja para/huye junta). **Pastoreo/combate sigue HOLONÓMICO e intacto** (face_check no se
+  defensora (la pareja para/huye junta) y se marcan a salvo **solo cuando el ternero está dentro** (sigue
+  migrando hasta entrar él, aunque su madre ya esté a salvo). **Pastoreo/combate sigue HOLONÓMICO e intacto** (face_check no se
   toca: en pastoreo las vacas están casi quietas → la restricción no cambia nada ahí). Pendiente: **drones que
   apantallen/disuadan** (post-v2). "Escolta" = proteger el traslado, no empujar.
 
@@ -598,12 +612,14 @@ Decisiones de diseño ratificadas:
   ~1/5 de episodios son lobo-solo → TIMEOUT.
 - **Candidata a v2 (Dummy + GUIADO + NO-HOLONÓMICO):** medida en `escort_check` (`escort_enabled=True`): la
   **tasa** de depredación ~**80%** y la **severidad ~1 muerte/episodio** (el paquete caza UNA vez y se sacia;
-  **máx. 1 caza/ep**). Con la huida no-holonómica los lobos **CLAVAN (pin)** a la presa fijada (huir y dar la
-  cara son excluyentes) → la presa clavada es muy cazable. **Lobo-solo → TIMEOUT** (clava una res pero no puede
-  flanquearla: ni muere ni llega; es el resultado "sin ayuda"). El **ÉXITO orgánico** por defecto cae a ~0 y
-  pasa a ser "llegar al establo **antes** de ser fijada". El balance huida/lobo está locked (no se tocan
-  `cow_speed`/`wolf_speed` ni se mete sprint): la TASA la bajarán los **drones apantallando** —despejar lobos
-  para que la vaca reanude la huida— (post-v2), no el guiado.
+  **máx. 1 caza/ep**). Con la huida no-holonómica los lobos **CLAVAN (pin)** SOLO a la presa fijada (las
+  no-fijadas siguen huyendo) → la presa clavada es muy cazable, pero el **resto del rebaño llega a salvo**
+  (**n_safe medio ~6/6**; antes ~2.6 por el bug de pin). El **ÉXITO orgánico SÍ ocurre** cuando el paquete no
+  consigue su presa (rebaño entero). **Lobo-solo SIN ternero → ÉXITO** (no fija presa → nadie se clava → todas
+  huyen); **lobo-solo CON ternero → TIMEOUT** (fija el ternero → su defensora queda clavada, no puede
+  flanquear: ni muere ni llega). El balance huida/lobo está locked (no se tocan `cow_speed`/`wolf_speed` ni se
+  mete sprint): la TASA la bajarán los **drones apantallando** —despejar el pin para que la vaca reanude—
+  (post-v2), no el guiado.
 - **v2 se congelará tras la escolta** (con drones apantallando), con la dinámica definitiva (config + 100
   seeds), y pasará a ser el adversario fijo contra el que se miden ambas ramas.
 - La batería es **ortogonal** (qué drones hay disponibles, no la dinámica vaca/lobo) → no mueve el
