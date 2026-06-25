@@ -14,7 +14,7 @@ esto es lo que no debe perderse entre sesiones ni tras un /compact. Trabajamos e
 Si algo se pone **rojo**: PARA y avisa. Nunca bajes la exigencia de un test para que pase sin decirlo.
 
 ## Invariantes CONGELADOS — no los toques sin permiso explícito
-- Modelo vaca/lobo **"dar la cara, no apiñamiento"**: cono frontal, flanqueo, presa común fijada en t=0 (única re-fijación: presa que se refugia), terneros + defensoras, spawn por sector, rodeo. Verificado en `face_check`.
+- Modelo vaca/lobo **"dar la cara, no apiñamiento"**: cono frontal, flanqueo, presa común fijada en t=0; re-fijación SOLO si la presa se **refugia**; **MÁX. 1 CAZA/EPISODIO** (tras matar, el paquete se **SACIA** y para — `pack_sated`; se desengancha); terneros + defensoras, spawn por sector, rodeo. Verificado en `face_check`.
 - **Escala biológica ABSOLUTA** (en metros, NO fracción de `min(W,H)`): `HERD_SPREAD=40`, `HERD_SEPARATION=22`, `wolf_spawn_dispersion=5`, `r_notice=20`, `r_face_safe=6`, `capture_radius=3` (+ derivados).
 - **Campo 300×300 m.** El LAYOUT escala con `min(W,H)`; la escala biológica NO.
 - **Detección/confirmación:** `r_detect=100` (hay algo), `r_confirm=40` (es un lobo; geométrico determinista, placeholder hasta YOLO). Fases `VIGILANCIA → SOSPECHA → ESCOLTA`.
@@ -29,10 +29,10 @@ Si algo se pone **rojo**: PARA y avisa. Nunca bajes la exigencia de un test para
 
 ## Orden de construcción
 3a movimiento de drones ✓ → 3b detectar→confirmar ✓ → **paso 2 guiado al refugio ✓** → **drones que APANTALLAN** (lo que baja la tasa hacia ~50%) → 3c corzos → **congelar v2** → reflejo-reactivo (consume el mensaje) → MARL.
-*(Los coordinadores van DESPUÉS de congelar v2: v2 es la referencia que deben batir. Con Dummy+guiado la TASA apenas baja (~78–82%, la manada alcanza a la presa antes del establo) pero la SEVERIDAD ~HALVES; la tasa la bajan los drones apantallando.)*
+*(Los coordinadores van DESPUÉS de congelar v2: v2 es la referencia que deben batir. Con Dummy+guiado la TASA apenas baja (~78–82%, la manada alcanza a la presa antes del establo); la SEVERIDAD es ~1 muerte/ep (máx. 1 caza/episodio); la tasa la bajan los drones apantallando.)*
 
 ## Convenciones de código
 Arrays NumPy `(N,2)` · RNG sembrado (reproducible bit a bit) · SI, `dt=0.1` · geometría derivada de `min(W,H)` · **sin números mágicos** (las constantes físicas son absolutas y etiquetadas cerca de cabecera) · `render.py` es **solo reproducción** (nunca llama a `step()`).
 
 ## Estado (commits)
-`194a3ad` base · `37910b3` terminal · `e663504` disparador por dron · `4d1e708` campo 300 + escala absoluta · `886bd45` dispersión · `a15e2df` mov. drones (3a) · `fd893b8` detectar→confirmar (3b) · `49e0e22` consolidar docs · **paso 2 guiado al refugio (este commit)**.
+`194a3ad` base · `37910b3` terminal · `e663504` disparador por dron · `4d1e708` campo 300 + escala absoluta · `886bd45` dispersión · `a15e2df` mov. drones (3a) · `fd893b8` detectar→confirmar (3b) · `49e0e22` consolidar docs · `144b7bd` paso 2 guiado al refugio · **máx. 1 caza/episodio (este commit)**.

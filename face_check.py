@@ -214,11 +214,12 @@ def test_rate():
     for s in range(100):
         w, status, *_ = run_ep(s)               # cap 600 pasos; depredación = episodio con >=1 res cazada
         out[status] += 1
-        for c in w.captures:                    # multi-muerte: cuenta TODAS las capturas
+        for c in w.captures:                    # MÁX. 1 caza/episodio: total capturas ~= nº de depredaciones
             kind[c["kind"]] += 1
     print("  outcomes:", dict(out))
     print("  depredación (>=1 res cazada) = %d/100 episodios  (no es objetivo; se mide)" % out["predation"])
-    print("  capturas totales: ternero=%d adulta=%d" % (kind["calf"], kind["adult"]))
+    print("  capturas totales: ternero=%d adulta=%d  (máx. 1 caza/ep -> ~= nº de depredaciones)"
+          % (kind["calf"], kind["adult"]))
 
 
 def test_grazing_spread():

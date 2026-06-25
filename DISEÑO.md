@@ -8,10 +8,23 @@
 > **Última actualización: 2026-06-25** · *escolta: BUCLE CERRADO.* **Hecho:** terminal (el "juez") ·
 > disparador realista por detección de dron · reescalado a 300×300 (~9 ha) con escala biológica absoluta ·
 > dispersión del rebaño · movimiento de drones · detectar→acercarse→confirmar · **guiado al refugio
-> (paso 2)**. **Pendiente:** corzos · congelar baseline v2 · coordinadores (reflejo trivial, MARL).
+> (paso 2)** · **máx. 1 caza/episodio** (modelo del lobo). **Pendiente:** drones que apantallen · corzos ·
+> congelar baseline v2 · coordinadores (reflejo trivial, MARL).
 > **Commits:** `194a3ad` base · `37910b3` terminal · `e663504` disparador por dron · `4d1e708` campo
 > 300×300 + escala biológica absoluta · `886bd45` dispersión del rebaño · `a15e2df` movimiento de
-> drones (3a) · `fd893b8` detectar→confirmar (3b) · `49e0e22` consolidar DISEÑO+CLAUDE.
+> drones (3a) · `fd893b8` detectar→confirmar (3b) · `49e0e22` consolidar DISEÑO+CLAUDE · `144b7bd` guiado (paso 2).
+>
+> **Patch — MÁX. 1 CAZA POR EPISODIO (modelo del lobo).** Antes el paquete RE-FIJABA tras matar → ~3
+> muertes/episodio (matanza, irreal). Ahora, como una manada real (una caza por ataque, se alimenta), el
+> paquete **caza UNA vez y se SACIA** (`pack_sated`): para permanentemente y **se desengancha** (frena
+> cerca de la caza, no orbita). La **primera caza es IDÉNTICA** (cono/flanqueo/fijación en t=0/rodeo sin
+> tocar); solo cambia lo que pasa **después**. El tope lo impone `_process_predation` (cae UNA res y para,
+> robusto frente al doble-flanqueo simultáneo). **Re-fijar-tras-REFUGIO intacto** (si la presa se refugia,
+> el paquete elige otra y sigue cazando hasta 1 muerte o que todas se refugien). **Severidad de la v2
+> (Dummy+guiado): ~1 muerte/episodio** (antes ~3); la **TASA (≥1 muerte) queda ~igual (~78–82%)**: el
+> paquete consigue su única caza en la mayoría de episodios; la TASA la bajará el apantallado de los drones
+> (post-v2). **face_check 12/12 SIN cambios** (la primera caza es idéntica). **NO** toca disuasión, guiado,
+> detección/confirmación. Verificado en `escort_check` (máx. 1 caza, re-fijar-tras-refugio, tasa+severidad).
 >
 > **Paso 2 — GUIADO al refugio (collares conducen el rebaño al establo). CIERRA EL BUCLE.** Al CONFIRMAR
 > (fase `ESCOLTA`), los collares conducen a cada res viva y no-a-salvo hacia el establo con una atracción
@@ -22,8 +35,8 @@
 > (cono/`cooldown`) → retroceso ordenado con los cuernos por delante, no desbandada. **Terneros** migran
 > anclados a su defensora (el muelle) y se marcan a salvo con ella. ÉXITO ya es **orgánico**. **Tasa v2
 > (Dummy+guiado): la TASA apenas baja (~78–82%: la manada a 4 m/s alcanza a la presa antes del establo —el
-> apantallado de los drones es post-v2—) pero ~HALVES la SEVERIDAD** (≈3.1 vs 6.3 muertes/episodio) y los
-> episodios de lobo-solo pasan de timeout a ÉXITO. **face_check 12/12 SIN cambios** (`escort_enabled=False`
+> apantallado de los drones es post-v2—)** y los episodios de lobo-solo pasan de timeout a ÉXITO (la
+> severidad la fija el patch *máx. 1 caza*: ~1 muerte/episodio). **face_check 12/12 SIN cambios** (`escort_enabled=False`
 > = combate puro). Verificado en `escort_check.py` (ÉXITO orgánico, dar-la-cara en fuga, tasa, bucle completo).
 > **NO** sprint de pánico, **NO** corzos, **NO** drones que apantallen (post-v2), **NO** baseline.py.
 > **Paso 3b — disparador realista: DETECTAR → ACERCARSE → CONFIRMAR.** El salto a ESCOLTA ya no es
@@ -190,10 +203,14 @@ rules…"*, Behavioural Processes 88(3), 192–197) pero lo hace **DIRECCIONAL**
    **Fijación en t=0** (`_commit_initial_prey` en el reset, no se espera a que un lobo cruce
    `r_notice`): en modo caza (con ternero basta **1 lobo**; sin ternero, ≥ `n_min_adult`) la manada
    elige la presa y va a por ella **desde el primer paso**; el lobo solo sin ternero no se compromete.
-   Se **mantiene** todo el episodio: solo se suelta si se **refugia** (zona prohibida). Se quitó el
-   abandono por distancia (`prey_abandon_dist` **DEPRECADO**: parche de la fijación tardía; con la
-   presa fija en t=0 empieza lejos —los lobos entran del perímetro— y no debe abandonarse por eso).
-   Verificado: re-fijaciones **= 0**.
+   Se **mantiene** todo el episodio y se suelta solo cuando deja de ser cazable: si se **REFUGIA**, la
+   manada **RE-SELECCIONA** otra (persigue cambiando de objetivo entre las que huyen, hasta matar a una o
+   que todas se refugien); si **MUERE**, el paquete se **SACIA** y **PARA permanentemente** (`pack_sated`)
+   → **MÁX. 1 CAZA POR EPISODIO** (una manada real hace una caza por ataque y se alimenta, no mata 3). Tras
+   saciarse **se DESENGANCHA** (frena cerca de la caza; no orbita). El tope lo impone `_process_predation`
+   (cae UNA res y para, también frente a un doble-flanqueo simultáneo). Se quitó el abandono por distancia
+   (`prey_abandon_dist` **DEPRECADO**: parche de la fijación tardía; con la presa fija en t=0 empieza lejos).
+   Verificado: re-fijaciones **= 0** (solo por refugio); **máx. 1 caza/episodio** en todos los seeds.
 2. **Aproximación respetando el cono frontal:** si el lobo está **en el cono** de la presa (±45°)
    **circula** hacia el flanco manteniendo `r_face_safe`; si está en el **flanco/grupa** **cierra a
    matar**. El standoff de Muro pasa de omnidireccional a **solo en el cono**.
@@ -565,12 +582,13 @@ Decisiones de diseño ratificadas:
   el rebaño apenas mueve la letalidad (no hay defensa colectiva que se "abra"). El **88%** es el combate
   medido en el campo **calibrado 100×100** (invariante de escala); ambas cifras describen el mismo modelo.
   ~1/5 de episodios son lobo-solo → TIMEOUT.
-- **Candidata a v2 (Dummy + GUIADO, paso 2):** medida en `escort_check` (`escort_enabled=True`): la **tasa**
-  de depredación apenas baja (**~78–82%**) — la manada a 4 m/s alcanza a la presa antes de que el rebaño
-  (1.2 m/s) cruce los ~106 m al establo; sin drones que apantallen (post-v2) no se le escapa al comprometido.
-  PERO la **severidad ~HALVES** (**≈3.1 vs 6.3 muertes/episodio**) y los episodios de lobo-solo pasan de
-  timeout a **ÉXITO orgánico** (~18%). El balance huida/lobo está locked (no se tocan `cow_speed`/`wolf_speed`
-  ni se mete sprint): la TASA la bajarán los **drones apantallando** (post-v2), no el guiado.
+- **Candidata a v2 (Dummy + GUIADO, paso 2 + máx. 1 caza):** medida en `escort_check` (`escort_enabled=True`):
+  la **tasa** de depredación apenas baja (**~78–82%**) — la manada a 4 m/s alcanza a la presa antes de que el
+  rebaño (1.2 m/s) cruce los ~106 m al establo; sin drones que apantallen (post-v2) no se le escapa al
+  comprometido. La **severidad es ~1 muerte/episodio** (el paquete caza UNA vez y se sacia; **máx. 1 caza/ep**),
+  y los episodios de lobo-solo pasan de timeout a **ÉXITO orgánico** (~18%). El balance huida/lobo está locked
+  (no se tocan `cow_speed`/`wolf_speed` ni se mete sprint): la TASA la bajarán los **drones apantallando**
+  (post-v2), no el guiado.
 - **v2 se congelará tras la escolta** (con drones apantallando), con la dinámica definitiva (config + 100
   seeds), y pasará a ser el adversario fijo contra el que se miden ambas ramas.
 - La batería es **ortogonal** (qué drones hay disponibles, no la dinámica vaca/lobo) → no mueve el

@@ -203,10 +203,12 @@ def test_dar_la_cara_en_fuga():
 
 
 def test_depredacion():
-    print("=== 2) DEPREDACIÓN forzada (la manada caza; cuenta de cazadas) ===")
+    print("=== 2) DEPREDACIÓN forzada (la manada caza; MÁX. 1 caza por episodio) ===")
     w = World(seed=1, wolves_min=3, wolves_max=3, calf_count_probs=NO_CALVES, max_episode_steps=500)
     c = DummyCoordinator(w.n_drones)
-    # Escenario: una adulta EXPUESTA con la manada encima; el resto del rebaño lejos.
+    # Escenario: una adulta EXPUESTA con la manada encima; el resto del rebaño lejos. La manada caza a la
+    # expuesta y se SACIA -> n_depredadas=1 (las demás quedan vivas y fuera -> el episodio acaba en
+    # DEPREDACIÓN por tiempo, ≥1 cazada). Antes (multi-muerte) la manada re-fijaba y mataba varias.
     w.cows[0] = np.array([75.0, 50.0])
     w.cows[1:] = np.array([15.0, 85.0]) + w.rng.uniform(-2, 2, size=(w.n_cows - 1, 2))
     w.cow_vel[:] = 0.0
@@ -220,7 +222,7 @@ def test_depredacion():
             break
     print("  status=%s  n_depredadas=%d  n_safe=%d  capturas=%d  paso=%s"
           % (info["status"], info["n_depredadas"], info["n_safe"], len(w.captures), info["terminal_step"]))
-    assert info["n_depredadas"] >= 1, "FALLO: no hubo ninguna depredación"
+    assert info["n_depredadas"] == 1, "FALLO: la manada no cazó exactamente 1 (máx. 1 caza/episodio)"
     assert info["status"] == "predation", "FALLO: el estado no es DEPREDACIÓN (fracaso parcial)"
     print("  OK\n")
 
@@ -345,18 +347,19 @@ def test_tasa_escolta():
                     break
             out[info["status"]] += 1
             deaths.append(w.n_depredadas)
-        return out, float(np.mean(deaths))
+        return out, deaths
     n_g, n_u = 40, 15
     g_out, g_deaths = sweep(True, n_g)
     u_out, u_deaths = sweep(False, n_u)
-    print("  CON guiado (n=%d): %s | depredación=%.0f%% | éxitos=%d | muertes/episodio=%.2f"
-          % (n_g, dict(g_out), 100 * g_out["predation"] / n_g, g_out["success"], g_deaths))
-    print("  SIN guiado (n=%d): %s | depredación=%.0f%% | muertes/episodio=%.2f"
-          % (n_u, dict(u_out), 100 * u_out["predation"] / n_u, u_deaths))
-    print("  -> el guiado NO hunde la TASA (la manada a 4 m/s alcanza a la presa antes del establo; el")
-    print("     apantallado de los drones es post-v2) pero ~HALVES la SEVERIDAD y hace el ÉXITO orgánico.")
+    print("  CON guiado (n=%d): %s | depredación=%.0f%% | éxitos=%d | muertes/ep=%.2f (máx=%d)"
+          % (n_g, dict(g_out), 100 * g_out["predation"] / n_g, g_out["success"], np.mean(g_deaths), max(g_deaths)))
+    print("  SIN guiado (n=%d): %s | depredación=%.0f%% | muertes/ep=%.2f (máx=%d)"
+          % (n_u, dict(u_out), 100 * u_out["predation"] / n_u, np.mean(u_deaths), max(u_deaths)))
+    print("  -> MÁX. 1 CAZA/EPISODIO: la severidad cae a ~1 muerte/ep (antes ~3 con guiado / ~6 sin). La")
+    print("     TASA (>=1 muerte) queda ~igual (~78-82%): el paquete consigue su única caza en la mayoría")
+    print("     de episodios. El guiado da el ÉXITO orgánico (lobo-solo); la TASA la bajará el apantallado (post-v2).")
     assert g_out["success"] >= 1, "FALLO: con guiado no se alcanza ÉXITO orgánico en ninguna seed"
-    assert g_deaths < u_deaths, "FALLO: el guiado no reduce la severidad (muertes/episodio)"
+    assert max(g_deaths) <= 1 and max(u_deaths) <= 1, "FALLO: hubo >1 caza en algún episodio (máx. 1 caza/episodio)"
     print("  OK\n")
 
 
@@ -420,12 +423,12 @@ def save_animations():
     w.cows[:] = w.safe_zone[:2] + w.rng.uniform(-6.0, 6.0, size=(w.n_cows, 2))
     w.wolves[:] = w.safe_zone[:2] + np.array([70.0, 0.0])     # lobo fuera del establo, en el campo
     _save_episode(w, 25, "escort_exito.gif")
-    # DEPREDACIÓN: escenario construido (manada encima de una adulta expuesta) -> flanqueo -> muerte.
-    # Rebaño PEQUEÑO (n_cows=2) y lejos del establo para que se resuelva en pocos pasos (banner visible).
-    w = World(seed=1, n_cows=2, wolves_min=3, wolves_max=3, calf_count_probs=NO_CALVES, max_episode_steps=300)
+    # DEPREDACIÓN: escenario construido (manada encima de una adulta expuesta) -> flanqueo -> 1 muerte.
+    # Rebaño de 1 res (n_cows=1) lejos del establo: con MÁX. 1 caza/episodio, cazarla resuelve el episodio
+    # (in_play=0) en pocos pasos -> banner DEPREDACIÓN visible (n_cows=2 ya no se resolvería: la 2ª vive).
+    w = World(seed=1, n_cows=1, wolves_min=3, wolves_max=3, calf_count_probs=NO_CALVES, max_episode_steps=300)
     cd = w.safe_zone[:2] + np.array([-60.0, -80.0])
     w.cows[0] = cd
-    w.cows[1] = cd + np.array([-30.0, 20.0])
     w.wolves[:] = np.array([cd + [12.0, 0.0], cd + [0.0, -12.0], cd + [-12.0, 0.0]])
     w.cow_vel[:] = 0.0
     w.wolf_vel[:] = 0.0
