@@ -10,6 +10,8 @@ fijada se refugia, la manada RE-SELECCIONA (única re-fijación permitida). Dron
      coordinador); confirmación (r_confirm)->ESCOLTA + dron liberado; aparcados no cuentan.
   0b) El dron INVESTIGA (se mueve al contacto) y confirma; PRECEDENCIA reflejo>coordinador; buy-time.
   1) ÉXITO forzado
+  1b) ÉXITO ORGÁNICO: el GUIADO al refugio (paso 2) conduce el rebaño al establo en ESCOLTA -> ÉXITO sin forzar.
+  1c) 'Dar la cara' INTACTO en la fuga (la atracción al refugio es solo traslación; terneros anclados).
   2) DEPREDACIÓN forzada (multi-muerte; cuanta más, peor -> cuenta)
   3) TIMEOUT forzado
   4) Refugio = soltar presa (re-fijación SOLO al refugiarse; 0 en otro caso)
@@ -17,7 +19,8 @@ fijada se refugia, la manada RE-SELECCIONA (única re-fijación permitida). Dron
   6) Reproducibilidad (mismo estado terminal + contadores)
   7) Sin regresiones (face_check.py + battery_check.py siguen verdes)
   8) Timing de las dos etapas: paso de SOSPECHA y paso de ESCOLTA (el hueco = tiempo de investigación).
-  + Ojeo: una animación por terminal (ÉXITO/DEPREDACIÓN/TIMEOUT) + una del arco detección->investigación->ESCOLTA.
+  9) Tasa de la escolta (Dummy + guiado) candidata a v2: MEDIDA (tasa + severidad), no objetivo.
+  + Ojeo: animación por terminal + arco detección->ESCOLTA + BUCLE COMPLETO (detectar->fuga->terminal).
 """
 
 import matplotlib
@@ -30,6 +33,7 @@ from coordinators import DummyCoordinator
 from render import render_episode
 
 NO_CALVES = (1.0, 0.0, 0.0)
+ONE_CALF = (0.0, 1.0, 0.0)
 
 
 def _run(w, cap=None):
@@ -131,6 +135,70 @@ def test_exito():
           % (info["status"], info["n_safe"], info["n_depredadas"], info["n_fuera"], info["terminal_step"]))
     assert info["status"] == "success", "FALLO: no se alcanzó ÉXITO"
     assert info["n_safe"] == w.n_cows and info["n_depredadas"] == 0 and info["n_fuera"] == 0
+    print("  OK\n")
+
+
+def test_exito_organico():
+    print("=== 1b) ÉXITO ORGÁNICO: el rebaño HUYE al establo en ESCOLTA y se resuelve solo ===")
+    # Sin forzar NINGÚN estado (solo config + correr): un lobo SOLO (no puede tumbar adultas) dispara la
+    # escolta; el guiado conduce el rebaño al establo; TODAS se refugian -> ÉXITO antes del timeout.
+    w = World(seed=1, wolves_min=1, wolves_max=1, calf_count_probs=NO_CALVES)
+    c = DummyCoordinator(w.n_drones)
+    reached_escolta = False
+    info = {"status": w.status}
+    while True:
+        _, _, term, trunc, info = w.step(c.act(None))
+        reached_escolta |= (w.phase == "ESCOLTA")
+        if term or trunc:
+            break
+    print("  status=%s  n_safe=%d/%d  cazadas=%d  ESCOLTA alcanzada=%s  terminal=%s (max=%d)"
+          % (info["status"], info["n_safe"], w.n_cows, info["n_depredadas"], reached_escolta,
+             info["terminal_step"], w.max_episode_steps))
+    assert reached_escolta, "FALLO: no se llegó a ESCOLTA (el guiado no se activó)"
+    assert info["status"] == "success", "FALLO: no hubo ÉXITO orgánico"
+    assert info["n_safe"] == w.n_cows and info["n_depredadas"] == 0
+    assert info["terminal_step"] is not None and info["terminal_step"] < w.max_episode_steps, \
+        "FALLO: se resolvió por TIMEOUT, no por refugio (no es ÉXITO orgánico)"
+    print("  OK\n")
+
+
+def test_dar_la_cara_en_fuga():
+    print("=== 1c) 'Dar la cara' INTACTO en la fuga (la atracción al refugio es SOLO traslación) ===")
+    # Una res en ESCOLTA, bajo atracción al refugio, con un lobo acercándose por un FLANCO: debe PIVOTAR
+    # a encararlo (cono activo) MIENTRAS se traslada al establo. El morro lo gobierna 'dar la cara'; el
+    # refugio solo mueve el cuerpo (retroceso con los cuernos por delante, no desbandada).
+    w = World(seed=5, n_cows=1, wolves_min=1, wolves_max=1, calf_count_probs=NO_CALVES)
+    c = DummyCoordinator(w.n_drones)
+    w.phase = "ESCOLTA"
+    w.cow_speeds[0] = w.cow_speed
+    c0 = w.safe_zone[:2] + np.array([100.0, 0.0])     # 100 m al ESTE del establo
+    w.cows[0] = c0
+    w.cow_heading[0] = np.pi                           # mira al OESTE (al establo), NO al lobo
+    w.cow_vel[0] = 0.0
+    w.wolves[0] = c0 + np.array([0.0, 12.0])           # lobo al NORTE, dentro de r_notice
+    w.wolf_vel[0] = 0.0
+    ang_wolf = np.arctan2(12.0, 0.0)
+    err = lambda: abs(((ang_wolf - w.cow_heading[0] + np.pi) % (2 * np.pi)) - np.pi)
+    e0, d0 = err(), float(np.linalg.norm(w.cows[0] - w.safe_zone[:2]))
+    for _ in range(20):
+        w.step(c.act(None))
+    e1, d1 = err(), float(np.linalg.norm(w.cows[0] - w.safe_zone[:2]))
+    print("  encara: err angular al lobo %.2f->%.2f rad (baja) | traslada: dist al establo %.1f->%.1f m (baja)"
+          % (e0, e1, d0, d1))
+    assert e1 < e0 - 0.3, "FALLO: la vaca no pivotó a encarar al lobo en la fuga ('dar la cara' roto)"
+    assert d1 < d0 - 1.0, "FALLO: la vaca no se trasladó al refugio en ESCOLTA"
+    # Terneros: la pareja MIGRA JUNTA (ternero anclado a su defensora durante la fuga).
+    w2 = World(seed=13, wolves_min=1, wolves_max=1, calf_count_probs=ONE_CALF)
+    c2 = DummyCoordinator(w2.n_drones)
+    w2.phase = "ESCOLTA"
+    dists = []
+    for _ in range(120):
+        w2.step(c2.act(None))
+        if w2.calf_alive[0] and not w2.calf_safe[0]:
+            dists.append(float(np.linalg.norm(w2.calves[0] - w2.cows[w2.calf_defender[0]])))
+    print("  ternero<->defensora en la fuga: media=%.2f m máx=%.2f m (espacio personal=%.2f m; sigue anclado)"
+          % (np.mean(dists), np.max(dists), w2.calf_personal_space))
+    assert np.mean(dists) < 3.0 * w2.calf_personal_space, "FALLO: el ternero se despegó de la defensora en la fuga"
     print("  OK\n")
 
 
@@ -263,6 +331,35 @@ def test_timing_deteccion():
     return best[1] if best[1] is not None else int(s_esc.argmax()) if len(s_esc) else 8
 
 
+def test_tasa_escolta():
+    print("=== 9) Tasa de la escolta (Dummy + guiado) — candidata a v2 (MEDIDA, NO objetivo) ===")
+    from collections import Counter
+    def sweep(escort, n):
+        out, deaths = Counter(), []
+        for s in range(n):
+            w = World(seed=s, escort_enabled=escort)
+            c = DummyCoordinator(w.n_drones)
+            while True:
+                _, _, term, trunc, info = w.step(c.act(None))
+                if term or trunc:
+                    break
+            out[info["status"]] += 1
+            deaths.append(w.n_depredadas)
+        return out, float(np.mean(deaths))
+    n_g, n_u = 40, 15
+    g_out, g_deaths = sweep(True, n_g)
+    u_out, u_deaths = sweep(False, n_u)
+    print("  CON guiado (n=%d): %s | depredación=%.0f%% | éxitos=%d | muertes/episodio=%.2f"
+          % (n_g, dict(g_out), 100 * g_out["predation"] / n_g, g_out["success"], g_deaths))
+    print("  SIN guiado (n=%d): %s | depredación=%.0f%% | muertes/episodio=%.2f"
+          % (n_u, dict(u_out), 100 * u_out["predation"] / n_u, u_deaths))
+    print("  -> el guiado NO hunde la TASA (la manada a 4 m/s alcanza a la presa antes del establo; el")
+    print("     apantallado de los drones es post-v2) pero ~HALVES la SEVERIDAD y hace el ÉXITO orgánico.")
+    assert g_out["success"] >= 1, "FALLO: con guiado no se alcanza ÉXITO orgánico en ninguna seed"
+    assert g_deaths < u_deaths, "FALLO: el guiado no reduce la severidad (muertes/episodio)"
+    print("  OK\n")
+
+
 def save_detection_animation(seed):
     print("=== Ojeo: arco DETECCIÓN -> INVESTIGACIÓN -> CONFIRMACIÓN -> ESCOLTA (sector lejano) ===")
     w = World(seed=seed)
@@ -281,6 +378,26 @@ def save_detection_animation(seed):
     render_episode(w, hist, save_path="escort_vigilancia_deteccion.gif")
     print("  escort_vigilancia_deteccion.gif: seed=%d, %d frames | SOSPECHA paso %s -> ESCOLTA paso %s\n"
           % (seed, len(hist), susp, esc))
+
+
+def save_loop_animation(seed=9):
+    print("=== Ojeo: BUCLE COMPLETO detectar->investigar->confirmar->ESCOLTA->FUGA al establo->terminal ===")
+    w = World(seed=seed)
+    c = DummyCoordinator(w.n_drones)
+    hist = [w.snapshot()]
+    susp = esc = None
+    step = 0
+    while True:
+        _, _, term, trunc, _ = w.step(c.act(None)); step += 1
+        if susp is None and w.phase == "SOSPECHA": susp = w.step_count
+        if esc is None and w.phase == "ESCOLTA": esc = w.step_count
+        if step % 2 == 0 or term or trunc:        # submuestreo x2 -> gif manejable
+            hist.append(w.snapshot())
+        if term or trunc:
+            break
+    render_episode(w, hist, save_path="escort_bucle_completo.gif")
+    print("  escort_bucle_completo.gif: seed=%d, %d frames | SOSPECHA=%s ESCOLTA=%s -> %s (a salvo %d, cazadas %d)\n"
+          % (seed, len(hist), susp, esc, w.status, int(w.cow_safe.sum() + w.calf_safe.sum()), w.n_depredadas))
 
 
 def _save_episode(w, cap, path):
@@ -324,6 +441,8 @@ if __name__ == "__main__":
     test_trigger_dos_etapas()
     test_investigar_confirmar()
     test_exito()
+    test_exito_organico()
+    test_dar_la_cara_en_fuga()
     test_depredacion()
     test_timeout()
     test_refugio_suelta_presa()
@@ -331,6 +450,8 @@ if __name__ == "__main__":
     test_reproducible()
     test_no_regressions()
     far_seed = test_timing_deteccion()
+    test_tasa_escolta()
     save_animations()
     save_detection_animation(far_seed)
+    save_loop_animation()
     print("escort_check: TODO OK.")

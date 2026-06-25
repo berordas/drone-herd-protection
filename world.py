@@ -38,6 +38,12 @@ DRONE_STATE_NAMES = {ACTIVE: "ACTIVE", RETURNING: "RETURNING", CHARGING: "CHARGI
 HERD_SPREAD = 40.0        # m (cow_spread)
 HERD_SEPARATION = 22.0    # m (r_separation)
 
+# --- GUIADO AL REFUGIO (collares; paso 2). Ganancia de la atracción de cada res hacia el establo
+# durante ESCOLTA (la "fuga"). Etiquetada y afinable por render (estilo HERD_SPREAD). Domina sobre el
+# pastoreo pero NO sobre la separación a corta distancia, así que el rebaño migra junto SIN colapsar a
+# un punto; la net se capa a cow_speed (huida a rapidez máxima). Es traslación: el "dar la cara" sigue. ---
+HERD_TO_REFUGE_GAIN = 2.5
+
 # --- DINÁMICA DE VUELO DEL DRON (constantes FÍSICAS absolutas en SI; cuadricóptero HOLONÓMICO: se
 # mueve en cualquier dirección, sin restricción de morro). Pareja afinable rapidez/aceleración de
 # crucero-aproximación de un dron de vigilancia. ---
@@ -108,6 +114,7 @@ class World:
         episode_time_factor: float = 4.0,        # holgura del límite de tiempo (~k * diag / cow_speed). TUNE
         max_episode_steps: int | None = None,    # límite de pasos (default DERIVADO de geometría/cow_speed; ver __init__)
         refuge_margin: float | None = None,      # m: histéresis de borde del establo para contar "refugiada" (default 0.1*safe_radius). TUNE
+        escort_enabled: bool = True,             # subsistema de escolta (máquina de fases + guiado al refugio). False = adversario PURO (face_check: combate sin escolta)
         # --- DEPRECATED: modelo anterior (apiñamiento + Muro-pounce). Se ACEPTAN para no romper
         #     baseline.py v1 (los pasa explícitos) pero se IGNORAN en la dinámica nueva. ---
         k_cohesion_calm: float = 0.0, k_cohesion_panic: float = 0.0, wander_panic: float = 0.0,
@@ -239,6 +246,12 @@ class World:
         # Histéresis de borde del establo: se cuenta "refugiada" al estar refuge_margin DENTRO del borde
         # (latched: una vez a salvo, sigue a salvo) -> sin parpadeo en la frontera.
         self.refuge_margin = refuge_margin if refuge_margin is not None else 0.1 * self.safe_radius
+        # Subsistema de escolta: máquina de fases (VIGILANCIA->SOSPECHA->ESCOLTA) + GUIADO al refugio
+        # (collares que conducen el rebaño al establo en ESCOLTA). Es INFRAESTRUCTURA del mundo, igual
+        # para todos los coordinadores (no es el coordinador). escort_enabled=False lo apaga por completo
+        # (la fase se queda en VIGILANCIA -> el guiado nunca dispara): el mundo es el adversario PURO
+        # (face_check prueba ahí el COMBATE, invariante de fase). main/escort_check lo dejan en True.
+        self.escort_enabled = escort_enabled
 
         # Batería: tasas DERIVADAS de las capacidades (sin números mágicos). La batería es
         # una fracción [0,1]; drena 1->0 en battery_capacity s, carga 0->1 en charge_full s.
@@ -657,10 +670,13 @@ class World:
         # 1) A quién encara cada vaca (mirada + enfriamiento).
         self._update_cow_headings()
 
-        # 2) Separación: empuje desde vecinas dentro de r_separation (no se solapan).
+        # 2) Separación: empuje desde vecinas dentro de r_separation (no se solapan). Una res YA a salvo
+        #    (aparcada/congelada en el establo) NO empuja a las que entran: si no, con r_separation grande
+        #    las primeras refugiadas expulsarían a la última y no cabría (timeout). (En pastoreo/combate
+        #    nadie está a salvo -> cow_safe todo-False -> sin efecto; face_check intacto.)
         delta = cows[:, None, :] - cows[None, :, :]                    # (n,n,2): i - j
         dd = np.linalg.norm(delta, axis=2)
-        close = (dd < self.r_separation) & (dd > 1e-9)
+        close = (dd < self.r_separation) & (dd > 1e-9) & (~self.cow_safe)[None, :]
         push = np.where(
             close[:, :, None],
             delta / np.maximum(dd[:, :, None], 1e-9) * (1.0 - dd[:, :, None] / self.r_separation),
@@ -691,11 +707,25 @@ class World:
             dd = np.linalg.norm(to_calf, axis=1, keepdims=True)
             anchor[d] = self.k_defender_anchor * (dd - self.calf_personal_space) * to_calf / np.maximum(dd, 1e-9)
 
+        # 4c) GUIADO AL REFUGIO (collares; INFRAESTRUCTURA del mundo, gateado por la FASE): en ESCOLTA, a
+        #     cada res viva y NO-a-salvo se le suma una atracción hacia el centro del establo (la fuga).
+        #     Se SUPRIME el pastoreo (wander) Y la VALLA blanda (la "correa" a la zona de pasto pelearía
+        #     contra la migración: los collares la sueltan) -> el rebaño MIGRA coherente, sin remolonear.
+        #     El "dar la cara" sigue INTACTO: esto es SOLO traslación (el morro lo gobiernan cow_heading/
+        #     cono/cooldown) -> retroceso ordenado con los cuernos por delante, no una desbandada. La
+        #     separación se mantiene (el rebaño no colapsa a un punto). La net se capa a cow_speed (abajo).
+        refuge = np.zeros_like(cows)
+        if self.escort_enabled and self.phase == "ESCOLTA":
+            to_ref = self.safe_zone[:2] - cows
+            refuge = HERD_TO_REFUGE_GAIN * to_ref / np.maximum(np.linalg.norm(to_ref, axis=1, keepdims=True), 1e-9)
+            wander = np.zeros_like(wander)
+            fence = np.zeros_like(fence)
+
         # 5) Suma de fuerzas -> velocidad deseada usando su MAGNITUD como rapidez (NO se normaliza a
         #    tope: antes se normalizaba y el rebaño pastaba SIEMPRE a cow_speed, ignorando wander_calm).
-        #    Así wander_calm fija la rapidez de pastoreo (casi quietas), mientras separación/valla/ancla
-        #    siguen reaccionando fuerte cuando hace falta (se capa a cow_speed). INERCIA para firmeza.
-        total = separation + wander + fence + anchor
+        #    Así wander_calm fija la rapidez de pastoreo (casi quietas), mientras separación/valla/ancla/
+        #    refugio siguen reaccionando fuerte cuando hace falta (se capa a cow_speed). INERCIA para firmeza.
+        total = separation + wander + fence + anchor + refuge
         speed = np.linalg.norm(total, axis=1, keepdims=True)
         scale = np.minimum(1.0, self.cow_speeds[:, None] / np.maximum(speed, 1e-9))
         desired_vel = total * scale
@@ -720,7 +750,11 @@ class World:
         active = self.cow_alive & ~self.cow_safe
         if active.any():
             sub = self.cows[active]
-            self._push_outside_circle(sub, self.safe_zone)
+            # En ESCOLTA el guiado las conduce HACIA el establo: NO las expulses (entrarían y rebotarían
+            # en el borde sin cruzar el margen para marcarse a salvo). Entran, cruzan el margen y se marcan
+            # a salvo (arriba). Fuera de ESCOLTA, contención normal. La central de carga SIEMPRE las repele.
+            if not (self.escort_enabled and self.phase == "ESCOLTA"):
+                self._push_outside_circle(sub, self.safe_zone)
             self._push_outside_circle(sub, self.central_station)
             self.cows[active] = sub
 
@@ -741,6 +775,13 @@ class World:
         self._calf_graze_dir = self._calf_graze_dir + self.rng.normal(0.0, self.wander_drift, size=self.n_calves)
         wander = self.wander_calm * np.column_stack([np.cos(self._calf_graze_dir),
                                                      np.sin(self._calf_graze_dir)])
+        # En ESCOLTA el ternero MIGRA anclado a su defensora (el muelle de cohesión): la pareja va junta
+        # al establo. Se suprime su wander de pastoreo (igual que las adultas) para que la migración sea
+        # coherente. NO lleva atracción al refugio propia: SIGUE a la madre (y por eso, más lento de
+        # reacción, queda algo más expuesto -> tensión querida, no se toca).
+        escort = self.escort_enabled and self.phase == "ESCOLTA"
+        if escort:
+            wander = np.zeros_like(wander)
         total = cohesion + wander
         speed = np.linalg.norm(total, axis=1, keepdims=True)
         scale = np.minimum(1.0, self.cow_speed / np.maximum(speed, 1e-9))
@@ -752,13 +793,19 @@ class World:
             self.calves[frozen] = prev[frozen]
             self.calf_vel[frozen] = 0.0
         self._clip_to_parcel(self.calves)
-        # Gancho (a) REFUGIO para terneros (igual que adultas).
+        # Gancho (a) REFUGIO para terneros: por GEOMETRÍA (como las adultas) O porque su DEFENSORA ya
+        # está a salvo (la madre lo trajo al establo: la pareja llega junta -> el ternero, anclado a su
+        # lado a ~calf_personal_space < margen, cuenta como refugiado). Evita que se quede justo fuera
+        # del umbral pegado a una madre ya congelada dentro.
         d_safe = np.linalg.norm(self.calves - self.safe_zone[:2], axis=1)
-        self.calf_safe |= self.calf_alive & ~self.calf_safe & (d_safe <= self.safe_zone[2] - self.refuge_margin)
+        defender_safe = self.cow_safe[self.calf_defender]
+        self.calf_safe |= self.calf_alive & ~self.calf_safe & (
+            (d_safe <= self.safe_zone[2] - self.refuge_margin) | defender_safe)
         active = self.calf_alive & ~self.calf_safe
         if active.any():
             sub = self.calves[active]
-            self._push_outside_circle(sub, self.safe_zone)
+            if not escort:                       # en ESCOLTA no lo expulses del establo (igual que las adultas)
+                self._push_outside_circle(sub, self.safe_zone)
             self._push_outside_circle(sub, self.central_station)
             self.calves[active] = sub
 
@@ -1006,6 +1053,8 @@ class World:
             relevo), re-detecta.
           - CONFIRMACIÓN: cuando el dron INVESTIGANDO llega a <= r_confirm de su contacto -> ESCOLTA y ese
             dron se LIBERA (vuelve al pool del coordinador como defensor)."""
+        if not self.escort_enabled:
+            return   # adversario PURO (face_check): sin máquina de fases -> la fase se queda en VIGILANCIA
         if self.phase == "ESCOLTA" or self.n_wolves == 0:
             return
         active = self.drone_state == ACTIVE

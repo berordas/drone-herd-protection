@@ -36,6 +36,7 @@ def run_ep(seed, record=False, **kw):
     escort_check. (A 300 con cap 600 la tasa cae por artefacto: el lobo aún se acerca; episodio completo ~87%.)"""
     kw.setdefault("parcel_size", (100.0, 100.0))
     kw.setdefault("max_episode_steps", 600)
+    kw.setdefault("escort_enabled", False)   # COMBATE puro: sin escolta -> la fase no dispara y el guiado al refugio NO se filtra (las vacas pastan)
     w = World(seed=seed, **kw)
     c = DummyCoordinator(w.n_drones)
     attack_steps = wolf_steps = 0
@@ -81,7 +82,8 @@ def test_lone_wolf_no_kill():
 
 def test_pack_flank_kill():
     print("=== 2) MANADA vs ADULTA (escenario): flanquean -> muere; #3 quórum->muerte ===")
-    w = World(seed=1, wolves_min=3, wolves_max=3, calf_count_probs=NO_CALVES, teleport_guard=True)
+    w = World(seed=1, wolves_min=3, wolves_max=3, calf_count_probs=NO_CALVES, teleport_guard=True,
+              escort_enabled=False)
     c = DummyCoordinator(w.n_drones)
     w.cow_speeds[:] = w.cow_speed
     w.cow_speeds[0] = 0.5 * w.cow_speed
@@ -130,7 +132,7 @@ def test_retoque_exposure():
     print("=== 4) Retoque: la presa ADULTA es del BORDE (lejos del centroide), no céntrica ===")
     dps, dms = [], []
     for s in range(30):
-        w = World(seed=s, wolves_min=3, wolves_max=3, calf_count_probs=NO_CALVES)
+        w = World(seed=s, wolves_min=3, wolves_max=3, calf_count_probs=NO_CALVES, escort_enabled=False)
         c = DummyCoordinator(w.n_drones)
         rec = None
         while True:
@@ -259,7 +261,7 @@ def test_skirt_around_herd():
     print("=== 11) El lobo RODEA el rebaño (no lo atraviesa) (#3, prueba clave) ===")
     def run_skirt(skirt_gain):
         w = World(seed=4, wolves_min=1, wolves_max=1, calf_count_probs=NO_CALVES,
-                  wolf_skirt_gain=skirt_gain)
+                  wolf_skirt_gain=skirt_gain, escort_enabled=False)
         c = DummyCoordinator(w.n_drones)
         w.cow_speeds[:] = 0.02 * w.cow_speed                          # rebaño casi congelado (aísla el camino del lobo)
         w.cows[0] = np.array([90.0, 25.0])                           # PRESA al otro lado del rebaño

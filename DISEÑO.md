@@ -5,13 +5,27 @@
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
 >
-> **Última actualización: 2026-06-24** · *escolta en construcción.* **Hecho:** terminal (el "juez") ·
+> **Última actualización: 2026-06-25** · *escolta: BUCLE CERRADO.* **Hecho:** terminal (el "juez") ·
 > disparador realista por detección de dron · reescalado a 300×300 (~9 ha) con escala biológica absoluta ·
-> dispersión del rebaño · movimiento de drones · detectar→acercarse→confirmar. **Pendiente:** guiado al
-> refugio · corzos · congelar baseline v2 · coordinadores (reflejo trivial, MARL).
+> dispersión del rebaño · movimiento de drones · detectar→acercarse→confirmar · **guiado al refugio
+> (paso 2)**. **Pendiente:** corzos · congelar baseline v2 · coordinadores (reflejo trivial, MARL).
 > **Commits:** `194a3ad` base · `37910b3` terminal · `e663504` disparador por dron · `4d1e708` campo
 > 300×300 + escala biológica absoluta · `886bd45` dispersión del rebaño · `a15e2df` movimiento de
-> drones (3a) · `fd893b8` detectar→confirmar (3b).
+> drones (3a) · `fd893b8` detectar→confirmar (3b) · `49e0e22` consolidar DISEÑO+CLAUDE.
+>
+> **Paso 2 — GUIADO al refugio (collares conducen el rebaño al establo). CIERRA EL BUCLE.** Al CONFIRMAR
+> (fase `ESCOLTA`), los collares conducen a cada res viva y no-a-salvo hacia el establo con una atracción
+> `HERD_TO_REFUGE_GAIN`·unidad(centro−pos); se SUPRIME el pastoreo (wander) **y la valla blanda** (la correa
+> pelearía contra la migración: los collares la sueltan). La net se capa a `cow_speed` → **huye a su rapidez
+> máxima** (~6× el pastoreo). Es **INFRAESTRUCTURA del mundo** (gateada por la fase, `escort_enabled`), no el
+> coordinador → igual para todos. **"Dar la cara" INTACTO**: solo es traslación; el morro sigue encarando
+> (cono/`cooldown`) → retroceso ordenado con los cuernos por delante, no desbandada. **Terneros** migran
+> anclados a su defensora (el muelle) y se marcan a salvo con ella. ÉXITO ya es **orgánico**. **Tasa v2
+> (Dummy+guiado): la TASA apenas baja (~78–82%: la manada a 4 m/s alcanza a la presa antes del establo —el
+> apantallado de los drones es post-v2—) pero ~HALVES la SEVERIDAD** (≈3.1 vs 6.3 muertes/episodio) y los
+> episodios de lobo-solo pasan de timeout a ÉXITO. **face_check 12/12 SIN cambios** (`escort_enabled=False`
+> = combate puro). Verificado en `escort_check.py` (ÉXITO orgánico, dar-la-cara en fuga, tasa, bucle completo).
+> **NO** sprint de pánico, **NO** corzos, **NO** drones que apantallen (post-v2), **NO** baseline.py.
 > **Paso 3b — disparador realista: DETECTAR → ACERCARSE → CONFIRMAR.** El salto a ESCOLTA ya no es
 > instantáneo a 100 m. Dos radios, tres fases: `r_detect`=100 m ("hay algo") → **SOSPECHA**;
 > `r_confirm`=40 m ("es un lobo", confirmación **geométrica determinista**, placeholder hasta YOLO) →
@@ -214,7 +228,7 @@ parámetros actuales; spec: reportar, **no tunear** `face_cooldown`/`r_face_safe
 (los dos últimos cuando los drones se muevan). Disuasión (ladrido/dron subiendo la distancia
 efectiva, con habituación) y EKF de estimación del lobo: PENDIENTES (ver plan).
 
-### 4.2. Vacas adultas — "DAR LA CARA" (confrontación direccional)  ✅ IMPLEMENTADO (escolta PENDIENTE)
+### 4.2. Vacas adultas — "DAR LA CARA" (confrontación direccional)  ✅ IMPLEMENTADO (+ guiado al refugio ✅)
 
 Modelo de amenaza basado en cómo cazan los lobos de verdad: **el ganado grande no se apiña, planta
 cara** (se gira al lobo y lo confronta); el lobo va a la débil y ataca por el flanco/grupa, evitando
@@ -261,8 +275,12 @@ vs ternero salió **0%** (la madre frena siempre con los parámetros actuales); 
   2) manada → encara a uno, los demás flanquean, **muere la débil** con ≥2 flanqueadores; 3) métrica
   de tembleque baja + pastoreo casi quieto (0.019 m/paso); 4) **tasa sin drones = 88%** (no se
   persigue); 5) reproducible.
-- **Escolta — PENDIENTE:** **collares** conducen el rebaño al refugio; **drones escoltan** (pantalla
-  + disuasión). "Escolta" = proteger el traslado, no empujar.
+- **Escolta — GUIADO ✅ (paso 2):** en `ESCOLTA` los **collares** conducen el rebaño al establo (atracción
+  `HERD_TO_REFUGE_GAIN` al centro; se suprime wander **y valla**; net capada a `cow_speed` → huida a tope).
+  Es traslación pura: **el "dar la cara" sigue intacto** (encara/cono/cooldown) — retroceso con los cuernos
+  por delante. La **separación** se mantiene (no colapsa a un punto) y una res **ya a salvo no empuja** a las
+  que entran (si no, no cabrían). Pendiente: **drones que apantallen/disuadan** (post-v2). "Escolta" =
+  proteger el traslado, no empujar.
 
 ### 4.3. Batería y estación de carga  ✅ IMPLEMENTADO (mecánica del mundo)
 
@@ -294,7 +312,7 @@ Diseño de referencia (sigue válido):
   seguridad por construcción del ratio 2:1 solo vale en patrulla; persiguiendo se puede quedar
   tirado).
 
-### 4.4. Estructura de episodio + TERMINAL (el "juez")  ✅ IMPLEMENTADO (guiado PENDIENTE)
+### 4.4. Estructura de episodio + TERMINAL (el "juez")  ✅ IMPLEMENTADO (+ guiado al refugio ✅)
 
 Tarea **episódica** (terminal claro, bueno para RL). **Máquina de fases** (`world.phase`):
 
@@ -303,9 +321,12 @@ no vigilan) → `SOSPECHA` → **ACERCARSE** (REFLEJO de investigación: ese dro
 vuela hacia el contacto con el movimiento de 3a) → **CONFIRMAR** (a ≤ `r_confirm`=40 m; geométrico,
 determinista — placeholder hasta YOLO) → `ESCOLTA` (el dron se libera al coordinador) → **terminal**.
 La fase es informativa y **no vuelve atrás** (sin SOSPECHA→VIGILANCIA: innecesario sin corzos, llega en 3c).
-Es el **seam** para el guiado (paso 2; todavía NO cambia la dinámica de las vacas). El reflejo emite un
-**mensaje** en la observación (`investigations`) que el coordinador podrá leer; **precedencia**: el reflejo
-manda sobre el dron que investiga, el coordinador sobre el resto.
+En `ESCOLTA` se activa el **GUIADO al refugio** (paso 2 ✅): los collares conducen el rebaño al establo
+(atracción `HERD_TO_REFUGE_GAIN`; wander+valla suprimidos; net capada a `cow_speed`). Es INFRAESTRUCTURA del
+mundo, gateada por la fase (`escort_enabled`), NO el coordinador — igual para todos. El "dar la cara" sigue
+intacto (solo traslación). El reflejo emite un **mensaje** en la observación (`investigations`) que el
+coordinador podrá leer; **precedencia**: el reflejo manda sobre el dron que investiga, el coordinador sobre
+el resto.
 
 **Terminal (3 estados, evaluado cada step; multi-muerte: una captura ya NO termina el episodio):**
 - **ÉXITO** = todas las reses **vivas** a salvo (refugiadas) **y** ninguna cazada **y** ningún lobo
@@ -469,14 +490,14 @@ el DGX va sobrado.
 ## 9. Estado actual del código
 
 Carpeta `AI_LAB/` (proyecto Python local). Estructura:
-- `world.py` — clase `World`: estado, dinámica, recompensa, **terminal de escolta + máquina de fases**. **Sin** ROS/render dentro.
+- `world.py` — clase `World`: estado, dinámica, recompensa, **terminal de escolta + máquina de fases + guiado al refugio** (`escort_enabled`, `HERD_TO_REFUGE_GAIN`). **Sin** ROS/render dentro.
 - `render.py` — animación matplotlib (por reproducción: lee estado, nunca llama a `step`). Dibuja el **cono** como cuña ±45°, colorea los lobos por su relación con el cono de la presa, realza la **presa fijada**, pinta **terneros** (color propio) con **línea a su defensora**, **colorea las reses refugiadas (verde) / cazadas (gris)**, muestra la **FASE** (VIGILANCIA/SOSPECHA/ESCOLTA), una **línea del dron que INVESTIGA a su contacto**, y un **banner del terminal** (ÉXITO/DEPREDACIÓN/TIMEOUT + contadores).
 - `coordinators.py` — `DummyCoordinator` (no comanda nada → drones mantienen waypoint = quietos); reflejo trivial y MARL después. El movimiento es capacidad del mundo (`command_waypoint`), que el coordinador usará en 3b+.
 - `main.py` — bucle: reset → obs → coordinador → acciones → step → terminal → métricas (incluye fase final, n_safe/n_depredadas/n_fuera).
 - `baseline.py` — **adversario congelado** (config + seeds + métrica de referencia); `build_baseline_world(seed)` y self-check de deriva.
 - `battery_check.py` — verificación macro del subsistema de batería (régimen permanente 4/2/2, escalonado, reproducible).
 - `face_check.py` — verificación del modelo (12 tests): lobo solo no mata adultas, manada flanquea, **retoque** (presa expuesta), **terneros**, coordinación, instrumentación de #3, tembleque, tasa, **espaciado del rebaño (#1)**, **spawn por sector (#2)**, **rodeo (#3)**, reproducibilidad. *(Combate en campo CALIBRADO 100×100 —el modelo es invariante de escala, radios biológicos absolutos—; la **fijación** se prueba a 300 en los tests de espaciado/dispersión. Muertes por `captures`; cap corto.)*
-- `escort_check.py` — verificación del **TERMINAL de escolta + disparador en DOS ETAPAS**: detección→SOSPECHA + 1 dron investigando + mensaje, investigar (se mueve al contacto)→confirmar→ESCOLTA + dron liberado, **precedencia** reflejo>coordinador, ÉXITO/DEPREDACIÓN/TIMEOUT forzados, **refugio = soltar presa**, **exclusión del lobo**, reproducibilidad, **sin regresiones** (`face_check`+`battery_check`), y **timing** (SOSPECHA/ESCOLTA + hueco de investigación). Guarda una animación por terminal + una del arco detección→investigación→ESCOLTA.
+- `escort_check.py` — verificación del **TERMINAL de escolta + disparador en DOS ETAPAS + GUIADO al refugio**: detección→SOSPECHA + 1 dron investigando + mensaje, investigar (se mueve al contacto)→confirmar→ESCOLTA + dron liberado, **precedencia** reflejo>coordinador, ÉXITO forzado **y ÉXITO ORGÁNICO** (el guiado lleva el rebaño al establo), **"dar la cara" intacto en la fuga** (encara mientras se traslada; terneros anclados), DEPREDACIÓN/TIMEOUT forzados, **refugio = soltar presa**, **exclusión del lobo**, reproducibilidad, **sin regresiones** (`face_check`+`battery_check`), **timing** (SOSPECHA/ESCOLTA), y **tasa de la escolta** (Dummy+guiado, candidata a v2: tasa+severidad). Guarda animación por terminal + arco detección→ESCOLTA + **bucle completo** (detectar→fuga→terminal).
 - `drone_check.py` — verificación de la **DINÁMICA DE VUELO del dron** (paso 3a): punto-a-punto (acelera/cruza/frena/para), topes (`DRONE_MAX_SPEED`/`DRONE_MAX_ACCEL`), **coste de moverse** (reposicionar drena más que flotar; flote=suelo), reproducibilidad, sin regresiones (face+battery+escort). Guarda una animación del dron en vuelo.
 
 Decisiones de diseño ratificadas:
@@ -544,8 +565,14 @@ Decisiones de diseño ratificadas:
   el rebaño apenas mueve la letalidad (no hay defensa colectiva que se "abra"). El **88%** es el combate
   medido en el campo **calibrado 100×100** (invariante de escala); ambas cifras describen el mismo modelo.
   ~1/5 de episodios son lobo-solo → TIMEOUT.
-- **v2 se congelará tras la escolta**, con la dinámica vaca/lobo definitiva (config + 100 seeds), y
-  pasará a ser el adversario fijo contra el que se miden ambas ramas.
+- **Candidata a v2 (Dummy + GUIADO, paso 2):** medida en `escort_check` (`escort_enabled=True`): la **tasa**
+  de depredación apenas baja (**~78–82%**) — la manada a 4 m/s alcanza a la presa antes de que el rebaño
+  (1.2 m/s) cruce los ~106 m al establo; sin drones que apantallen (post-v2) no se le escapa al comprometido.
+  PERO la **severidad ~HALVES** (**≈3.1 vs 6.3 muertes/episodio**) y los episodios de lobo-solo pasan de
+  timeout a **ÉXITO orgánico** (~18%). El balance huida/lobo está locked (no se tocan `cow_speed`/`wolf_speed`
+  ni se mete sprint): la TASA la bajarán los **drones apantallando** (post-v2), no el guiado.
+- **v2 se congelará tras la escolta** (con drones apantallando), con la dinámica definitiva (config + 100
+  seeds), y pasará a ser el adversario fijo contra el que se miden ambas ramas.
 - La batería es **ortogonal** (qué drones hay disponibles, no la dinámica vaca/lobo) → no mueve el
   baseline. busca-huecos/amago son adversarios posteriores de la escalera, no este baseline.
 - ⚠️ NO tocar estos parámetros una vez empiece la comparación; si se recalibra, re-medir ambas ramas.
@@ -642,18 +669,24 @@ coste de batería por moverse (flag #7). 3b: disparador en dos etapas detectar(`
 coordinador y precedencia reflejo>coordinador. Verificado en `drone_check.py` + `escort_check.py` + sin
 regresiones. DummyCoordinator no recoloca (solo Dummy + interfaz del mensaje). Ver §4.3/§4.4, banderas #1/#7.
 
-**SIGUIENTE (opciones del paso 3/2):**
+**Escolta · paso 2 HECHO — GUIADO al refugio.** En ESCOLTA los collares conducen el rebaño al establo
+(`HERD_TO_REFUGE_GAIN`; wander+valla suprimidos; net capada a `cow_speed`); INFRAESTRUCTURA del mundo
+(`escort_enabled`), no el coordinador; "dar la cara" intacto (solo traslación); terneros anclados a su
+defensora; ÉXITO ya **orgánico**. Tasa v2 medida: tasa ~78–82% pero severidad ~HALVES. Ver §4.2/§4.4.
+
+**SIGUIENTE (opciones):**
+- **Drones que APANTALLAN/disuaden (lo que baja la TASA):** con el guiado puesto, los drones se interponen
+  entre la manada y la presa para ganar tiempo hasta el establo (esto es lo que llevará la tasa hacia ~50%).
+  Sigue siendo capacidad del mundo / reflejo hasta que entre el coordinador. + hooks de batería (travel-time,
+  hueco de cobertura, dron tirado).
 - **3c — corzos / cuerpos no-amenaza:** contactos que NO son lobos → la confirmación geométrica deja de ser
   trivial (falsa alarma) → rama SOSPECHA→VIGILANCIA (abortar) + lógica de descartar; aquí entra el coste de
   investigar de más. (Sigue sin clasificador real; eso es la fase YOLO.)
-- **Paso 2 — GUIADO al refugio:** collares conducen el rebaño al establo en ESCOLTA (`k_herd_to_refuge`,
-  suprimir wander de calma, etc.) para que ÉXITO sea alcanzable sin forzar; luego drones que **apantallan/
-  disuaden** + resto de hooks de batería (travel-time, hueco de cobertura, dron tirado).
 Luego: percepción → reflejo trivial → MARL → comparación. **Congelar baseline v2** al FINAL de la escolta.
 
-**Ruta sugerida (orden tentativo, aún sin decidir):** 3a ✓ → 3b ✓ → **paso 2 (guiado al refugio)** →
-**3c (corzos)** → **congelar v2** (Dummy, ~50% con guiado) → **reflejo-reactivo** (consume el mensaje del
-reflejo para tapar el hueco de cobertura) → **MARL** → comparación.
+**Ruta sugerida (orden tentativo, aún sin decidir):** 3a ✓ → 3b ✓ → **paso 2 (guiado) ✓** → **drones que
+apantallan** (baja la tasa hacia ~50%) → **3c (corzos)** → **congelar v2** → **reflejo-reactivo** (consume el
+mensaje del reflejo para tapar el hueco de cobertura) → **MARL** → comparación.
 
 *(Pendiente de decisión menor, NO en este paso: lobo solo vs ternero salió 0% — la madre frena siempre.
 Si se quiere que sea disputado (a veces se cuela), afinar `face_cooldown`/`r_face_safe`. Parámetros del
@@ -661,7 +694,8 @@ modelo vaca/ternero: `calf_count_probs`=(1/3,1/3,1/3), `k_calf_cohesion`=1.0, `k
 `calf_personal_space`=0.5·`capture_radius`≈1.5 m (ternero al lado), `wander_calm`=0.2 (rapidez de
 pastoreo); `cow_spread`=`HERD_SPREAD`=40 m, `r_separation`=`HERD_SEPARATION`=22 m (rebaño disperso, ABSOLUTO);
 `wolf_spawn_dispersion`=0.05·min (cúmulo de spawn); `wolf_skirt_gain`=1.5, `wolf_skirt_margin`=`r_face_safe`
-(rodeo del rebaño); presa adulta por exposición, fijada en t=0; presa ternero override con 1 lobo;
+(rodeo del rebaño); `HERD_TO_REFUGE_GAIN`=2.5 (atracción al refugio en ESCOLTA, paso 2); presa adulta por
+exposición, fijada en t=0; presa ternero override con 1 lobo;
 `prey_abandon_dist` DEPRECADO. Todos afinables por render.)*
 
 ---
