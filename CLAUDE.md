@@ -18,7 +18,7 @@ Si algo se pone **rojo**: PARA y avisa. Nunca bajes la exigencia de un test para
 - **Escala biológica ABSOLUTA** (en metros, NO fracción de `min(W,H)`): `HERD_SPREAD=40`, `HERD_SEPARATION=22`, `wolf_spawn_dispersion=5`, `r_notice=20`, `r_face_safe=6`, `capture_radius=3` (+ derivados).
 - **Campo 300×300 m.** El LAYOUT escala con `min(W,H)`; la escala biológica NO.
 - **Detección/confirmación:** `r_detect=100` (hay algo), `r_confirm=40` (es un lobo; geométrico determinista, placeholder hasta YOLO). Fases `VIGILANCIA → SOSPECHA → ESCOLTA`.
-- **Guiado al refugio (paso 2):** en ESCOLTA los collares conducen el rebaño al establo (`HERD_TO_REFUGE_GAIN`; se suprimen wander **y valla**; net capada a `cow_speed`). Es INFRAESTRUCTURA del mundo (`escort_enabled`), no el coordinador. **"Dar la cara" INTACTO** (solo traslación). `escort_enabled=False` = adversario PURO (face_check prueba ahí el combate, sin que el guiado se filtre).
+- **Guiado al refugio (paso 2) + NO-HOLONÓMICO:** en ESCOLTA la vaca corre HACIA DONDE MIRA (huir y dar la cara EXCLUYENTES): **HUIR** (sin lobo en `r_notice`) → heading al establo + avanza de frente a `cow_speed` (velocidad SIEMPRE a lo largo del heading); **ENCARAR/PIN** (lobo en `r_notice`) → gira a encararlo y se PARA → los lobos CLAVAN a la presa (pin-and-flank). Es INFRAESTRUCTURA del mundo (`escort_enabled`), no el coordinador. **Pastoreo/combate sigue HOLONÓMICO** (`escort_enabled=False` = adversario PURO; face_check intacto). El dron despejará lobos para que la vaca reanude (post-v2).
 - **Dron:** `DRONE_MAX_SPEED=15`, `DRONE_MAX_ACCEL=4`; moverse gasta más batería que flotar.
 - `baseline.py` **NO** se reescribe hasta congelar v2 (final de la escolta).
 
@@ -35,4 +35,4 @@ Si algo se pone **rojo**: PARA y avisa. Nunca bajes la exigencia de un test para
 Arrays NumPy `(N,2)` · RNG sembrado (reproducible bit a bit) · SI, `dt=0.1` · geometría derivada de `min(W,H)` · **sin números mágicos** (las constantes físicas son absolutas y etiquetadas cerca de cabecera) · `render.py` es **solo reproducción** (nunca llama a `step()`).
 
 ## Estado (commits)
-`194a3ad` base · `37910b3` terminal · `e663504` disparador por dron · `4d1e708` campo 300 + escala absoluta · `886bd45` dispersión · `a15e2df` mov. drones (3a) · `fd893b8` detectar→confirmar (3b) · `49e0e22` consolidar docs · `144b7bd` paso 2 guiado al refugio · **máx. 1 caza/episodio (este commit)**.
+`194a3ad` base · `37910b3` terminal · `e663504` disparador por dron · `4d1e708` campo 300 + escala absoluta · `886bd45` dispersión · `a15e2df` mov. drones (3a) · `fd893b8` detectar→confirmar (3b) · `49e0e22` consolidar docs · `144b7bd` paso 2 guiado · `1d44cdc` máx. 1 caza/episodio · **vacas no-holonómicas en ESCOLTA (este commit)**.

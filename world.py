@@ -38,12 +38,6 @@ DRONE_STATE_NAMES = {ACTIVE: "ACTIVE", RETURNING: "RETURNING", CHARGING: "CHARGI
 HERD_SPREAD = 40.0        # m (cow_spread)
 HERD_SEPARATION = 22.0    # m (r_separation)
 
-# --- GUIADO AL REFUGIO (collares; paso 2). Ganancia de la atracción de cada res hacia el establo
-# durante ESCOLTA (la "fuga"). Etiquetada y afinable por render (estilo HERD_SPREAD). Domina sobre el
-# pastoreo pero NO sobre la separación a corta distancia, así que el rebaño migra junto SIN colapsar a
-# un punto; la net se capa a cow_speed (huida a rapidez máxima). Es traslación: el "dar la cara" sigue. ---
-HERD_TO_REFUGE_GAIN = 2.5
-
 # --- DINÁMICA DE VUELO DEL DRON (constantes FÍSICAS absolutas en SI; cuadricóptero HOLONÓMICO: se
 # mueve en cualquier dirección, sin restricción de morro). Pareja afinable rapidez/aceleración de
 # crucero-aproximación de un dron de vigilancia. ---
@@ -661,78 +655,81 @@ class World:
             self.cow_heading[i] = self._rotate_toward(self.cow_heading[i], desired_ang, turn)
 
     def _update_cows(self) -> None:
-        """Vaca adulta: pasta DISPERSA y planta cara (no se apiña). Velocidad con INERCIA.
+        """Vaca adulta. DOS regímenes de movimiento:
 
-        Pasto: separación + deambular (deriva lenta OU, no aleatorio fresco) + valla blanda.
-        SIN cohesión/apiñamiento y SIN huida del lobo. Confrontación: gira a encarar (heading)
-        en _update_cow_headings; el cono frontal se impone sobre el lobo en _enforce_face_cones.
+        - PASTOREO / COMBATE (VIGILANCIA/SOSPECHA, o sin escolta): HOLONÓMICO e intacto (face_check corre
+          aquí). Pasta DISPERSA y planta cara: separación + deambular (paseo angular lento) + valla blanda
+          + anclaje de defensoras; SIN apiñamiento ni huida. El cono se impone sobre el lobo en
+          _enforce_face_cones. La rapidez (magnitud de la suma de fuerzas) la fija wander_calm (casi quieta).
+
+        - ESCOLTA (paso 2, guiado): NO-HOLONÓMICO. La vaca corre HACIA DONDE MIRA; huir y dar la cara son
+          EXCLUYENTES. ENCARAR (lobo dentro de r_notice) -> gira a encararlo y se PARA (vulnerable al
+          pin-and-flank). HUIR (sin lobo cerca) -> gira el heading al establo y avanza DE FRENTE a cow_speed.
+          La velocidad es SIEMPRE a lo largo de cow_heading (nunca lateral) -> el flanco queda expuesto.
         """
         cows = self.cows
 
-        # 1) A quién encara cada vaca (mirada + enfriamiento).
+        # 1) A quién encara cada vaca (mirada + enfriamiento). En ESCOLTA esto es el modo ENCARAR: gira el
+        #    heading hacia el lobo amenazante dentro de r_notice (cono/face_cooldown aplican igual).
         self._update_cow_headings()
 
-        # 2) Separación: empuje desde vecinas dentro de r_separation (no se solapan). Una res YA a salvo
-        #    (aparcada/congelada en el establo) NO empuja a las que entran: si no, con r_separation grande
-        #    las primeras refugiadas expulsarían a la última y no cabría (timeout). (En pastoreo/combate
-        #    nadie está a salvo -> cow_safe todo-False -> sin efecto; face_check intacto.)
-        delta = cows[:, None, :] - cows[None, :, :]                    # (n,n,2): i - j
-        dd = np.linalg.norm(delta, axis=2)
-        close = (dd < self.r_separation) & (dd > 1e-9) & (~self.cow_safe)[None, :]
-        push = np.where(
-            close[:, :, None],
-            delta / np.maximum(dd[:, :, None], 1e-9) * (1.0 - dd[:, :, None] / self.r_separation),
-            0.0,
-        )
-        separation = self.k_separation * push.sum(axis=1)             # (n,2)
-
-        # 3) Deambular como PASEO ANGULAR LENTO del rumbo de pasto: el vector siempre es unitario
-        #    (no colapsa a cero como un OU de fuerza, que al normalizar haría girar la dirección)
-        #    y el rumbo deriva poco a poco -> trayectorias firmes, sin temblor.
-        self._cow_graze_dir = self._cow_graze_dir + self.rng.normal(0.0, self.wander_drift, size=self.n_cows)
-        wander = self.wander_calm * np.column_stack([np.cos(self._cow_graze_dir),
-                                                     np.sin(self._cow_graze_dir)])
-
-        # 4) Valla blanda ("correa"): retorno hacia la zona de pasto SOLO si salen de ella.
-        off = cows - self.cow_spawn
-        dist_f = np.linalg.norm(off, axis=1, keepdims=True)
-        excess = np.maximum(dist_f - self.cow_spread, 0.0)
-        fence = -self.k_fence * off / np.maximum(dist_f, 1e-9) * excess
-
-        # 4b) Anclaje de las DEFENSORAS a su ternero: MUELLE a longitud natural = espacio personal,
-        #     así la madre se queda JUNTO a la cría (a ~calf_personal_space, ni encima ni lejos; solo
-        #     encara, sin interponerse). Las demás adultas pastan libres.
-        anchor = np.zeros_like(cows)
-        if self.n_calves > 0:
-            d = self.calf_defender
-            to_calf = self.calves - cows[d]
-            dd = np.linalg.norm(to_calf, axis=1, keepdims=True)
-            anchor[d] = self.k_defender_anchor * (dd - self.calf_personal_space) * to_calf / np.maximum(dd, 1e-9)
-
-        # 4c) GUIADO AL REFUGIO (collares; INFRAESTRUCTURA del mundo, gateado por la FASE): en ESCOLTA, a
-        #     cada res viva y NO-a-salvo se le suma una atracción hacia el centro del establo (la fuga).
-        #     Se SUPRIME el pastoreo (wander) Y la VALLA blanda (la "correa" a la zona de pasto pelearía
-        #     contra la migración: los collares la sueltan) -> el rebaño MIGRA coherente, sin remolonear.
-        #     El "dar la cara" sigue INTACTO: esto es SOLO traslación (el morro lo gobiernan cow_heading/
-        #     cono/cooldown) -> retroceso ordenado con los cuernos por delante, no una desbandada. La
-        #     separación se mantiene (el rebaño no colapsa a un punto). La net se capa a cow_speed (abajo).
-        refuge = np.zeros_like(cows)
         if self.escort_enabled and self.phase == "ESCOLTA":
+            # --- NO-HOLONÓMICO (solo ESCOLTA) ---
+            if self.n_wolves > 0:
+                d_cw = np.linalg.norm(self.wolves[None, :, :] - cows[:, None, :], axis=2)   # (nc, nw)
+                wolf_near = (d_cw <= self.r_notice).any(axis=1)
+            else:
+                wolf_near = np.zeros(self.n_cows, dtype=bool)
+            active = self.cow_alive & ~self.cow_safe
+            huir = active & ~wolf_near        # HUIR: sin lobo cerca (las demás ENCARAN -> paradas)
+            # HUIR: gira el heading hacia el establo (las que ENCARAN ya lo giró _update_cow_headings al lobo).
             to_ref = self.safe_zone[:2] - cows
-            refuge = HERD_TO_REFUGE_GAIN * to_ref / np.maximum(np.linalg.norm(to_ref, axis=1, keepdims=True), 1e-9)
-            wander = np.zeros_like(wander)
-            fence = np.zeros_like(fence)
+            ref_ang = np.arctan2(to_ref[:, 1], to_ref[:, 0])
+            self.cow_heading[huir] = self._rotate_toward(self.cow_heading[huir], ref_ang[huir], self.turn_rate * self.dt)
+            # Velocidad NO-HOLONÓMICA: a lo largo del heading; avanza a cow_speed solo si HUYE (si ENCARA, 0).
+            head = np.column_stack([np.cos(self.cow_heading), np.sin(self.cow_heading)])
+            adv = np.where(huir, self.cow_speeds, 0.0)
+            self.cow_vel = head * adv[:, None]
+            self.cows = cows + self.cow_vel * self.dt
+        else:
+            # --- HOLONÓMICO (pastoreo/combate, INTACTO) ---
+            # 2) Separación: empuje desde vecinas dentro de r_separation (no se solapan).
+            delta = cows[:, None, :] - cows[None, :, :]                    # (n,n,2): i - j
+            dd = np.linalg.norm(delta, axis=2)
+            close = (dd < self.r_separation) & (dd > 1e-9)
+            push = np.where(
+                close[:, :, None],
+                delta / np.maximum(dd[:, :, None], 1e-9) * (1.0 - dd[:, :, None] / self.r_separation),
+                0.0,
+            )
+            separation = self.k_separation * push.sum(axis=1)             # (n,2)
 
-        # 5) Suma de fuerzas -> velocidad deseada usando su MAGNITUD como rapidez (NO se normaliza a
-        #    tope: antes se normalizaba y el rebaño pastaba SIEMPRE a cow_speed, ignorando wander_calm).
-        #    Así wander_calm fija la rapidez de pastoreo (casi quietas), mientras separación/valla/ancla/
-        #    refugio siguen reaccionando fuerte cuando hace falta (se capa a cow_speed). INERCIA para firmeza.
-        total = separation + wander + fence + anchor + refuge
-        speed = np.linalg.norm(total, axis=1, keepdims=True)
-        scale = np.minimum(1.0, self.cow_speeds[:, None] / np.maximum(speed, 1e-9))
-        desired_vel = total * scale
-        self.cow_vel += self.cow_inertia * (desired_vel - self.cow_vel)
-        self.cows = cows + self.cow_vel * self.dt
+            # 3) Deambular como PASEO ANGULAR LENTO del rumbo de pasto (firme, sin temblor).
+            self._cow_graze_dir = self._cow_graze_dir + self.rng.normal(0.0, self.wander_drift, size=self.n_cows)
+            wander = self.wander_calm * np.column_stack([np.cos(self._cow_graze_dir),
+                                                         np.sin(self._cow_graze_dir)])
+
+            # 4) Valla blanda ("correa"): retorno hacia la zona de pasto SOLO si salen de ella.
+            off = cows - self.cow_spawn
+            dist_f = np.linalg.norm(off, axis=1, keepdims=True)
+            excess = np.maximum(dist_f - self.cow_spread, 0.0)
+            fence = -self.k_fence * off / np.maximum(dist_f, 1e-9) * excess
+
+            # 4b) Anclaje de las DEFENSORAS a su ternero: MUELLE a longitud natural = espacio personal.
+            anchor = np.zeros_like(cows)
+            if self.n_calves > 0:
+                d = self.calf_defender
+                to_calf = self.calves - cows[d]
+                ddc = np.linalg.norm(to_calf, axis=1, keepdims=True)
+                anchor[d] = self.k_defender_anchor * (ddc - self.calf_personal_space) * to_calf / np.maximum(ddc, 1e-9)
+
+            # 5) Suma de fuerzas -> velocidad deseada usando su MAGNITUD como rapidez (wander_calm fija la
+            #    rapidez de pastoreo, casi quieta; se capa a cow_speeds). INERCIA para firmeza.
+            total = separation + wander + fence + anchor
+            speed = np.linalg.norm(total, axis=1, keepdims=True)
+            scale = np.minimum(1.0, self.cow_speeds[:, None] / np.maximum(speed, 1e-9))
+            self.cow_vel += self.cow_inertia * (total * scale - self.cow_vel)
+            self.cows = cows + self.cow_vel * self.dt
 
         # Reses ya resueltas (CAZADAS o REFUGIADAS de pasos previos) no se mueven: congeladas en su
         # sitio. La refugiada se queda DENTRO del establo. 'cows' = posición al inicio del paso.
