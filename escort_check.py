@@ -307,17 +307,19 @@ def test_disuasion():
     assert spmin1 < 4.0 * DETER_SLOWDOWN + 0.5, "FALLO: el lobo no frenó dentro del radio"
     # (b) PARCIAL (emergente): una manada converge sobre UNA presa; un dron junto a UN lobo. Ese se desvía/
     #     aguanta lejos (disuadido); los otros empujan a través y cierran. Mismos params -> "uno huye, otros aguantan".
+    #     La presa va FUERA del establo (si estuviera dentro se marcaría a salvo -> objetivos agotados -> coast).
     w = World(seed=0, n_cows=1, wolves_min=3, wolves_max=3, calf_count_probs=NO_CALVES)
     c = DummyCoordinator(w.n_drones)
-    w.cows[0] = np.array([150.0, 150.0]); w.cow_vel[0] = 0.0; w.cow_speeds[0] = 0.0
-    w.wolves[:] = np.array([[110.0, 150.0], [150.0, 190.0], [190.0, 150.0]])   # O/N/E a 40 m, separados
+    P = np.array([80.0, 80.0])               # presa lejos del establo (centro 150,150) -> sigue cazable
+    w.cows[0] = P.copy(); w.cow_vel[0] = 0.0; w.cow_speeds[0] = 0.0
+    w.wolves[:] = np.array([P + [-40, 0], P + [0, 40], P + [40, 0]], dtype=float)   # O/N/E a 40 m, separados
     w.wolf_vel[:] = 0.0
     w.pack_prey, w.pack_prey_kind = 0, "adult"
-    _one_active_drone(w, [122.0, 150.0])     # 12 m al este del lobo OESTE (lo empuja al oeste); >40 m de los otros 2
+    _one_active_drone(w, P + [-28.0, 0.0])   # 12 m al ESTE del lobo OESTE (lo empuja al oeste); >40 m de los otros 2
     d0 = np.linalg.norm(w.wolves - w.cows[0], axis=1).copy()
     for _ in range(40):
         w.pack_prey, w.pack_prey_kind = 0, "adult"
-        w.cow_vel[0] = 0.0; w.cows[0] = np.array([150.0, 150.0])
+        w.cow_vel[0] = 0.0; w.cows[0] = P.copy()
         w.step(c.act(None))
     d1 = np.linalg.norm(w.wolves - w.cows[0], axis=1)
     print("  (b) PARCIAL: lobo del dron dist a presa %.0f->%.0f m (disuadido) | los otros %.0f->%.0f y %.0f->%.0f (empujan)"
@@ -358,27 +360,29 @@ def test_disuasion():
 
 
 def test_depredacion():
-    print("=== 2) DEPREDACIÓN forzada (la manada caza; MÁX. 1 caza por episodio) ===")
-    w = World(seed=1, wolves_min=3, wolves_max=3, calf_count_probs=NO_CALVES, max_episode_steps=500)
+    print("=== 2) DEPREDACIÓN forzada — MATANZA EXCEDENTE (la manada caza VARIAS; ya no hay tope de 1) ===")
+    # Combate puro (escort_enabled=False: sin huida ni disuasión) con reses CONGELADAS (cow_speeds=0) y
+    # alcanzables en línea: el paquete mata, RE-FIJA la más cercana y SIGUE -> mueren VARIAS. Antes (máx. 1
+    # caza) se saciaba tras la primera; ahora la severidad vuelve a ser la métrica (cuántas cabezas se pierden).
+    w = World(seed=1, n_cows=5, wolves_min=5, wolves_max=5, calf_count_probs=NO_CALVES,
+              max_episode_steps=600, escort_enabled=False)
     c = DummyCoordinator(w.n_drones)
-    # Escenario: una adulta EXPUESTA con la manada encima; el resto del rebaño lejos. La manada caza a la
-    # expuesta y se SACIA -> n_depredadas=1 (las demás quedan vivas y fuera -> el episodio acaba en
-    # DEPREDACIÓN por tiempo, ≥1 cazada). Antes (multi-muerte) la manada re-fijaba y mataba varias.
-    w.cows[0] = np.array([75.0, 50.0])
-    w.cows[1:] = np.array([15.0, 85.0]) + w.rng.uniform(-2, 2, size=(w.n_cows - 1, 2))
-    w.cow_vel[:] = 0.0
-    w.wolves[:] = np.array([[85.0, 50.0], [75.0, 40.0], [65.0, 50.0]])
+    ctr = np.array([150.0, 150.0])
+    w.cows[:] = ctr + np.array([[-40, 0], [-20, 0], [0, 0], [20, 0], [40, 0]], dtype=float)
+    w.cow_vel[:] = 0.0; w.cow_speeds[:] = 0.0
+    ang = np.linspace(0, 2 * np.pi, w.n_wolves, endpoint=False)
+    w.wolves[:] = w.cows[0] + 6.0 * np.column_stack([np.cos(ang), np.sin(ang)])
     w.wolf_vel[:] = 0.0
     w._commit_initial_prey()
     info = {"status": w.status}
-    for _ in range(500):
+    for _ in range(600):
         _, _, term, trunc, info = w.step(c.act(None))
         if term or trunc:
             break
-    print("  status=%s  n_depredadas=%d  n_safe=%d  capturas=%d  paso=%s"
-          % (info["status"], info["n_depredadas"], info["n_safe"], len(w.captures), info["terminal_step"]))
-    assert info["n_depredadas"] == 1, "FALLO: la manada no cazó exactamente 1 (máx. 1 caza/episodio)"
-    assert info["status"] == "predation", "FALLO: el estado no es DEPREDACIÓN (fracaso parcial)"
+    print("  status=%s  n_depredadas=%d (de %d)  capturas=%d  paso=%s"
+          % (info["status"], info["n_depredadas"], w.n_cows, len(w.captures), info["terminal_step"]))
+    assert info["n_depredadas"] >= 2, "FALLO: el paquete no cazó VARIAS (matanza excedente: sin tope de 1)"
+    assert info["status"] == "predation", "FALLO: el estado no es DEPREDACIÓN (>=1 cazada)"
     print("  OK\n")
 
 
@@ -489,7 +493,7 @@ def test_timing_deteccion():
 
 
 def test_tasa_escolta():
-    print("=== 9) Tasa de la escolta (Dummy + guiado + disuasión) — candidata a v2 (MEDIDA, NO objetivo) ===")
+    print("=== 9) Candidata a v2 (Dummy + guiado + disuasión) — SEVERIDAD y tasa MEDIDAS (matanza excedente) ===")
     from collections import Counter
     def sweep(escort, n):
         out, deaths = Counter(), []
@@ -508,15 +512,15 @@ def test_tasa_escolta():
     u_out, u_deaths = sweep(False, n_u)
     print("  ESCENARIO escolta (escort_enabled=True: guiado + no-holonómico + DISUASIÓN), Dummy n=%d: %s"
           % (n_g, dict(g_out)))
-    print("    -> depredación=%.0f%% | muertes/ep=%.2f (máx=%d)"
+    print("    -> tasa (>=1 muerta)=%.0f%% | SEVERIDAD=%.2f muertes/ep (máx=%d) <- la métrica principal a batir"
           % (100 * g_out["predation"] / n_g, np.mean(g_deaths), max(g_deaths)))
-    print("  ADVERSARIO PURO (escort_enabled=False: sin escolta ni drones), n=%d: %s | depredación=%.0f%% | muertes/ep=%.2f"
-          % (n_u, dict(u_out), 100 * u_out["predation"] / n_u, np.mean(u_deaths)))
-    print("  -> La DISUASIÓN baja la tasa de ~80%% (solo guiado) a ~55%%: incluso con Dummy hay disuasión PASIVA")
-    print("     (los lobos esquivan/frenan junto a los drones quietos y al investigador liberado tras confirmar),")
-    print("     y sube el ÉXITO orgánico. SEVERIDAD ~0.5 (máx. 1 caza/ep). El POSICIONAMIENTO del coordinador")
-    print("     (mandar drones a interponerse y despejar pins) la bajará MÁS -> post-v2 (es la referencia a batir).")
-    assert max(g_deaths) <= 1 and max(u_deaths) <= 1, "FALLO: hubo >1 caza en algún episodio (máx. 1 caza/episodio)"
+    print("  ADVERSARIO PURO (escort_enabled=False: sin escolta ni drones), n=%d: %s | tasa=%.0f%% | SEVERIDAD=%.2f (máx=%d)"
+          % (n_u, dict(u_out), 100 * u_out["predation"] / n_u, np.mean(u_deaths), max(u_deaths)))
+    print("  -> MATANZA EXCEDENTE (revertido el tope de 1 caza): tras matar el paquete re-fija la más cercana y")
+    print("     sigue hasta agotar -> la SEVERIDAD vuelve a ser la métrica (cabezas perdidas), no la tasa. La")
+    print("     DISUASIÓN (Dummy, pasiva) baja AMBAS frente al adversario puro; el coordinador (posicionar drones")
+    print("     para despejar pins) bajará la severidad MÁS -> post-v2 (esta severidad es la referencia a batir).")
+    assert max(g_deaths) >= 2 or max(u_deaths) >= 2, "FALLO: ningún episodio con >1 caza (la matanza excedente no ocurre)"
     assert g_out["success"] >= 1, "FALLO: debería haber ÉXITO orgánico en alguna seed"
     assert 100 * g_out["predation"] / n_g < 100 * u_out["predation"] / n_u, \
         "FALLO: la disuasión NO bajó la tasa respecto al adversario puro"
@@ -601,16 +605,17 @@ def save_deterrence_animation():
           % (len(hist), w.status, int(w.cow_safe.sum())))
 
 
-def _save_episode(w, cap, path):
+def _save_episode(w, cap, path, stride=1):
     c = DummyCoordinator(w.n_drones)
     hist = [w.snapshot()]
-    for _ in range(cap):
+    for k in range(cap):
         _, _, term, trunc, _ = w.step(c.act(None))
-        hist.append(w.snapshot())
+        if k % stride == 0 or term or trunc:     # submuestreo -> gif manejable en episodios largos
+            hist.append(w.snapshot())
         if term or trunc:
             break
     render_episode(w, hist, save_path=path)
-    print("  %-26s %d frames -> estado=%s, cazadas=%d, a salvo=%d"
+    print("  %-28s %d frames -> estado=%s, cazadas=%d, a salvo=%d"
           % (path, len(hist), w.status, w.n_depredadas, int(w.cow_safe.sum() + w.calf_safe.sum())))
 
 
@@ -621,17 +626,22 @@ def save_animations():
     w.cows[:] = w.safe_zone[:2] + w.rng.uniform(-6.0, 6.0, size=(w.n_cows, 2))
     w.wolves[:] = w.safe_zone[:2] + np.array([70.0, 0.0])     # lobo fuera del establo, en el campo
     _save_episode(w, 25, "escort_exito.gif")
-    # DEPREDACIÓN: escenario construido (manada encima de una adulta expuesta) -> flanqueo -> 1 muerte.
-    # Rebaño de 1 res (n_cows=1) lejos del establo: con MÁX. 1 caza/episodio, cazarla resuelve el episodio
-    # (in_play=0) en pocos pasos -> banner DEPREDACIÓN visible (n_cows=2 ya no se resolvería: la 2ª vive).
-    w = World(seed=1, n_cows=1, wolves_min=3, wolves_max=3, calf_count_probs=NO_CALVES, max_episode_steps=300)
-    cd = w.safe_zone[:2] + np.array([-60.0, -80.0])
-    w.cows[0] = cd
-    w.wolves[:] = np.array([cd + [12.0, 0.0], cd + [0.0, -12.0], cd + [-12.0, 0.0]])
-    w.cow_vel[:] = 0.0
+    # DEPREDACIÓN — MATANZA EXCEDENTE: cúmulo de 3 reses CONGELADAS (cow_speeds=0) y alcanzables, paquete
+    # de 5 lobos encima. Mata, re-fija la más cercana y SIGUE -> caen las 3 (in_play=0) -> banner DEPREDACIÓN.
+    w = World(seed=1, n_cows=3, wolves_min=5, wolves_max=5, calf_count_probs=NO_CALVES,
+              max_episode_steps=400, escort_enabled=False)
+    cd = w.safe_zone[:2] + np.array([-55.0, -70.0])
+    w.cows[:] = cd + np.array([[-3.0, 0.0], [0.0, 0.0], [3.0, 0.0]])     # cúmulo apretado y quieto
+    w.cow_vel[:] = 0.0; w.cow_speeds[:] = 0.0
+    ang = np.linspace(0, 2 * np.pi, w.n_wolves, endpoint=False)
+    w.wolves[:] = cd + 7.0 * np.column_stack([np.cos(ang), np.sin(ang)])
     w.wolf_vel[:] = 0.0
     w._commit_initial_prey()
-    _save_episode(w, 250, "escort_depredacion.gif")
+    _save_episode(w, 400, "escort_matanza_excedente.gif", stride=2)
+    # REBAÑO A SALVO ENTERO (orgánico): lobo SOLO sin terneros -> no fija presa -> todas HUYEN y se
+    # refugian -> ÉXITO sin forzar nada (el rebaño entero llega al establo).
+    w = World(seed=1, wolves_min=1, wolves_max=1, calf_count_probs=NO_CALVES)
+    _save_episode(w, w.max_episode_steps, "escort_rebano_a_salvo.gif", stride=5)
     # TIMEOUT: lobo solo (no mata), límite de tiempo bajo.
     w = World(seed=2, wolves_min=1, wolves_max=1, calf_count_probs=NO_CALVES, max_episode_steps=60)
     _save_episode(w, 60, "escort_timeout.gif")

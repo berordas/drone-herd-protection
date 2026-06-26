@@ -14,7 +14,7 @@ esto es lo que no debe perderse entre sesiones ni tras un /compact. Trabajamos e
 Si algo se pone **rojo**: PARA y avisa. Nunca bajes la exigencia de un test para que pase sin decirlo.
 
 ## Invariantes CONGELADOS — no los toques sin permiso explícito
-- Modelo vaca/lobo **"dar la cara, no apiñamiento"**: cono frontal, flanqueo, presa común fijada en t=0; re-fijación SOLO si la presa se **refugia**; **MÁX. 1 CAZA/EPISODIO** (tras matar, el paquete se **SACIA** y para — `pack_sated`; se desengancha); terneros + defensoras, spawn por sector, rodeo. Verificado en `face_check`.
+- Modelo vaca/lobo **"dar la cara, no apiñamiento"**: cono frontal, flanqueo, presa común fijada en t=0; **MATANZA EXCEDENTE** (tras matar O refugiarse la presa, el paquete **re-fija la res viva no-a-salvo MÁS CERCANA** y SIGUE hasta **agotar** objetivos — todas muertas o a salvo —; al agotar **coastea a parada**, sin orbitar; `n_refix` cuenta SOLO re-fijaciones por refugio); terneros + defensoras, spawn por sector, rodeo. Verificado en `face_check`.
 - **Escala biológica ABSOLUTA** (en metros, NO fracción de `min(W,H)`): `HERD_SPREAD=40`, `HERD_SEPARATION=22`, `wolf_spawn_dispersion=5`, `r_notice=20`, `r_face_safe=6`, `capture_radius=3` (+ derivados).
 - **Campo 300×300 m.** El LAYOUT escala con `min(W,H)`; la escala biológica NO.
 - **Detección/confirmación:** `r_detect=100` (hay algo), `r_confirm=40` (es un lobo; geométrico determinista, placeholder hasta YOLO). Fases `VIGILANCIA → SOSPECHA → ESCOLTA`.
@@ -29,11 +29,11 @@ Si algo se pone **rojo**: PARA y avisa. Nunca bajes la exigencia de un test para
 - Collares/guiado y batería = **infraestructura del mundo**. Solo se compara el coordinador de drones.
 
 ## Orden de construcción
-3a movimiento de drones ✓ → 3b detectar→confirmar ✓ → **paso 2 guiado al refugio ✓** → **disuasión del dron ✓** → 3c corzos → **congelar v2** → **coordinador: posicionar/interponer drones** (baja la tasa hacia ~50%) + reflejo-reactivo (consume el mensaje) → MARL.
-*(Los coordinadores van DESPUÉS de congelar v2: v2 es la referencia que deben batir. Con Dummy+guiado+disuasión PASIVA la TASA baja a **~55%** (era ~80% solo guiado); la SEVERIDAD es ~0.5 muerte/ep (máx. 1 caza/episodio); la tasa la baja MÁS el coordinador posicionando drones para despejar pins activamente.)*
+3a movimiento de drones ✓ → 3b detectar→confirmar ✓ → **paso 2 guiado al refugio ✓** → **disuasión del dron ✓** → **matanza excedente ✓** → 3c corzos → **congelar v2** → **coordinador: posicionar/interponer drones** (baja la SEVERIDAD) + reflejo-reactivo (consume el mensaje) → MARL.
+*(Los coordinadores van DESPUÉS de congelar v2: v2 es la referencia que deben batir. Con Dummy+guiado+disuasión PASIVA: TASA ~52%, y **SEVERIDAD ~1.55 muertes/ep** (matanza excedente: el paquete caza hasta agotar; máx. 8 sin escolta). La SEVERIDAD vuelve a ser la métrica principal; la baja el coordinador posicionando drones para despejar pins activamente.)*
 
 ## Convenciones de código
 Arrays NumPy `(N,2)` · RNG sembrado (reproducible bit a bit) · SI, `dt=0.1` · geometría derivada de `min(W,H)` · **sin números mágicos** (las constantes físicas son absolutas y etiquetadas cerca de cabecera) · `render.py` es **solo reproducción** (nunca llama a `step()`).
 
 ## Estado (commits)
-`194a3ad` base · `37910b3` terminal · `e663504` disparador por dron · `4d1e708` campo 300 + escala absoluta · `886bd45` dispersión · `a15e2df` mov. drones (3a) · `fd893b8` detectar→confirmar (3b) · `49e0e22` consolidar docs · `144b7bd` paso 2 guiado · `1d44cdc` máx. 1 caza/episodio · `56ff75d` huida no-holonómica · `f42456f` 2 fixes huida (solo-presa-se-para + ternero-entra) · **disuasión del dron: esquiva+frena, parcial, despeja el pin (este commit)**.
+`194a3ad` base · `37910b3` terminal · `e663504` disparador por dron · `4d1e708` campo 300 + escala absoluta · `886bd45` dispersión · `a15e2df` mov. drones (3a) · `fd893b8` detectar→confirmar (3b) · `49e0e22` consolidar docs · `144b7bd` paso 2 guiado · `1d44cdc` máx. 1 caza/episodio (REVERTIDO) · `56ff75d` huida no-holonómica · `f42456f` 2 fixes huida · `26bce79` disuasión del dron · **matanza excedente: revierte 1-caza, re-fija a la más cercana hasta agotar (este commit)**.

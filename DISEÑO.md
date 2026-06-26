@@ -5,18 +5,34 @@
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
 >
-> **Última actualización: 2026-06-26** · *escolta: BUCLE CERRADO + el dron tiene DIENTES.* **Hecho:** terminal
-> (el "juez") · disparador realista por detección de dron · reescalado a 300×300 (~9 ha) con escala biológica
-> absoluta · dispersión del rebaño · movimiento de drones · detectar→acercarse→confirmar · **guiado al refugio
-> (paso 2)** · **máx. 1 caza/episodio** (modelo del lobo) · **huida NO-HOLONÓMICA en ESCOLTA** (pin) ·
-> **DISUASIÓN del dron** (el lobo esquiva + frena cerca de un dron → despeja el pin).
-> **Pendiente:** POSICIONAMIENTO del coordinador (interponer drones para bajar más la tasa) · corzos ·
+> **Última actualización: 2026-06-26** · *escolta: BUCLE CERRADO + el dron tiene DIENTES + matanza excedente.*
+> **Hecho:** terminal (el "juez") · disparador realista por detección de dron · reescalado a 300×300 (~9 ha) con
+> escala biológica absoluta · dispersión del rebaño · movimiento de drones · detectar→acercarse→confirmar ·
+> **guiado al refugio (paso 2)** · **huida NO-HOLONÓMICA en ESCOLTA** (pin) · **DISUASIÓN del dron** (el lobo
+> esquiva + frena cerca de un dron → despeja el pin) · **MATANZA EXCEDENTE** (el paquete caza hasta agotar
+> objetivos → la SEVERIDAD es la métrica).
+> **Pendiente:** POSICIONAMIENTO del coordinador (interponer drones para bajar la severidad) · corzos ·
 > congelar baseline v2 · coordinadores (reflejo trivial, MARL).
 > **Commits:** `194a3ad` base · `37910b3` terminal · `e663504` disparador por dron · `4d1e708` campo
 > 300×300 + escala biológica absoluta · `886bd45` dispersión del rebaño · `a15e2df` movimiento de
 > drones (3a) · `fd893b8` detectar→confirmar (3b) · `49e0e22` consolidar DISEÑO+CLAUDE · `144b7bd` guiado (paso 2)
-> · `1d44cdc` máx. 1 caza/episodio · `56ff75d` huida no-holonómica · `f42456f` dos correcciones huida ·
-> `<este commit>` disuasión del dron.
+> · `1d44cdc` máx. 1 caza/episodio (REVERTIDO) · `56ff75d` huida no-holonómica · `f42456f` dos correcciones huida ·
+> `26bce79` disuasión del dron · `<este commit>` matanza excedente.
+>
+> **Patch — MATANZA EXCEDENTE (el paquete caza hasta agotar; revierte el tope de 1 caza de `1d44cdc`).**
+> En presa CONFINADA (pasto cercado, reses clavadas) una manada real mata más de lo que come. Quitado
+> `pack_sated`: tras MATAR o REFUGIARSE la presa, el paquete **RE-FIJA la res viva no-a-salvo MÁS CERCANA**
+> (`_recommit_nearest_prey`, al centroide del paquete) y **SIGUE** cazando hasta **agotar** objetivos (todas
+> muertas o a salvo); entonces se **DESENGANCHA y FRENA** (coastea a parada — el mismo coast del saciado,
+> ahora gateado por `_targets_exhausted`; mantiene `face_check` test 3 firme). La **caza en sí** (cono /
+> flanqueo / fijación en t=0 / rodeo) es IDÉNTICA; solo cambia a quién se re-fija después y cuándo para.
+> Re-fijar-tras-refugio intacto; `n_refix` sigue contando SOLO re-fijaciones por refugio. **La SEVERIDAD
+> vuelve a ser la métrica principal** (cabezas perdidas): candidata a v2 (Dummy + guiado + disuasión)
+> **~1.55 muertes/ep** (tasa ≥1 ~52%), adversario puro **~6.33** (máx. 8). El trabajo del coordinador pasa a
+> ser **minimizarla**. **face_check 12/12** (comportamiento intacto; conteo de capturas actualizado a
+> multi-muerte). **NO** toca disuasión, guiado, no-holonómico, detección/confirmación, drones, baseline.py.
+> Verificado en `escort_check` (multi-caza, re-fijar-más-cercana, refugio, parar-al-agotar) + renders
+> `escort_matanza_excedente.gif` (3 cazas) y `escort_rebano_a_salvo.gif` (rebaño entero a salvo).
 >
 > **Patch — DISUASIÓN del dron (el lobo ESQUIVA + FRENA cerca de un dron · le da DIENTES a la escolta).**
 > Es CÓMO responde el mundo al dron (infraestructura, gateada por `escort_enabled`), **no el coordinador**.
@@ -239,14 +255,17 @@ rules…"*, Behavioural Processes 88(3), 192–197) pero lo hace **DIRECCIONAL**
    **Fijación en t=0** (`_commit_initial_prey` en el reset, no se espera a que un lobo cruce
    `r_notice`): en modo caza (con ternero basta **1 lobo**; sin ternero, ≥ `n_min_adult`) la manada
    elige la presa y va a por ella **desde el primer paso**; el lobo solo sin ternero no se compromete.
-   Se **mantiene** todo el episodio y se suelta solo cuando deja de ser cazable: si se **REFUGIA**, la
-   manada **RE-SELECCIONA** otra (persigue cambiando de objetivo entre las que huyen, hasta matar a una o
-   que todas se refugien); si **MUERE**, el paquete se **SACIA** y **PARA permanentemente** (`pack_sated`)
-   → **MÁX. 1 CAZA POR EPISODIO** (una manada real hace una caza por ataque y se alimenta, no mata 3). Tras
-   saciarse **se DESENGANCHA** (frena cerca de la caza; no orbita). El tope lo impone `_process_predation`
-   (cae UNA res y para, también frente a un doble-flanqueo simultáneo). Se quitó el abandono por distancia
-   (`prey_abandon_dist` **DEPRECADO**: parche de la fijación tardía; con la presa fija en t=0 empieza lejos).
-   Verificado: re-fijaciones **= 0** (solo por refugio); **máx. 1 caza/episodio** en todos los seeds.
+   Se **mantiene** hasta que deja de ser cazable (MUERE o se REFUGIA). **MATANZA EXCEDENTE** (presa
+   confinada: pasto cercado, reses clavadas): tras matar O refugiarse la presa, el paquete **RE-FIJA la res
+   viva no-a-salvo MÁS CERCANA** al centroide del paquete (`_recommit_nearest_prey`) y **SIGUE** cazando
+   **hasta agotar** objetivos (todas muertas o a salvo) → la **SEVERIDAD** (cabezas perdidas) es la métrica.
+   Al **agotar** (`_targets_exhausted`) el paquete **se DESENGANCHA y FRENA** (coastea a parada; no orbita —
+   mantiene la firmeza de `face_check` test 3). La **caza en sí** (cono / flanqueo / fijación en t=0 / rodeo)
+   es IDÉNTICA; solo cambia **a quién se re-fija después y cuándo para**. Se quitó el abandono por distancia
+   (`prey_abandon_dist` **DEPRECADO**). `n_refix` cuenta SOLO re-fijaciones por **refugio** (oscilación); la
+   muerte re-fija pero no es oscilación. *(Histórico: `1d44cdc` introdujo `pack_sated` = máx. 1 caza/ep,
+   REVERTIDO aquí — en presa confinada el paquete excede.)* Verificado: multi-caza, re-fijar-a-la-más-cercana,
+   re-fijar-tras-refugio, parar-al-agotar.
 2. **Aproximación respetando el cono frontal:** si el lobo está **en el cono** de la presa (±45°)
    **circula** hacia el flanco manteniendo `r_face_safe`; si está en el **flanco/grupa** **cierra a
    matar**. El standoff de Muro pasa de omnidireccional a **solo en el cono**.
@@ -637,19 +656,19 @@ Decisiones de diseño ratificadas:
   el rebaño apenas mueve la letalidad (no hay defensa colectiva que se "abra"). El **88%** es el combate
   medido en el campo **calibrado 100×100** (invariante de escala); ambas cifras describen el mismo modelo.
   ~1/5 de episodios son lobo-solo → TIMEOUT.
-- **Candidata a v2 (Dummy + GUIADO + NO-HOLONÓMICO + DISUASIÓN):** medida en `escort_check`
-  (`escort_enabled=True`): con la **disuasión** del dron la **tasa** de depredación baja de ~80% (solo guiado)
-  a **~55%** (`predation 22 / timeout 12 / success 6` en 40 seeds) y la **severidad ~0.5 muerte/episodio**
-  (sigue **máx. 1 caza/ep**). El drop viene de la **disuasión PASIVA**: con Dummy los drones no se posicionan,
-  pero los lobos **esquivan + frenan** junto a los drones quietos (en las esquinas del bbox inicial) y junto al
-  **investigador liberado** a ~`r_confirm` del paquete tras confirmar → en varios seeds eso basta para que la
-  presa no se clave o reanude. Con la huida no-holonómica los lobos **CLAVAN (pin)** SOLO a la presa fijada;
-  el **resto del rebaño llega a salvo** (**n_safe medio ~6/6**). **Lobo-solo SIN ternero → ÉXITO**; **CON
-  ternero → TIMEOUT** con Dummy (el pin queda lejos de los drones de esquina; con posicionamiento → ÉXITO).
-  El balance huida/lobo sigue locked (no se tocan `cow_speed`/`wolf_speed` ni se mete sprint): la TASA la
-  bajará **MÁS** el **POSICIONAMIENTO** del coordinador (interponer drones, despejar pins activamente, post-v2).
-- **v2 se congelará tras la escolta** (con la disuasión ya dentro, antes del coordinador), con la dinámica
-  definitiva (config + 100 seeds), y pasará a ser el adversario fijo contra el que se miden ambas ramas.
+- **Candidata a v2 (Dummy + GUIADO + NO-HOLONÓMICO + DISUASIÓN + MATANZA EXCEDENTE):** medida en
+  `escort_check` (`escort_enabled=True`). Con la **matanza excedente** la **SEVERIDAD vuelve a ser la métrica
+  principal** (cabezas perdidas, no solo si se pierde ≥1): **~1.55 muertes/episodio** (tasa ≥1 ~52%; reparto
+  `predation 21 / timeout 13 / success 6` en 40 seeds). Frente al **adversario puro** (`escort_enabled=False`,
+  sin escolta ni drones): **~6.33 muertes/ep** (tasa ~87%, máx. 8). Es decir, **guiado + disuasión PASIVA
+  bajan la severidad de ~6.3 a ~1.6** aun con Dummy (los lobos esquivan/frenan junto a los drones quietos y al
+  investigador liberado; muchas reses se refugian antes de que el paquete agote). Con la huida no-holonómica
+  los lobos **CLAVAN (pin)** SOLO a la presa fijada; el resto del rebaño llega a salvo. **Lobo-solo SIN
+  ternero → ÉXITO**; **CON ternero → TIMEOUT** con Dummy. El balance huida/lobo sigue locked (no se tocan
+  `cow_speed`/`wolf_speed` ni se mete sprint): la **SEVERIDAD** la bajará el **POSICIONAMIENTO** del coordinador
+  (interponer drones, despejar pins activamente, post-v2). **Esta severidad (~1.55) es la referencia a batir.**
+- **v2 se congelará tras la escolta** (con disuasión + matanza excedente dentro, antes del coordinador), con la
+  dinámica definitiva (config + 100 seeds), y pasará a ser el adversario fijo contra el que se miden ambas ramas.
 - La batería es **ortogonal** (qué drones hay disponibles, no la dinámica vaca/lobo) → no mueve el
   baseline. busca-huecos/amago son adversarios posteriores de la escalera, no este baseline.
 - ⚠️ NO tocar estos parámetros una vez empiece la comparación; si se recalibra, re-medir ambas ramas.
@@ -749,33 +768,38 @@ coste de batería por moverse (flag #7). 3b: disparador en dos etapas detectar(`
 coordinador y precedencia reflejo>coordinador. Verificado en `drone_check.py` + `escort_check.py` + sin
 regresiones. DummyCoordinator no recoloca (solo Dummy + interfaz del mensaje). Ver §4.3/§4.4, banderas #1/#7.
 
-**Escolta · paso 2 + patches HECHOS — GUIADO al refugio (NO-HOLONÓMICO) + máx. 1 caza.** En ESCOLTA la vaca
-corre **hacia donde mira**: **HUIR** de frente al establo a `cow_speed` / **ENCARAR-PIN** (gira al lobo y se
-PARA); excluyentes → los lobos **clavan** a la presa (pin-and-flank). INFRAESTRUCTURA del mundo
-(`escort_enabled`), no el coordinador; pastoreo/combate **holonómico** intacto (face_check); terneros anclados.
-El paquete caza **UNA vez y se sacia** (máx. 1 caza/ep). Tasa v2 medida: **~80%**, **severidad ~1**; **lobo-solo
-→ TIMEOUT** (clava pero no flanquea). ÉXITO orgánico = llegar **antes** de ser fijada. Ver §4.1/§4.2/§4.4.
+**Escolta · paso 2 HECHO — GUIADO al refugio (NO-HOLONÓMICO).** En ESCOLTA la vaca corre **hacia donde mira**:
+**HUIR** de frente al establo a `cow_speed` / **ENCARAR-PIN** (gira al lobo y se PARA); excluyentes → los lobos
+**clavan** a la presa (pin-and-flank). INFRAESTRUCTURA del mundo (`escort_enabled`), no el coordinador;
+pastoreo/combate **holonómico** intacto (face_check); terneros anclados. **Lobo-solo → TIMEOUT** (clava pero no
+flanquea). ÉXITO orgánico = llegar **antes** de ser fijada / que el paquete agote. Ver §4.1/§4.2/§4.4.
 
 **Escolta · DISUASIÓN HECHA — el dron tiene DIENTES.** Dentro de `DETER_RADIUS`=40 m de un dron ACTIVE el lobo
 **ESQUIVA** (repulsión con *falloff*, suma de todos los drones a tiro) y **FRENA** (× `DETER_SLOWDOWN`); la
 esquiva se SUMA al impulso de caza → competencia **PARCIAL** (cerca domina la repulsión = despeja el pin; al
 borde domina la caza = empuja a través). Infraestructura del mundo (`escort_enabled`), **no el coordinador**;
-sin habituación (flag #6). **Tasa v2 (Dummy): ~80% → ~55%** por disuasión PASIVA; severidad **~0.5**.
-**face_check 12/12** (combate puro no disuade, bit a bit). Ver §4.1/§4.2/§4.4, banderas #6. `_apply_deterrence`.
+sin habituación (flag #6). **face_check 12/12** (combate puro no disuade, bit a bit). `_apply_deterrence`.
+
+**Escolta · MATANZA EXCEDENTE HECHA — la SEVERIDAD es la métrica.** Revertido el tope de 1 caza (`1d44cdc`):
+tras matar/refugiarse la presa, el paquete **re-fija la res viva no-a-salvo MÁS CERCANA** y SIGUE hasta
+**agotar** (todas muertas o a salvo); al agotar **coastea a parada**. La caza en sí es IDÉNTICA. **SEVERIDAD
+v2 (Dummy + guiado + disuasión): ~1.55 muertes/ep** (tasa ≥1 ~52%); adversario puro **~6.33** (máx. 8) →
+guiado+disuasión bajan la severidad de ~6.3 a ~1.6 aun con Dummy. **face_check 12/12** (conteo a multi-muerte).
+`_recommit_nearest_prey` / `_targets_exhausted`. Ver §4.1/§9.
 
 **SIGUIENTE (opciones):**
-- **POSICIONAMIENTO del coordinador (lo que baja MÁS la TASA):** la disuasión ya existe; falta que el
+- **POSICIONAMIENTO del coordinador (lo que baja la SEVERIDAD):** la disuasión ya existe; falta que el
   coordinador **mande los drones a interponerse** entre los lobos y la presa (despejar pins activamente,
-  no solo la disuasión pasiva del Dummy). Eso es el **coordinador** (post-congelar-v2): baja la tasa hacia
-  ~50% y desbloquea el ÉXITO. + hooks de batería (travel-time, hueco de cobertura, dron tirado).
+  no solo la disuasión pasiva del Dummy). Eso es el **coordinador** (post-congelar-v2): baja la severidad
+  (~1.55, la referencia) y desbloquea el ÉXITO. + hooks de batería (travel-time, hueco de cobertura, dron tirado).
 - **3c — corzos / cuerpos no-amenaza:** contactos que NO son lobos → la confirmación geométrica deja de ser
   trivial (falsa alarma) → rama SOSPECHA→VIGILANCIA (abortar) + lógica de descartar; aquí entra el coste de
   investigar de más. (Sigue sin clasificador real; eso es la fase YOLO.)
 Luego: percepción → reflejo trivial → MARL → comparación. **Congelar baseline v2** al FINAL de la escolta.
 
 **Ruta sugerida (orden tentativo, aún sin decidir):** 3a ✓ → 3b ✓ → **paso 2 (guiado) ✓** → **disuasión del
-dron ✓** (baja la tasa ~80%→~55%) → **3c (corzos)** → **congelar v2** → **coordinador: posicionar/interponer
-drones** (baja la tasa hacia ~50%) + reflejo-reactivo (tapa el hueco de cobertura) → **MARL** → comparación.
+dron ✓** → **matanza excedente ✓** (severidad v2 ~1.55) → **3c (corzos)** → **congelar v2** → **coordinador:
+posicionar/interponer drones** (baja la SEVERIDAD) + reflejo-reactivo (tapa el hueco de cobertura) → **MARL**.
 
 *(Pendiente de decisión menor, NO en este paso: lobo solo vs ternero salió 0% — la madre frena siempre.
 Si se quiere que sea disputado (a veces se cuela), afinar `face_cooldown`/`r_face_safe`. Parámetros del

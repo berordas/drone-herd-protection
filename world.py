@@ -307,8 +307,7 @@ class World:
         self.pack_prey: int = -1                        # índice de la presa COMÚN fijada (-1 = ninguna)
         self.pack_prey_kind: str | None = None          # "adult" | "calf" | None (a qué array indexa pack_prey)
         self._ever_committed: bool = False              # ¿se fijó ya alguna presa este episodio?
-        self.pack_sated: bool = False                   # ¿ya cazó? -> para PERMANENTEMENTE (máx. 1 caza/episodio)
-        self.n_refix: int = 0                           # re-fijaciones de presa (commitment; debe ser bajo)
+        self.n_refix: int = 0                           # re-fijaciones de presa (tras matar/refugiarse la presa)
         self.max_simul_targets: int = 0                 # máx nº de vacas atacadas a la vez (coordinación; ~1 ideal)
         self._simul_sum: int = 0                        # acumulador para la media de vacas atacadas a la vez
         self._simul_steps: int = 0
@@ -408,7 +407,6 @@ class World:
         self.pack_prey = -1
         self.pack_prey_kind = None
         self._ever_committed = False
-        self.pack_sated = False
         self.n_refix = 0
         self.max_simul_targets = 0
         self._simul_sum = 0
@@ -840,14 +838,16 @@ class World:
     def _update_wolves(self) -> None:
         """Lobo DIRECCIONAL con PRESA COMÚN de la manada (corazón del flanqueo).
 
-        La manada comparte UNA presa, FIJADA EN t=0 (_commit_initial_prey en reset) y mantenida todo
-        el episodio. Sin presa común no hay confluencia -> N duelos 1-contra-1, no pincer.
-          - Fijación: en el reset, si hay caza (ternero, o >= n_min_adult lobos), se elige la presa
-            (_select_prey) y TODA la manada va a por ESA desde el primer paso.
-          - Se suelta SOLO si deja de ser cazable (_prey_lost_reason): si se REFUGIA, la manada RE-SELECCIONA
-            (sigue cazando); si MUERE, el paquete se SACIA y para (MÁX. 1 CAZA/EPISODIO). Ya NO se abandona
-            por distancia (empieza lejos del perímetro).
-          - Sin presa (lobo solo sin ternero, o ya saciado): standoff AMPLIO a la vaca más cercana (no caza).
+        La manada comparte UNA presa, FIJADA EN t=0 (_commit_initial_prey en reset) y mantenida hasta que
+        deja de ser cazable. Sin presa común no hay confluencia -> N duelos 1-contra-1, no pincer.
+          - Fijación inicial: en el reset, si hay caza (ternero, o >= n_min_adult lobos), se elige la presa
+            (_select_prey: ternero blando / adulta más expuesta) y TODA la manada va a por ESA desde el inicio.
+          - MATANZA EXCEDENTE: se suelta solo si deja de ser cazable (_prey_lost_reason). Tras MATAR o
+            REFUGIARSE la presa, el paquete RE-FIJA la res viva no-a-salvo MÁS CERCANA (_recommit_nearest_prey)
+            y SIGUE cazando -> en presa confinada (cercada/clavada) caza varias hasta agotar objetivos. n_refix
+            sube en ambos casos. Ya NO se abandona por distancia (empieza lejos del perímetro).
+          - Objetivos AGOTADOS (todas muertas o a salvo): el paquete se DESENGANCHA y FRENA (coastea a parada,
+            no orbita). Sin presa pero con reses vivas fuera (lobo solo sin ternero): standoff AMPLIO (no caza).
         Reparto de roles EMERGENTE: repulsión entre lobos alrededor de la presa única -> uno de frente
         (ella lo encara), los demás a los flancos/grupa. Si el rebaño se interpone, el lobo lo BORDEA
         (componente tangencial) en vez de atravesarlo. Velocidad con INERCIA.
@@ -859,23 +859,21 @@ class World:
 
         d_wc = np.linalg.norm(self.cows[None, :, :] - self.wolves[:, None, :], axis=2)  # (nw, nc)
 
-        # La presa viene fijada de t=0. Se SUELTA solo si deja de ser cazable (_prey_lost_reason):
-        #  - se REFUGIA (gancho b): la manada RE-SELECCIONA otra presa (n_refix++) -> persiste cambiando de
-        #    objetivo entre las que huyen, hasta que MATA a una o todas se refugian.
-        #  - MUERE: el paquete YA se SACIÓ al cazar (pack_sated, fijado en _process_predation) -> aquí solo
-        #    suelta la presa y _try_commit_prey NO re-fija (MÁX. 1 CAZA/EPISODIO, como una manada real: una
-        #    caza por ataque). Queda inerte (standoff). Ya NO se abandona por distancia.
+        # La presa viene fijada de t=0. Se SUELTA solo si deja de ser cazable (_prey_lost_reason): MUERE o
+        # se REFUGIA. En AMBOS casos (matanza excedente) la manada RE-FIJA la res viva no-a-salvo MÁS CERCANA
+        # (_recommit_nearest_prey) y sigue cazando -> varias muertes hasta agotar objetivos. n_refix cuenta
+        # SOLO las re-fijaciones por REFUGIO (indicador de oscilación); la muerte re-fija pero no es oscilación.
         reason = self._prey_lost_reason()
         if reason is not None:
             self.pack_prey = -1; self.pack_prey_kind = None
             if reason == "refuge":
                 self.n_refix += 1
-            self._try_commit_prey()   # refugio -> re-selecciona; muerte -> no-op (ya saciado)
+            self._recommit_nearest_prey()   # va a por la siguiente más cercana (tras matar o refugiarse)
 
-        if self.pack_sated:
-            # Paquete SACIADO (ya cazó): se DESENGANCHA y FRENA (se queda en la caza / se alimenta). No
+        if self._targets_exhausted():
+            # Objetivos AGOTADOS (todas las reses muertas o a salvo): el paquete se DESENGANCHA y FRENA. No
             # vuelve al standoff+repulsión, que con la manada agrupada lo haría ORBITAR (tembleque); coastea
-            # a parada -> movimiento FIRME. El clamp #5 sigue (ningún lobo dentro del establo).
+            # a parada -> movimiento FIRME (esto mantiene face_check test 3 sano). El clamp #5 sigue.
             self.wolf_vel += self.wolf_inertia * (-self.wolf_vel)
             self.wolves = self.wolves + self.wolf_vel * self.dt
             self._clip_to_parcel(self.wolves)
@@ -1008,13 +1006,14 @@ class World:
         self._try_commit_prey()
 
     def _try_commit_prey(self) -> None:
-        """Si no hay presa y hay caza, fija una entre las CAZABLES (viva y no refugiada):
+        """FIJACIÓN INICIAL (t=0): si no hay presa y hay caza, fija una entre las CAZABLES (viva y no
+        refugiada) con _select_prey:
           - Con ternero cazable -> ternero (objetivo blando, con cualquier nº de lobos).
           - Sin ternero y >= n_min_adult lobos -> la adulta cazable más expuesta.
           - Lobo solo sin ternero -> sin presa (standoff amplio: no se compromete).
-        Si el paquete ya CAZÓ (pack_sated) NO vuelve a fijar (máx. 1 caza/episodio).
-        NO toca n_refix (la contabilidad de re-fijación la lleva quien llama, solo en refugio)."""
-        if self.pack_prey >= 0 or self.n_wolves == 0 or self.pack_sated:
+        Las RE-FIJACIONES (tras matar/refugiarse) NO pasan por aquí: van por _recommit_nearest_prey (la
+        más cercana). NO toca n_refix (la contabilidad la lleva quien llama)."""
+        if self.pack_prey >= 0 or self.n_wolves == 0:
             return
         hunt = bool((self.calf_alive & ~self.calf_safe).any()) or (self.n_wolves >= self.n_min_adult)
         if not hunt:
@@ -1022,6 +1021,42 @@ class World:
         kind, cand = self._select_prey()
         if cand >= 0:
             self.pack_prey, self.pack_prey_kind = cand, kind
+            self._ever_committed = True
+
+    def _targets_exhausted(self) -> bool:
+        """¿No queda ninguna res viva y no-a-salvo? (todas muertas o refugiadas) -> el paquete ya no tiene
+        a quién cazar y se desengancha (coastea a parada). Distinto de 'no se compromete' (lobo solo con
+        adultas vivas): ahí sí hay objetivos, solo que no los puede tumbar (standoff)."""
+        return not (bool((self.cow_alive & ~self.cow_safe).any())
+                    or bool((self.calf_alive & ~self.calf_safe).any()))
+
+    def _recommit_nearest_prey(self) -> None:
+        """RE-FIJACIÓN (matanza excedente, tras matar o refugiarse la presa): la nueva presa común es la res
+        viva y no-a-salvo MÁS CERCANA al centroide del paquete (va a por la siguiente). Respeta la
+        capacidad de caza (a una adulta solo si >= n_min_adult lobos; a un ternero, con cualquier nº) -> un
+        lobo solo no se compromete a una adulta que no puede tumbar. Si no queda objetivo cazable, deja
+        pack_prey=-1 (lo recoge _targets_exhausted/standoff). NO toca n_refix (lo lleva quien llama)."""
+        if self.pack_prey >= 0 or self.n_wolves == 0:
+            return
+        centroid = self.wolves.mean(axis=0)
+        best_d, kind, idx = np.inf, None, -1
+        if self.n_wolves >= self.n_min_adult:                  # adultas: solo si el paquete puede tumbarlas
+            cazable = (self.cow_alive & ~self.cow_safe) & ~self._in_forbidden(self.cows)
+            if cazable.any():
+                d = np.linalg.norm(self.cows - centroid, axis=1)
+                d[~cazable] = np.inf
+                i = int(np.argmin(d))
+                if d[i] < best_d:
+                    best_d, kind, idx = float(d[i]), "adult", i
+        cazable_calf = self.calf_alive & ~self.calf_safe       # terneros: cazables con cualquier nº de lobos
+        if cazable_calf.any():
+            d = np.linalg.norm(self.calves - centroid, axis=1)
+            d[~cazable_calf] = np.inf
+            j = int(np.argmin(d))
+            if d[j] < best_d:
+                best_d, kind, idx = float(d[j]), "calf", j
+        if idx >= 0:
+            self.pack_prey, self.pack_prey_kind = idx, kind
             self._ever_committed = True
 
     def _select_prey(self) -> tuple[str | None, int]:
@@ -1158,21 +1193,18 @@ class World:
 
     def _process_predation(self) -> bool:
         """Aplica la muerte por FLANQUEO (regla SIN cambios: cono / n_min_adult / capture_radius) a las
-        reses CAZABLES. MÁX. 1 CAZA POR EPISODIO: en cuanto cae UNA res, el paquete se SACIA (pack_sated)
-        y NO procesa más muertes -> ni una segunda esta misma transición (anti doble-flanqueo simultáneo),
-        ni en pasos posteriores (el guard de arriba). Como una manada real: una caza por ataque, se
-        alimenta. Devuelve si murió la PRESA fijada este paso (para enlazar el quórum de #3)."""
-        if self.n_wolves == 0 or self.pack_sated:
+        reses CAZABLES y las marca cazadas. MATANZA EXCEDENTE (multi-muerte: NO termina el episodio): cae
+        toda res flanqueada este paso; tras una caza el paquete RE-FIJA la más cercana (_update_wolves) y
+        sigue hasta agotar objetivos. Cuenta n_depredadas y registra cada captura. Devuelve si murió la
+        PRESA fijada este paso (para enlazar el quórum de #3)."""
+        if self.n_wolves == 0:
             return False
         cos_cone = np.cos(self.cone_half_angle)
         prey_killed = False
 
-        # Terneros cazables (objetivo blando, primero): >= 1 flanqueador del cono de su DEFENSORA (si la
-        # madre sigue en juego; si murió, indefenso = cualquier lobo dentro de capture_radius lo caza). La
-        # PRIMERA res que cae es la caza del paquete -> se sacia y para (no se procesan más).
+        # Terneros cazables: >= 1 flanqueador del cono de su DEFENSORA (si la madre sigue en juego; si murió,
+        # el ternero queda indefenso = cualquier lobo dentro de capture_radius lo caza).
         for j in range(self.n_calves):
-            if self.pack_sated:
-                break
             if not (self.calf_alive[j] and not self.calf_safe[j]):
                 continue
             d = int(self.calf_defender[j])
@@ -1188,13 +1220,13 @@ class World:
                 self.calf_alive[j] = False
                 self.n_depredadas += 1
                 self._add_capture(self._make_capture_calf(j, np.where(flank)[0], float(dist_calf.min())))
-                self.pack_sated = True
-                prey_killed = self.pack_prey_kind == "calf" and self.pack_prey == j
+                if self.pack_prey_kind == "calf" and self.pack_prey == j:
+                    prey_killed = True
 
         # Adultas cazables: >= n_min_adult flanqueadores a la vez (fuera del cono). Con 1 lobo no muere.
-        # Solo si el paquete NO se sació ya con un ternero; cae UNA (la primera) y se sacia.
+        # Caen TODAS las que tengan quórum este paso (multi-muerte); el episodio no termina por ello.
         cazable = self.cow_alive & ~self.cow_safe
-        if cazable.any() and not self.pack_sated:
+        if cazable.any():
             f = self._heading_units()                                  # (nc, 2)
             rel = self.wolves[None, :, :] - self.cows[:, None, :]      # (nc, nw, 2)
             dist = np.linalg.norm(rel, axis=2)                         # (nc, nw)
@@ -1203,14 +1235,13 @@ class World:
             flankers = (dist <= self.capture_radius) & (cosphi < cos_cone)
             count = flankers.sum(axis=1)
             count[~cazable] = 0                                        # las no cazables no mueren
-            downed = np.where(count >= self.n_min_adult)[0]
-            if downed.size:                                           # cae UNA (la primera) -> el paquete se sacia
-                ci = int(downed[0])
+            for ci in np.where(count >= self.n_min_adult)[0]:
+                ci = int(ci)
                 self.cow_alive[ci] = False
                 self.n_depredadas += 1
                 self._add_capture(self._make_capture_adult(ci, dist, flankers, int(count[ci])))
-                self.pack_sated = True
-                prey_killed = self.pack_prey_kind == "adult" and self.pack_prey == ci
+                if self.pack_prey_kind == "adult" and self.pack_prey == ci:
+                    prey_killed = True
         return prey_killed
 
     def _check_terminal(self) -> tuple[bool, bool]:
