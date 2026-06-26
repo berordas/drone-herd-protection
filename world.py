@@ -48,6 +48,20 @@ DRONE_MAX_ACCEL = 4.0     # m/s^2
 # gasta (1+DRONE_MOVE_DRAIN)x -> perseguir/sobre-comprometer drones tiene coste táctico real. Afinable.
 DRONE_MOVE_DRAIN = 1.5
 
+# --- DISUASIÓN (hazing): respuesta del LOBO a un dron ACTIVO cercano. Es CÓMO responde el mundo al dron
+# (infraestructura), NO el coordinador (dónde está el dron lo deciden el reflejo/Dummy/coordinador). Basado
+# en datos reales de hazing con drones: lo que disuade es el SONIDO (el dron "ladra"), no la imagen; los
+# mamíferos grandes evitan al dron a ~30-50 m; la disuasión es PARCIAL (un lobo muy comprometido empuja a
+# través, frenado). Dentro de DETER_RADIUS el lobo ESQUIVA (repulsión con falloff, más fuerte cuanto más
+# cerca; suma la de todos los drones a tiro) y FRENA (su rapidez máx baja por DETER_SLOWDOWN, titubeo). Solo
+# drones ACTIVE disuaden (los aparcados no); gateado por escort_enabled (en combate puro NO aplica). Afinables.
+DETER_RADIUS = 40.0       # m: radio de disuasión. BANDA 30-50 (EJE DE SENSIBILIDAD CLAVE): los mamíferos
+                          #    grandes evitan al dron a ~30-50 m y el SONIDO extiende ese alcance. Afinable.
+DETER_REPULSION = 8.0     # m/s: fuerza de esquiva a quemarropa. > wolf_speed -> a corta distancia el lobo se
+                          #    desvía/retrocede (despeja el pin); al borde del radio el falloff la deja
+                          #    < wolf_speed -> la caza domina y el lobo empuja a través (disuasión PARCIAL). TUNE
+DETER_SLOWDOWN = 0.5      # factor (<1) de la rapidez máx del lobo mientras está dentro del radio (duda/titubeo). TUNE
+
 
 class World:
     def __init__(
@@ -935,14 +949,50 @@ class World:
         repulsion = (rep_units * near[:, :, None]).sum(axis=1) * engaged_w[:, None] * self.wolf_repulsion_strength
         desired = desired + repulsion
 
-        # Dirección deseada -> velocidad con INERCIA (suavizado, sin saltos).
+        # Dirección deseada -> velocidad objetivo a rapidez plena (el "impulso de caza" hacia la presa/standoff).
         dn = np.linalg.norm(desired, axis=1, keepdims=True)
         desired_dir = np.where(dn > 1e-9, desired / np.maximum(dn, 1e-9), 0.0)
-        self.wolf_vel += self.wolf_inertia * (desired_dir * self.wolf_speed - self.wolf_vel)
+        v_target = desired_dir * self.wolf_speed
+        # DISUASIÓN del dron (ESQUIVA + FRENA): se SUMA al impulso de caza y compite con él (parcial, no
+        # absoluta). Infraestructura del mundo gateada por escort_enabled (en combate puro no toca nada ->
+        # face_check intacto, bit a bit). Solo cambia el lobo que entra en DETER_RADIUS de un dron ACTIVO.
+        v_target = self._apply_deterrence(v_target)
+        self.wolf_vel += self.wolf_inertia * (v_target - self.wolf_vel)   # INERCIA (suavizado, sin saltos)
         self.wolves = self.wolves + self.wolf_vel * self.dt
         self._clip_to_parcel(self.wolves)
         self._push_outside_circle(self.wolves, self.safe_zone)
         self._push_outside_circle(self.wolves, self.central_station)
+
+    def _apply_deterrence(self, v_target: np.ndarray) -> np.ndarray:
+        """DISUASIÓN por dron (hazing): cada lobo dentro de DETER_RADIUS de un dron ACTIVE ESQUIVA
+        (repulsión radial con falloff lineal, más fuerte cuanto más cerca; suma la de todos los drones a
+        tiro -> flanqueado por drones recibe más empuje) y FRENA (su rapidez máx se capa a wolf_speed *
+        DETER_SLOWDOWN, titubeo). La esquiva se SUMA al impulso de caza v_target -> COMPETENCIA PARCIAL:
+        si la repulsión domina (dron cerca) el lobo se desvía/retrocede (despeja el pin); si la caza domina
+        (dron al borde del radio, falloff pequeño) empuja a través, frenado y desviado de su línea.
+
+        Solo en el escenario de escolta (escort_enabled): en combate puro devuelve v_target SIN tocar
+        (face_check intacto). También devuelve v_target intacto si no hay drones activos o ninguno a tiro
+        -> mientras los lobos estén lejos de los drones, la dinámica es idéntica a la de antes (VIGILANCIA
+        no se perturba; la disuasión emerge solo al acercarse un dron, p.ej. el que investiga o despeja un pin)."""
+        if not self.escort_enabled:
+            return v_target
+        act = self.drones[self.drone_state == ACTIVE]
+        if act.shape[0] == 0:
+            return v_target
+        rel = self.wolves[:, None, :] - act[None, :, :]              # (nw, nd, 2): dron -> lobo (esquiva alejándose)
+        dd = np.linalg.norm(rel, axis=2)                             # (nw, nd)
+        inside = dd <= DETER_RADIUS
+        if not inside.any():
+            return v_target                                          # ningún lobo a tiro: dinámica intacta
+        fall = np.clip(1.0 - dd / DETER_RADIUS, 0.0, 1.0) * inside   # falloff lineal: 1 a quemarropa, 0 en el borde
+        units = rel / np.maximum(dd[:, :, None], 1e-9)
+        f_deter = DETER_REPULSION * (units * fall[:, :, None]).sum(axis=1)   # (nw,2): suma de todos los drones a tiro
+        v = v_target + f_deter                                       # ESQUIVA: desvía/contrarresta la línea de caza
+        near = inside.any(axis=1)                                    # FRENA: dentro del radio de algún dron activo
+        sp = np.linalg.norm(v, axis=1, keepdims=True)
+        vmax = np.where(near[:, None], self.wolf_speed * DETER_SLOWDOWN, self.wolf_speed)
+        return v * np.minimum(1.0, vmax / np.maximum(sp, 1e-9))
 
     def _in_forbidden(self, pts: np.ndarray) -> np.ndarray:
         """Máscara (N,): puntos dentro del establo o la central (zonas prohibidas = refugio)."""
@@ -1413,6 +1463,7 @@ class World:
             "calf_alive": self.calf_alive.copy(),
             "wolves": self.wolves.copy(),
             "drones": self.drones.copy(),
+            "drone_state": self.drone_state.copy(),       # para dibujar el radio de disuasión de los ACTIVE
             "drone_investigating": self.drone_investigating.copy(),
             "drone_contact": self.drone_contact.copy(),
             "prey_pos": prey_pos,                # posición de la presa fijada (realce), o None

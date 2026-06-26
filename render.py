@@ -11,6 +11,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from matplotlib.animation import FuncAnimation
+from world import ACTIVE, DETER_RADIUS
 
 
 def render_episode(world, history, interval: int = 40, save_path: str | None = None):
@@ -64,6 +65,15 @@ def render_episode(world, history, interval: int = 40, save_path: str | None = N
     active_sc = ax.scatter(*empty.T, c="royalblue", s=90, marker="^", label="drones activos")
     reserve_sc = ax.scatter(*empty.T, c="lightskyblue", s=70, marker="^",
                             edgecolors="royalblue", label="drones reserva")
+    # Radio de DISUASIÓN (hazing) de cada dron ACTIVE: dentro de él el lobo esquiva + frena. Solo en el
+    # escenario de escolta (escort_enabled); en combate puro no hay disuasión -> no se dibuja (render intacto).
+    deter_show = bool(getattr(world, "escort_enabled", False))
+    deter_rings = [patches.Circle((0, 0), DETER_RADIUS, fill=False, ec="royalblue", ls=":", lw=1.0,
+                                  alpha=0.35, visible=False) for _ in range(world.n_drones)]
+    for r in deter_rings:
+        ax.add_patch(r)
+    if deter_show and deter_rings:
+        deter_rings[0].set_label("radio disuasión")
     # Línea dron INVESTIGANDO -> su contacto (cuando un dron se despega a verificar un lobo).
     invest_line, = ax.plot([], [], color="royalblue", lw=1.4, ls="--", alpha=0.8, zorder=4,
                            label="investigando")
@@ -128,6 +138,14 @@ def render_episode(world, history, interval: int = 40, save_path: str | None = N
         active_sc.set_offsets(drones[:world.n_active])
         reserve_sc.set_offsets(drones[world.n_active:])
 
+        # Radio de disuasión alrededor de cada dron ACTIVE (solo en el escenario de escolta).
+        dstate = snap.get("drone_state")
+        for i, ring in enumerate(deter_rings):
+            on = deter_show and dstate is not None and dstate[i] == ACTIVE
+            if on:
+                ring.center = (drones[i, 0], drones[i, 1])
+            ring.set_visible(on)
+
         # Dron INVESTIGANDO -> línea a su contacto (despegar a verificar el lobo).
         inv = np.where(snap["drone_investigating"])[0]
         if inv.size:
@@ -153,7 +171,7 @@ def render_episode(world, history, interval: int = 40, save_path: str | None = N
         else:
             banner.set_text("")
         return (cow_sc, calf_sc, prey_hl, defender_hl, wolf_sc, active_sc, reserve_sc,
-                invest_line, cow_box, txt, banner, *cone_polys, *calf_lines)
+                invest_line, cow_box, txt, banner, *cone_polys, *calf_lines, *deter_rings)
 
     anim = FuncAnimation(fig, update, frames=len(history),
                          interval=interval, blit=False, repeat=False)
