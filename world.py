@@ -108,6 +108,7 @@ class World:
         wolf_spawn_dispersion: float | None = None,    # m: dispersión del cúmulo de spawn (salen JUNTOS de un sector; default 0.05*min). TUNE
         wolf_skirt_gain: float = 1.5,                  # ganancia de la componente TANGENCIAL para BORDEAR el rebaño (no atravesarlo). TUNE
         wolf_skirt_margin: float | None = None,        # m: holgura sobre la extensión del rebaño-obstáculo (default = r_face_safe). TUNE
+        wolf_envelop_gain: float = 3.0,                # ATAQUE ENVOLVENTE: reparte los rumbos del paquete en ángulos equiespaciados alrededor de la presa (N→2π/N) -> no se apiñan en el cono. TUNE
         n_min_adult: int = 2,              # nº mínimo de lobos para tumbar a una adulta. TUNE
         r_standoff: float | None = None,   # m: standoff AMPLIO del lobo solo (default 2*r_face_safe). TUNE
         prey_abandon_dist: float | None = None,  # DEPRECATED: abandono por distancia. La presa se fija en t=0 y solo se suelta si se refugia; se ACEPTA pero NO se usa.
@@ -219,6 +220,7 @@ class World:
         # Spawn por sector (cúmulo) + rodeo del rebaño-obstáculo.
         self.wolf_spawn_dispersion = wolf_spawn_dispersion if wolf_spawn_dispersion is not None else 5.0  # m ABSOLUTOS (cúmulo apretado)
         self.wolf_skirt_gain = wolf_skirt_gain
+        self.wolf_envelop_gain = wolf_envelop_gain
         self.wolf_skirt_margin = wolf_skirt_margin if wolf_skirt_margin is not None else self.r_face_safe
 
         # capture_radius = a qué distancia un FLANQUEADOR puede tumbar (no mata de pasada: hace
@@ -937,6 +939,25 @@ class World:
                 skirt = self.wolf_skirt_gain * (gate * L.ravel())[:, None] * (side[:, None] * perp)
                 desired = desired + skirt
 
+        # --- ATAQUE ENVOLVENTE: reparte los rumbos del paquete en ángulos EQUIESPACIADOS alrededor de la
+        #     presa fijada (N lobos -> 2π/N; 4 → ~N/E/S/O, 3 → ~120°), anclado al ángulo medio actual (mínima
+        #     rotación). Empuje TANGENCIAL hacia el slot asignado -> los lobos comprometidos se separan a
+        #     costados opuestos y SALEN del cono frontal a flancos LIMPIOS. Sin esto, contra una presa CLAVADA
+        #     (parada) se apiñan en el cono y "dar la cara" los mantiene a TODOS a raya (a r_face_safe) -> la
+        #     presa era invulnerable. La rapidez del slot la fija wolf_envelop_gain. Solo con presa fijada. ---
+        if self.pack_prey >= 0 and self.wolf_envelop_gain > 0.0:
+            prey_pos = self._prey_pos()
+            d_prey = np.linalg.norm(self.wolves - prey_pos, axis=1)
+            eng = np.where(d_prey <= self.r_notice)[0]           # lobos comprometidos (cerca de la presa)
+            if eng.size >= 2:
+                slot = self._envelop_slots(prey_pos, eng)        # ángulo objetivo equiespaciado por lobo
+                rel = self.wolves[eng] - prey_pos
+                cur = np.arctan2(rel[:, 1], rel[:, 0])
+                ang_err = ((slot - cur + np.pi) % (2 * np.pi)) - np.pi   # error angular con signo -> a qué lado rotar
+                rhat = rel / np.maximum(d_prey[eng][:, None], 1e-9)
+                tang = np.column_stack([-rhat[:, 1], rhat[:, 0]])        # tangente CCW alrededor de la presa
+                desired[eng] = desired[eng] + self.wolf_envelop_gain * ang_err[:, None] * tang
+
         # Repulsión entre lobos cerca del rebaño -> reparto angular alrededor de la presa (pincer).
         engaged_w = d_wc.min(axis=1) <= self.r_notice
         dd_w = self.wolves[:, None, :] - self.wolves[None, :, :]
@@ -965,14 +986,17 @@ class World:
         """DISUASIÓN por dron (hazing): cada lobo dentro de DETER_RADIUS de un dron ACTIVE ESQUIVA
         (repulsión radial con falloff lineal, más fuerte cuanto más cerca; suma la de todos los drones a
         tiro -> flanqueado por drones recibe más empuje) y FRENA (su rapidez máx se capa a wolf_speed *
-        DETER_SLOWDOWN, titubeo). La esquiva se SUMA al impulso de caza v_target -> COMPETENCIA PARCIAL:
-        si la repulsión domina (dron cerca) el lobo se desvía/retrocede (despeja el pin); si la caza domina
-        (dron al borde del radio, falloff pequeño) empuja a través, frenado y desviado de su línea.
+        DETER_SLOWDOWN, titubeo). La esquiva se SUMA al impulso de caza v_target -> COMPETENCIA PARCIAL.
+
+        PARCIAL A CORTA (clave para que la disuasión REDUZCA/RETRASE la caza, no la vuelva imposible): un
+        lobo PEGADO a su presa (committed flanker, dist a la presa < r_face_safe) IGNORA casi del todo el
+        dron y EMPUJA A TRAVÉS (la persecución domina); a >= r_face_safe siente la disuasión COMPLETA (el
+        dron sigue despejando pines y apartando a los que se acercan). Sin presa fijada -> disuasión completa.
+        Así varios drones pueden frenar/retrasar a un paquete pero no hacer INVULNERABLE a una presa clavada.
 
         Solo en el escenario de escolta (escort_enabled): en combate puro devuelve v_target SIN tocar
-        (face_check intacto). También devuelve v_target intacto si no hay drones activos o ninguno a tiro
-        -> mientras los lobos estén lejos de los drones, la dinámica es idéntica a la de antes (VIGILANCIA
-        no se perturba; la disuasión emerge solo al acercarse un dron, p.ej. el que investiga o despeja un pin)."""
+        (face_check intacto). También intacto si no hay drones activos o ninguno a tiro (VIGILANCIA no se
+        perturba; la disuasión emerge solo al acercarse un dron, p.ej. el que investiga o despeja un pin)."""
         if not self.escort_enabled:
             return v_target
         act = self.drones[self.drone_state == ACTIVE]
@@ -986,11 +1010,21 @@ class World:
         fall = np.clip(1.0 - dd / DETER_RADIUS, 0.0, 1.0) * inside   # falloff lineal: 1 a quemarropa, 0 en el borde
         units = rel / np.maximum(dd[:, :, None], 1e-9)
         f_deter = DETER_REPULSION * (units * fall[:, :, None]).sum(axis=1)   # (nw,2): suma de todos los drones a tiro
+        # Peso PARCIAL por compromiso con la presa: 0 si está DENTRO de la distancia de golpe (<= r_face_safe)
+        # -> empuja a través (la persecución domina, el flanqueador comprometido cierra a matar); rampa a 1 en
+        # 2*r_face_safe -> a esa distancia y más lejos siente la disuasión COMPLETA (el dron aparta a los que se
+        # ACERCAN y despeja pines). Sin presa fijada -> disuasión completa. Así el dron REDUCE/RETRASA la caza
+        # (frena/desvía a los de lejos) pero no hace INVULNERABLE a una presa clavada (el comprometido entra).
+        deter_w = np.ones(self.n_wolves)
+        if self.pack_prey >= 0:
+            d_prey = np.linalg.norm(self.wolves - self._prey_pos(), axis=1)
+            deter_w = np.clip((d_prey - self.r_face_safe) / self.r_face_safe, 0.0, 1.0)
+        f_deter = f_deter * deter_w[:, None]
         v = v_target + f_deter                                       # ESQUIVA: desvía/contrarresta la línea de caza
-        near = inside.any(axis=1)                                    # FRENA: dentro del radio de algún dron activo
+        slow = inside.any(axis=1) * deter_w                          # FRENA, también parcial (el committed no titubea)
+        vmax = self.wolf_speed * (1.0 - slow * (1.0 - DETER_SLOWDOWN))
         sp = np.linalg.norm(v, axis=1, keepdims=True)
-        vmax = np.where(near[:, None], self.wolf_speed * DETER_SLOWDOWN, self.wolf_speed)
-        return v * np.minimum(1.0, vmax / np.maximum(sp, 1e-9))
+        return v * np.minimum(1.0, vmax[:, None] / np.maximum(sp, 1e-9))
 
     def _in_forbidden(self, pts: np.ndarray) -> np.ndarray:
         """Máscara (N,): puntos dentro del establo o la central (zonas prohibidas = refugio)."""
@@ -1091,6 +1125,19 @@ class World:
         d = int(self.calf_defender[self.pack_prey]) if self.pack_prey_kind == "calf" else int(self.pack_prey)
         head = self.cow_heading[d]
         return self.cows[d], np.array([np.cos(head), np.sin(head)])
+
+    def _envelop_slots(self, prey_pos: np.ndarray, eng: np.ndarray) -> np.ndarray:
+        """ATAQUE ENVOLVENTE: asigna a cada lobo de `eng` un ángulo objetivo EQUIESPACIADO alrededor de la
+        presa (paso 2π/N). Ordena por ángulo actual y reparte los slots en ese orden (sin cruces), anclando
+        el conjunto al ángulo MEDIO actual (mínima rotación; ancla circular). Devuelve (len(eng),) ángulos."""
+        rel = self.wolves[eng] - prey_pos
+        ang = np.arctan2(rel[:, 1], rel[:, 0])
+        ranks = np.empty(eng.size, dtype=int)
+        ranks[np.argsort(ang)] = np.arange(eng.size)        # rango angular de cada lobo (0..N-1)
+        step = 2.0 * np.pi / eng.size
+        offsets = ang - step * ranks                        # ángulo de cada lobo menos su slot ideal
+        theta0 = np.arctan2(np.sin(offsets).mean(), np.cos(offsets).mean())   # ancla (media circular)
+        return theta0 + step * ranks
 
     def _prey_lost_reason(self) -> str | None:
         """Por qué la presa fijada deja de ser cazable: 'dead' / 'refuge' / None. Es la ÚNICA
