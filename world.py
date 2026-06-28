@@ -62,6 +62,16 @@ DETER_REPULSION = 8.0     # m/s: fuerza de esquiva a quemarropa. > wolf_speed ->
                           #    < wolf_speed -> la caza domina y el lobo empuja a través (disuasión PARCIAL). TUNE
 DETER_SLOWDOWN = 0.5      # factor (<1) de la rapidez máx del lobo mientras está dentro del radio (duda/titubeo). TUNE
 
+# --- EVITACIÓN de lobos al HUIR (ESCOLTA): una vaca NO-fijada que huye al establo RODEA a los lobos en vez
+# de atravesar la pelea (una vaca real da un rodeo). El rumbo objetivo MEZCLA "hacia el establo" (DOMINA el
+# neto -> sigue progresando) + "alejándose de los lobos cercanos" (con falloff lineal). Con el movimiento
+# NO-HOLONÓMICO (avanza siempre de frente a cow_speed, gira a turn_rate) la mezcla produce un rodeo (arquea
+# alrededor del lobo). SOLO el modo HUIR; la PRESA fijada (y su defensora si es ternero) sigue en ENCARAR
+# (parada, de cara) -> no esquiva. No toca combate/pastoreo (escort_enabled=False). Afinables. ---
+COW_AVOID_RADIUS = 30.0   # m: radio en que una vaca que huye percibe/evita a un lobo (~1.5*r_notice). TUNE
+W_REFUGIO = 1.0           # peso del rumbo HACIA el establo (domina el neto: sigue llegando). TUNE
+W_EVITAR = 1.3            # peso de la EVITACIÓN de lobos (rodeo; falloff lineal con la distancia). TUNE
+
 
 class World:
     def __init__(
@@ -708,9 +718,22 @@ class World:
                 wolf_near = np.zeros(self.n_cows, dtype=bool)
             encarar = active & pinnable & wolf_near   # presa/defensora con un lobo cerca -> para + encara
             huir = active & ~encarar                  # todas las demás (y la presa sin lobo cerca) -> huir
-            # HUIR: gira el heading hacia el establo (las que ENCARAN ya lo giró _update_cow_headings al lobo).
+            # HUIR: rumbo objetivo = HACIA el establo (W_REFUGIO, domina) + ALEJÁNDOSE de los lobos cercanos
+            # (W_EVITAR, con falloff) -> la vaca RODEA a los lobos en su camino en vez de atravesarlos. Las que
+            # ENCARAN ya tienen el heading girado al lobo por _update_cow_headings (no se tocan aquí).
             to_ref = self.safe_zone[:2] - cows
-            ref_ang = np.arctan2(to_ref[:, 1], to_ref[:, 0])
+            ref_dir = to_ref / np.maximum(np.linalg.norm(to_ref, axis=1, keepdims=True), 1e-9)
+            avoid = np.zeros_like(cows)
+            if self.n_wolves > 0:
+                rel = cows[:, None, :] - self.wolves[None, :, :]            # (nc, nw, 2): lobo -> vaca (alejarse)
+                dwolf = np.linalg.norm(rel, axis=2)                         # (nc, nw)
+                fall = np.clip(1.0 - dwolf / COW_AVOID_RADIUS, 0.0, 1.0)    # falloff lineal: 1 a quemarropa, 0 en el borde
+                units = rel / np.maximum(dwolf[:, :, None], 1e-9)
+                avoid = (units * fall[:, :, None]).sum(axis=1)             # (nc, 2): suma de todos los lobos a tiro
+            target = W_REFUGIO * ref_dir + W_EVITAR * avoid                 # el establo domina; la evitación es LOCAL
+            tnorm = np.linalg.norm(target, axis=1)
+            ref_ang = np.where(tnorm > 1e-9, np.arctan2(target[:, 1], target[:, 0]),
+                               np.arctan2(to_ref[:, 1], to_ref[:, 0]))      # fallback: al establo si se anula
             self.cow_heading[huir] = self._rotate_toward(self.cow_heading[huir], ref_ang[huir], self.turn_rate * self.dt)
             # Velocidad NO-HOLONÓMICA: a lo largo del heading; avanza a cow_speed solo si HUYE (si ENCARA, 0).
             head = np.column_stack([np.cos(self.cow_heading), np.sin(self.cow_heading)])

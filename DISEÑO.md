@@ -5,19 +5,33 @@
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
 >
-> **Última actualización: 2026-06-26** · *escolta: BUCLE CERRADO + DIENTES + matanza excedente + pin arreglado.*
+> **Última actualización: 2026-06-27** · *escolta: BUCLE CERRADO + DIENTES + matanza excedente + pin + rodeo.*
 > **Hecho:** terminal (el "juez") · disparador realista por detección de dron · reescalado a 300×300 (~9 ha) con
 > escala biológica absoluta · dispersión del rebaño · movimiento de drones · detectar→acercarse→confirmar ·
 > **guiado al refugio (paso 2)** · **huida NO-HOLONÓMICA en ESCOLTA** (pin) · **DISUASIÓN del dron** (parcial) ·
-> **MATANZA EXCEDENTE** (el paquete caza hasta agotar) · **ATAQUE ENVOLVENTE** (rumbos repartidos → una adulta
-> clavada es matable; baseline HONESTA).
+> **MATANZA EXCEDENTE** (el paquete caza hasta agotar) · **ATAQUE ENVOLVENTE** (una adulta clavada es matable) ·
+> **EVITACIÓN al huir** (las no-fijadas RODEAN a los lobos camino del establo).
 > **Pendiente:** POSICIONAMIENTO del coordinador (interponer drones para bajar la severidad) · corzos ·
 > congelar baseline v2 · coordinadores (reflejo trivial, MARL).
 > **Commits:** `194a3ad` base · `37910b3` terminal · `e663504` disparador por dron · `4d1e708` campo
 > 300×300 + escala biológica absoluta · `886bd45` dispersión del rebaño · `a15e2df` movimiento de
 > drones (3a) · `fd893b8` detectar→confirmar (3b) · `49e0e22` consolidar DISEÑO+CLAUDE · `144b7bd` guiado (paso 2)
 > · `1d44cdc` máx. 1 caza/episodio (REVERTIDO) · `56ff75d` huida no-holonómica · `f42456f` dos correcciones huida ·
-> `26bce79` disuasión del dron · `bd57a8f` matanza excedente · `<este commit>` fix pin + envolvente.
+> `26bce79` disuasión del dron · `bd57a8f` matanza excedente · `1b54b49` fix pin + envolvente · `<este commit>`
+> evitación al huir.
+>
+> **Patch — EVITACIÓN de lobos al HUIR (ESCOLTA): las vacas no-fijadas RODEAN, no atraviesan.** Una vaca
+> no-fijada que huye al establo iba en LÍNEA RECTA y podía cruzar por en medio de un grupo de lobos. Ahora, en
+> modo HUIR, el rumbo objetivo MEZCLA `W_REFUGIO·(→establo) + W_EVITAR·Σ(alejándose de los lobos en
+> `COW_AVOID_RADIUS`=30 m)·falloff` → la vaca **arquea** su trayectoria para **bordear** a los lobos en su
+> camino y sigue llegando (el establo **DOMINA el neto**; la evitación es LOCAL, falloff). Sigue
+> NO-HOLONÓMICA (avanza de frente a `cow_speed`, gira a `turn_rate`); solo cambia hacia dónde apunta el rumbo.
+> **Solo el modo HUIR:** la PRESA fijada (y su defensora si es ternero) sigue en **ENCARAR** (parada, de cara)
+> — no esquiva. **Efecto medido:** severidad v2 **~2.73 → ~2.27** (las no-fijadas escapan más; tasa 78%→72%).
+> **face_check 12/12** (la evitación está en la rama ESCOLTA, que no corre con `escort_enabled=False` → bit a
+> bit). **NO** toca presa fijada/ENCARAR, combate/pastoreo, disuasión, envolvente, detección, coordinador,
+> baseline.py. Verificado en `escort_check` (test 1f: rodea vs atraviesa, sigue llegando, presa fijada intacta)
+> + render `escort_rodeo.gif`.
 >
 > **Patch — FIX PIN: 4 lobos no mataban a una adulta CLAVADA en ESCOLTA (+ ataque ENVOLVENTE + disuasión
 > parcial a corta).** Regresión: una adulta clavada era **invulnerable** a un paquete que la rodeaba.
@@ -377,9 +391,12 @@ vs ternero salió **0%** (la madre frena siempre con los parámetros actuales); 
   persigue); 5) reproducible.
 - **Escolta — GUIADO al refugio ✅ (paso 2 + NO-HOLONÓMICO):** en `ESCOLTA` la vaca corre **HACIA DONDE
   MIRA** (no-holonómico; una vaca real no corre mientras encara). Huir y dar la cara son **EXCLUYENTES**:
-  **HUIR** (sin lobo en `r_notice`) → gira el `cow_heading` al establo a `turn_rate` y avanza **de frente**
-  a `cow_speed` (la velocidad es **siempre a lo largo del heading**, nunca lateral → el flanco/grupa queda
-  expuesto a los perseguidores); **ENCARAR/PIN** (lobo dentro de `r_notice`) → gira a encararlo y **se PARA**
+  **HUIR** (no es la presa fijada) → gira el `cow_heading` a `turn_rate` hacia un rumbo objetivo que **MEZCLA**
+  hacia-el-establo (`W_REFUGIO`, domina el neto) + **alejándose de los lobos cercanos** (`W_EVITAR`·Σ con
+  *falloff* dentro de `COW_AVOID_RADIUS`=30 m) → **RODEA** a los lobos en su camino (no atraviesa la pelea) y
+  avanza **de frente** a `cow_speed` (la velocidad es **siempre a lo largo del heading**, nunca lateral → el
+  flanco/grupa queda expuesto; el rodeo emerge del no-holonómico: arquea sin frenar); la evitación es LOCAL
+  (falloff) → el establo sigue ganando y la vaca **llega**; **ENCARAR/PIN** (lobo dentro de `r_notice`) → gira a encararlo y **se PARA**
   (no avanza al refugio hasta que el lobo se va). **Solo la PRESA fijada** por el paquete (y su defensora si
   es ternero) puede ENCARAR; las **no-fijadas siguen HUYENDO** aunque tengan lobos en `r_notice` (el paquete
   está comprometido con UNA presa, no con ellas). Esto crea el **pin**: los lobos **CLAVAN** a la presa (uno la
@@ -678,18 +695,17 @@ Decisiones de diseño ratificadas:
   el rebaño apenas mueve la letalidad (no hay defensa colectiva que se "abra"). El **88%** es el combate
   medido en el campo **calibrado 100×100** (invariante de escala); ambas cifras describen el mismo modelo.
   ~1/5 de episodios son lobo-solo → TIMEOUT.
-- **Candidata a v2 (Dummy + GUIADO + NO-HOLONÓMICO + DISUASIÓN + MATANZA EXCEDENTE + ENVOLVENTE) — BASELINE
-  HONESTA:** medida en `escort_check` (`escort_enabled=True`). La **SEVERIDAD** (cabezas perdidas) es la métrica
-  principal: **~2.73 muertes/episodio** (tasa ≥1 ~78%; reparto `predation 31 / timeout 3 / success 6` en 40
-  seeds). *Antes del fix del pin la severidad medía ~1.55 (tasa 52%) — **FALSEADA a la baja**: una adulta clavada
-  era invulnerable (los lobos se apiñaban en el cono + la disuasión los clavaba) → muchas cazas se suprimían y
-  los episodios morían en TIMEOUT espurio. Con el ENVOLVENTE + disuasión parcial a corta, la clavada es matable
-  → la severidad sube a su valor REAL ~2.73 y el TIMEOUT cae 13→3.* Frente al **adversario puro**
-  (`escort_enabled=False`): **~6.33 muertes/ep** (tasa ~87%, máx. 8). Es decir, **guiado + disuasión PASIVA
-  bajan la severidad de ~6.3 a ~2.7** aun con Dummy (parcial, no invulnerabiliza). El balance huida/lobo sigue
-  locked (no se tocan `cow_speed`/`wolf_speed` ni se mete sprint): la **SEVERIDAD** la bajará el
+- **Candidata a v2 (Dummy + GUIADO + NO-HOLONÓMICO + DISUASIÓN + MATANZA EXCEDENTE + ENVOLVENTE + EVITACIÓN) —
+  BASELINE HONESTA:** medida en `escort_check` (`escort_enabled=True`). La **SEVERIDAD** (cabezas perdidas) es la
+  métrica principal: **~2.27 muertes/episodio** (tasa ≥1 ~72%; reparto `predation 29 / timeout 5 / success 6` en
+  40 seeds). *Trayectoria: el bug del pin la FALSEABA a ~1.55 (clavada invulnerable → cazas suprimidas, TIMEOUT
+  espurio); el ENVOLVENTE + disuasión parcial la subió a su valor REAL ~2.73 (clavada matable, TIMEOUT 13→3);
+  la EVITACIÓN al huir la bajó a ~2.27 (las no-fijadas RODEAN al paquete y escapan más).* Frente al **adversario
+  puro** (`escort_enabled=False`): **~6.33 muertes/ep** (tasa ~87%, máx. 8). Es decir, **guiado + disuasión
+  PASIVA + rodeo bajan la severidad de ~6.3 a ~2.3** aun con Dummy (parcial, no invulnerabiliza). El balance
+  huida/lobo sigue locked (no se tocan `cow_speed`/`wolf_speed` ni se mete sprint): la **SEVERIDAD** la bajará el
   **POSICIONAMIENTO** del coordinador (interponer drones, despejar pins activamente, post-v2). **Esta severidad
-  honesta (~2.73) es la referencia a batir.**
+  honesta (~2.27) es la referencia a batir.**
 - **v2 se congelará tras la escolta** (con disuasión + matanza excedente dentro, antes del coordinador), con la
   dinámica definitiva (config + 100 seeds), y pasará a ser el adversario fijo contra el que se miden ambas ramas.
 - La batería es **ortogonal** (qué drones hay disponibles, no la dinámica vaca/lobo) → no mueve el
@@ -815,19 +831,25 @@ limpios. **(2) DISUASIÓN PARCIAL A CORTA** (`deter_w`): el flanqueador pegado a
 a través; el dron REDUCE/RETRASA, no invulnerabiliza. **Baseline HONESTA: severidad v2 ~1.55→~2.73** (el bug la
 falseaba a la baja; tasa 52%→78%, timeout 13→3); adversario puro **~6.33**. **face_check 12/12**. Ver §4.1/§9.
 
+**Escolta · EVITACIÓN al HUIR HECHA — las no-fijadas RODEAN a los lobos.** En modo HUIR (solo no-fijadas) el
+rumbo objetivo mezcla hacia-el-establo (`W_REFUGIO`, domina) + alejándose de los lobos en `COW_AVOID_RADIUS`=30 m
+(`W_EVITAR`, con falloff) → la vaca **bordea** a los lobos en su camino y sigue llegando (no atraviesa la pelea).
+La presa fijada sigue ENCARANDO (no esquiva). **Severidad v2 ~2.73→~2.27** (las no-fijadas escapan más). **face_check
+12/12** (rama ESCOLTA, bit a bit). Ver §4.2/§9 + `escort_rodeo.gif`.
+
 **SIGUIENTE (opciones):**
 - **POSICIONAMIENTO del coordinador (lo que baja la SEVERIDAD):** la disuasión ya existe; falta que el
   coordinador **mande los drones a interponerse** entre los lobos y la presa (despejar pins activamente,
   no solo la disuasión pasiva del Dummy). Eso es el **coordinador** (post-congelar-v2): baja la severidad
-  (~2.73, la referencia honesta) y desbloquea el ÉXITO. + hooks de batería (travel-time, hueco de cobertura, dron tirado).
+  (~2.27, la referencia honesta) y desbloquea el ÉXITO. + hooks de batería (travel-time, hueco de cobertura, dron tirado).
 - **3c — corzos / cuerpos no-amenaza:** contactos que NO son lobos → la confirmación geométrica deja de ser
   trivial (falsa alarma) → rama SOSPECHA→VIGILANCIA (abortar) + lógica de descartar; aquí entra el coste de
   investigar de más. (Sigue sin clasificador real; eso es la fase YOLO.)
 Luego: percepción → reflejo trivial → MARL → comparación. **Congelar baseline v2** al FINAL de la escolta.
 
 **Ruta sugerida (orden tentativo, aún sin decidir):** 3a ✓ → 3b ✓ → **paso 2 (guiado) ✓** → **disuasión del
-dron ✓** → **matanza excedente ✓** → **fix pin + envolvente ✓** (severidad v2 honesta ~2.73) → **3c (corzos)**
-→ **congelar v2** → **coordinador: posicionar/interponer drones** (baja la SEVERIDAD) + reflejo-reactivo → **MARL**.
+dron ✓** → **matanza excedente ✓** → **fix pin + envolvente ✓** → **evitación al huir ✓** (severidad v2 honesta
+~2.27) → **3c (corzos)** → **congelar v2** → **coordinador: posicionar/interponer drones** + reflejo-reactivo → **MARL**.
 
 *(Pendiente de decisión menor, NO en este paso: lobo solo vs ternero salió 0% — la madre frena siempre.
 Si se quiere que sea disputado (a veces se cuela), afinar `face_cooldown`/`r_face_safe`. Parámetros del
@@ -838,8 +860,11 @@ pastoreo); `cow_spread`=`HERD_SPREAD`=40 m, `r_separation`=`HERD_SEPARATION`=22 
 (rodeo del rebaño); fuga en ESCOLTA NO-HOLONÓMICA (HUIR de frente a `cow_speed` / ENCARAR-PIN parado, gira a
 `turn_rate`); **DISUASIÓN: `DETER_RADIUS`=40 m (banda 30-50, eje de sensibilidad clave), `DETER_REPULSION`=8
 m/s (> `wolf_speed` → cerca domina la esquiva; al borde, la caza), `DETER_SLOWDOWN`=0.5 (rapidez máx dentro
-del radio)** — constantes ABSOLUTAS cerca de cabecera, afinables; presa adulta por exposición, fijada en t=0;
-presa ternero override con 1 lobo; `prey_abandon_dist` DEPRECADO. Todos afinables por render.)*
+del radio); parcial a corta `deter_w` (≤`r_face_safe` empuja a través)**; **ENVOLVENTE: `wolf_envelop_gain`=3.0
+(reparto angular equiespaciado alrededor de la presa)**; **EVITACIÓN al HUIR: `COW_AVOID_RADIUS`=30 m,
+`W_REFUGIO`=1.0, `W_EVITAR`=1.3 (las no-fijadas rodean a los lobos; el establo domina el neto)** — constantes
+ABSOLUTAS cerca de cabecera, afinables; presa adulta por exposición, fijada en t=0; presa ternero override con
+1 lobo; `prey_abandon_dist` DEPRECADO. Todos afinables por render.)*
 
 ---
 
