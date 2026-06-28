@@ -1230,11 +1230,28 @@ class World:
                 self.drone_contact[i] = self.wolves[j]
                 self.drone_waypoint[i] = self.wolves[j]    # lo persigue (command_waypoint del reflejo)
 
+    def _pick_investigator(self, free: np.ndarray) -> int:
+        """REFLEJO (infraestructura, igual en todos los coordinadores): elige QUÉ dron va a investigar un
+        contacto. Va el dron ACTIVE LIBRE (no investigando ya otro contacto) MÁS CERCANO al contacto (su
+        lobo más cercano = la manada, cúmulo ~5 m) entre los que lo DETECTAN (<= r_detect) -> llega antes.
+        Si el más cercano está ocupado, va el siguiente más cercano libre (los ocupados no están en `free`).
+        Desempate DETERMINISTA por menor índice (sin aleatoriedad). Devuelve el índice o -1 si nadie libre
+        detecta. `free` = máscara (n_drones,) de drones elegibles (ACTIVE y no investigando)."""
+        cand = np.where(free)[0]
+        if cand.size == 0 or self.n_wolves == 0:
+            return -1
+        d = np.array([float(np.linalg.norm(self.wolves - self.drones[i], axis=1).min()) for i in cand])
+        d = np.where(d <= self.r_detect, d, np.inf)   # solo los que DETECTAN; el resto descartado
+        if not np.isfinite(d).any():
+            return -1
+        return int(cand[int(np.argmin(d))])           # más cercano; argmin -> primer mínimo -> menor índice
+
     def _update_phase(self) -> None:
         """Disparador en DOS etapas (reflejo). VIGILANCIA -> SOSPECHA -> ESCOLTA, sin retorno; informativa
         (todavía NO cambia la dinámica de las vacas). Solo los drones EN VUELO (ACTIVE) detectan/confirman
         (los aparcados CHARGING/READY no vigilan; RETURNING fuera por simplicidad).
-          - DETECCIÓN: el PRIMER dron ACTIVE con un lobo a <= r_detect -> SOSPECHA y ese dron pasa a
+          - DETECCIÓN: cuando un lobo entra a <= r_detect, investiga el dron ACTIVE libre MÁS CERCANO al
+            contacto (_pick_investigator; el más cercano llega antes) -> SOSPECHA y ese dron pasa a
             INVESTIGANDO (el reflejo lo lanza hacia el contacto). Si se queda sin investigador (p. ej. un
             relevo), re-detecta.
           - CONFIRMACIÓN: cuando el dron INVESTIGANDO llega a <= r_confirm de su contacto -> ESCOLTA y ese
@@ -1244,15 +1261,14 @@ class World:
         if self.phase == "ESCOLTA" or self.n_wolves == 0:
             return
         active = self.drone_state == ACTIVE
-        # Detección / re-detección: asegura UN investigador mientras no se confirme.
+        # Detección / re-detección: asegura UN investigador mientras no se confirme (el más cercano libre).
         if not self.drone_investigating.any():
-            for i in np.where(active)[0]:
-                dist = np.linalg.norm(self.wolves - self.drones[i], axis=1)
-                if float(dist.min()) <= self.r_detect:
-                    self.drone_investigating[i] = True
-                    self.drone_contact[i] = self.wolves[int(np.argmin(dist))]   # contacto = lobo más cercano
-                    self.phase = "SOSPECHA"
-                    break
+            i = self._pick_investigator(active & ~self.drone_investigating)
+            if i >= 0:
+                self.drone_investigating[i] = True
+                j = int(np.argmin(np.linalg.norm(self.wolves - self.drones[i], axis=1)))
+                self.drone_contact[i] = self.wolves[j]   # contacto = lobo más cercano
+                self.phase = "SOSPECHA"
         # Confirmación: el investigador a <= r_confirm de su contacto -> ESCOLTA, se libera.
         if self.phase == "SOSPECHA":
             for i in np.where(self.drone_investigating & active)[0]:

@@ -9,6 +9,7 @@ fijada se refugia, la manada RE-SELECCIONA (única re-fijación permitida). Dron
   0) Disparador en DOS etapas: detección (r_detect)->SOSPECHA + 1 dron investigando (+ mensaje al
      coordinador); confirmación (r_confirm)->ESCOLTA + dron liberado; aparcados no cuentan.
   0b) El dron INVESTIGA (se mueve al contacto) y confirma; PRECEDENCIA reflejo>coordinador; buy-time.
+  0c) Investiga el dron ACTIVE LIBRE MÁS CERCANO al contacto (no aleatorio; ocupado->siguiente; determinista).
   1) ÉXITO forzado
   1b) ÉXITO ORGÁNICO (lobo-solo SIN terneros -> el rebaño escapa) + lobo-solo CON ternero -> TIMEOUT + Bug 2 (ternero entra tras su madre).
   1c) NO-HOLONÓMICO en ESCOLTA: HUIR / ENCARAR-PIN (SOLO la presa) / REANUDAR + Bug 1 (no-fijada huye con lobo cerca); terneros anclados.
@@ -125,6 +126,61 @@ def test_investigar_confirmar():
     print("  precedencia OK (el comando del coordinador al investigador se ignoró: voló al lobo, no a (5,5))")
     print("  buy time: contacto a %.0f m del rebaño al confirmar (investigar activamente confirma lejos)"
           % d_confirm_herd)
+    print("  OK\n")
+
+
+def test_investigador_mas_cercano():
+    print("=== 0c) Investiga el dron ACTIVE LIBRE MÁS CERCANO al contacto (no aleatorio; determinista) ===")
+    # 4 drones ACTIVE en las cuatro esquinas de un cuadrado de 100 m; el resto aparcado (no vigila).
+    pos = np.array([[0.0, 0.0], [100.0, 0.0], [0.0, 100.0], [100.0, 100.0]])
+
+    def fresh():
+        w = World(seed=0, wolves_min=1, wolves_max=1)
+        w.phase = "VIGILANCIA"
+        w.drone_state[:] = READY            # todos aparcados...
+        w.drone_state[:4] = ACTIVE          # ...salvo 4 EN VUELO, en las esquinas
+        w.drones[:4] = pos
+        w.drones[4:] = 1.0
+        w.drone_investigating[:] = False
+        return w
+
+    # (1) El MÁS CERCANO va: contacto cerca de cada esquina k, en la banda (r_confirm, r_detect) para que
+    # se quede en SOSPECHA (un investigador asignado, sin confirmar aún). Los 4 lo DETECTAN; gana el más
+    # cercano (= el que llega antes), no el de menor índice.
+    inward = np.array([[35.0, 35.0], [-35.0, 35.0], [35.0, -35.0], [-35.0, -35.0]])  # ~49.5 m hacia el centro
+    for k in range(4):
+        w = fresh()
+        w.wolves[:] = [pos[k] + inward[k]]
+        w._update_phase()
+        d_all = np.linalg.norm(pos - w.wolves[0], axis=1)
+        n_detect = int((d_all <= w.r_detect).sum())
+        assert w.phase == "SOSPECHA" and int(w.drone_investigating.sum()) == 1, \
+            "FALLO: no quedó exactamente 1 investigador en SOSPECHA (esquina %d)" % k
+        inv = int(np.where(w.drone_investigating)[0][0])
+        assert inv == k, "FALLO: investigó el dron %d, no el más cercano (%d)" % (inv, k)
+        assert np.isclose(d_all[inv], d_all.min()) and n_detect >= 2, \
+            "FALLO: el investigador no está a distancia mínima o no había varios detectando"
+    print("  el MÁS CERCANO investiga en las 4 posiciones (dist investigador->contacto = mínima; 4 detectan)")
+
+    # (2) Ocupado -> siguiente más cercano LIBRE: con el más cercano ya investigando otro contacto, va el 2º.
+    w = fresh()
+    w.wolves[:] = [[70.0, 40.0]]                          # contacto que DETECTAN los 4 (todos < r_detect)
+    order = list(np.argsort(np.linalg.norm(pos - w.wolves[0], axis=1)))   # ranking por cercanía
+    nearest, second = int(order[0]), int(order[1])
+    free = (w.drone_state == ACTIVE).copy()
+    free[nearest] = False                                # el más cercano OCUPADO (investigando otro)
+    pick = w._pick_investigator(free)
+    assert pick == second, "FALLO: con el más cercano (%d) ocupado no eligió el 2º (%d), eligió %d" % (nearest, second, pick)
+    print("  el más cercano (%d) ocupado -> va el siguiente más cercano libre (%d)" % (nearest, second))
+
+    # (3) Determinista: misma escena -> mismo investigador; empate -> menor índice (sin aleatoriedad).
+    a = fresh(); a.wolves[:] = [[50.0, 60.0]]; a._update_phase()
+    b = fresh(); b.wolves[:] = [[50.0, 60.0]]; b._update_phase()
+    assert np.array_equal(a.drone_investigating, b.drone_investigating), "FALLO: la elección no es determinista"
+    w = fresh(); w.wolves[:] = [[50.0, 0.0]]              # equidistante de los drones 0 y 1 -> empate exacto
+    tie = w._pick_investigator(w.drone_state == ACTIVE)
+    assert tie == 0, "FALLO: el empate no se rompió por menor índice (eligió %d)" % tie
+    print("  misma escena -> mismo dron; empate (drones 0 y 1) -> menor índice (0)")
     print("  OK\n")
 
 
@@ -826,6 +882,7 @@ def save_animations():
 if __name__ == "__main__":
     test_trigger_dos_etapas()
     test_investigar_confirmar()
+    test_investigador_mas_cercano()
     test_exito()
     test_exito_organico()
     test_no_holonomico()

@@ -125,8 +125,10 @@
 > **Paso 3b — disparador realista: DETECTAR → ACERCARSE → CONFIRMAR.** El salto a ESCOLTA ya no es
 > instantáneo a 100 m. Dos radios, tres fases: `r_detect`=100 m ("hay algo") → **SOSPECHA**;
 > `r_confirm`=40 m ("es un lobo", confirmación **geométrica determinista**, placeholder hasta YOLO) →
-> **ESCOLTA**. **Reflejo de investigación** (infraestructura, no decisión del coordinador): el primer dron
-> ACTIVE que detecta entra en **INVESTIGANDO**, vuela hacia el contacto (lobo más cercano) con el
+> **ESCOLTA**. **Reflejo de investigación** (infraestructura, no decisión del coordinador): ante un contacto
+> entra en **INVESTIGANDO** el dron ACTIVE **libre más CERCANO** al contacto (`_pick_investigator`; el más
+> cercano llega antes; si está ocupado va el siguiente más cercano libre; desempate determinista por menor
+> índice, **sin aleatoriedad**), vuela hacia el contacto (lobo más cercano) con el
 > movimiento de 3a, y al llegar a `r_confirm` confirma y se **libera** al pool del coordinador. **Mensaje**
 > legible por el coordinador en la observación (`investigations`: {drone_id, contact_pos, state}).
 > **Precedencia**: mientras investiga, manda el reflejo (el coordinador no lo toca); el resto, el
@@ -444,8 +446,9 @@ Diseño de referencia (sigue válido):
 Tarea **episódica** (terminal claro, bueno para RL). **Máquina de fases** (`world.phase`):
 
 `VIGILANCIA` → **DETECTAR** (un dron **EN VUELO** `ACTIVE` tiene un lobo ≤ `r_detect`=100 m; los aparcados
-no vigilan) → `SOSPECHA` → **ACERCARSE** (REFLEJO de investigación: ese dron entra en `INVESTIGANDO` y
-vuela hacia el contacto con el movimiento de 3a) → **CONFIRMAR** (a ≤ `r_confirm`=40 m; geométrico,
+no vigilan) → `SOSPECHA` → **ACERCARSE** (REFLEJO de investigación: entra en `INVESTIGANDO` el dron ACTIVE
+**libre más CERCANO** al contacto —`_pick_investigator`, el que llega antes; ocupado→siguiente libre;
+desempate determinista por menor índice— y vuela hacia el contacto con el movimiento de 3a) → **CONFIRMAR** (a ≤ `r_confirm`=40 m; geométrico,
 determinista — placeholder hasta YOLO) → `ESCOLTA` (el dron se libera al coordinador) → **terminal**.
 La fase es informativa y **no vuelve atrás** (sin SOSPECHA→VIGILANCIA: innecesario sin corzos, llega en 3c).
 En `ESCOLTA` se activa el **GUIADO al refugio** (paso 2 ✅), con movimiento **NO-HOLONÓMICO**: la vaca corre
@@ -697,15 +700,16 @@ Decisiones de diseño ratificadas:
   ~1/5 de episodios son lobo-solo → TIMEOUT.
 - **Candidata a v2 (Dummy + GUIADO + NO-HOLONÓMICO + DISUASIÓN + MATANZA EXCEDENTE + ENVOLVENTE + EVITACIÓN) —
   BASELINE HONESTA:** medida en `escort_check` (`escort_enabled=True`). La **SEVERIDAD** (cabezas perdidas) es la
-  métrica principal: **~2.27 muertes/episodio** (tasa ≥1 ~72%; reparto `predation 29 / timeout 5 / success 6` en
+  métrica principal: **~2.33 muertes/episodio** (tasa ≥1 ~72%; reparto `predation 29 / timeout 5 / success 6` en
   40 seeds). *Trayectoria: el bug del pin la FALSEABA a ~1.55 (clavada invulnerable → cazas suprimidas, TIMEOUT
   espurio); el ENVOLVENTE + disuasión parcial la subió a su valor REAL ~2.73 (clavada matable, TIMEOUT 13→3);
-  la EVITACIÓN al huir la bajó a ~2.27 (las no-fijadas RODEAN al paquete y escapan más).* Frente al **adversario
+  la EVITACIÓN al huir la bajó a ~2.27 (las no-fijadas RODEAN al paquete y escapan más); el reflejo del más
+  cercano la dejó en ~2.33 (mismo reparto, +0.06 ruido).* Frente al **adversario
   puro** (`escort_enabled=False`): **~6.33 muertes/ep** (tasa ~87%, máx. 8). Es decir, **guiado + disuasión
   PASIVA + rodeo bajan la severidad de ~6.3 a ~2.3** aun con Dummy (parcial, no invulnerabiliza). El balance
   huida/lobo sigue locked (no se tocan `cow_speed`/`wolf_speed` ni se mete sprint): la **SEVERIDAD** la bajará el
   **POSICIONAMIENTO** del coordinador (interponer drones, despejar pins activamente, post-v2). **Esta severidad
-  honesta (~2.27) es la referencia a batir.**
+  honesta (~2.33) es la referencia a batir.**
 - **v2 se congelará tras la escolta** (con disuasión + matanza excedente dentro, antes del coordinador), con la
   dinámica definitiva (config + 100 seeds), y pasará a ser el adversario fijo contra el que se miden ambas ramas.
 - La batería es **ortogonal** (qué drones hay disponibles, no la dinámica vaca/lobo) → no mueve el
@@ -837,19 +841,29 @@ rumbo objetivo mezcla hacia-el-establo (`W_REFUGIO`, domina) + alejándose de lo
 La presa fijada sigue ENCARANDO (no esquiva). **Severidad v2 ~2.73→~2.27** (las no-fijadas escapan más). **face_check
 12/12** (rama ESCOLTA, bit a bit). Ver §4.2/§9 + `escort_rodeo.gif`.
 
+**Escolta · EL MÁS CERCANO INVESTIGA HECHO — fix del reflejo (no aleatorio).** Ante un contacto, el reflejo de
+investigación (`_pick_investigator`, infraestructura igual en todos los coordinadores) elige el dron ACTIVE
+**libre más CERCANO** al contacto (= el que llega antes), no el primero por índice; si el más cercano está
+ocupado va el siguiente más cercano libre; desempate **determinista por menor índice** (sin aleatoriedad).
+Sustituye la selección por orden de índice. NO toca coordinador/disuasión/combate/detección-confirmación/guiado.
+**Severidad v2 ~2.27→~2.33** (medida, NO objetivo: cambia qué dron va → dinámica de disuasión ligeramente
+distinta; mismo reparto `predation 29/timeout 5/success 6` → **dentro del ruido**, +0.06). **face_check 12/12**
+(el reflejo no corre en combate puro, `escort_enabled=False`). Verificado en `escort_check` 0c (el más cercano
+va en 4 posiciones · ocupado→siguiente libre · determinista/empate→menor índice). Ver §4.2 (máquina de fases).
+
 **SIGUIENTE (opciones):**
 - **POSICIONAMIENTO del coordinador (lo que baja la SEVERIDAD):** la disuasión ya existe; falta que el
   coordinador **mande los drones a interponerse** entre los lobos y la presa (despejar pins activamente,
   no solo la disuasión pasiva del Dummy). Eso es el **coordinador** (post-congelar-v2): baja la severidad
-  (~2.27, la referencia honesta) y desbloquea el ÉXITO. + hooks de batería (travel-time, hueco de cobertura, dron tirado).
+  (~2.33, la referencia honesta) y desbloquea el ÉXITO. + hooks de batería (travel-time, hueco de cobertura, dron tirado).
 - **3c — corzos / cuerpos no-amenaza:** contactos que NO son lobos → la confirmación geométrica deja de ser
   trivial (falsa alarma) → rama SOSPECHA→VIGILANCIA (abortar) + lógica de descartar; aquí entra el coste de
   investigar de más. (Sigue sin clasificador real; eso es la fase YOLO.)
 Luego: percepción → reflejo trivial → MARL → comparación. **Congelar baseline v2** al FINAL de la escolta.
 
 **Ruta sugerida (orden tentativo, aún sin decidir):** 3a ✓ → 3b ✓ → **paso 2 (guiado) ✓** → **disuasión del
-dron ✓** → **matanza excedente ✓** → **fix pin + envolvente ✓** → **evitación al huir ✓** (severidad v2 honesta
-~2.27) → **3c (corzos)** → **congelar v2** → **coordinador: posicionar/interponer drones** + reflejo-reactivo → **MARL**.
+dron ✓** → **matanza excedente ✓** → **fix pin + envolvente ✓** → **evitación al huir ✓** → **el más cercano
+investiga ✓** (severidad v2 honesta ~2.33) → **3c (corzos)** → **congelar v2** → **coordinador: posicionar/interponer drones** + reflejo-reactivo → **MARL**.
 
 *(Pendiente de decisión menor, NO en este paso: lobo solo vs ternero salió 0% — la madre frena siempre.
 Si se quiere que sea disputado (a veces se cuela), afinar `face_cooldown`/`r_face_safe`. Parámetros del
