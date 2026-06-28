@@ -50,17 +50,23 @@ DRONE_MOVE_DRAIN = 1.5
 
 # --- DISUASIÓN (hazing): respuesta del LOBO a un dron ACTIVO cercano. Es CÓMO responde el mundo al dron
 # (infraestructura), NO el coordinador (dónde está el dron lo deciden el reflejo/Dummy/coordinador). Basado
-# en datos reales de hazing con drones: lo que disuade es el SONIDO (el dron "ladra"), no la imagen; los
-# mamíferos grandes evitan al dron a ~30-50 m; la disuasión es PARCIAL (un lobo muy comprometido empuja a
-# través, frenado). Dentro de DETER_RADIUS el lobo ESQUIVA (repulsión con falloff, más fuerte cuanto más
-# cerca; suma la de todos los drones a tiro) y FRENA (su rapidez máx baja por DETER_SLOWDOWN, titubeo). Solo
-# drones ACTIVE disuaden (los aparcados no); gateado por escort_enabled (en combate puro NO aplica). Afinables.
-DETER_RADIUS = 40.0       # m: radio de disuasión. BANDA 30-50 (EJE DE SENSIBILIDAD CLAVE): los mamíferos
-                          #    grandes evitan al dron a ~30-50 m y el SONIDO extiende ese alcance. Afinable.
-DETER_REPULSION = 8.0     # m/s: fuerza de esquiva a quemarropa. > wolf_speed -> a corta distancia el lobo se
+# en datos reales de hazing con drones: lo que disuade es el SONIDO (el dron "ladra"), no la imagen; el lobo es
+# AUDAZ (un dron silencioso le da curiosidad, no huida) -> reacciona solo DE CERCA, y la disuasión es PARCIAL
+# (un lobo muy comprometido empuja a través, frenado). Dentro de DETER_RADIUS el lobo ESQUIVA: repulsión RADIAL
+# (alejarse del dron, con falloff) + componente TANGENCIAL (BORDEAR el dron por el lado que lo acerca a su presa,
+# en vez de atascarse de frente contra la repulsión) -> ARQUEA alrededor con naturalidad. Y FRENA (su rapidez
+# máx baja por DETER_SLOWDOWN, titubeo). Suma la de todos los drones a tiro. Solo drones ACTIVE disuaden (los
+# aparcados no); gateado por escort_enabled (en combate puro NO aplica). MUCHO de esto es de afinar por render.
+DETER_RADIUS = 20.0       # m: radio de disuasión. El lobo es AUDAZ -> reacciona solo de CERCA (no la banda 30-50
+                          #    de presas asustadizas). EJE DE SENSIBILIDAD CLAVE. Afinable por render.
+DETER_REPULSION = 8.0     # m/s: fuerza de esquiva RADIAL a quemarropa. > wolf_speed -> a corta distancia el lobo se
                           #    desvía/retrocede (despeja el pin); al borde del radio el falloff la deja
                           #    < wolf_speed -> la caza domina y el lobo empuja a través (disuasión PARCIAL). TUNE
-DETER_SLOWDOWN = 0.5      # factor (<1) de la rapidez máx del lobo mientras está dentro del radio (duda/titubeo). TUNE
+DETER_TANGENT = 6.0       # m/s: fuerza TANGENCIAL (bordeo). Rompe el ATASCO radial: cuando el dron se interpone
+                          #    entre el lobo y su presa, el lobo ARQUEA alrededor (hacia la presa) en vez de empujar
+                          #    de frente contra la repulsión (que daría v~0 -> "super lento"). Máx. de frente. TUNE
+DETER_SLOWDOWN = 0.7      # factor (<1) de la rapidez máx del lobo mientras está dentro del radio (titubeo; NO se
+                          #    para: 0.7 -> fluye alrededor del dron a ritmo razonable, no arranca super lento). TUNE
 
 # --- EVITACIÓN de lobos al HUIR (ESCOLTA): una vaca NO-fijada que huye al establo RODEA a los lobos en vez
 # de atravesar la pelea (una vaca real da un rodeo). El rumbo objetivo MEZCLA "hacia el establo" (DOMINA el
@@ -1032,7 +1038,19 @@ class World:
             return v_target                                          # ningún lobo a tiro: dinámica intacta
         fall = np.clip(1.0 - dd / DETER_RADIUS, 0.0, 1.0) * inside   # falloff lineal: 1 a quemarropa, 0 en el borde
         units = rel / np.maximum(dd[:, :, None], 1e-9)
-        f_deter = DETER_REPULSION * (units * fall[:, :, None]).sum(axis=1)   # (nw,2): suma de todos los drones a tiro
+        f_radial = DETER_REPULSION * (units * fall[:, :, None]).sum(axis=1)  # (nw,2): esquiva radial, suma de drones
+        # BORDEO (componente TANGENCIAL): rompe el ATASCO radial. Cuando un dron se interpone entre el lobo y su
+        # objetivo de caza, la repulsión radial CANCELA la persecución -> v~0 -> "super lento" (atasco geométrico).
+        # En vez de empujar de frente, el lobo ARQUEA alrededor del dron por el lado que lo ACERCA al objetivo:
+        # tangente a la línea dron->lobo, con signo hacia la dirección de caza, y MÁXIMA cuando el dron está justo
+        # de frente (blockage = cuánto se opone la esquiva a la caza). Análogo al rodeo de las vacas al huir.
+        vd = v_target / np.maximum(np.linalg.norm(v_target, axis=1, keepdims=True), 1e-9)  # dir de caza por lobo
+        block = np.clip(-(units * vd[:, None, :]).sum(axis=2), 0.0, 1.0)     # (nw,nd): 1=dron de frente, 0=a un lado
+        perp = np.stack([-units[..., 1], units[..., 0]], axis=-1)           # (nw,nd,2): perpendicular a u (rodear)
+        side = np.sign((perp * vd[:, None, :]).sum(axis=2))                  # lado que ACERCA a la presa (determinista)
+        tang = perp * side[:, :, None]                                       # tangente unitaria hacia la presa
+        f_tang = DETER_TANGENT * (tang * (fall * block)[:, :, None]).sum(axis=1)   # (nw,2): suma de drones a tiro
+        f_deter = f_radial + f_tang                                          # esquiva = radial (alejarse) + bordeo
         # Peso PARCIAL por compromiso con la presa: 0 si está DENTRO de la distancia de golpe (<= r_face_safe)
         # -> empuja a través (la persecución domina, el flanqueador comprometido cierra a matar); rampa a 1 en
         # 2*r_face_safe -> a esa distancia y más lejos siente la disuasión COMPLETA (el dron aparta a los que se

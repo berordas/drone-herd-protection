@@ -8,7 +8,7 @@
 > **Última actualización: 2026-06-27** · *escolta: BUCLE CERRADO + DIENTES + matanza excedente + pin + rodeo.*
 > **Hecho:** terminal (el "juez") · disparador realista por detección de dron · reescalado a 300×300 (~9 ha) con
 > escala biológica absoluta · dispersión del rebaño · movimiento de drones · detectar→acercarse→confirmar ·
-> **guiado al refugio (paso 2)** · **huida NO-HOLONÓMICA en ESCOLTA** (pin) · **DISUASIÓN del dron** (parcial) ·
+> **guiado al refugio (paso 2)** · **huida NO-HOLONÓMICA en ESCOLTA** (pin) · **DISUASIÓN del dron** (radio CORTO + bordeo, parcial) ·
 > **MATANZA EXCEDENTE** (el paquete caza hasta agotar) · **ATAQUE ENVOLVENTE** (una adulta clavada es matable) ·
 > **EVITACIÓN al huir** (las no-fijadas RODEAN a los lobos camino del establo).
 > **Pendiente:** POSICIONAMIENTO del coordinador (interponer drones para bajar la severidad) · corzos ·
@@ -17,21 +17,23 @@
 > 300×300 + escala biológica absoluta · `886bd45` dispersión del rebaño · `a15e2df` movimiento de
 > drones (3a) · `fd893b8` detectar→confirmar (3b) · `49e0e22` consolidar DISEÑO+CLAUDE · `144b7bd` guiado (paso 2)
 > · `1d44cdc` máx. 1 caza/episodio (REVERTIDO) · `56ff75d` huida no-holonómica · `f42456f` dos correcciones huida ·
-> `26bce79` disuasión del dron · `bd57a8f` matanza excedente · `1b54b49` fix pin + envolvente · `<este commit>`
-> evitación al huir.
+> `26bce79` disuasión del dron · `bd57a8f` matanza excedente · `1b54b49` fix pin + envolvente · `bbee8c0`
+> evitación al huir · `e15d43d` el más cercano investiga · `<este commit>` afinar disuasión (radio corto + bordeo).
 >
-> **Patch — EVITACIÓN de lobos al HUIR (ESCOLTA): las vacas no-fijadas RODEAN, no atraviesan.** Una vaca
-> no-fijada que huye al establo iba en LÍNEA RECTA y podía cruzar por en medio de un grupo de lobos. Ahora, en
-> modo HUIR, el rumbo objetivo MEZCLA `W_REFUGIO·(→establo) + W_EVITAR·Σ(alejándose de los lobos en
-> `COW_AVOID_RADIUS`=30 m)·falloff` → la vaca **arquea** su trayectoria para **bordear** a los lobos en su
-> camino y sigue llegando (el establo **DOMINA el neto**; la evitación es LOCAL, falloff). Sigue
-> NO-HOLONÓMICA (avanza de frente a `cow_speed`, gira a `turn_rate`); solo cambia hacia dónde apunta el rumbo.
-> **Solo el modo HUIR:** la PRESA fijada (y su defensora si es ternero) sigue en **ENCARAR** (parada, de cara)
-> — no esquiva. **Efecto medido:** severidad v2 **~2.73 → ~2.27** (las no-fijadas escapan más; tasa 78%→72%).
-> **face_check 12/12** (la evitación está en la rama ESCOLTA, que no corre con `escort_enabled=False` → bit a
-> bit). **NO** toca presa fijada/ENCARAR, combate/pastoreo, disuasión, envolvente, detección, coordinador,
-> baseline.py. Verificado en `escort_check` (test 1f: rodea vs atraviesa, sigue llegando, presa fijada intacta)
-> + render `escort_rodeo.gif`.
+> **Patch — AFINAR LA DISUASIÓN: radio CORTO + el lobo BORDEA al dron con naturalidad.** Dos observaciones del
+> render: (1) el radio era demasiado grande (los lobos reaccionaban de lejos); (2) un dron QUIETO interpuesto
+> entre el lobo y las vacas dejaba al lobo "super lento", bordeándolo poco a poco (antinatural). Causa de lo 2º:
+> la repulsión RADIAL cancelaba la persecución → fuerza neta ≈ 0 → atasco geométrico. Dos cambios: **(1) radio
+> CORTO** `DETER_RADIUS` 40→**20** m (el lobo es AUDAZ, reacciona solo de cerca; no la banda 30-50 de presas
+> asustadizas). **(2) componente TANGENCIAL** (`DETER_TANGENT`=6, + frenazo `DETER_SLOWDOWN` 0.5→**0.7**): cuando
+> el dron se interpone, el lobo **ARQUEA** alrededor por el lado que lo acerca a la presa (máx. de frente) en vez
+> de empujar contra la repulsión → **bordeo natural** a ritmo razonable (vel ~×2 vs el atasco). El balance del PIN
+> intacto (`deter_w` escala radial+tangencial: el comprometido ≤`r_face_safe` empuja a través). **Efecto medido:**
+> severidad v2 **~2.33 → ~4.17** (tasa 80%): el radio corto + frenazo suave dejan al Dummy QUIETO cubrir mucho
+> menos (el radio ancho daba demasiada disuasión PASIVA) → **el posicionamiento del coordinador importa MÁS**.
+> **face_check 12/12** (la disuasión no corre con `escort_enabled=False` → bit a bit). **NO** toca presa fijada/ENCARAR, combate/pastoreo, envolvente, guiado, detección, coordinador,
+> baseline.py. Verificado en `escort_check` 1d (esquiva+frena · parcial · APARTA al que se ACERCA de lejos —con
+> radio corto un dron quieto previene pines pero ya no expulsa uno cerrado: eso es el coordinador) + `escort_bordeo.gif`.
 >
 > **Patch — FIX PIN: 4 lobos no mataban a una adulta CLAVADA en ESCOLTA (+ ataque ENVOLVENTE + disuasión
 > parcial a corta).** Regresión: una adulta clavada era **invulnerable** a un paquete que la rodeaba.
@@ -337,12 +339,16 @@ parámetros actuales; spec: reportar, **no tunear** `face_cooldown`/`r_face_safe
 **Escalera de adversarios:** ingenuo → **manada direccional (ACTUAL)** → busca-huecos → con amago
 (los dos últimos cuando los drones se muevan).
 **DISUASIÓN del dron ✅ IMPLEMENTADA** (`_apply_deterrence`, infraestructura gateada por `escort_enabled`):
-dentro de `DETER_RADIUS`=40 m de un dron **ACTIVE** el lobo **ESQUIVA** (repulsión con *falloff* lineal,
-suma de todos los drones a tiro) y **FRENA** (rapidez máx × `DETER_SLOWDOWN`). La esquiva se SUMA al
-impulso de caza → competencia **PARCIAL** (cerca domina la repulsión = se desvía/despeja el pin; al borde
-domina la caza = empuja a través). Solo en el escenario de escolta (combate puro `escort_enabled=False`
-NO disuade → face_check intacto). **Habituación** (el lobo acostumbrándose): PENDIENTE (flag #6). EKF de
-estimación del lobo: PENDIENTE (ver plan).
+dentro de `DETER_RADIUS`=**20** m (radio CORTO: el lobo es AUDAZ, reacciona solo de cerca) de un dron **ACTIVE**
+el lobo **ESQUIVA** = repulsión **RADIAL** (`DETER_REPULSION`=8, *falloff* lineal, suma de drones) **+ TANGENCIAL**
+(`DETER_TANGENT`=6): si el dron se interpone entre el lobo y su presa, el lobo **BORDEA** (arquea alrededor por el
+lado que lo acerca a la presa, máx. de frente) en vez de atascarse de frente contra la repulsión (`v`≈0, "super
+lento") → bordeo natural; y **FRENA** (rapidez máx × `DETER_SLOWDOWN`=0.7; no se para). La esquiva se SUMA al
+impulso de caza → competencia **PARCIAL** (`deter_w` escala radial+tangencial: el comprometido ≤`r_face_safe`
+empuja a través; el dron aparta a los que se ACERCAN de lejos y previene pines, pero con radio corto un dron
+QUIETO ya no expulsa un pin cerrado → eso es el COORDINADOR). Solo en el escenario de escolta (combate puro
+`escort_enabled=False` NO disuade → face_check intacto). **Habituación** (el lobo acostumbrándose): PENDIENTE
+(flag #6). EKF de estimación del lobo: PENDIENTE (ver plan).
 
 ### 4.2. Vacas adultas — "DAR LA CARA" (confrontación direccional)  ✅ IMPLEMENTADO (+ guiado al refugio ✅)
 
@@ -700,16 +706,18 @@ Decisiones de diseño ratificadas:
   ~1/5 de episodios son lobo-solo → TIMEOUT.
 - **Candidata a v2 (Dummy + GUIADO + NO-HOLONÓMICO + DISUASIÓN + MATANZA EXCEDENTE + ENVOLVENTE + EVITACIÓN) —
   BASELINE HONESTA:** medida en `escort_check` (`escort_enabled=True`). La **SEVERIDAD** (cabezas perdidas) es la
-  métrica principal: **~2.33 muertes/episodio** (tasa ≥1 ~72%; reparto `predation 29 / timeout 5 / success 6` en
+  métrica principal: **~4.17 muertes/episodio** (tasa ≥1 ~80%; reparto `predation 32 / timeout 4 / success 4` en
   40 seeds). *Trayectoria: el bug del pin la FALSEABA a ~1.55 (clavada invulnerable → cazas suprimidas, TIMEOUT
   espurio); el ENVOLVENTE + disuasión parcial la subió a su valor REAL ~2.73 (clavada matable, TIMEOUT 13→3);
   la EVITACIÓN al huir la bajó a ~2.27 (las no-fijadas RODEAN al paquete y escapan más); el reflejo del más
-  cercano la dejó en ~2.33 (mismo reparto, +0.06 ruido).* Frente al **adversario
+  cercano la dejó en ~2.33; afinar la disuasión (radio 40→20 + bordeo, frenazo 0.5→0.7) la subió a ~4.17 —el dron
+  reacciona solo de CERCA, así que el Dummy QUIETO cubre mucho menos; antes el radio ancho daba demasiada
+  disuasión PASIVA—.* Frente al **adversario
   puro** (`escort_enabled=False`): **~6.33 muertes/ep** (tasa ~87%, máx. 8). Es decir, **guiado + disuasión
-  PASIVA + rodeo bajan la severidad de ~6.3 a ~2.3** aun con Dummy (parcial, no invulnerabiliza). El balance
+  PASIVA + rodeo bajan la severidad de ~6.3 a ~4.2** aun con Dummy (parcial, ahora más flojo a propósito). El balance
   huida/lobo sigue locked (no se tocan `cow_speed`/`wolf_speed` ni se mete sprint): la **SEVERIDAD** la bajará el
-  **POSICIONAMIENTO** del coordinador (interponer drones, despejar pins activamente, post-v2). **Esta severidad
-  honesta (~2.33) es la referencia a batir.**
+  **POSICIONAMIENTO** del coordinador (interponer drones CERCA, despejar pins activamente, post-v2 — ahora importa MÁS).
+  **Esta severidad honesta (~4.17) es la referencia a batir.**
 - **v2 se congelará tras la escolta** (con disuasión + matanza excedente dentro, antes del coordinador), con la
   dinámica definitiva (config + 100 seeds), y pasará a ser el adversario fijo contra el que se miden ambas ramas.
 - La batería es **ortogonal** (qué drones hay disponibles, no la dinámica vaca/lobo) → no mueve el
@@ -851,11 +859,23 @@ distinta; mismo reparto `predation 29/timeout 5/success 6` → **dentro del ruid
 (el reflejo no corre en combate puro, `escort_enabled=False`). Verificado en `escort_check` 0c (el más cercano
 va en 4 posiciones · ocupado→siguiente libre · determinista/empate→menor índice). Ver §4.2 (máquina de fases).
 
+**Escolta · DISUASIÓN AFINADA HECHA — radio CORTO + el lobo BORDEA con naturalidad.** Dos quejas del render: (1)
+radio demasiado grande (reaccionaban de lejos); (2) un dron QUIETO interpuesto dejaba al lobo "super lento" (la
+repulsión RADIAL cancelaba la caza → neto≈0 → atasco geométrico). Dos cambios: **`DETER_RADIUS` 40→20** (lobo
+AUDAZ, reacciona solo de cerca) y **componente TANGENCIAL** `DETER_TANGENT`=6 (el lobo ARQUEA alrededor del dron
+hacia la presa en vez de empujar de frente; máx. de frente) + frenazo **`DETER_SLOWDOWN` 0.5→0.7** (fluye, no se
+para). El PIN intacto (`deter_w` escala radial+tangencial; el comprometido empuja a través). **Severidad v2 ~2.33→
+~4.17** (tasa 80%; medida, NO objetivo): el radio corto + frenazo suave dejan al Dummy QUIETO cubrir mucho menos
+(antes el radio ancho daba demasiada disuasión PASIVA) → **el posicionamiento del coordinador importa MÁS**.
+**face_check 12/12** (no corre en combate puro). Verificado en `escort_check` 1d (esquiva+frena · parcial · APARTA
+al que se ACERCA de lejos: con radio corto un dron quieto PREVIENE pines pero ya no expulsa uno cerrado —eso es el
+coordinador—) + `escort_bordeo.gif` (el lobo ignora al dron de lejos y arquea ~9.5 m al entrar en R=20).
+
 **SIGUIENTE (opciones):**
 - **POSICIONAMIENTO del coordinador (lo que baja la SEVERIDAD):** la disuasión ya existe; falta que el
   coordinador **mande los drones a interponerse** entre los lobos y la presa (despejar pins activamente,
   no solo la disuasión pasiva del Dummy). Eso es el **coordinador** (post-congelar-v2): baja la severidad
-  (~2.33, la referencia honesta) y desbloquea el ÉXITO. + hooks de batería (travel-time, hueco de cobertura, dron tirado).
+  (~4.17, la referencia honesta — ahora importa MÁS, el Dummy quieto cubre poco) y desbloquea el ÉXITO. + hooks de batería (travel-time, hueco de cobertura, dron tirado).
 - **3c — corzos / cuerpos no-amenaza:** contactos que NO son lobos → la confirmación geométrica deja de ser
   trivial (falsa alarma) → rama SOSPECHA→VIGILANCIA (abortar) + lógica de descartar; aquí entra el coste de
   investigar de más. (Sigue sin clasificador real; eso es la fase YOLO.)
@@ -863,7 +883,7 @@ Luego: percepción → reflejo trivial → MARL → comparación. **Congelar bas
 
 **Ruta sugerida (orden tentativo, aún sin decidir):** 3a ✓ → 3b ✓ → **paso 2 (guiado) ✓** → **disuasión del
 dron ✓** → **matanza excedente ✓** → **fix pin + envolvente ✓** → **evitación al huir ✓** → **el más cercano
-investiga ✓** (severidad v2 honesta ~2.33) → **3c (corzos)** → **congelar v2** → **coordinador: posicionar/interponer drones** + reflejo-reactivo → **MARL**.
+investiga ✓** → **afinar disuasión (radio corto + bordeo) ✓** (severidad v2 honesta ~4.17) → **3c (corzos)** → **congelar v2** → **coordinador: posicionar/interponer drones** + reflejo-reactivo → **MARL**.
 
 *(Pendiente de decisión menor, NO en este paso: lobo solo vs ternero salió 0% — la madre frena siempre.
 Si se quiere que sea disputado (a veces se cuela), afinar `face_cooldown`/`r_face_safe`. Parámetros del
@@ -872,9 +892,10 @@ modelo vaca/ternero: `calf_count_probs`=(1/3,1/3,1/3), `k_calf_cohesion`=1.0, `k
 pastoreo); `cow_spread`=`HERD_SPREAD`=40 m, `r_separation`=`HERD_SEPARATION`=22 m (rebaño disperso, ABSOLUTO);
 `wolf_spawn_dispersion`=0.05·min (cúmulo de spawn); `wolf_skirt_gain`=1.5, `wolf_skirt_margin`=`r_face_safe`
 (rodeo del rebaño); fuga en ESCOLTA NO-HOLONÓMICA (HUIR de frente a `cow_speed` / ENCARAR-PIN parado, gira a
-`turn_rate`); **DISUASIÓN: `DETER_RADIUS`=40 m (banda 30-50, eje de sensibilidad clave), `DETER_REPULSION`=8
-m/s (> `wolf_speed` → cerca domina la esquiva; al borde, la caza), `DETER_SLOWDOWN`=0.5 (rapidez máx dentro
-del radio); parcial a corta `deter_w` (≤`r_face_safe` empuja a través)**; **ENVOLVENTE: `wolf_envelop_gain`=3.0
+`turn_rate`); **DISUASIÓN: `DETER_RADIUS`=20 m (radio CORTO, lobo audaz; eje de sensibilidad clave), `DETER_REPULSION`=8
+m/s (esquiva radial; > `wolf_speed` → cerca domina la esquiva), `DETER_TANGENT`=6 m/s (BORDEO: arquea alrededor del
+dron hacia la presa, rompe el atasco radial), `DETER_SLOWDOWN`=0.7 (rapidez máx dentro del radio; no se para);
+parcial a corta `deter_w` (≤`r_face_safe` empuja a través)**; **ENVOLVENTE: `wolf_envelop_gain`=3.0
 (reparto angular equiespaciado alrededor de la presa)**; **EVITACIÓN al HUIR: `COW_AVOID_RADIUS`=30 m,
 `W_REFUGIO`=1.0, `W_EVITAR`=1.3 (las no-fijadas rodean a los lobos; el establo domina el neto)** — constantes
 ABSOLUTAS cerca de cabecera, afinables; presa adulta por exposición, fijada en t=0; presa ternero override con
