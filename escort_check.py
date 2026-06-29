@@ -16,6 +16,7 @@ fijada se refugia, la manada RE-SELECCIONA (única re-fijación permitida). Dron
   1d) DISUASIÓN del dron (radio CORTO + BORDEO): ESQUIVA+FRENA / PARCIAL (uno huye, otros aguantan) / APARTA AL QUE SE ACERCA (previene pines de lejos).
   1e) ADULTA CLAVADA matable: ataque ENVOLVENTE (rumbos repartidos ~N/E/S/O); con/sin dron (la disuasión retrasa, no invulnerabiliza).
   1f) Las vacas NO-fijadas RODEAN a los lobos al HUIR (no atraviesan) y siguen llegando; la presa fijada sigue ENCARANDO.
+  1g) La MADRE no abandona al ternero al HUIR: avanza a calf_speed (la cría es más lenta), a su lado, llegan juntos; pareja más lenta; fijado->ENCARAR intacto.
   2) DEPREDACIÓN forzada (multi-muerte; cuanta más, peor -> cuenta)
   3) TIMEOUT forzado
   4) Refugio = soltar presa (re-fijación SOLO al refugiarse; 0 en otro caso)
@@ -464,6 +465,73 @@ def test_rodeo():
     print("  OK\n")
 
 
+def test_madre_no_abandona():
+    print("=== 1g) La MADRE no abandona al ternero al HUIR: va a su ritmo (calf_speed), a su lado, llegan juntos ===")
+
+    def pair_flee():
+        """Madre + ternero huyendo al establo SIN lobos (HUIR puro; las demás ya a salvo). Métricas de la pareja."""
+        w = World(seed=3, wolves_min=0, wolves_max=0, calf_count_probs=ONE_CALF, max_episode_steps=4000)
+        c = DummyCoordinator(w.n_drones)
+        w.phase = "ESCOLTA"
+        dfn = int(w.calf_defender[0]); ctr = w.safe_zone[:2]
+        others = [i for i in range(w.n_cows) if i != dfn]
+        w.cows[others] = ctr; w.cow_safe[others] = True; w.cow_vel[others] = 0.0
+        w.cows[dfn] = ctr + np.array([120.0, 0.0]); w.cow_heading[dfn] = np.pi
+        w.calves[0] = w.cows[dfn] + np.array([0.0, -w.calf_personal_space])
+        w.cow_speeds[dfn] = w.cow_speed                 # madre a rapidez de adulta: la cap debe bajarla a calf_speed
+        maxgap, mommax, steps = 0.0, 0.0, None
+        for k in range(4000):
+            w.step(c.act(None))
+            maxgap = max(maxgap, float(np.linalg.norm(w.cows[dfn] - w.calves[0])))
+            mommax = max(mommax, float(np.linalg.norm(w.cow_vel[dfn])))
+            if w.cow_safe[dfn] and w.calf_safe[0]:
+                steps = k + 1; break
+        return maxgap, mommax, steps, bool(w.cow_safe[dfn]), bool(w.calf_safe[0])
+
+    def lone_adult():
+        """Una adulta SOLA (sin ternero) desde la MISMA distancia -> pasos hasta refugiarse (más rápida)."""
+        w = World(seed=3, wolves_min=0, wolves_max=0, calf_count_probs=NO_CALVES, max_episode_steps=4000)
+        c = DummyCoordinator(w.n_drones)
+        w.phase = "ESCOLTA"; ctr = w.safe_zone[:2]
+        others = list(range(1, w.n_cows))
+        w.cows[others] = ctr; w.cow_safe[others] = True; w.cow_vel[others] = 0.0
+        w.cows[0] = ctr + np.array([120.0, 0.0]); w.cow_heading[0] = np.pi; w.cow_speeds[0] = w.cow_speed
+        for k in range(4000):
+            w.step(c.act(None))
+            if w.cow_safe[0]:
+                return k + 1
+        return 4000
+
+    w0 = World(seed=0, calf_count_probs=ONE_CALF)
+    cs, ps = w0.calf_speed, w0.calf_personal_space
+    maxgap, mommax, steps, msafe, csafe = pair_flee()
+    solo = lone_adult()
+    print("  NO la deja atrás: máx dist madre-ternero=%.2f m (esp. personal=%.2f) | rapidez máx madre=%.2f m/s (cap calf_speed=%.2f)"
+          % (maxgap, ps, mommax, cs))
+    print("  llegan JUNTOS: madre=%s ternero=%s en %d pasos | adulta SOLA en %d (la pareja es MÁS LENTA: ritmo del ternero)"
+          % (msafe, csafe, steps, solo))
+    assert maxgap < 3.0 * ps, "FALLO: la madre dejó atrás al ternero (gap grande)"
+    assert mommax <= cs + 0.05, "FALLO: la madre va más rápido que el ternero (lo adelanta)"
+    assert msafe and csafe, "FALLO: la pareja no se refugió junta"
+    assert steps > solo, "FALLO: la pareja no es más lenta que una adulta sola"
+    # Ternero FIJADO -> su defensora sigue en ENCARAR (parada): el cap de calf_speed no toca el pin (Bug 1 intacto).
+    w = World(seed=0, n_cows=1, wolves_min=1, wolves_max=1, calf_count_probs=ONE_CALF)
+    c = DummyCoordinator(w.n_drones)
+    w.phase = "ESCOLTA"; w.cow_speeds[:] = w.cow_speed
+    dfn = int(w.calf_defender[0]); ctr = w.safe_zone[:2]
+    w.cows[dfn] = ctr + np.array([90.0, 0.0]); w.cow_heading[dfn] = np.pi
+    w.calves[0] = w.cows[dfn] + np.array([0.0, -w.calf_personal_space])
+    w.pack_prey, w.pack_prey_kind = 0, "calf"
+    moved = 0.0
+    for _ in range(40):
+        w.pack_prey, w.pack_prey_kind = 0, "calf"
+        w.wolves[0] = w.cows[dfn] + np.array([12.0, 0.0]); w.wolf_vel[0] = 0.0
+        p = w.cows[dfn].copy(); w.step(c.act(None)); moved += float(np.linalg.norm(w.cows[dfn] - p))
+    print("  ternero FIJADO -> defensora con lobo cerca: desplazamiento=%.3f m (~0 = ENCARAR parada, Bug 1 intacto)" % moved)
+    assert moved < 0.5, "FALLO: la defensora de un ternero FIJADO se movió (debería ENCARAR parada)"
+    print("  OK\n")
+
+
 def _pin_scene(with_drone):
     """Adulta CLAVADA (ESCOLTA) FUERA del establo + 4 lobos a 10 m en N/E/S/O. Sin/con un dron a tiro."""
     w = World(seed=0, n_cows=1, wolves_min=4, wolves_max=4, calf_count_probs=NO_CALVES,
@@ -680,8 +748,8 @@ def test_tasa_escolta():
           % (100 * g_out["predation"] / n_g, np.mean(g_deaths), max(g_deaths)))
     print("  ADVERSARIO PURO (escort_enabled=False: sin escolta ni drones), n=%d: %s | tasa=%.0f%% | SEVERIDAD=%.2f (máx=%d)"
           % (n_u, dict(u_out), 100 * u_out["predation"] / n_u, np.mean(u_deaths), max(u_deaths)))
-    print("  -> BASELINE HONESTA (pin matable por el envolvente; las NO-fijadas RODEAN; disuasión de radio CORTO + bordeo):")
-    print("     SEVERIDAD ~4.2 muertes/ep (subió desde ~2.33 al acortar el radio 40->20 y suavizar el frenazo: el")
+    print("  -> BASELINE HONESTA (pin matable; NO-fijadas RODEAN; disuasión radio CORTO + bordeo; pareja madre-ternero lenta):")
+    print("     SEVERIDAD ~4.1 muertes/ep (subió desde ~2.33 al acortar el radio 40->20 y suavizar el frenazo: el")
     print("     dron reacciona solo de CERCA -> el Dummy QUIETO cubre mucho menos; antes el radio ancho daba demasiada")
     print("     disuasión PASIVA). La disuasión PARCIAL aún baja la severidad frente al adversario puro (~6.3) pero")
     print("     POCO; el coordinador (posicionar drones CERCA) la bajará de verdad -> post-v2; ESTA es la referencia a batir.")
@@ -807,6 +875,31 @@ def save_bordeo_animation():
           " (de lejos lo ignora)\n" % (len(hist), DETER_RADIUS, reacted, latmax))
 
 
+def save_madre_animation():
+    print("=== Ojeo: MADRE+TERNERO — huyen JUNTOS al ritmo del ternero, la madre no lo deja atrás ===")
+    # Madre + ternero huyendo al establo SIN lobos (HUIR puro); las demás vacas ya a salvo (aísla la pareja).
+    # La madre va capada a calf_speed -> migran juntos a ese ritmo; el ternero la sigue sin rezagarse.
+    w = World(seed=3, wolves_min=0, wolves_max=0, calf_count_probs=ONE_CALF, max_episode_steps=4000)
+    c = DummyCoordinator(w.n_drones)
+    w.phase = "ESCOLTA"
+    dfn = int(w.calf_defender[0]); ctr = w.safe_zone[:2]
+    others = [i for i in range(w.n_cows) if i != dfn]
+    w.cows[others] = ctr; w.cow_safe[others] = True; w.cow_vel[others] = 0.0
+    w.cows[dfn] = ctr + np.array([90.0, 0.0]); w.cow_heading[dfn] = np.pi
+    w.calves[0] = w.cows[dfn] + np.array([0.0, -w.calf_personal_space]); w.cow_speeds[dfn] = w.cow_speed
+    hist = [w.snapshot()]; maxgap = 0.0
+    for step in range(4000):
+        _, _, term, trunc, _ = w.step(c.act(None))
+        maxgap = max(maxgap, float(np.linalg.norm(w.cows[dfn] - w.calves[0])))
+        if step % 3 == 0 or term or trunc:
+            hist.append(w.snapshot())
+        if (w.cow_safe[dfn] and w.calf_safe[0]) or term or trunc:
+            break
+    render_episode(w, hist, save_path="escort_madre_ternero.gif")
+    print("  escort_madre_ternero.gif: %d frames | a salvo madre=%s ternero=%s | máx dist madre-ternero=%.2f m"
+          " (huyen juntos al ritmo del ternero)\n" % (len(hist), bool(w.cow_safe[dfn]), bool(w.calf_safe[0]), maxgap))
+
+
 def save_pin_animations():
     print("=== Ojeo: PIN — envolvente que MATA a una clavada, y un dron que RETRASA/REDUCE (no invulnerabiliza) ===")
     # (1) ENVOLVENTE: 4 lobos arrancando APIÑADOS en un costado de una adulta clavada -> se reparten
@@ -928,6 +1021,7 @@ if __name__ == "__main__":
     test_disuasion()
     test_pin_envolvente()
     test_rodeo()
+    test_madre_no_abandona()
     test_depredacion()
     test_timeout()
     test_refugio_suelta_presa()
@@ -939,6 +1033,7 @@ if __name__ == "__main__":
     save_animations()
     save_pin_animations()
     save_rodeo_animation()
+    save_madre_animation()
     save_deterrence_animation()
     save_bordeo_animation()
     save_detection_animation(far_seed)

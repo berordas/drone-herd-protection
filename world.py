@@ -114,6 +114,8 @@ class World:
         cow_inertia: float = 0.25,         # suavizado de velocidad de la vaca (firmeza; bajo = más inercia). TUNE
         # --- Terneros (0/1/2) + defensoras: objetivo blando preferente del lobo ---
         calf_count_probs: tuple[float, float, float] = (1/3, 1/3, 1/3),  # prob de 0 / 1 / 2 terneros por episodio. TUNE
+        calf_speed: float = 0.8,           # m/s: rapidez de huida del ternero (< cow_speed: la cría es más lenta).
+                                           #   En ESCOLTA la madre NO la adelanta (huye a este ritmo). TUNE
         k_calf_cohesion: float = 1.0,      # cohesión ternero->defensora (se pega a la madre). TUNE
         k_defender_anchor: float = 0.6,    # cohesión defensora->su ternero (se queda con la cría). TUNE
         calf_personal_space: float | None = None,  # m: separación ternero<->defensora (AL LADO, no encima; default 0.5*capture_radius). TUNE
@@ -219,6 +221,7 @@ class World:
         # --- Terneros + defensoras ---
         self.calf_count_probs = np.asarray(calf_count_probs, dtype=float)
         self.calf_count_probs = self.calf_count_probs / self.calf_count_probs.sum()  # normaliza
+        self.calf_speed = calf_speed
         self.k_calf_cohesion = k_calf_cohesion
         self.k_defender_anchor = k_defender_anchor
 
@@ -744,6 +747,14 @@ class World:
             # Velocidad NO-HOLONÓMICA: a lo largo del heading; avanza a cow_speed solo si HUYE (si ENCARA, 0).
             head = np.column_stack([np.cos(self.cow_heading), np.sin(self.cow_heading)])
             adv = np.where(huir, self.cow_speeds, 0.0)
+            # La MADRE no abandona al ternero: una DEFENSORA que HUYE no lo ADELANTA -> su avance se limita a la
+            # rapidez del ternero (la más lenta de la pareja, calf_speed < cow_speed) -> huyen JUNTAS a ese ritmo.
+            # Solo mientras el ternero siga en juego (vivo y no a salvo); si ya entró o murió, la madre huye a su
+            # ritmo. (Si ENCARA, adv ya es 0 -> el min no la afecta: la presa/defensora fijada sigue PARADA.)
+            if self.n_calves > 0:
+                pair = self.calf_alive & ~self.calf_safe
+                d = self.calf_defender[pair]
+                adv[d] = np.minimum(adv[d], self.calf_speed)
             self.cow_vel = head * adv[:, None]
             self.cows = cows + self.cow_vel * self.dt
         else:
@@ -844,7 +855,11 @@ class World:
             wander = np.zeros_like(wander)
         total = cohesion + wander
         speed = np.linalg.norm(total, axis=1, keepdims=True)
-        scale = np.minimum(1.0, self.cow_speed / np.maximum(speed, 1e-9))
+        # En ESCOLTA el ternero HUYE a su rapidez propia (calf_speed < cow_speed: la cría es más lenta); en
+        # pastoreo/combate sigue capado a cow_speed (INTACTO). La madre va capada a calf_speed -> la pareja
+        # migra junta al ritmo del ternero, que la sigue sin rezagarse.
+        cap = self.calf_speed if escort else self.cow_speed
+        scale = np.minimum(1.0, cap / np.maximum(speed, 1e-9))
         prev = self.calves
         self.calf_vel += self.cow_inertia * (total * scale - self.calf_vel)
         self.calves = self.calves + self.calf_vel * self.dt

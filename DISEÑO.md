@@ -10,7 +10,8 @@
 > escala biológica absoluta · dispersión del rebaño · movimiento de drones · detectar→acercarse→confirmar ·
 > **guiado al refugio (paso 2)** · **huida NO-HOLONÓMICA en ESCOLTA** (pin) · **DISUASIÓN del dron** (radio CORTO + bordeo, parcial) ·
 > **MATANZA EXCEDENTE** (el paquete caza hasta agotar) · **ATAQUE ENVOLVENTE** (una adulta clavada es matable) ·
-> **EVITACIÓN al huir** (las no-fijadas RODEAN a los lobos camino del establo).
+> **EVITACIÓN al huir** (las no-fijadas RODEAN a los lobos camino del establo) · **la MADRE no abandona al ternero**
+> (huyen juntos al ritmo de la cría, más lenta).
 > **Pendiente:** POSICIONAMIENTO del coordinador (interponer drones para bajar la severidad) · corzos ·
 > congelar baseline v2 · coordinadores (reflejo trivial, MARL).
 > **Commits:** `194a3ad` base · `37910b3` terminal · `e663504` disparador por dron · `4d1e708` campo
@@ -18,22 +19,20 @@
 > drones (3a) · `fd893b8` detectar→confirmar (3b) · `49e0e22` consolidar DISEÑO+CLAUDE · `144b7bd` guiado (paso 2)
 > · `1d44cdc` máx. 1 caza/episodio (REVERTIDO) · `56ff75d` huida no-holonómica · `f42456f` dos correcciones huida ·
 > `26bce79` disuasión del dron · `bd57a8f` matanza excedente · `1b54b49` fix pin + envolvente · `bbee8c0`
-> evitación al huir · `e15d43d` el más cercano investiga · `<este commit>` afinar disuasión (radio corto + bordeo).
+> evitación al huir · `e15d43d` el más cercano investiga · `5a9dddb` afinar disuasión (radio corto + bordeo) ·
+> `<este commit>` la madre no abandona al ternero.
 >
-> **Patch — AFINAR LA DISUASIÓN: radio CORTO + el lobo BORDEA al dron con naturalidad.** Dos observaciones del
-> render: (1) el radio era demasiado grande (los lobos reaccionaban de lejos); (2) un dron QUIETO interpuesto
-> entre el lobo y las vacas dejaba al lobo "super lento", bordeándolo poco a poco (antinatural). Causa de lo 2º:
-> la repulsión RADIAL cancelaba la persecución → fuerza neta ≈ 0 → atasco geométrico. Dos cambios: **(1) radio
-> CORTO** `DETER_RADIUS` 40→**20** m (el lobo es AUDAZ, reacciona solo de cerca; no la banda 30-50 de presas
-> asustadizas). **(2) componente TANGENCIAL** (`DETER_TANGENT`=6, + frenazo `DETER_SLOWDOWN` 0.5→**0.7**): cuando
-> el dron se interpone, el lobo **ARQUEA** alrededor por el lado que lo acerca a la presa (máx. de frente) en vez
-> de empujar contra la repulsión → **bordeo natural** a ritmo razonable (vel ~×2 vs el atasco). El balance del PIN
-> intacto (`deter_w` escala radial+tangencial: el comprometido ≤`r_face_safe` empuja a través). **Efecto medido:**
-> severidad v2 **~2.33 → ~4.17** (tasa 80%): el radio corto + frenazo suave dejan al Dummy QUIETO cubrir mucho
-> menos (el radio ancho daba demasiada disuasión PASIVA) → **el posicionamiento del coordinador importa MÁS**.
-> **face_check 12/12** (la disuasión no corre con `escort_enabled=False` → bit a bit). **NO** toca presa fijada/ENCARAR, combate/pastoreo, envolvente, guiado, detección, coordinador,
-> baseline.py. Verificado en `escort_check` 1d (esquiva+frena · parcial · APARTA al que se ACERCA de lejos —con
-> radio corto un dron quieto previene pines pero ya no expulsa uno cerrado: eso es el coordinador) + `escort_bordeo.gif`.
+> **Patch — LA MADRE NO ABANDONA AL TERNERO: huyen juntos al ritmo de la cría.** Una vaca con ternero huía a
+> rapidez de adulta y lo dejaba atrás. Ahora, en HUIR (ESCOLTA): el ternero tiene rapidez propia `calf_speed`=0.8
+> m/s (< `cow_speed`=1.2; la cría es más lenta) y una DEFENSORA que HUYE **no lo ADELANTA** (su avance se capa a
+> `calf_speed`, la más lenta de la pareja) → migran **JUNTAS** a ese ritmo, a su lado. Solo mientras el ternero
+> siga en juego; si ENCARA (presa/defensora fijada) avanza 0 → **Bug 1 intacto**; `calf_safe`⟺ternero DENTRO
+> **intacto** (Bug 2). **Consecuencia (no bug):** la pareja es más LENTA → más vulnerable (los depredadores van a
+> por las crías) → trabajo claro para los drones. **Efecto medido:** severidad v2 **~4.17 → ~4.05** (≈igual, ruido;
+> mismo reparto 32/4/4). **face_check 12/12** (pastoreo/combate capado a `cow_speed`, bit a bit). **NO** toca
+> presa fijada/ENCARAR, combate/pastoreo, disuasión, envolvente, guiado, detección, coordinador,
+> baseline.py. Verificado en `escort_check` 1g (no la deja atrás: gap ≤2.2 m, madre ≤`calf_speed` · llegan juntos ·
+> pareja más lenta que adulta sola 1123 vs 730 · fijado→ENCARAR intacto) + `escort_madre_ternero.gif`.
 >
 > **Patch — FIX PIN: 4 lobos no mataban a una adulta CLAVADA en ESCOLTA (+ ataque ENVOLVENTE + disuasión
 > parcial a corta).** Regresión: una adulta clavada era **invulnerable** a un paquete que la rodeaba.
@@ -411,7 +410,12 @@ vs ternero salió **0%** (la madre frena siempre con los parámetros actuales); 
   fija, otro la flanquea = pin-and-flank), y hace concreto el trabajo del dron: **despejar lobos para que la
   vaca reanude la huida**. El cono/`face_cooldown` aplican igual; los terneros migran **anclados** a su
   defensora (la pareja para/huye junta) y se marcan a salvo **solo cuando el ternero está dentro** (sigue
-  migrando hasta entrar él, aunque su madre ya esté a salvo). **Pastoreo/combate sigue HOLONÓMICO e intacto** (face_check no se
+  migrando hasta entrar él, aunque su madre ya esté a salvo). **La MADRE no abandona al ternero:** el ternero
+  huye a su rapidez propia `calf_speed`=0.8 m/s (< `cow_speed`; la cría es más lenta) y una **DEFENSORA que HUYE
+  no lo ADELANTA** → su avance se capa a `calf_speed` (la más lenta de la pareja) → migran **JUNTAS** a ese ritmo
+  → la pareja es **más LENTA = más vulnerable** (los depredadores van a por las crías; trabajo claro para los
+  drones: proteger a la pareja lenta). Solo mientras el ternero siga en juego; si ENCARA, avanza 0 (el pin manda).
+  **Pastoreo/combate sigue HOLONÓMICO e intacto** (face_check no se
   toca: en pastoreo las vacas están casi quietas → la restricción no cambia nada ahí). El dron que **despeja
   el pin** ya existe: ver **DISUASIÓN ✅** (§4.1) — un dron ACTIVE cerca hace al lobo esquivar+frenar y sale
   de `r_notice` → la vaca reanuda. Pendiente: **POSICIONAMIENTO del coordinador** (mandar los drones a
@@ -706,18 +710,19 @@ Decisiones de diseño ratificadas:
   ~1/5 de episodios son lobo-solo → TIMEOUT.
 - **Candidata a v2 (Dummy + GUIADO + NO-HOLONÓMICO + DISUASIÓN + MATANZA EXCEDENTE + ENVOLVENTE + EVITACIÓN) —
   BASELINE HONESTA:** medida en `escort_check` (`escort_enabled=True`). La **SEVERIDAD** (cabezas perdidas) es la
-  métrica principal: **~4.17 muertes/episodio** (tasa ≥1 ~80%; reparto `predation 32 / timeout 4 / success 4` en
+  métrica principal: **~4.05 muertes/episodio** (tasa ≥1 ~80%; reparto `predation 32 / timeout 4 / success 4` en
   40 seeds). *Trayectoria: el bug del pin la FALSEABA a ~1.55 (clavada invulnerable → cazas suprimidas, TIMEOUT
   espurio); el ENVOLVENTE + disuasión parcial la subió a su valor REAL ~2.73 (clavada matable, TIMEOUT 13→3);
   la EVITACIÓN al huir la bajó a ~2.27 (las no-fijadas RODEAN al paquete y escapan más); el reflejo del más
   cercano la dejó en ~2.33; afinar la disuasión (radio 40→20 + bordeo, frenazo 0.5→0.7) la subió a ~4.17 —el dron
   reacciona solo de CERCA, así que el Dummy QUIETO cubre mucho menos; antes el radio ancho daba demasiada
-  disuasión PASIVA—.* Frente al **adversario
+  disuasión PASIVA—; la pareja madre-ternero LENTA (la madre no la adelanta) la dejó en ~4.05 (≈igual, ruido).*
+  Frente al **adversario
   puro** (`escort_enabled=False`): **~6.33 muertes/ep** (tasa ~87%, máx. 8). Es decir, **guiado + disuasión
-  PASIVA + rodeo bajan la severidad de ~6.3 a ~4.2** aun con Dummy (parcial, ahora más flojo a propósito). El balance
+  PASIVA + rodeo bajan la severidad de ~6.3 a ~4.1** aun con Dummy (parcial, ahora más flojo a propósito). El balance
   huida/lobo sigue locked (no se tocan `cow_speed`/`wolf_speed` ni se mete sprint): la **SEVERIDAD** la bajará el
   **POSICIONAMIENTO** del coordinador (interponer drones CERCA, despejar pins activamente, post-v2 — ahora importa MÁS).
-  **Esta severidad honesta (~4.17) es la referencia a batir.**
+  **Esta severidad honesta (~4.05) es la referencia a batir.**
 - **v2 se congelará tras la escolta** (con disuasión + matanza excedente dentro, antes del coordinador), con la
   dinámica definitiva (config + 100 seeds), y pasará a ser el adversario fijo contra el que se miden ambas ramas.
 - La batería es **ortogonal** (qué drones hay disponibles, no la dinámica vaca/lobo) → no mueve el
@@ -871,11 +876,23 @@ para). El PIN intacto (`deter_w` escala radial+tangencial; el comprometido empuj
 al que se ACERCA de lejos: con radio corto un dron quieto PREVIENE pines pero ya no expulsa uno cerrado —eso es el
 coordinador—) + `escort_bordeo.gif` (el lobo ignora al dron de lejos y arquea ~9.5 m al entrar en R=20).
 
+**Escolta · LA MADRE NO ABANDONA AL TERNERO HECHO — huyen juntos al ritmo del ternero.** Una vaca con ternero
+huía a rapidez de adulta y lo dejaba atrás. Ahora, en HUIR (ESCOLTA): el ternero tiene rapidez propia
+`calf_speed`=0.8 m/s (< `cow_speed`=1.2; la cría es más lenta) y una DEFENSORA que HUYE **no lo ADELANTA** (su
+avance se capa a `calf_speed`, la más lenta de la pareja) → migran **JUNTAS** a ese ritmo, a su lado (el anclaje
+ya los junta). Solo mientras el ternero siga en juego; si ENCARA (presa/defensora fijada) avanza 0 → **Bug 1
+intacto**. `calf_safe`⟺ternero DENTRO **intacto** (Bug 2). En pastoreo el ternero sigue capado a `cow_speed`
+(combate/face_check **bit a bit**). **Consecuencia (no bug):** la pareja es más LENTA → más vulnerable (realista:
+los depredadores van a por las crías) → trabajo claro para los drones. **Severidad v2 ~4.17→~4.05** (≈igual,
+ruido; mismo reparto 32/4/4; medida, NO objetivo). **face_check 12/12.** Verificado en `escort_check` 1g (no la
+deja atrás: gap ≤2.2 m, rapidez madre ≤`calf_speed` · llegan juntos · pareja más lenta que adulta sola: 1123 vs
+730 pasos · fijado→ENCARAR intacto) + `escort_madre_ternero.gif`.
+
 **SIGUIENTE (opciones):**
 - **POSICIONAMIENTO del coordinador (lo que baja la SEVERIDAD):** la disuasión ya existe; falta que el
   coordinador **mande los drones a interponerse** entre los lobos y la presa (despejar pins activamente,
   no solo la disuasión pasiva del Dummy). Eso es el **coordinador** (post-congelar-v2): baja la severidad
-  (~4.17, la referencia honesta — ahora importa MÁS, el Dummy quieto cubre poco) y desbloquea el ÉXITO. + hooks de batería (travel-time, hueco de cobertura, dron tirado).
+  (~4.05, la referencia honesta — ahora importa MÁS, el Dummy quieto cubre poco) y desbloquea el ÉXITO. + hooks de batería (travel-time, hueco de cobertura, dron tirado).
 - **3c — corzos / cuerpos no-amenaza:** contactos que NO son lobos → la confirmación geométrica deja de ser
   trivial (falsa alarma) → rama SOSPECHA→VIGILANCIA (abortar) + lógica de descartar; aquí entra el coste de
   investigar de más. (Sigue sin clasificador real; eso es la fase YOLO.)
@@ -883,11 +900,12 @@ Luego: percepción → reflejo trivial → MARL → comparación. **Congelar bas
 
 **Ruta sugerida (orden tentativo, aún sin decidir):** 3a ✓ → 3b ✓ → **paso 2 (guiado) ✓** → **disuasión del
 dron ✓** → **matanza excedente ✓** → **fix pin + envolvente ✓** → **evitación al huir ✓** → **el más cercano
-investiga ✓** → **afinar disuasión (radio corto + bordeo) ✓** (severidad v2 honesta ~4.17) → **3c (corzos)** → **congelar v2** → **coordinador: posicionar/interponer drones** + reflejo-reactivo → **MARL**.
+investiga ✓** → **afinar disuasión (radio corto + bordeo) ✓** → **madre no abandona al ternero ✓** (severidad v2 honesta ~4.05) → **3c (corzos)** → **congelar v2** → **coordinador: posicionar/interponer drones** + reflejo-reactivo → **MARL**.
 
 *(Pendiente de decisión menor, NO en este paso: lobo solo vs ternero salió 0% — la madre frena siempre.
 Si se quiere que sea disputado (a veces se cuela), afinar `face_cooldown`/`r_face_safe`. Parámetros del
-modelo vaca/ternero: `calf_count_probs`=(1/3,1/3,1/3), `k_calf_cohesion`=1.0, `k_defender_anchor`=0.6,
+modelo vaca/ternero: `calf_count_probs`=(1/3,1/3,1/3), `calf_speed`=0.8 m/s (< `cow_speed`; la cría es más
+lenta, la madre no la adelanta al huir), `k_calf_cohesion`=1.0, `k_defender_anchor`=0.6,
 `calf_personal_space`=0.5·`capture_radius`≈1.5 m (ternero al lado), `wander_calm`=0.2 (rapidez de
 pastoreo); `cow_spread`=`HERD_SPREAD`=40 m, `r_separation`=`HERD_SEPARATION`=22 m (rebaño disperso, ABSOLUTO);
 `wolf_spawn_dispersion`=0.05·min (cúmulo de spawn); `wolf_skirt_gain`=1.5, `wolf_skirt_margin`=`r_face_safe`
