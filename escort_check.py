@@ -17,6 +17,7 @@ fijada se refugia, la manada RE-SELECCIONA (única re-fijación permitida). Dron
   1e) ADULTA CLAVADA matable: ataque ENVOLVENTE (rumbos repartidos ~N/E/S/O); con/sin dron (la disuasión retrasa, no invulnerabiliza).
   1f) Las vacas NO-fijadas RODEAN a los lobos al HUIR (no atraviesan) y siguen llegando; la presa fijada sigue ENCARANDO.
   1g) La MADRE no abandona al ternero al HUIR: avanza a calf_speed (la cría es más lenta), a su lado, llegan juntos; pareja más lenta; fijado->ENCARAR intacto.
+  1h) El LOBO no se clava en la ZONA SEGURA: la BORDEA (tangencial en la frontera, no entra) y suelta a la presa refugiada al instante (re-fija fuera).
   2) DEPREDACIÓN forzada (multi-muerte; cuanta más, peor -> cuenta)
   3) TIMEOUT forzado
   4) Refugio = soltar presa (re-fijación SOLO al refugiarse; 0 en otro caso)
@@ -532,6 +533,56 @@ def test_madre_no_abandona():
     print("  OK\n")
 
 
+def test_zona_bordeo():
+    print("=== 1h) El LOBO no se clava en la ZONA SEGURA: la BORDEA (no entra) y suelta a la presa refugiada ===")
+    from world import WOLF_ZONE_SKIRT_BAND as ZB
+    w0 = World(seed=0)
+    print("  zona segura: radio=%.1f m (=%.0f%% del lado de %.0f m, %.1f%% del área) | central radio=%.1f m"
+          % (w0.safe_zone[2], 100*w0.safe_zone[2]/w0.W, w0.W,
+             100*np.pi*w0.safe_zone[2]**2/(w0.W*w0.H), w0.central_station[2]))
+
+    def chase_across(perp_off):
+        """Lobo al ESTE de la zona; presa fijada al OESTE (al otro lado). perp_off=0 -> colineal exacto (saddle).
+        ¿Bordea (min dist a la presa baja) y se queda FUERA, o se clava en el borde (min ~ inicial)?"""
+        w = World(seed=0, n_cows=1, wolves_min=1, wolves_max=1, calf_count_probs=NO_CALVES)
+        c = DummyCoordinator(w.n_drones)
+        w.phase = "ESCOLTA"
+        C, r = w.safe_zone[:2], w.safe_zone[2]
+        prey = C + np.array([-r - 25.0, 0.0])
+        w.cows[0] = prey.copy(); w.cow_vel[0] = 0.0; w.cow_speeds[0] = 0.0
+        w.wolves[0] = C + np.array([r + 3.0, perp_off]); w.wolf_vel[0] = 0.0
+        w.pack_prey, w.pack_prey_kind = 0, "adult"
+        d0 = float(np.linalg.norm(w.wolves[0] - prey)); mind = np.inf; entered = False
+        for _ in range(400):
+            w.cows[0] = prey.copy(); w.cow_vel[0] = 0.0
+            w.pack_prey, w.pack_prey_kind = 0, "adult"
+            w.step(c.act(None))
+            mind = min(mind, float(np.linalg.norm(w.wolves[0] - prey)))
+            entered = entered or (float(np.linalg.norm(w.wolves[0] - C)) < r)
+        return d0, mind, entered
+
+    for off, tag in [(0.0, "colineal exacto (saddle)"), (4.0, "ligero desfase")]:
+        d0, mind, entered = chase_across(off)
+        print("  desfase=%.0f m (%-24s): dist lobo-presa %.0f -> MIN %.1f m | entró en la zona=%s" % (off, tag, d0, mind, entered))
+        assert mind < d0 - 30.0, "FALLO: el lobo no bordeó la zona (sigue clavado en el borde)"
+        assert not entered, "FALLO: el lobo ENTRÓ en la zona segura (debe quedarse fuera)"
+    # Suelta a la presa refugiada al INSTANTE: re-fija a la res viva FUERA (no persigue dentro de la zona).
+    w = World(seed=0, n_cows=2, wolves_min=2, wolves_max=2, calf_count_probs=NO_CALVES)
+    c = DummyCoordinator(w.n_drones)
+    w.phase = "ESCOLTA"
+    C, r = w.safe_zone[:2], w.safe_zone[2]
+    w.cows[0] = C + np.array([r - w.refuge_margin - 1.0, 0.0])         # presa 0 ya dentro del margen -> a salvo
+    w.cows[1] = C + np.array([0.0, r + 40.0]); w.cow_speeds[1] = 0.0   # otra res viva FUERA
+    w.wolves[:] = np.array([C + [r + 4.0, 0.0], C + [r + 8.0, 2.0]]); w.wolf_vel[:] = 0.0
+    w.pack_prey, w.pack_prey_kind = 0, "adult"
+    w.step(c.act(None))
+    print("  presa 0 a salvo=%s | tras refugio re-fija a presa=%d (%s) = la res viva FUERA, no la refugiada"
+          % (bool(w.cow_safe[0]), int(w.pack_prey), w.pack_prey_kind))
+    assert w.cow_safe[0], "FALLO: la presa no se refugió"
+    assert int(w.pack_prey) == 1, "FALLO: no soltó la presa refugiada / no re-fijó a la res de fuera al instante"
+    print("  OK\n")
+
+
 def _pin_scene(with_drone):
     """Adulta CLAVADA (ESCOLTA) FUERA del establo + 4 lobos a 10 m en N/E/S/O. Sin/con un dron a tiro."""
     w = World(seed=0, n_cows=1, wolves_min=4, wolves_max=4, calf_count_probs=NO_CALVES,
@@ -748,10 +799,10 @@ def test_tasa_escolta():
           % (100 * g_out["predation"] / n_g, np.mean(g_deaths), max(g_deaths)))
     print("  ADVERSARIO PURO (escort_enabled=False: sin escolta ni drones), n=%d: %s | tasa=%.0f%% | SEVERIDAD=%.2f (máx=%d)"
           % (n_u, dict(u_out), 100 * u_out["predation"] / n_u, np.mean(u_deaths), max(u_deaths)))
-    print("  -> BASELINE HONESTA (pin matable; NO-fijadas RODEAN; disuasión radio CORTO + bordeo; pareja madre-ternero lenta):")
-    print("     SEVERIDAD ~4.1 muertes/ep (subió desde ~2.33 al acortar el radio 40->20 y suavizar el frenazo: el")
-    print("     dron reacciona solo de CERCA -> el Dummy QUIETO cubre mucho menos; antes el radio ancho daba demasiada")
-    print("     disuasión PASIVA). La disuasión PARCIAL aún baja la severidad frente al adversario puro (~6.3) pero")
+    print("  -> BASELINE HONESTA (pin matable; NO-fijadas RODEAN; disuasión radio CORTO + bordeo; pareja lenta; lobos no se pillan en la zona):")
+    print("     SEVERIDAD ~4.4 muertes/ep (subió desde ~2.33 al acortar el radio 40->20 y suavizar el frenazo —el dron")
+    print("     reacciona solo de CERCA, el Dummy QUIETO cubre mucho menos—, y un poco más al dejar de pillarse los lobos")
+    print("     en la zona segura —ya no pierden tiempo—). La disuasión PARCIAL aún baja la severidad frente al adv. puro (~6.3) pero")
     print("     POCO; el coordinador (posicionar drones CERCA) la bajará de verdad -> post-v2; ESTA es la referencia a batir.")
     assert max(g_deaths) >= 2 or max(u_deaths) >= 2, "FALLO: ningún episodio con >1 caza (la matanza excedente no ocurre)"
     assert g_out["success"] >= 1, "FALLO: debería haber ÉXITO orgánico en alguna seed"
@@ -900,6 +951,37 @@ def save_madre_animation():
           " (huyen juntos al ritmo del ternero)\n" % (len(hist), bool(w.cow_safe[dfn]), bool(w.calf_safe[0]), maxgap))
 
 
+def save_zona_animation():
+    print("=== Ojeo: ZONA SEGURA — el lobo BORDEA la zona (no se clava) tras refugiarse su presa ===")
+    # Una presa a punto de refugiarse + otra res viva al OTRO LADO de la zona. Al refugiarse la presa, el
+    # paquete re-fija a la de fuera; el lobo, en vez de clavarse en el borde, ARQUEA alrededor de la zona
+    # (por fuera) para alcanzarla. Sin lobo->presa forzado: lo mueve la caza. render dibuja la zona segura.
+    w = World(seed=0, n_cows=2, wolves_min=2, wolves_max=2, calf_count_probs=NO_CALVES, max_episode_steps=600)
+    c = DummyCoordinator(w.n_drones)
+    w.phase = "ESCOLTA"
+    C, r = w.safe_zone[:2], w.safe_zone[2]
+    w.cows[0] = C + np.array([r - w.refuge_margin - 1.0, 0.0])         # presa 0: se refugia en el primer paso
+    w.cow_heading[0] = np.arctan2(C[1]-w.cows[0,1], C[0]-w.cows[0,0])
+    w.cows[1] = C + np.array([-r - 30.0, 0.0]); w.cow_speeds[1] = 0.0  # res viva al OTRO LADO (oeste), quieta
+    w.cow_heading[1] = 0.0
+    w.wolves[:] = np.array([C + [r + 4.0, 0.0], C + [r + 7.0, 4.0]]); w.wolf_vel[:] = 0.0   # lobos al ESTE
+    w.pack_prey, w.pack_prey_kind = 0, "adult"
+    hist = [w.snapshot()]; entered = False; mind = np.inf
+    for step in range(600):
+        w.cows[1] = C + np.array([-r - 30.0, 0.0]); w.cow_vel[1] = 0.0   # mantener la res de fuera quieta (aísla el bordeo)
+        _, _, term, trunc, _ = w.step(c.act(None))
+        entered = entered or bool(w.n_wolves > 0 and (np.linalg.norm(w.wolves - C, axis=1) < r).any())
+        if w.cow_alive[1] and not w.cow_safe[1]:
+            mind = min(mind, float(np.linalg.norm(w.wolves - w.cows[1], axis=1).min()))
+        if step % 2 == 0 or term or trunc:
+            hist.append(w.snapshot())
+        if (not w.cow_alive[1]) or term or trunc:
+            break
+    render_episode(w, hist, save_path="escort_zona_bordeo.gif")
+    print("  escort_zona_bordeo.gif: %d frames | algún lobo entró en la zona=%s | min dist lobo-res(otro lado)=%.1f m"
+          " (bordea la zona para alcanzarla)\n" % (len(hist), entered, mind))
+
+
 def save_pin_animations():
     print("=== Ojeo: PIN — envolvente que MATA a una clavada, y un dron que RETRASA/REDUCE (no invulnerabiliza) ===")
     # (1) ENVOLVENTE: 4 lobos arrancando APIÑADOS en un costado de una adulta clavada -> se reparten
@@ -1022,6 +1104,7 @@ if __name__ == "__main__":
     test_pin_envolvente()
     test_rodeo()
     test_madre_no_abandona()
+    test_zona_bordeo()
     test_depredacion()
     test_timeout()
     test_refugio_suelta_presa()
@@ -1034,6 +1117,7 @@ if __name__ == "__main__":
     save_pin_animations()
     save_rodeo_animation()
     save_madre_animation()
+    save_zona_animation()
     save_deterrence_animation()
     save_bordeo_animation()
     save_detection_animation(far_seed)

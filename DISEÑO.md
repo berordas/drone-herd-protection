@@ -11,7 +11,7 @@
 > **guiado al refugio (paso 2)** · **huida NO-HOLONÓMICA en ESCOLTA** (pin) · **DISUASIÓN del dron** (radio CORTO + bordeo, parcial) ·
 > **MATANZA EXCEDENTE** (el paquete caza hasta agotar) · **ATAQUE ENVOLVENTE** (una adulta clavada es matable) ·
 > **EVITACIÓN al huir** (las no-fijadas RODEAN a los lobos camino del establo) · **la MADRE no abandona al ternero**
-> (huyen juntos al ritmo de la cría, más lenta).
+> (huyen juntos al ritmo de la cría, más lenta) · **los LOBOS no se pillan en la zona segura** (la BORDEAN, no entran).
 > **Pendiente:** POSICIONAMIENTO del coordinador (interponer drones para bajar la severidad) · corzos ·
 > congelar baseline v2 · coordinadores (reflejo trivial, MARL).
 > **Commits:** `194a3ad` base · `37910b3` terminal · `e663504` disparador por dron · `4d1e708` campo
@@ -20,19 +20,22 @@
 > · `1d44cdc` máx. 1 caza/episodio (REVERTIDO) · `56ff75d` huida no-holonómica · `f42456f` dos correcciones huida ·
 > `26bce79` disuasión del dron · `bd57a8f` matanza excedente · `1b54b49` fix pin + envolvente · `bbee8c0`
 > evitación al huir · `e15d43d` el más cercano investiga · `5a9dddb` afinar disuasión (radio corto + bordeo) ·
-> `<este commit>` la madre no abandona al ternero.
+> `101558f` la madre no abandona al ternero · `<este commit>` los lobos no se pillan en la zona segura.
 >
-> **Patch — LA MADRE NO ABANDONA AL TERNERO: huyen juntos al ritmo de la cría.** Una vaca con ternero huía a
-> rapidez de adulta y lo dejaba atrás. Ahora, en HUIR (ESCOLTA): el ternero tiene rapidez propia `calf_speed`=0.8
-> m/s (< `cow_speed`=1.2; la cría es más lenta) y una DEFENSORA que HUYE **no lo ADELANTA** (su avance se capa a
-> `calf_speed`, la más lenta de la pareja) → migran **JUNTAS** a ese ritmo, a su lado. Solo mientras el ternero
-> siga en juego; si ENCARA (presa/defensora fijada) avanza 0 → **Bug 1 intacto**; `calf_safe`⟺ternero DENTRO
-> **intacto** (Bug 2). **Consecuencia (no bug):** la pareja es más LENTA → más vulnerable (los depredadores van a
-> por las crías) → trabajo claro para los drones. **Efecto medido:** severidad v2 **~4.17 → ~4.05** (≈igual, ruido;
-> mismo reparto 32/4/4). **face_check 12/12** (pastoreo/combate capado a `cow_speed`, bit a bit). **NO** toca
-> presa fijada/ENCARAR, combate/pastoreo, disuasión, envolvente, guiado, detección, coordinador,
-> baseline.py. Verificado en `escort_check` 1g (no la deja atrás: gap ≤2.2 m, madre ≤`calf_speed` · llegan juntos ·
-> pareja más lenta que adulta sola 1123 vs 730 · fijado→ENCARAR intacto) + `escort_madre_ternero.gif`.
+> **Patch — LOS LOBOS NO SE PILLAN EN LA ZONA SEGURA: la BORDEAN.** Un lobo que perseguía HACIA la zona segura (su
+> presa se refugió, o su objetivo está al otro lado) se quedaba CLAVADO en el borde: la persecución apunta DENTRO y
+> el clamp `_push_outside_circle` lo frena de frente → fuerza neta ~0 (mismo ATASCO RADIAL que con el dron; medido:
+> desplaz. neto ~3.6 m en 200 pasos). **Fix:** cerca de la frontera (`WOLF_ZONE_SKIRT_BAND`=20 m) una componente
+> **TANGENCIAL** (`WOLF_ZONE_SKIRT_GAIN`=3; sumada a `desired` antes de normalizar → solo redirige, no acelera;
+> desempate de lado DETERMINISTA → robusto al saddle colineal) hace que el lobo **BORDEE** la zona **por FUERA** (no
+> entra: el clamp sigue) hasta el objetivo del otro lado. La presa refugiada ya se **soltaba al instante**
+> (`_prey_lost_reason`=="refuge" el mismo paso que `cow_safe` → re-fija la viva más cercana FUERA; verificado, sin
+> cambios). Gateado por `escort_enabled` → en combate la presa no se refugia → **face_check bit a bit**. **Tamaño de
+> la zona (reportado, NO cambiado):** `safe_radius`=0.12·min(W,H)=**36 m** (12% del lado, 4.5% del área; central 15 m)
+> — decisión de diseño del usuario. **Consecuencia (no bug):** lobos más eficientes (no pierden tiempo pillados) →
+> severidad v2 **~4.05 → ~4.40** (el bug la bajaba artificialmente; medida, NO objetivo). **NO** toca vacas
+> (huida/encarar/madre-ternero), combate/pastoreo, disuasión al dron, envolvente, detección, coordinador, baseline.py,
+> ni el tamaño de la zona. Verificado en `escort_check` 1h (bordea: 100→6 m incl. saddle · NO entra · suelta al instante) + `escort_zona_bordeo.gif`.
 >
 > **Patch — FIX PIN: 4 lobos no mataban a una adulta CLAVADA en ESCOLTA (+ ataque ENVOLVENTE + disuasión
 > parcial a corta).** Regresión: una adulta clavada era **invulnerable** a un paquete que la rodeaba.
@@ -710,19 +713,20 @@ Decisiones de diseño ratificadas:
   ~1/5 de episodios son lobo-solo → TIMEOUT.
 - **Candidata a v2 (Dummy + GUIADO + NO-HOLONÓMICO + DISUASIÓN + MATANZA EXCEDENTE + ENVOLVENTE + EVITACIÓN) —
   BASELINE HONESTA:** medida en `escort_check` (`escort_enabled=True`). La **SEVERIDAD** (cabezas perdidas) es la
-  métrica principal: **~4.05 muertes/episodio** (tasa ≥1 ~80%; reparto `predation 32 / timeout 4 / success 4` en
+  métrica principal: **~4.40 muertes/episodio** (tasa ≥1 ~82%; reparto `predation 33 / timeout 3 / success 4` en
   40 seeds). *Trayectoria: el bug del pin la FALSEABA a ~1.55 (clavada invulnerable → cazas suprimidas, TIMEOUT
   espurio); el ENVOLVENTE + disuasión parcial la subió a su valor REAL ~2.73 (clavada matable, TIMEOUT 13→3);
   la EVITACIÓN al huir la bajó a ~2.27 (las no-fijadas RODEAN al paquete y escapan más); el reflejo del más
   cercano la dejó en ~2.33; afinar la disuasión (radio 40→20 + bordeo, frenazo 0.5→0.7) la subió a ~4.17 —el dron
   reacciona solo de CERCA, así que el Dummy QUIETO cubre mucho menos; antes el radio ancho daba demasiada
-  disuasión PASIVA—; la pareja madre-ternero LENTA (la madre no la adelanta) la dejó en ~4.05 (≈igual, ruido).*
+  disuasión PASIVA—; la pareja madre-ternero LENTA la dejó en ~4.05 (≈igual); que los lobos dejen de PILLARSE en la
+  zona segura la subió a ~4.40 (más eficientes, ya no pierden tiempo en el borde; el bug la bajaba artificialmente).*
   Frente al **adversario
   puro** (`escort_enabled=False`): **~6.33 muertes/ep** (tasa ~87%, máx. 8). Es decir, **guiado + disuasión
-  PASIVA + rodeo bajan la severidad de ~6.3 a ~4.1** aun con Dummy (parcial, ahora más flojo a propósito). El balance
+  PASIVA + rodeo bajan la severidad de ~6.3 a ~4.4** aun con Dummy (parcial, ahora más flojo a propósito). El balance
   huida/lobo sigue locked (no se tocan `cow_speed`/`wolf_speed` ni se mete sprint): la **SEVERIDAD** la bajará el
   **POSICIONAMIENTO** del coordinador (interponer drones CERCA, despejar pins activamente, post-v2 — ahora importa MÁS).
-  **Esta severidad honesta (~4.05) es la referencia a batir.**
+  **Esta severidad honesta (~4.40) es la referencia a batir.**
 - **v2 se congelará tras la escolta** (con disuasión + matanza excedente dentro, antes del coordinador), con la
   dinámica definitiva (config + 100 seeds), y pasará a ser el adversario fijo contra el que se miden ambas ramas.
 - La batería es **ortogonal** (qué drones hay disponibles, no la dinámica vaca/lobo) → no mueve el
@@ -888,11 +892,26 @@ ruido; mismo reparto 32/4/4; medida, NO objetivo). **face_check 12/12.** Verific
 deja atrás: gap ≤2.2 m, rapidez madre ≤`calf_speed` · llegan juntos · pareja más lenta que adulta sola: 1123 vs
 730 pasos · fijado→ENCARAR intacto) + `escort_madre_ternero.gif`.
 
+**Escolta · LOS LOBOS NO SE PILLAN EN LA ZONA SEGURA HECHO — la BORDEAN.** Un lobo que perseguía HACIA la zona
+segura (su presa se refugió, o su objetivo está al otro lado) se quedaba CLAVADO en el borde: la persecución
+apunta DENTRO y el clamp `_push_outside_circle` lo frena de frente → fuerza neta ~0 (mismo ATASCO RADIAL que con
+el dron; medido: desplaz. neto ~3.6 m en 200 pasos). Fix: cerca de la frontera (`WOLF_ZONE_SKIRT_BAND`=20 m) una
+componente **TANGENCIAL** (`WOLF_ZONE_SKIRT_GAIN`=3, escala `block`·`falloff`, sumada a `desired` antes de
+normalizar → solo redirige, no acelera; desempate de lado DETERMINISTA → robusto al saddle colineal exacto) hace
+que el lobo **BORDEE** la zona **por FUERA** (no entra: el clamp sigue) hasta el objetivo del otro lado. La presa
+refugiada ya se **soltaba al instante** (`_prey_lost_reason`=="refuge" el mismo paso que `cow_safe` → re-fija la
+viva no-a-salvo más cercana, FUERA; verificado, sin cambios). Gateado por `escort_enabled` (en combate la presa
+no se refugia → **face_check bit a bit**). **Tamaño de la zona (reportado, NO cambiado):** `safe_radius`=0.12·min(W,H)=**36 m**
+(12% del lado, 4.5% del área del campo 300×300; central 15 m) — decisión de diseño del usuario. **Consecuencia
+(no bug):** los lobos son más eficientes (no pierden tiempo pillados) → **severidad v2 ~4.05→~4.40** (el bug la
+bajaba artificialmente; medida, NO objetivo). **face_check 12/12.** Verificado en `escort_check` 1h (bordea: min
+dist a la presa del otro lado 100→6 m incl. saddle colineal · NO entra · suelta la refugiada al instante) + `escort_zona_bordeo.gif`.
+
 **SIGUIENTE (opciones):**
 - **POSICIONAMIENTO del coordinador (lo que baja la SEVERIDAD):** la disuasión ya existe; falta que el
   coordinador **mande los drones a interponerse** entre los lobos y la presa (despejar pins activamente,
   no solo la disuasión pasiva del Dummy). Eso es el **coordinador** (post-congelar-v2): baja la severidad
-  (~4.05, la referencia honesta — ahora importa MÁS, el Dummy quieto cubre poco) y desbloquea el ÉXITO. + hooks de batería (travel-time, hueco de cobertura, dron tirado).
+  (~4.40, la referencia honesta — ahora importa MÁS, el Dummy quieto cubre poco) y desbloquea el ÉXITO. + hooks de batería (travel-time, hueco de cobertura, dron tirado).
 - **3c — corzos / cuerpos no-amenaza:** contactos que NO son lobos → la confirmación geométrica deja de ser
   trivial (falsa alarma) → rama SOSPECHA→VIGILANCIA (abortar) + lógica de descartar; aquí entra el coste de
   investigar de más. (Sigue sin clasificador real; eso es la fase YOLO.)
@@ -900,7 +919,7 @@ Luego: percepción → reflejo trivial → MARL → comparación. **Congelar bas
 
 **Ruta sugerida (orden tentativo, aún sin decidir):** 3a ✓ → 3b ✓ → **paso 2 (guiado) ✓** → **disuasión del
 dron ✓** → **matanza excedente ✓** → **fix pin + envolvente ✓** → **evitación al huir ✓** → **el más cercano
-investiga ✓** → **afinar disuasión (radio corto + bordeo) ✓** → **madre no abandona al ternero ✓** (severidad v2 honesta ~4.05) → **3c (corzos)** → **congelar v2** → **coordinador: posicionar/interponer drones** + reflejo-reactivo → **MARL**.
+investiga ✓** → **afinar disuasión (radio corto + bordeo) ✓** → **madre no abandona al ternero ✓** → **lobos no se pillan en la zona segura ✓** (severidad v2 honesta ~4.40) → **3c (corzos)** → **congelar v2** → **coordinador: posicionar/interponer drones** + reflejo-reactivo → **MARL**.
 
 *(Pendiente de decisión menor, NO en este paso: lobo solo vs ternero salió 0% — la madre frena siempre.
 Si se quiere que sea disputado (a veces se cuela), afinar `face_cooldown`/`r_face_safe`. Parámetros del
@@ -915,7 +934,9 @@ m/s (esquiva radial; > `wolf_speed` → cerca domina la esquiva), `DETER_TANGENT
 dron hacia la presa, rompe el atasco radial), `DETER_SLOWDOWN`=0.7 (rapidez máx dentro del radio; no se para);
 parcial a corta `deter_w` (≤`r_face_safe` empuja a través)**; **ENVOLVENTE: `wolf_envelop_gain`=3.0
 (reparto angular equiespaciado alrededor de la presa)**; **EVITACIÓN al HUIR: `COW_AVOID_RADIUS`=30 m,
-`W_REFUGIO`=1.0, `W_EVITAR`=1.3 (las no-fijadas rodean a los lobos; el establo domina el neto)** — constantes
+`W_REFUGIO`=1.0, `W_EVITAR`=1.3 (las no-fijadas rodean a los lobos; el establo domina el neto)**; **BORDEO de
+ZONAS PROHIBIDAS por el lobo: `WOLF_ZONE_SKIRT_BAND`=20 m (banda fuera de la frontera), `WOLF_ZONE_SKIRT_GAIN`=3
+(tangencial: bordea la zona por fuera, no se clava ni entra; `safe_radius`=0.12·min=36 m, NO se toca)** — constantes
 ABSOLUTAS cerca de cabecera, afinables; presa adulta por exposición, fijada en t=0; presa ternero override con
 1 lobo; `prey_abandon_dist` DEPRECADO. Todos afinables por render.)*
 

@@ -78,6 +78,16 @@ COW_AVOID_RADIUS = 30.0   # m: radio en que una vaca que huye percibe/evita a un
 W_REFUGIO = 1.0           # peso del rumbo HACIA el establo (domina el neto: sigue llegando). TUNE
 W_EVITAR = 1.3            # peso de la EVITACIÓN de lobos (rodeo; falloff lineal con la distancia). TUNE
 
+# --- BORDEO de las ZONAS PROHIBIDAS (refugio/central) por el LOBO: un lobo que persigue HACIA una zona (su
+# presa se refugió, o su objetivo está al otro lado) se quedaba CLAVADO en el borde: la persecución apunta
+# DENTRO y el clamp (_push_outside_circle) lo frena de frente -> fuerza neta ~0 (mismo ATASCO RADIAL que con
+# el dron). Cerca de la frontera, una componente TANGENCIAL hace que el lobo ARQUEE alrededor de la zona (por
+# FUERA: no entra, el clamp sigue) para alcanzar objetivos al otro lado, en vez de empujar de frente. Análogo
+# al bordeo del dron y del rebaño. Gateado por escort_enabled (en combate la presa no se refugia -> NO aplica
+# -> face_check bit a bit). Afinables por render. ---
+WOLF_ZONE_SKIRT_BAND = 20.0   # m: banda FUERA de la frontera donde actúa el bordeo (reacciona cerca del borde). TUNE
+WOLF_ZONE_SKIRT_GAIN = 3.0    # peso del bordeo tangencial (relativo al impulso de caza); domina cerca del borde. TUNE
+
 
 class World:
     def __init__(
@@ -1011,6 +1021,30 @@ class World:
         rep_units = dd_w / np.maximum(ddn[:, :, None], 1e-9)
         repulsion = (rep_units * near[:, :, None]).sum(axis=1) * engaged_w[:, None] * self.wolf_repulsion_strength
         desired = desired + repulsion
+
+        # --- BORDEAR las ZONAS PROHIBIDAS (refugio/central): un lobo que persigue HACIA una zona se clavaba en
+        #     su borde (el clamp lo frena de frente -> atasco radial). Cerca de la frontera añade una TANGENCIAL
+        #     -> el lobo ARQUEA por FUERA de la zona hasta el objetivo del otro lado (NO entra: el clamp sigue).
+        #     Análogo al bordeo del dron y del rebaño. Se suma a `desired` (antes de normalizar) -> solo redirige,
+        #     no acelera. Gateado por escort_enabled (en combate la presa no se refugia -> face_check bit a bit).
+        if self.escort_enabled:
+            dnorm = np.linalg.norm(desired, axis=1, keepdims=True)
+            vd = desired / np.maximum(dnorm, 1e-9)               # dirección de caza por lobo
+            for circle in (self.safe_zone, self.central_station):
+                C, rz = circle[:2], circle[2]
+                to_zone = C - self.wolves                        # lobo -> centro de la zona
+                d = np.linalg.norm(to_zone, axis=1)
+                band = rz + WOLF_ZONE_SKIRT_BAND
+                near_z = (d < band) & (d > 1e-9)
+                if not near_z.any():
+                    continue
+                u = to_zone / np.maximum(d[:, None], 1e-9)       # hacia el centro de la zona
+                block = np.clip(np.sum(vd * u, axis=1), 0.0, 1.0)            # 1 = la caza apunta de frente a la zona
+                fall = np.clip((band - d) / WOLF_ZONE_SKIRT_BAND, 0.0, 1.0) * near_z  # 1 en el borde, 0 a `band`
+                perp = np.column_stack([-u[:, 1], u[:, 0]])
+                side = np.where(np.sum(perp * vd, axis=1) >= 0.0, 1.0, -1.0)  # lado que conserva el avance (det.)
+                tang = perp * side[:, None]                                   # tangente unitaria que rodea la zona
+                desired = desired + WOLF_ZONE_SKIRT_GAIN * (fall * block * dnorm.ravel())[:, None] * tang
 
         # Dirección deseada -> velocidad objetivo a rapidez plena (el "impulso de caza" hacia la presa/standoff).
         dn = np.linalg.norm(desired, axis=1, keepdims=True)
