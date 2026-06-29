@@ -8,17 +8,24 @@ el bucle y se lo pasamos a render_episode para reproducirlo.
 Bucle: reset -> [observar -> coordinar -> aplicar+step -> terminal] -> métricas.
 
 Uso:
-    python main.py        # seed aleatoria (cada ejecución cambia, p. ej. el nº de lobos)
-    python main.py 42     # seed fija -> episodio reproducible
+    python main.py                          # seed aleatoria; tipo de episodio sorteado (~1/3 solo-lobos / solo-corzos / mixto)
+    python main.py 42                       # seed fija -> episodio reproducible
+    python main.py --escenario solo-corzos  # FUERZA el tipo (solo-lobos / solo-corzos / mixto); ver corzos a voluntad
+    python main.py 42 --escenario mixto     # seed fija + tipo forzado
 """
 
 from __future__ import annotations
-import sys
+import argparse
 import numpy as np
 
 from world import World
 from coordinators import DummyCoordinator
 from render import render_episode
+
+# CLI --escenario -> episode_kind del World (3c). El mundo de la baseline v2 lleva corzos activos
+# (corzos_max>0) y sortea el tipo por episodio; --escenario lo fuerza para ver corzos sin depender del azar.
+ESCENARIOS = {"solo-lobos": "lobos", "solo-corzos": "corzos", "mixto": "mixto"}
+CORZOS_MAX = 3   # 1-3 corzos en los episodios que los tienen (mismo mundo v2 que mide la baseline por tipo)
 
 
 def run_episode(world: World, coordinator: DummyCoordinator):
@@ -37,8 +44,11 @@ def run_episode(world: World, coordinator: DummyCoordinator):
 
     metrics = {
         "outcome": world.status,
+        "episodio": world.episode_kind,
         "phase_final": world.phase,
         "n_wolves": world.n_wolves,
+        "n_corzos": world.n_corzos,
+        "n_corzos_descartados": int(world.corzo_dismissed.sum()),
         "n_safe": int(world.cow_safe.sum() + world.calf_safe.sum()),
         "n_depredadas": world.n_depredadas,
         "n_fuera": int((world.cow_alive & ~world.cow_safe).sum() + (world.calf_alive & ~world.calf_safe).sum()),
@@ -50,11 +60,21 @@ def run_episode(world: World, coordinator: DummyCoordinator):
 
 
 def main():
-    seed = int(sys.argv[1]) if len(sys.argv) > 1 else int(np.random.randint(0, 10000))
-    print(f"seed = {seed}  (reproduce con: python main.py {seed})")
+    parser = argparse.ArgumentParser(description="Un episodio de la escolta (drones / lobos / vacas / corzos).")
+    parser.add_argument("seed", nargs="?", type=int, default=None, help="seed (omítela para una aleatoria)")
+    parser.add_argument("--escenario", choices=list(ESCENARIOS), default=None,
+                        help="fuerza el tipo de episodio (si se omite, se sortea ~1/3 cada uno)")
+    args = parser.parse_args()
+    seed = args.seed if args.seed is not None else int(np.random.randint(0, 10000))
+    episode_kind = ESCENARIOS.get(args.escenario)   # None -> sorteo sembrado
 
-    world = World(seed=seed, teleport_guard=True)
+    world = World(seed=seed, teleport_guard=True, corzos_max=CORZOS_MAX, episode_kind=episode_kind)
     coordinator = DummyCoordinator(world.n_drones)
+
+    forzado = f"  (forzado: --escenario {args.escenario})" if args.escenario else "  (sorteado)"
+    print(f"seed = {seed}  (reproduce con: python main.py {seed}"
+          + (f" --escenario {args.escenario}" if args.escenario else "") + ")")
+    print(f"episodio = {world.episode_kind}{forzado}  |  lobos = {world.n_wolves}  corzos = {world.n_corzos}")
 
     history, metrics = run_episode(world, coordinator)
 
@@ -98,6 +118,15 @@ def main():
                   f"flanqueadores={c['n_flankers']} (lobos {c['flankers']}) | lobo más cercano={c['min_wolf_dist']:.2f} m")
     if world.guard_violations:
         print(f"Guardia de teletransporte: {len(world.guard_violations)} violaciones (detalle en face_check.py)")
+
+    # Animaciones muy largas (p. ej. solo-corzos hace TIMEOUT a max_episode_steps -> miles de frames) ->
+    # submuestrea el historial para que el render sea manejable. NO cambia la simulación; solo cuántos
+    # snapshots se reproducen (el render solo LEE).
+    MAX_FRAMES = 600
+    if len(history) > MAX_FRAMES:
+        stride = len(history) // MAX_FRAMES + 1
+        history = history[::stride] + [history[-1]]
+        print(f"  (animación submuestreada: {len(history)} frames, 1 de cada {stride})")
 
     render_episode(world, history)
 
