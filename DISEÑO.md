@@ -22,21 +22,20 @@
 > `26bce79` disuasión del dron · `bd57a8f` matanza excedente · `1b54b49` fix pin + envolvente · `bbee8c0`
 > evitación al huir · `e15d43d` el más cercano investiga · `5a9dddb` afinar disuasión (radio corto + bordeo) ·
 > `101558f` la madre no abandona al ternero · `4250488` los lobos no se pillan en la zona segura ·
-> `<este commit>` corzos (3c).
+> `bda6156` corzos (3c) · `e44d7c2` fix: main.py no spawneaba corzos + `--escenario` · `<este commit>` afinar corzos
+> (vuela e investiga, agrupados, dentro de SOSPECHA, render a ritmo natural).
 >
-> **Patch — CORZOS (3c): cuerpos que NO son amenaza.** Última pieza del mundo antes de congelar v2. No todo contacto
-> es un lobo: los **corzos** existen para que el coordinador (luego) aprenda a NO malgastar drones en lo que no es
-> amenaza. **El corzo** (entidad nueva, `corzos (N,2)`, `corzo_speed`=4.0): **DEAMBULA** + **HUYE** (repulsión con
-> falloff, `CORZO_FLEE_RADIUS`=30 m) de lobos y drones ACTIVE; **NO caza, NO va al rebaño, NO ataca**; las vacas NO lo
-> encaran (no es amenaza → no dispara `r_notice`). Spawn aleatorio fuera de zonas y del rebaño (sembrado). **Como
-> CONTACTO:** un corzo a ≤`r_detect` dispara el reflejo de investigación IGUAL que un lobo (va el dron libre más
-> cercano); el tipo es desconocido hasta `r_confirm`. **ORÁCULO** (verdad-terreno, stand-in determinista de YOLO) a
-> `r_confirm`: **lobo → ESCOLTA**; **corzo → el dron DESCARTA** (`corzo_dismissed`, no se reinvestiga) y se libera,
-> SIN disparar ESCOLTA. **3 tipos de episodio** (~1/3 cada uno, sembrado, `corzo_episode_probs`): solo-lobos /
-> solo-corzos / mixto. En **solo-corzos** ESCOLTA jamás → el rebaño pasta, **severidad 0**. **OFF por defecto**
-> (`corzos_max`=0 → cero draws RNG → mundo actual **bit a bit**; combate puro sin corzos → face_check 12/12). **NO**
-> toca el modelo del lobo/vaca, la zona segura, los radios `r_detect`/`r_confirm`, ni el coordinador (Dummy → None;
-> el descarte es infra de confirmación/reflejo). Verificado en `escort_check` 1i (deambula+huye · detectable · oráculo
+> **Patch — CORZOS afinados (que se vean e investiguen bien).** Cuatro mejoras del escenario de corzos. **(1) BUG del
+> reflejo:** un corzo dejaba la fase **PILLADA en SOSPECHA** (solo se latcheaba ESCOLTA para lobos) y el dron
+> descartado **no volvía**. Ahora el dron **VUELA al contacto**, solo a `r_confirm` el oráculo dicta el tipo (no de
+> lejos); al descartar el corzo **VUELVE a su puesto** (`drone_home`) y la **fase vuelve a VIGILANCIA** si no queda
+> contacto (lobo→ESCOLTA, no vuelve). El reset de fase NO afecta la dinámica (solo ESCOLTA importa) → baseline bit a
+> bit. **(2) AGRUPADOS:** spawn de un grupo (`CORZO_GROUP_DISPERSION`=6) + cohesión suave (`CORZO_COHESION`=0.05) +
+> separación (`CORZO_SEPARATION`=4) → salen y se mantienen juntos. **(3) Dentro de SOSPECHA:** el centroide en la banda
+> `[cow_spread+r_notice, r_detect]` → **100%** de episodios disparan SOSPECHA (medido). **(4) REGRESIÓN del render:**
+> el submuestreo aceleraba la reproducción; ahora `main.py` renderiza solo la **ventana relevante** a ritmo natural
+> (no comprime el timeout de solo-corzos). Solo render/`main.py` → la sim NO cambia (fingerprint idéntico). **NO** toca
+> el modelo del lobo/vaca, la disuasión, ni la baseline (corzos-OFF = 4.40). Verificado en `escort_check` 1i (deambula+huye · detectable · oráculo
 > lobo→ESCOLTA/corzo→descarta · solo-corzos sev 0 · reparto ~1/3 reproducible) + 9b (severidad POR TIPO) + 2 renders.
 >
 > **Patch — FIX PIN: 4 lobos no mataban a una adulta CLAVADA en ESCOLTA (+ ataque ENVOLVENTE + disuasión
@@ -927,6 +926,21 @@ radios `r_detect`/`r_confirm`, ni el coordinador (Dummy → None; el descarte es
 `escort_check` 1i (deambula+huye de lobo/dron · detectable · oráculo lobo→ESCOLTA/corzo→descarta · solo-corzos sev 0 ·
 reparto ~1/3 reproducible) + 9b (severidad por tipo) + `escort_corzos_solo.gif` / `escort_corzos_mixto.gif`.
 
+**Escolta · CORZOS — afinado (que se vean e investiguen bien).** Tras el fix de `main.py` (los corzos estaban OFF
+por defecto y `main.py` usaba el default → no aparecían; render SÍ los dibuja), cuatro mejoras del escenario: **(1)
+BUG del reflejo:** un corzo dejaba la fase **PILLADA en SOSPECHA** (solo se latcheaba ESCOLTA para lobos) y el dron
+descartado **no volvía**. Ahora el dron **VUELA al contacto**, solo a `r_confirm` el oráculo dicta (no de lejos),
+y al descartar el corzo **VUELVE a su puesto** (`drone_home`) y la **fase vuelve a VIGILANCIA** si no queda contacto
+investigándose (lobo→ESCOLTA, no vuelve). El reset de fase NO afecta la dinámica (solo ESCOLTA importa) → baseline
+bit a bit. **(2) AGRUPADOS:** spawn de un GRUPO (centroide + `CORZO_GROUP_DISPERSION`=6) + cohesión suave
+(`CORZO_COHESION`=0.05) + separación (`CORZO_SEPARATION`=4) → salen y se mantienen juntos. **(3) Dentro de SOSPECHA:**
+el centroide cae en la banda `[cow_spread+r_notice, r_detect]` del rebaño → **100%** de los episodios disparan
+SOSPECHA (medido). **(4) REGRESIÓN del render:** el submuestreo de `main.py` aceleraba la reproducción; ahora
+renderiza solo la **ventana relevante** (hasta poco tras el último evento) a **ritmo natural** (stride pequeño), sin
+comprimir el timeout de solo-corzos. Solo render/`main.py` → la sim no cambia (fingerprint idéntico). Verificado en
+`escort_check` 1i (d/d2: el dron vuela a ≤`r_confirm`, descarta, vuelve al puesto, fase VIGILANCIA; tipo solo a
+`r_confirm`; h: agrupados spread ~5 m, 100% en SOSPECHA) + `main.py --escenario solo-corzos`.
+
 **SIGUIENTE (opciones):**
 - **POSICIONAMIENTO del coordinador (lo que baja la SEVERIDAD):** la disuasión ya existe; falta que el
   coordinador **mande los drones a interponerse** entre los lobos y la presa (despejar pins activamente,
@@ -939,7 +953,7 @@ Luego: percepción → reflejo trivial → MARL → comparación. **Congelar bas
 
 **Ruta sugerida (orden tentativo, aún sin decidir):** 3a ✓ → 3b ✓ → **paso 2 (guiado) ✓** → **disuasión del
 dron ✓** → **matanza excedente ✓** → **fix pin + envolvente ✓** → **evitación al huir ✓** → **el más cercano
-investiga ✓** → **afinar disuasión (radio corto + bordeo) ✓** → **madre no abandona al ternero ✓** → **lobos no se pillan en la zona segura ✓** (severidad v2 honesta ~4.40) → **3c (corzos)** → **congelar v2** → **coordinador: posicionar/interponer drones** + reflejo-reactivo → **MARL**.
+investiga ✓** → **afinar disuasión (radio corto + bordeo) ✓** → **madre no abandona al ternero ✓** → **lobos no se pillan en la zona segura ✓** (severidad v2 honesta ~4.40) → **3c (corzos) ✓** → **congelar v2** → **coordinador: posicionar/interponer drones** + reflejo-reactivo → **MARL**.
 
 *(Pendiente de decisión menor, NO en este paso: lobo solo vs ternero salió 0% — la madre frena siempre.
 Si se quiere que sea disputado (a veces se cuela), afinar `face_cooldown`/`r_face_safe`. Parámetros del
@@ -958,8 +972,10 @@ parcial a corta `deter_w` (≤`r_face_safe` empuja a través)**; **ENVOLVENTE: `
 ZONAS PROHIBIDAS por el lobo: `WOLF_ZONE_SKIRT_BAND`=20 m (banda fuera de la frontera), `WOLF_ZONE_SKIRT_GAIN`=3
 (tangencial: bordea la zona por fuera, no se clava ni entra; `safe_radius`=0.12·min=36 m, NO se toca)**; **CORZOS
 (3c, NO-amenaza): `corzos_max`=0 por defecto (OFF, mundo actual bit a bit; >0 activa 3 tipos de episodio),
-`corzo_speed`=4.0 m/s, `CORZO_FLEE_RADIUS`=30 m, `CORZO_FLEE_GAIN`=3 (deambula+huye de lobos/drones), oráculo a
-`r_confirm` (lobo→ESCOLTA / corzo→descarta), `corzo_episode_probs`=(1/3,1/3,1/3)** — constantes
+`corzo_speed`=4.0 m/s, `CORZO_FLEE_RADIUS`=30 m, `CORZO_FLEE_GAIN`=3 (deambula+huye de lobos/drones), AGRUPADOS
+(`CORZO_GROUP_DISPERSION`=6 m, `CORZO_COHESION`=0.05, `CORZO_SEPARATION`=4 m) en la banda `[cow_spread+r_notice,
+r_detect]` (dentro de SOSPECHA), el dron VUELA al contacto y solo a `r_confirm` el oráculo dicta (lobo→ESCOLTA /
+corzo→descarta + vuelve al puesto + fase→VIGILANCIA), `corzo_episode_probs`=(1/3,1/3,1/3)** — constantes
 ABSOLUTAS cerca de cabecera, afinables; presa adulta por exposición, fijada en t=0; presa ternero override con
 1 lobo; `prey_abandon_dist` DEPRECADO. Todos afinables por render.)*
 

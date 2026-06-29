@@ -119,16 +119,23 @@ def main():
     if world.guard_violations:
         print(f"Guardia de teletransporte: {len(world.guard_violations)} violaciones (detalle en face_check.py)")
 
-    # Animaciones muy largas (p. ej. solo-corzos hace TIMEOUT a max_episode_steps -> miles de frames) ->
-    # submuestrea el historial para que el render sea manejable. NO cambia la simulación; solo cuántos
-    # snapshots se reproducen (el render solo LEE).
-    MAX_FRAMES = 600
-    if len(history) > MAX_FRAMES:
-        stride = len(history) // MAX_FRAMES + 1
-        history = history[::stride] + [history[-1]]
-        print(f"  (animación submuestreada: {len(history)} frames, 1 de cada {stride})")
+    # Reproducción a RITMO NATURAL (el render solo LEE; la simulación NO cambia). Episodios muy largos
+    # (solo-corzos hace TIMEOUT a max_episode_steps cuando, tras la investigación inicial, ya no pasa nada) se
+    # verían ACELERADOS si comprimiéramos miles de frames. En vez de eso renderizamos solo la VENTANA RELEVANTE
+    # (hasta poco después del ÚLTIMO evento: cambio de fase / muerte / refugio / descarte de corzo) con stride
+    # pequeño -> movimiento suave y observable. Para episodios normales (cortos) = el episodio entero.
+    def _key(s):
+        return (s["phase"], s["n_depredadas"], s["n_safe"], int(np.sum(s.get("corzo_dismissed", []))))
+    last_event = max((k for k in range(1, len(history)) if _key(history[k]) != _key(history[k - 1])), default=0)
+    TAIL, MAX_FRAMES = 50, 800                      # ~5 s de cola tras el último evento; tope de frames
+    end = min(len(history), last_event + TAIL + 1)
+    window = history[:end]
+    stride = max(1, len(window) // MAX_FRAMES)      # stride pequeño -> ritmo natural (no saltos bruscos)
+    play = window[::stride]
+    if end < len(history) or stride > 1:
+        print(f"  (render: ventana relevante de {end} pasos a 1 de cada {stride} -> {len(play)} frames, ritmo natural)")
 
-    render_episode(world, history)
+    render_episode(world, play)
 
 
 if __name__ == "__main__":

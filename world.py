@@ -97,6 +97,13 @@ WOLF_ZONE_SKIRT_GAIN = 3.0    # peso del bordeo tangencial (relativo al impulso 
 # se activan con corzos_max>0 -> 3 tipos de episodio (~1/3 solo-lobos / solo-corzos / mixto). Afinables. ---
 CORZO_FLEE_RADIUS = 30.0  # m: radio en que el corzo percibe/HUYE de un lobo o un dron ACTIVE (esquivo). TUNE
 CORZO_FLEE_GAIN = 3.0     # peso de la huida (repulsión) frente al deambular (domina cuando hay amenaza cerca). TUNE
+# Los corzos forman GRUPOS pequeños: spawnean AGRUPADOS (un centroide + dispersión pequeña) DENTRO de la banda
+# de detección del rebaño (entre un radio interior —fuera del rebaño— y r_detect, para que disparen SOSPECHA la
+# mayoría de las veces) y se mantienen juntos con una cohesión SUAVE al centroide del grupo (+ separación para no
+# apilarse). Spawn sembrado; banda derivada (cow_spread/r_notice/r_detect), sin números mágicos. Afinables.
+CORZO_GROUP_DISPERSION = 6.0  # m: cúmulo de spawn del grupo de corzos (salen JUNTOS, no esparcidos). TUNE
+CORZO_COHESION = 0.05        # cohesión suave hacia el centroide del grupo (se mantienen juntos al deambular). TUNE
+CORZO_SEPARATION = 4.0       # m: separación entre corzos (no se apilan; juntos pero "sin pegarse"). TUNE
 
 
 class World:
@@ -360,6 +367,7 @@ class World:
         self.drone_waypoint: np.ndarray | None = None   # (n_drones,2) destino comandado (command_waypoint); hold = posición
         self.drone_investigating: np.ndarray | None = None  # (n_drones,) ¿en estado INVESTIGANDO? (reflejo manda sobre él)
         self.drone_contact: np.ndarray | None = None    # (n_drones,2) posición del contacto que investiga (NaN si no)
+        self.drone_home: np.ndarray | None = None       # (n_drones,2) waypoint/puesto previo a investigar (vuelve ahí si descarta un corzo)
         self.investigations: list = []                  # mensaje al coordinador: investigaciones activas {id, contacto, estado}
         self.battery: np.ndarray | None = None          # (n_drones,) fracción [0,1]
         self.drone_state: np.ndarray | None = None      # (n_drones,) ACTIVE/RETURNING/CHARGING/READY
@@ -450,6 +458,7 @@ class World:
         self.drones = np.vstack([active, reserve])  # filas [0:n_active] activos, resto reserva
         self.drone_vel = np.zeros((self.n_drones, 2))      # parados al inicio
         self.drone_waypoint = self.drones.copy()           # destino = posición actual (mantener/hold)
+        self.drone_home = self.drones.copy()               # puesto al que vuelve tras descartar un corzo
         self.drone_investigating = np.zeros(self.n_drones, dtype=bool)
         self.drone_contact = np.full((self.n_drones, 2), np.nan)
         self.investigations = []
@@ -1381,31 +1390,40 @@ class World:
         if not self.escort_enabled:
             return   # adversario PURO (face_check): sin máquina de fases -> la fase se queda en VIGILANCIA
         if self.phase == "ESCOLTA":
-            return
+            return   # ESCOLTA latcheada: una vez confirmado un lobo no se vuelve atrás
         pos, is_wolf, gid = self._contact_bodies()
-        if pos.shape[0] == 0:
-            return   # sin contactos (sin cuerpos, o solo-corzos ya descartados) -> nada que investigar
         active = self.drone_state == ACTIVE
-        # Detección / re-detección: asegura UN investigador mientras no se confirme (el más cercano libre).
-        if not self.drone_investigating.any():
+        # Detección: si nadie investiga y hay un contacto a <= r_detect, lanza al dron libre MÁS CERCANO. El
+        # tipo (lobo/corzo) es DESCONOCIDO de lejos -> el dron vuela igual hacia el contacto (waypoint en
+        # _update_investigation_waypoint) y solo se revela a r_confirm. Guarda su PUESTO para volver si descarta.
+        if not self.drone_investigating.any() and pos.shape[0] > 0:
             i = self._pick_investigator(active & ~self.drone_investigating, pos)
             if i >= 0:
                 self.drone_investigating[i] = True
+                self.drone_home[i] = self.drone_waypoint[i].copy()   # puesto previo (vuelve aquí si era un corzo)
                 j = int(np.argmin(np.linalg.norm(pos - self.drones[i], axis=1)))
                 self.drone_contact[i] = pos[j]           # contacto = cuerpo más cercano (tipo desconocido aún)
-                self.phase = "SOSPECHA"
-        # Confirmación: el investigador a <= r_confirm de su contacto -> ORÁCULO (lobo -> ESCOLTA, corzo -> descarta).
-        if self.phase == "SOSPECHA":
+        # Confirmación (ORÁCULO a r_confirm, NO antes): el investigador a <= r_confirm de su contacto revela el
+        # tipo. LOBO -> ESCOLTA (no vuelve). CORZO -> DESCARTA (no se reinvestiga) y el dron VUELVE A SU PUESTO.
+        escolta = False
+        if self.drone_investigating.any() and pos.shape[0] > 0:
             for i in np.where(self.drone_investigating & active)[0]:
                 d = np.linalg.norm(pos - self.drones[i], axis=1)
                 j = int(np.argmin(d))
                 if float(d[j]) <= self.r_confirm:
                     self.drone_investigating[i] = False  # se libera al coordinador en AMBOS casos
                     if bool(is_wolf[j]):
-                        self.phase = "ESCOLTA"            # LOBO confirmado -> amenaza
+                        escolta = True                   # LOBO confirmado -> amenaza
                     else:
-                        self.corzo_dismissed[int(gid[j]) - self.n_wolves] = True  # CORZO -> descarta (no se reinvestiga)
+                        self.corzo_dismissed[int(gid[j]) - self.n_wolves] = True  # CORZO -> descarta
+                        self.drone_waypoint[i] = self.drone_home[i]               #          y vuelve a su puesto
                     break
+        # Fase: ESCOLTA (latch, lobo) > SOSPECHA (alguien investiga) > VIGILANCIA. NO se queda pillada en
+        # SOSPECHA: si tras descartar no queda nadie investigando (ni se re-detecta), vuelve a VIGILANCIA.
+        if escolta:
+            self.phase = "ESCOLTA"
+        else:
+            self.phase = "SOSPECHA" if self.drone_investigating.any() else "VIGILANCIA"
 
     def _process_predation(self) -> bool:
         """Aplica la muerte por FLANQUEO (regla SIN cambios: cono / n_min_adult / capture_radius) a las
@@ -1676,21 +1694,32 @@ class World:
         self.episode_kind = str(self.rng.choice(("lobos", "corzos", "mixto"), p=self.corzo_episode_probs))
 
     def _spawn_corzos(self, n: int) -> np.ndarray:
-        """n corzos en posiciones aleatorias del campo, FUERA de las zonas prohibidas (refugio/central) y NO
-        encima del rebaño (a > cow_spread+r_notice del spawn). Rechazo sembrado (reproducible). Si el guard se
-        agota devuelve menos de n (raro; el reset reajusta n_corzos)."""
+        """n corzos AGRUPADOS (un GRUPO pequeño): un centroide en la BANDA de detección del rebaño
+        [cow_spread+r_notice, r_detect] (fuera del rebaño pero a <= r_detect -> dispara SOSPECHA la mayoría de
+        las veces), en el campo y FUERA de las zonas; los n corzos alrededor con dispersión pequeña
+        (CORZO_GROUP_DISPERSION). Rechazo sembrado (reproducible). Si el guard se agota devuelve < n."""
         if n <= 0:
             return np.zeros((0, 2))
+        inner = self.cow_spread + self.r_notice    # fuera del rebaño (no encima)
+        outer = self.r_detect                       # dentro de r_detect -> dispara SOSPECHA
+        # 1) centroide del GRUPO en la banda [inner, outer] del rebaño, en el campo y fuera de zonas.
+        center = self.cow_spawn.copy()
+        for _ in range(200):
+            ang = float(self.rng.uniform(0.0, 2 * np.pi))
+            rad = float(self.rng.uniform(inner, outer))
+            cand = self.cow_spawn + rad * np.array([np.cos(ang), np.sin(ang)])
+            if (0.0 <= cand[0] <= self.W and 0.0 <= cand[1] <= self.H
+                    and not bool(self._in_forbidden(cand[None, :])[0])):
+                center = cand
+                break
+        # 2) los n corzos alrededor del centroide (cúmulo pequeño), en el campo y fuera de zonas.
         pts = np.empty((n, 2)); k = 0; guard = 0
-        herd_clear = self.cow_spread + self.r_notice
         while k < n and guard < 2000:
             guard += 1
-            p = self.rng.uniform(np.array([0.0, 0.0]), np.array([self.W, self.H]))
-            if bool(self._in_forbidden(p[None, :])[0]):
-                continue                                   # dentro del establo/central -> rechaza
-            if float(np.linalg.norm(p - self.cow_spawn)) < herd_clear:
-                continue                                   # encima del rebaño -> rechaza
-            pts[k] = p; k += 1
+            p = center + self.rng.normal(0.0, CORZO_GROUP_DISPERSION, size=2)
+            if (0.0 <= p[0] <= self.W and 0.0 <= p[1] <= self.H
+                    and not bool(self._in_forbidden(p[None, :])[0])):
+                pts[k] = p; k += 1
         return pts[:k]
 
     def _contact_bodies(self):
@@ -1727,7 +1756,17 @@ class World:
             fall = np.clip(1.0 - d / CORZO_FLEE_RADIUS, 0.0, 1.0)
             units = rel / np.maximum(d[:, :, None], 1e-9)
             flee = flee + (units * fall[:, :, None]).sum(axis=1)
-        total = wander + CORZO_FLEE_GAIN * flee
+        # Grupo: cohesión SUAVE al centroide del grupo + separación para no apilarse (juntos "sin pegarse").
+        group = np.zeros((self.n_corzos, 2))
+        if self.n_corzos >= 2:
+            C = self.corzos.mean(axis=0)
+            group = group + CORZO_COHESION * (C - self.corzos)
+            delta = self.corzos[:, None, :] - self.corzos[None, :, :]     # (nc, nc, 2): j -> i (separar)
+            dd = np.linalg.norm(delta, axis=2)
+            close = (dd < CORZO_SEPARATION) & (dd > 1e-9)
+            group = group + np.where(close[:, :, None], delta / np.maximum(dd[:, :, None], 1e-9)
+                                     * (1.0 - dd[:, :, None] / CORZO_SEPARATION), 0.0).sum(axis=1)
+        total = wander + CORZO_FLEE_GAIN * flee + group
         speed = np.linalg.norm(total, axis=1, keepdims=True)
         scale = np.minimum(1.0, self.corzo_speed / np.maximum(speed, 1e-9))
         self.corzo_vel = self.corzo_vel + self.cow_inertia * (total * scale - self.corzo_vel)

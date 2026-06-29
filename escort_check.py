@@ -586,8 +586,9 @@ def test_zona_bordeo():
 
 
 def test_corzos():
-    print("=== 1i) CORZOS (3c): cuerpo NO-amenaza · deambula+HUYE · detectable · ORÁCULO a r_confirm · 3 tipos de episodio ===")
+    print("=== 1i) CORZOS (3c): cuerpo NO-amenaza · deambula+HUYE · AGRUPADOS · el dron VUELA y descarta a r_confirm · 3 tipos ===")
     from collections import Counter
+    from world import CORZO_GROUP_DISPERSION
 
     # (a) HUYE de un lobo y de un dron ACTIVE cercanos (esquivo); NO ataca al rebaño.
     w = World(seed=4, wolves_min=1, wolves_max=1, corzos_min=1, corzos_max=1, episode_kind="mixto", calf_count_probs=NO_CALVES)
@@ -633,19 +634,58 @@ def test_corzos():
     assert np.allclose(w.drone_contact[np.where(w.drone_investigating)[0][0]], w.corzos[0]), "FALLO: el contacto no es el corzo"
     print("  (c) DETECCIÓN: el corzo dispara el reflejo (SOSPECHA + 1 dron investigando; contacto = el corzo)")
 
-    # (d) ORÁCULO a r_confirm: CORZO -> descarta (no ESCOLTA); LOBO -> ESCOLTA. Compruebo AMBOS.
+    # (d) TIPO SOLO A r_confirm: un corzo a r_detect pero >r_confirm NO se descarta de lejos (sigue SOSPECHA).
+    assert w.phase == "SOSPECHA" and not bool(w.corzo_dismissed[0]), "FALLO: el corzo se descartó a r_detect (debe ser a r_confirm)"
+    # ORÁCULO al llegar a r_confirm: CORZO -> descarta + dron VUELVE A SU PUESTO + fase -> VIGILANCIA (no pillada).
     inv = int(np.where(w.drone_investigating)[0][0])
+    home = w.drone_home[inv].copy()
     w.corzos[0] = w.drones[inv] + np.array([0.0, w.r_confirm - 5.0])   # acerca el corzo a r_confirm del investigador
     w._update_phase()
-    assert w.phase != "ESCOLTA", "FALLO: un CORZO confirmado disparó ESCOLTA (debería descartarse)"
     assert bool(w.corzo_dismissed[0]) and not w.drone_investigating.any(), "FALLO: el corzo no se descartó / el dron no se liberó"
-    wl = World(seed=0, wolves_min=1, wolves_max=1, corzos_max=0)       # un lobo: confirma -> ESCOLTA
+    assert w.phase == "VIGILANCIA", "FALLO: tras descartar el corzo la fase no volvió a VIGILANCIA (se quedó pillada)"
+    assert np.allclose(w.drone_waypoint[inv], home), "FALLO: el dron no volvió a su puesto tras descartar el corzo"
+    wl = World(seed=0, wolves_min=1, wolves_max=1, corzos_max=0)       # un lobo: confirma -> ESCOLTA (no vuelve)
     wl.phase = "VIGILANCIA"; wl.drone_state[:] = READY; wl.drones[:] = 1e4
     wl.drone_state[0] = ACTIVE; wl.drones[0] = np.array([5.0, 5.0]); wl.drone_investigating[:] = False
     wl.wolves[:] = wl.drones[0] + np.array([0.0, wl.r_confirm - 5.0])
     wl._update_phase()
     assert wl.phase == "ESCOLTA", "FALLO: un LOBO confirmado no disparó ESCOLTA"
-    print("  (d) ORÁCULO: CORZO->descarta+libera (sin ESCOLTA) | LOBO->ESCOLTA")
+    print("  (d) ORÁCULO: tipo solo a r_confirm (no de lejos) | CORZO->descarta + vuelve al puesto + fase VIGILANCIA | LOBO->ESCOLTA")
+
+    # (d2) END-TO-END (BUG arreglado): con un corzo en SOSPECHA, el investigador VUELA hacia él, llega a
+    #      <=r_confirm, ahí lo identifica y descarta, vuelve a su puesto y la fase vuelve a VIGILANCIA.
+    w = World(seed=11, corzos_min=1, corzos_max=1, episode_kind="corzos")
+    c = DummyCoordinator(w.n_drones)
+    homes = w.drone_home[:w.n_active].copy()
+    min_to_corzo = np.inf; dismissed_step = None
+    for step in range(600):
+        w.step(c.act(None))
+        # dist mínima de un dron ACTIVE a un corzo (el investigador se acerca a <=r_confirm para descartar).
+        dmin = float(np.linalg.norm(w.drones[:w.n_active][:, None, :] - w.corzos[None, :, :], axis=2).min())
+        min_to_corzo = min(min_to_corzo, dmin)
+        if dismissed_step is None and w.corzo_dismissed.all():
+            dismissed_step = step
+        if dismissed_step is not None and step > dismissed_step + 200:
+            break
+    back = float(np.linalg.norm(w.drones[:w.n_active] - homes, axis=1).max())
+    print("  (d2) END-TO-END: el dron se acercó a %.1f m del corzo (<=r_confirm=%.0f) antes de descartar; tras volver: dist al puesto=%.1f m | fase=%s"
+          % (min_to_corzo, w.r_confirm, back, w.phase))
+    assert min_to_corzo <= w.r_confirm + 1e-6, "FALLO: el dron descartó el corzo SIN acercarse a r_confirm (no fue a investigarlo)"
+    assert back < 2.0 and w.phase == "VIGILANCIA", "FALLO: el dron no volvió a su puesto / la fase no volvió a VIGILANCIA"
+
+    # (h) AGRUPADOS + DENTRO DE SOSPECHA: los corzos salen JUNTOS (spread pequeño) y el grupo cae dentro de
+    #     r_detect de un dron la MAYORÍA de las veces (dispara SOSPECHA), fuera del rebaño.
+    spreads = []; in_sospecha = 0; n = 120
+    for s in range(n):
+        ws = World(seed=s, corzos_min=2, corzos_max=3, episode_kind="corzos")
+        if ws.n_corzos > 1:
+            spreads.append(float(np.linalg.norm(ws.corzos - ws.corzos.mean(axis=0), axis=1).mean()))
+        dmin = float(np.linalg.norm(ws.corzos[:, None, :] - ws.drones[:ws.n_active][None, :, :], axis=2).min())
+        in_sospecha += int(dmin <= ws.r_detect)
+    print("  (h) AGRUPADOS: spread medio del grupo=%.1f m (juntos) | DENTRO de r_detect (SOSPECHA): %d/%d (%.0f%%)"
+          % (np.mean(spreads), in_sospecha, n, 100 * in_sospecha / n))
+    assert np.mean(spreads) < 3.0 * CORZO_GROUP_DISPERSION, "FALLO: los corzos salen dispersos (no agrupados)"
+    assert in_sospecha >= 0.7 * n, "FALLO: el grupo no cae dentro de SOSPECHA la mayoría de las veces"
 
     # (e) MIXTO: los lobos disparan ESCOLTA y la caza procede; los corzos se descartan (el reflejo investiga ambos).
     saw_escolta = saw_dismiss = False
@@ -930,18 +970,20 @@ def test_severidad_por_tipo():
 
 def save_corzos_animations():
     print("=== Ojeo: CORZOS — solo-corzos (drones investigan y DESCARTAN, rebaño pastando) y MIXTO (descarta corzo + escolta lobo) ===")
-    # (1) SOLO-CORZOS: sin lobos -> ESCOLTA jamás; los drones investigan corzos y los DESCARTAN (gris), el rebaño pasta.
-    w = World(seed=7, corzos_min=3, corzos_max=3, episode_kind="corzos", max_episode_steps=600)
+    # (1) SOLO-CORZOS: sin lobos -> ESCOLTA jamás; un dron VUELA al grupo, lo comprueba a r_confirm, lo DESCARTA
+    #     (gris) y VUELVE a su puesto (fase -> VIGILANCIA); el rebaño pasta. Stride 1 -> ritmo natural (no acelerado).
+    w = World(seed=7, corzos_min=3, corzos_max=3, episode_kind="corzos", max_episode_steps=4000)
     c = DummyCoordinator(w.n_drones)
-    hist = [w.snapshot()]
-    for step in range(600):
+    hist = [w.snapshot()]; done = None
+    for step in range(2000):
         _, _, term, trunc, _ = w.step(c.act(None))
-        if step % 3 == 0 or term or trunc:
-            hist.append(w.snapshot())
-        if (w.corzo_dismissed.all() and step > 60) or term or trunc:
+        hist.append(w.snapshot())                    # stride 1: movimiento suave
+        if done is None and w.corzo_dismissed.all():
+            done = step
+        if (done is not None and step > done + 80) or term or trunc:   # +80 pasos: que el dron VUELVA al puesto
             break
     render_episode(w, hist, save_path="escort_corzos_solo.gif")
-    print("  escort_corzos_solo.gif: %d frames | fase=%s | corzos descartados=%d/%d | cazadas=%d (rebaño pasta, drones descartan)"
+    print("  escort_corzos_solo.gif: %d frames (ritmo natural) | fase=%s | corzos descartados=%d/%d | cazadas=%d (el dron vuela, descarta y VUELVE; rebaño pasta)"
           % (len(hist), w.phase, int(w.corzo_dismissed.sum()), w.n_corzos, w.n_depredadas))
 
     # (2) MIXTO: un dron descarta un corzo y la escolta procede sobre un lobo (ESCOLTA disparada).
@@ -952,7 +994,7 @@ def save_corzos_animations():
         for step in range(900):
             _, _, term, trunc, _ = cand.step(cc.act(None))
             seen_esc = seen_esc or cand.phase == "ESCOLTA"; seen_dis = seen_dis or bool(cand.corzo_dismissed.any())
-            if step % 3 == 0 or term or trunc:
+            if step % 2 == 0 or term or trunc:       # stride 2 -> ritmo observable
                 h.append(cand.snapshot())
             if term or trunc:
                 break
