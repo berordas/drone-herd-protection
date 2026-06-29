@@ -11,31 +11,33 @@
 > **guiado al refugio (paso 2)** · **huida NO-HOLONÓMICA en ESCOLTA** (pin) · **DISUASIÓN del dron** (radio CORTO + bordeo, parcial) ·
 > **MATANZA EXCEDENTE** (el paquete caza hasta agotar) · **ATAQUE ENVOLVENTE** (una adulta clavada es matable) ·
 > **EVITACIÓN al huir** (las no-fijadas RODEAN a los lobos camino del establo) · **la MADRE no abandona al ternero**
-> (huyen juntos al ritmo de la cría, más lenta) · **los LOBOS no se pillan en la zona segura** (la BORDEAN, no entran).
-> **Pendiente:** POSICIONAMIENTO del coordinador (interponer drones para bajar la severidad) · corzos ·
-> congelar baseline v2 · coordinadores (reflejo trivial, MARL).
+> (huyen juntos al ritmo de la cría, más lenta) · **los LOBOS no se pillan en la zona segura** (la BORDEAN, no entran) ·
+> **CORZOS (3c)** (cuerpos NO-amenaza: deambulan+huyen, detectables, ORÁCULO a r_confirm, 3 tipos de episodio).
+> **Pendiente:** congelar baseline v2 · POSICIONAMIENTO del coordinador (interponer drones para bajar la severidad;
+> y discriminar amenaza: no malgastar drones en corzos) · coordinadores (reflejo trivial, MARL).
 > **Commits:** `194a3ad` base · `37910b3` terminal · `e663504` disparador por dron · `4d1e708` campo
 > 300×300 + escala biológica absoluta · `886bd45` dispersión del rebaño · `a15e2df` movimiento de
 > drones (3a) · `fd893b8` detectar→confirmar (3b) · `49e0e22` consolidar DISEÑO+CLAUDE · `144b7bd` guiado (paso 2)
 > · `1d44cdc` máx. 1 caza/episodio (REVERTIDO) · `56ff75d` huida no-holonómica · `f42456f` dos correcciones huida ·
 > `26bce79` disuasión del dron · `bd57a8f` matanza excedente · `1b54b49` fix pin + envolvente · `bbee8c0`
 > evitación al huir · `e15d43d` el más cercano investiga · `5a9dddb` afinar disuasión (radio corto + bordeo) ·
-> `101558f` la madre no abandona al ternero · `<este commit>` los lobos no se pillan en la zona segura.
+> `101558f` la madre no abandona al ternero · `4250488` los lobos no se pillan en la zona segura ·
+> `<este commit>` corzos (3c).
 >
-> **Patch — LOS LOBOS NO SE PILLAN EN LA ZONA SEGURA: la BORDEAN.** Un lobo que perseguía HACIA la zona segura (su
-> presa se refugió, o su objetivo está al otro lado) se quedaba CLAVADO en el borde: la persecución apunta DENTRO y
-> el clamp `_push_outside_circle` lo frena de frente → fuerza neta ~0 (mismo ATASCO RADIAL que con el dron; medido:
-> desplaz. neto ~3.6 m en 200 pasos). **Fix:** cerca de la frontera (`WOLF_ZONE_SKIRT_BAND`=20 m) una componente
-> **TANGENCIAL** (`WOLF_ZONE_SKIRT_GAIN`=3; sumada a `desired` antes de normalizar → solo redirige, no acelera;
-> desempate de lado DETERMINISTA → robusto al saddle colineal) hace que el lobo **BORDEE** la zona **por FUERA** (no
-> entra: el clamp sigue) hasta el objetivo del otro lado. La presa refugiada ya se **soltaba al instante**
-> (`_prey_lost_reason`=="refuge" el mismo paso que `cow_safe` → re-fija la viva más cercana FUERA; verificado, sin
-> cambios). Gateado por `escort_enabled` → en combate la presa no se refugia → **face_check bit a bit**. **Tamaño de
-> la zona (reportado, NO cambiado):** `safe_radius`=0.12·min(W,H)=**36 m** (12% del lado, 4.5% del área; central 15 m)
-> — decisión de diseño del usuario. **Consecuencia (no bug):** lobos más eficientes (no pierden tiempo pillados) →
-> severidad v2 **~4.05 → ~4.40** (el bug la bajaba artificialmente; medida, NO objetivo). **NO** toca vacas
-> (huida/encarar/madre-ternero), combate/pastoreo, disuasión al dron, envolvente, detección, coordinador, baseline.py,
-> ni el tamaño de la zona. Verificado en `escort_check` 1h (bordea: 100→6 m incl. saddle · NO entra · suelta al instante) + `escort_zona_bordeo.gif`.
+> **Patch — CORZOS (3c): cuerpos que NO son amenaza.** Última pieza del mundo antes de congelar v2. No todo contacto
+> es un lobo: los **corzos** existen para que el coordinador (luego) aprenda a NO malgastar drones en lo que no es
+> amenaza. **El corzo** (entidad nueva, `corzos (N,2)`, `corzo_speed`=4.0): **DEAMBULA** + **HUYE** (repulsión con
+> falloff, `CORZO_FLEE_RADIUS`=30 m) de lobos y drones ACTIVE; **NO caza, NO va al rebaño, NO ataca**; las vacas NO lo
+> encaran (no es amenaza → no dispara `r_notice`). Spawn aleatorio fuera de zonas y del rebaño (sembrado). **Como
+> CONTACTO:** un corzo a ≤`r_detect` dispara el reflejo de investigación IGUAL que un lobo (va el dron libre más
+> cercano); el tipo es desconocido hasta `r_confirm`. **ORÁCULO** (verdad-terreno, stand-in determinista de YOLO) a
+> `r_confirm`: **lobo → ESCOLTA**; **corzo → el dron DESCARTA** (`corzo_dismissed`, no se reinvestiga) y se libera,
+> SIN disparar ESCOLTA. **3 tipos de episodio** (~1/3 cada uno, sembrado, `corzo_episode_probs`): solo-lobos /
+> solo-corzos / mixto. En **solo-corzos** ESCOLTA jamás → el rebaño pasta, **severidad 0**. **OFF por defecto**
+> (`corzos_max`=0 → cero draws RNG → mundo actual **bit a bit**; combate puro sin corzos → face_check 12/12). **NO**
+> toca el modelo del lobo/vaca, la zona segura, los radios `r_detect`/`r_confirm`, ni el coordinador (Dummy → None;
+> el descarte es infra de confirmación/reflejo). Verificado en `escort_check` 1i (deambula+huye · detectable · oráculo
+> lobo→ESCOLTA/corzo→descarta · solo-corzos sev 0 · reparto ~1/3 reproducible) + 9b (severidad POR TIPO) + 2 renders.
 >
 > **Patch — FIX PIN: 4 lobos no mataban a una adulta CLAVADA en ESCOLTA (+ ataque ENVOLVENTE + disuasión
 > parcial a corta).** Regresión: una adulta clavada era **invulnerable** a un paquete que la rodeaba.
@@ -907,6 +909,24 @@ no se refugia → **face_check bit a bit**). **Tamaño de la zona (reportado, NO
 bajaba artificialmente; medida, NO objetivo). **face_check 12/12.** Verificado en `escort_check` 1h (bordea: min
 dist a la presa del otro lado 100→6 m incl. saddle colineal · NO entra · suelta la refugiada al instante) + `escort_zona_bordeo.gif`.
 
+**Escolta · CORZOS (3c) HECHO — cuerpos que NO son amenaza (última pieza del mundo antes de congelar v2).** No todo
+contacto es un lobo. **El corzo** (entidad nueva, `corzos (N,2)`, `corzo_speed`=4.0): **DEAMBULA** (wander lento) +
+**HUYE** (repulsión con falloff, `CORZO_FLEE_RADIUS`=30 m, `CORZO_FLEE_GAIN`=3) de lobos y drones ACTIVE; **NO caza,
+NO va al rebaño, NO ataca**; las vacas NO lo encaran (no es amenaza → no dispara `r_notice`). Spawn aleatorio fuera
+de zonas y del rebaño (sembrado). **Como CONTACTO** (`_contact_bodies`): a ≤`r_detect` dispara el reflejo de
+investigación IGUAL que un lobo (va el dron libre más cercano); el tipo es desconocido hasta `r_confirm`. **ORÁCULO**
+(verdad-terreno, stand-in determinista de YOLO) a `r_confirm`: **lobo → ESCOLTA** y el dron se libera; **corzo → el
+dron DESCARTA** (`corzo_dismissed`, no se reinvestiga) y se libera, SIN ESCOLTA. **3 tipos de episodio** (~1/3 cada
+uno, sembrado, `corzo_episode_probs`): solo-lobos / solo-corzos / mixto; en **solo-corzos** ESCOLTA jamás → el rebaño
+pasta, **severidad 0**. **OFF por defecto** (`corzos_max`=0 → cero draws RNG → mundo actual **bit a bit**; combate
+puro sin corzos → **face_check 12/12**). El reflejo de investigación se GENERALIZÓ a "cuerpos" (lobo o corzo) que SIN
+corzos se reduce EXACTAMENTE al lobo más cercano (bit a bit). **NO** toca el modelo del lobo/vaca, la zona segura, los
+radios `r_detect`/`r_confirm`, ni el coordinador (Dummy → None; el descarte es infra de confirmación/reflejo).
+**Severidad POR TIPO** (corzos activos, Dummy): **solo-lobos ~4.4 (= corzos OFF), solo-corzos = 0, mixto ≈ solo-lobos**
+(los corzos solo consumen ciclos de investigación; el agregado mezclado es poco informativo). Verificado en
+`escort_check` 1i (deambula+huye de lobo/dron · detectable · oráculo lobo→ESCOLTA/corzo→descarta · solo-corzos sev 0 ·
+reparto ~1/3 reproducible) + 9b (severidad por tipo) + `escort_corzos_solo.gif` / `escort_corzos_mixto.gif`.
+
 **SIGUIENTE (opciones):**
 - **POSICIONAMIENTO del coordinador (lo que baja la SEVERIDAD):** la disuasión ya existe; falta que el
   coordinador **mande los drones a interponerse** entre los lobos y la presa (despejar pins activamente,
@@ -936,7 +956,10 @@ parcial a corta `deter_w` (≤`r_face_safe` empuja a través)**; **ENVOLVENTE: `
 (reparto angular equiespaciado alrededor de la presa)**; **EVITACIÓN al HUIR: `COW_AVOID_RADIUS`=30 m,
 `W_REFUGIO`=1.0, `W_EVITAR`=1.3 (las no-fijadas rodean a los lobos; el establo domina el neto)**; **BORDEO de
 ZONAS PROHIBIDAS por el lobo: `WOLF_ZONE_SKIRT_BAND`=20 m (banda fuera de la frontera), `WOLF_ZONE_SKIRT_GAIN`=3
-(tangencial: bordea la zona por fuera, no se clava ni entra; `safe_radius`=0.12·min=36 m, NO se toca)** — constantes
+(tangencial: bordea la zona por fuera, no se clava ni entra; `safe_radius`=0.12·min=36 m, NO se toca)**; **CORZOS
+(3c, NO-amenaza): `corzos_max`=0 por defecto (OFF, mundo actual bit a bit; >0 activa 3 tipos de episodio),
+`corzo_speed`=4.0 m/s, `CORZO_FLEE_RADIUS`=30 m, `CORZO_FLEE_GAIN`=3 (deambula+huye de lobos/drones), oráculo a
+`r_confirm` (lobo→ESCOLTA / corzo→descarta), `corzo_episode_probs`=(1/3,1/3,1/3)** — constantes
 ABSOLUTAS cerca de cabecera, afinables; presa adulta por exposición, fijada en t=0; presa ternero override con
 1 lobo; `prey_abandon_dist` DEPRECADO. Todos afinables por render.)*
 

@@ -88,6 +88,16 @@ W_EVITAR = 1.3            # peso de la EVITACIÓN de lobos (rodeo; falloff linea
 WOLF_ZONE_SKIRT_BAND = 20.0   # m: banda FUERA de la frontera donde actúa el bordeo (reacciona cerca del borde). TUNE
 WOLF_ZONE_SKIRT_GAIN = 3.0    # peso del bordeo tangencial (relativo al impulso de caza); domina cerca del borde. TUNE
 
+# --- CORZOS (cuerpos NO-amenaza, 3c): cuerpos de fondo que el coordinador deberá aprender a NO investigar a
+# fondo (discriminar amenaza). DEAMBULAN (wander lento) y HUYEN de lobos y drones ACTIVE cercanos (repulsión con
+# falloff); NO cazan, NO van al rebaño, NO atacan; las vacas NO los encaran (no son amenaza -> no disparan
+# r_notice). Detectables como CONTACTOS (r_detect) -> disparan el reflejo de investigación IGUAL que un lobo; el
+# TIPO se revela por ORÁCULO a r_confirm (stand-in determinista de YOLO): lobo -> ESCOLTA, corzo -> el dron se
+# desengancha (DESCARTA, NO escolta). OFF por defecto (corzos_max=0 -> mundo actual bit a bit, cero draws RNG);
+# se activan con corzos_max>0 -> 3 tipos de episodio (~1/3 solo-lobos / solo-corzos / mixto). Afinables. ---
+CORZO_FLEE_RADIUS = 30.0  # m: radio en que el corzo percibe/HUYE de un lobo o un dron ACTIVE (esquivo). TUNE
+CORZO_FLEE_GAIN = 3.0     # peso de la huida (repulsión) frente al deambular (domina cuando hay amenaza cerca). TUNE
+
 
 class World:
     def __init__(
@@ -97,6 +107,13 @@ class World:
         n_cows: int = 6,
         wolves_min: int = 1,            # nº de lobos sorteado en reset() ...
         wolves_max: int = 5,            # ... entre [wolves_min, wolves_max]
+        # --- Corzos (3c, cuerpos NO-amenaza): OFF por defecto (corzos_max=0 -> mundo actual bit a bit). Con
+        #     corzos_max>0 se activan 3 tipos de episodio (~1/3 cada uno). Ver constantes CORZO_* en cabecera. ---
+        corzos_min: int = 1,            # nº de corzos sorteado entre [corzos_min, corzos_max] cuando el episodio los tiene
+        corzos_max: int = 0,            # 0 = SIN corzos (y sin sorteo de tipo de episodio) -> mundo actual intacto
+        corzo_speed: float = 4.0,       # m/s del corzo (esquivo, escapa); etiquetado/afinable. TUNE
+        corzo_episode_probs: tuple[float, float, float] = (1/3, 1/3, 1/3),  # P(solo-lobos / solo-corzos / mixto) si corzos_max>0
+        episode_kind: str | None = None,  # fuerza el tipo ('lobos'/'corzos'/'mixto') en vez de sortear (tests deterministas)
         parcel_size: tuple[float, float] = (300.0, 300.0),   # ~9 ha (parcela realista); r_detect=100 m -> 1/3 del campo
         safe_radius: float | None = None,     # establo (centro del campo)
         station_radius: float | None = None,  # estación central de carga
@@ -173,6 +190,14 @@ class World:
         self.n_cows = n_cows
         self.wolves_min = wolves_min
         self.wolves_max = wolves_max
+        # Corzos (3c): OFF si corzos_max=0 (mundo actual). Las probs de tipo de episodio se normalizan.
+        self.corzos_min = corzos_min
+        self.corzos_max = corzos_max
+        self.corzo_speed = corzo_speed
+        self.corzo_episode_probs = np.asarray(corzo_episode_probs, dtype=float)
+        self.corzo_episode_probs = self.corzo_episode_probs / self.corzo_episode_probs.sum()
+        self._episode_kind_forced = episode_kind
+        self.episode_kind = "lobos"      # se fija en reset() (sorteo o forzado); default sin corzos
         self.W, self.H = parcel_size
         m = min(self.W, self.H)  # escala de LAYOUT (establo/central/spawn/perímetro derivan de m y SÍ escalan)
 
@@ -324,6 +349,12 @@ class World:
         self.wolves: np.ndarray | None = None
         self.wolf_vel: np.ndarray | None = None      # (n_wolves,2) velocidad (inercia)
         self.wolf_spawn_angle: float = 0.0           # sector del perímetro por el que entró la manada (rad, RNG)
+        # Corzos (3c, cuerpos NO-amenaza): deambulan + huyen de lobos/drones; descartados por el oráculo a r_confirm.
+        self.n_corzos: int = 0                       # nº de corzos este episodio (0 si no los hay, RNG)
+        self.corzos: np.ndarray | None = None        # (n_corzos,2) posición
+        self.corzo_vel: np.ndarray | None = None     # (n_corzos,2) velocidad (inercia)
+        self._corzo_graze_dir: np.ndarray | None = None  # (n_corzos,) deambular leve
+        self.corzo_dismissed: np.ndarray | None = None   # (n_corzos,) bool: ya confirmado NO-amenaza -> no se reinvestiga
         self.drones: np.ndarray | None = None
         self.drone_vel: np.ndarray | None = None        # (n_drones,2) velocidad (dinámica de vuelo, flag #1 para drones)
         self.drone_waypoint: np.ndarray | None = None   # (n_drones,2) destino comandado (command_waypoint); hold = posición
@@ -423,12 +454,33 @@ class World:
         self.drone_contact = np.full((self.n_drones, 2), np.nan)
         self.investigations = []
 
+        # Tipo de episodio (3c): solo-lobos / solo-corzos / mixto. SOLO si los corzos están activos
+        # (corzos_max>0) y en escenario de escolta; si no, "lobos" SIN sortear (cero draws RNG -> mundo actual
+        # bit a bit). Se hace ANTES del sorteo del nº de lobos para poder anularlos en "corzos".
+        self._roll_episode_kind()
+
         # Lobos: nº aleatorio por episodio; TODOS salen AGRUPADOS de un mismo sector del perímetro
         # (sector sorteado por episodio) -> la manada llega junta y de una dirección (y se aleatoriza
-        # la dirección de ataque entre episodios, bandera #4).
-        self.n_wolves = int(self.rng.integers(self.wolves_min, self.wolves_max + 1))
+        # la dirección de ataque entre episodios, bandera #4). En "solo-corzos" no hay lobos (el sorteo del
+        # nº se mantiene para no desalinear el RNG en los mundos con corzos; se descarta).
+        n_wolves_roll = int(self.rng.integers(self.wolves_min, self.wolves_max + 1))
+        self.n_wolves = 0 if self.episode_kind == "corzos" else n_wolves_roll
         self.wolves = self._spawn_wolves_sector(self.n_wolves)
         self.wolf_vel = np.zeros((self.n_wolves, 2))
+
+        # Corzos (3c): en "solo-corzos"/"mixto", nº aleatorio fuera de zonas y del rebaño. En "lobos" (incl.
+        # corzos OFF) NO se toca el RNG -> mundo actual bit a bit.
+        if self.episode_kind == "lobos":
+            self.n_corzos = 0
+            self.corzos = np.zeros((0, 2)); self.corzo_vel = np.zeros((0, 2))
+            self._corzo_graze_dir = np.zeros(0); self.corzo_dismissed = np.zeros(0, dtype=bool)
+        else:
+            self.n_corzos = int(self.rng.integers(self.corzos_min, self.corzos_max + 1))
+            self.corzos = self._spawn_corzos(self.n_corzos)
+            self.n_corzos = self.corzos.shape[0]                 # por si el rechazo no llenó (guard)
+            self.corzo_vel = np.zeros((self.n_corzos, 2))
+            self._corzo_graze_dir = self.rng.uniform(0.0, 2 * np.pi, size=self.n_corzos)
+            self.corzo_dismissed = np.zeros(self.n_corzos, dtype=bool)
 
         # Batería a plena carga al reset (NO se aleatoriza en episodio: solo importa cuando los
         # drones actúan). HOOK: stagger=True (battery_check) reparte fases para operación continua.
@@ -514,6 +566,7 @@ class World:
         self._update_calves()               #         terneros pegados a su defensora
         self._update_wolves()               #         lobo direccional + flanqueo + inercia
         self._enforce_face_cones()          #         la vaca planta cara: empuja al lobo frontal a r_face_safe
+        self._update_corzos()               #         corzos (3c): deambulan + huyen de lobos/drones (no-op si no hay)
         # Clamp #5 tiene la ÚLTIMA palabra: el empuje del cono (vacas que pastan cerca del borde) puede
         # meter un lobo en el establo -> se le vuelve a expulsar (invariante "ningún lobo dentro").
         self._push_outside_circle(self.wolves, self.safe_zone)
@@ -1287,27 +1340,28 @@ class World:
     # ------------------------------------------------------------------ #
     def _update_investigation_waypoint(self) -> None:
         """REFLEJO de investigación (infraestructura, NO decisión del coordinador): cada dron en estado
-        INVESTIGANDO persigue su CONTACTO = el lobo más cercano (la manada es un cúmulo ~5 m, así que de
-        lejos se lee como UN contacto). Actualiza su waypoint y su contacto cada paso (el MENSAJE al
-        coordinador se arma fresco en get_observation)."""
+        INVESTIGANDO persigue su CONTACTO = el CUERPO (lobo o corzo) más cercano (la manada es un cúmulo ~5 m,
+        se lee como UN contacto; el TIPO se ignora hasta confirmar). Actualiza su waypoint y su contacto cada
+        paso (el MENSAJE al coordinador se arma fresco en get_observation). Sin corzos = el lobo más cercano."""
         self.drone_contact[:] = np.nan
-        if self.drone_investigating.any() and self.n_wolves > 0:
+        pos, _, _ = self._contact_bodies()
+        if self.drone_investigating.any() and pos.shape[0] > 0:
             for i in np.where(self.drone_investigating)[0]:
-                j = int(np.argmin(np.linalg.norm(self.wolves - self.drones[i], axis=1)))
-                self.drone_contact[i] = self.wolves[j]
-                self.drone_waypoint[i] = self.wolves[j]    # lo persigue (command_waypoint del reflejo)
+                j = int(np.argmin(np.linalg.norm(pos - self.drones[i], axis=1)))
+                self.drone_contact[i] = pos[j]
+                self.drone_waypoint[i] = pos[j]    # lo persigue (command_waypoint del reflejo)
 
-    def _pick_investigator(self, free: np.ndarray) -> int:
+    def _pick_investigator(self, free: np.ndarray, pos: np.ndarray) -> int:
         """REFLEJO (infraestructura, igual en todos los coordinadores): elige QUÉ dron va a investigar un
-        contacto. Va el dron ACTIVE LIBRE (no investigando ya otro contacto) MÁS CERCANO al contacto (su
-        lobo más cercano = la manada, cúmulo ~5 m) entre los que lo DETECTAN (<= r_detect) -> llega antes.
+        contacto. Va el dron ACTIVE LIBRE (no investigando ya otro contacto) MÁS CERCANO al contacto (el
+        CUERPO más cercano —lobo o corzo—, cúmulo ~5 m) entre los que lo DETECTAN (<= r_detect) -> llega antes.
         Si el más cercano está ocupado, va el siguiente más cercano libre (los ocupados no están en `free`).
         Desempate DETERMINISTA por menor índice (sin aleatoriedad). Devuelve el índice o -1 si nadie libre
-        detecta. `free` = máscara (n_drones,) de drones elegibles (ACTIVE y no investigando)."""
+        detecta. `free` = máscara (n_drones,) de elegibles; `pos` (M,2) = cuerpos detectables (_contact_bodies)."""
         cand = np.where(free)[0]
-        if cand.size == 0 or self.n_wolves == 0:
+        if cand.size == 0 or pos.shape[0] == 0:
             return -1
-        d = np.array([float(np.linalg.norm(self.wolves - self.drones[i], axis=1).min()) for i in cand])
+        d = np.array([float(np.linalg.norm(pos - self.drones[i], axis=1).min()) for i in cand])
         d = np.where(d <= self.r_detect, d, np.inf)   # solo los que DETECTAN; el resto descartado
         if not np.isfinite(d).any():
             return -1
@@ -1317,31 +1371,40 @@ class World:
         """Disparador en DOS etapas (reflejo). VIGILANCIA -> SOSPECHA -> ESCOLTA, sin retorno; informativa
         (todavía NO cambia la dinámica de las vacas). Solo los drones EN VUELO (ACTIVE) detectan/confirman
         (los aparcados CHARGING/READY no vigilan; RETURNING fuera por simplicidad).
-          - DETECCIÓN: cuando un lobo entra a <= r_detect, investiga el dron ACTIVE libre MÁS CERCANO al
-            contacto (_pick_investigator; el más cercano llega antes) -> SOSPECHA y ese dron pasa a
-            INVESTIGANDO (el reflejo lo lanza hacia el contacto). Si se queda sin investigador (p. ej. un
-            relevo), re-detecta.
-          - CONFIRMACIÓN: cuando el dron INVESTIGANDO llega a <= r_confirm de su contacto -> ESCOLTA y ese
-            dron se LIBERA (vuelve al pool del coordinador como defensor)."""
+          - DETECCIÓN: cuando un CUERPO (lobo o corzo) entra a <= r_detect, investiga el dron ACTIVE libre MÁS
+            CERCANO al contacto (_pick_investigator; el más cercano llega antes) -> SOSPECHA y ese dron pasa a
+            INVESTIGANDO (el reflejo lo lanza hacia el contacto). Si se queda sin investigador, re-detecta.
+          - CONFIRMACIÓN (ORÁCULO a r_confirm, stand-in de YOLO): cuando el dron llega a <= r_confirm de su
+            contacto se revela el TIPO (verdad-terreno): LOBO -> amenaza -> ESCOLTA y el dron se LIBERA;
+            CORZO -> NO-amenaza -> el dron se DESENGANCHA (descarta el corzo: no se reinvestiga) y se libera,
+            SIN disparar ESCOLTA. En solo-corzos nunca se confirma un lobo -> ESCOLTA jamás se activa."""
         if not self.escort_enabled:
             return   # adversario PURO (face_check): sin máquina de fases -> la fase se queda en VIGILANCIA
-        if self.phase == "ESCOLTA" or self.n_wolves == 0:
+        if self.phase == "ESCOLTA":
             return
+        pos, is_wolf, gid = self._contact_bodies()
+        if pos.shape[0] == 0:
+            return   # sin contactos (sin cuerpos, o solo-corzos ya descartados) -> nada que investigar
         active = self.drone_state == ACTIVE
         # Detección / re-detección: asegura UN investigador mientras no se confirme (el más cercano libre).
         if not self.drone_investigating.any():
-            i = self._pick_investigator(active & ~self.drone_investigating)
+            i = self._pick_investigator(active & ~self.drone_investigating, pos)
             if i >= 0:
                 self.drone_investigating[i] = True
-                j = int(np.argmin(np.linalg.norm(self.wolves - self.drones[i], axis=1)))
-                self.drone_contact[i] = self.wolves[j]   # contacto = lobo más cercano
+                j = int(np.argmin(np.linalg.norm(pos - self.drones[i], axis=1)))
+                self.drone_contact[i] = pos[j]           # contacto = cuerpo más cercano (tipo desconocido aún)
                 self.phase = "SOSPECHA"
-        # Confirmación: el investigador a <= r_confirm de su contacto -> ESCOLTA, se libera.
+        # Confirmación: el investigador a <= r_confirm de su contacto -> ORÁCULO (lobo -> ESCOLTA, corzo -> descarta).
         if self.phase == "SOSPECHA":
             for i in np.where(self.drone_investigating & active)[0]:
-                if float(np.linalg.norm(self.wolves - self.drones[i], axis=1).min()) <= self.r_confirm:
-                    self.phase = "ESCOLTA"
-                    self.drone_investigating[i] = False    # vuelve al control del coordinador
+                d = np.linalg.norm(pos - self.drones[i], axis=1)
+                j = int(np.argmin(d))
+                if float(d[j]) <= self.r_confirm:
+                    self.drone_investigating[i] = False  # se libera al coordinador en AMBOS casos
+                    if bool(is_wolf[j]):
+                        self.phase = "ESCOLTA"            # LOBO confirmado -> amenaza
+                    else:
+                        self.corzo_dismissed[int(gid[j]) - self.n_wolves] = True  # CORZO -> descarta (no se reinvestiga)
                     break
 
     def _process_predation(self) -> bool:
@@ -1600,6 +1663,79 @@ class World:
         self._clip_to_parcel(pts)
         return pts
 
+    def _roll_episode_kind(self) -> None:
+        """Fija self.episode_kind para el episodio (3c). SOLO sortea si los corzos están activos
+        (corzos_max>0) y en escenario de escolta; si no, 'lobos' SIN tocar el RNG -> mundo actual bit a bit
+        (combate puro NO tiene corzos -> face_check intacto). Si se pasó episode_kind explícito, se respeta."""
+        if not (self.escort_enabled and self.corzos_max > 0):
+            self.episode_kind = "lobos"
+            return
+        if self._episode_kind_forced is not None:
+            self.episode_kind = self._episode_kind_forced
+            return
+        self.episode_kind = str(self.rng.choice(("lobos", "corzos", "mixto"), p=self.corzo_episode_probs))
+
+    def _spawn_corzos(self, n: int) -> np.ndarray:
+        """n corzos en posiciones aleatorias del campo, FUERA de las zonas prohibidas (refugio/central) y NO
+        encima del rebaño (a > cow_spread+r_notice del spawn). Rechazo sembrado (reproducible). Si el guard se
+        agota devuelve menos de n (raro; el reset reajusta n_corzos)."""
+        if n <= 0:
+            return np.zeros((0, 2))
+        pts = np.empty((n, 2)); k = 0; guard = 0
+        herd_clear = self.cow_spread + self.r_notice
+        while k < n and guard < 2000:
+            guard += 1
+            p = self.rng.uniform(np.array([0.0, 0.0]), np.array([self.W, self.H]))
+            if bool(self._in_forbidden(p[None, :])[0]):
+                continue                                   # dentro del establo/central -> rechaza
+            if float(np.linalg.norm(p - self.cow_spawn)) < herd_clear:
+                continue                                   # encima del rebaño -> rechaza
+            pts[k] = p; k += 1
+        return pts[:k]
+
+    def _contact_bodies(self):
+        """Cuerpos DETECTABLES por los drones (lobo o corzo) NO descartados, para el reflejo de investigación.
+        Devuelve (pos (M,2), is_wolf (M,) bool, gid (M,) int). is_wolf = verdad-terreno para el ORÁCULO a
+        r_confirm; gid = id estable (lobo j -> j ; corzo c -> n_wolves+c) para descartar el corzo exacto.
+        SIN corzos (n_corzos=0) devuelve EXACTAMENTE self.wolves -> el reflejo se reduce al actual (bit a bit)."""
+        if self.n_corzos == 0:
+            return self.wolves, np.ones(self.n_wolves, dtype=bool), np.arange(self.n_wolves)
+        keep = ~self.corzo_dismissed
+        pos = np.vstack([self.wolves, self.corzos[keep]]) if self.n_wolves else self.corzos[keep]
+        is_wolf = np.concatenate([np.ones(self.n_wolves, dtype=bool), np.zeros(int(keep.sum()), dtype=bool)])
+        gid = np.concatenate([np.arange(self.n_wolves), self.n_wolves + np.where(keep)[0]])
+        return pos, is_wolf, gid
+
+    def _update_corzos(self) -> None:
+        """Corzo (cuerpo NO-amenaza): DEAMBULA (paseo angular lento, como las vacas al pastar) + HUYE
+        (repulsión con falloff) de lobos y drones ACTIVE dentro de CORZO_FLEE_RADIUS. NO caza, NO va al
+        rebaño, NO ataca. Holonómico con inercia, capado a corzo_speed. Se mantiene FUERA de las zonas."""
+        if self.n_corzos == 0:
+            return
+        self._corzo_graze_dir = self._corzo_graze_dir + self.rng.normal(0.0, self.wander_drift, size=self.n_corzos)
+        wander = self.wander_calm * np.column_stack([np.cos(self._corzo_graze_dir), np.sin(self._corzo_graze_dir)])
+        flee = np.zeros((self.n_corzos, 2))
+        threats = []
+        if self.n_wolves > 0:
+            threats.append(self.wolves)
+        act = self.drones[self.drone_state == ACTIVE]
+        if act.shape[0] > 0:
+            threats.append(act)
+        for src in threats:                                  # repulsión desde lobos y drones a tiro
+            rel = self.corzos[:, None, :] - src[None, :, :]  # (nc, ns, 2): amenaza -> corzo (alejarse)
+            d = np.linalg.norm(rel, axis=2)
+            fall = np.clip(1.0 - d / CORZO_FLEE_RADIUS, 0.0, 1.0)
+            units = rel / np.maximum(d[:, :, None], 1e-9)
+            flee = flee + (units * fall[:, :, None]).sum(axis=1)
+        total = wander + CORZO_FLEE_GAIN * flee
+        speed = np.linalg.norm(total, axis=1, keepdims=True)
+        scale = np.minimum(1.0, self.corzo_speed / np.maximum(speed, 1e-9))
+        self.corzo_vel = self.corzo_vel + self.cow_inertia * (total * scale - self.corzo_vel)
+        self.corzos = self.corzos + self.corzo_vel * self.dt
+        self._clip_to_parcel(self.corzos)
+        self._push_outside_circle(self.corzos, self.safe_zone)      # no entra al establo/central (animal salvaje)
+        self._push_outside_circle(self.corzos, self.central_station)
+
     def _random_perimeter_points(self, n: int) -> np.ndarray:
         """n puntos aleatorios sobre el perímetro de la parcela [0,W]x[0,H]. (Conservado como utilidad;
         el spawn de lobos usa ahora _spawn_wolves_sector, agrupado por sector.)"""
@@ -1646,6 +1782,9 @@ class World:
             "calf_safe": self.calf_safe.copy(),
             "calf_alive": self.calf_alive.copy(),
             "wolves": self.wolves.copy(),
+            "corzos": self.corzos.copy(),                 # corzos (3c, cuerpos no-amenaza)
+            "corzo_dismissed": self.corzo_dismissed.copy(),  # ya confirmados NO-amenaza (descartados)
+            "episode_kind": self.episode_kind,            # 'lobos' / 'corzos' / 'mixto'
             "drones": self.drones.copy(),
             "drone_state": self.drone_state.copy(),       # para dibujar el radio de disuasión de los ACTIVE
             "drone_investigating": self.drone_investigating.copy(),

@@ -62,6 +62,9 @@ def render_episode(world, history, interval: int = 40, save_path: str | None = N
     cow_sc = ax.scatter(*empty.T, c="saddlebrown", s=60, label="vacas", zorder=5)
     # Lobos: el color se actualiza por frame (oro = frenado en el cono / rojo = flanqueando).
     wolf_sc = ax.scatter(*empty.T, c="red", s=110, marker="X", label="lobos", zorder=6)
+    # Corzos (3c, cuerpos NO-amenaza): rombo verde oliva; gris claro si ya CONFIRMADOS no-amenaza (descartados).
+    corzo_sc = ax.scatter(*empty.T, c="olive", s=70, marker="d", edgecolors="black",
+                          linewidths=0.5, label="corzos (no amenaza)", zorder=5)
     active_sc = ax.scatter(*empty.T, c="royalblue", s=90, marker="^", label="drones activos")
     reserve_sc = ax.scatter(*empty.T, c="lightskyblue", s=70, marker="^",
                             edgecolors="royalblue", label="drones reserva")
@@ -135,6 +138,16 @@ def render_episode(world, history, interval: int = 40, save_path: str | None = N
         else:
             wolf_sc.set_color("red")
 
+        # Corzos (3c): oliva si aún cuentan como contacto, gris claro si ya CONFIRMADOS no-amenaza (descartados).
+        corzos = snap.get("corzos")
+        if corzos is not None and len(corzos):
+            corzo_sc.set_offsets(corzos)
+            dism = snap.get("corzo_dismissed")
+            if dism is not None and len(dism) == len(corzos):
+                corzo_sc.set_color(["lightgray" if d else "olive" for d in dism])
+        else:
+            corzo_sc.set_offsets(empty)
+
         active_sc.set_offsets(drones[:world.n_active])
         reserve_sc.set_offsets(drones[world.n_active:])
 
@@ -159,8 +172,11 @@ def render_episode(world, history, interval: int = 40, save_path: str | None = N
         cow_box.set_bounds(xmin, ymin, xmax - xmin, ymax - ymin)
 
         prey_lbl = "ternero" if snap["prey_is_calf"] else ("adulta" if prey_pos is not None else "-")
+        ek = snap.get("episode_kind")
+        nc = len(corzos) if corzos is not None else 0
+        extra = f"   episodio={ek}   corzos={nc}" if ek and ek != "lobos" else ""
         txt.set_text(f"FASE: {snap['phase']}    t={snap['t']:.1f}s   paso={snap['step']}   "
-                     f"lobos={len(wolves)}   presa={prey_lbl}\n"
+                     f"lobos={len(wolves)}   presa={prey_lbl}{extra}\n"
                      f"a salvo={snap['n_safe']}   cazadas={snap['n_depredadas']}   fuera={snap['n_fuera']}")
 
         # Banner del terminal: aparece cuando el episodio se ha resuelto (status != running).
@@ -170,7 +186,7 @@ def render_episode(world, history, interval: int = 40, save_path: str | None = N
             banner.get_bbox_patch().set_facecolor(color)
         else:
             banner.set_text("")
-        return (cow_sc, calf_sc, prey_hl, defender_hl, wolf_sc, active_sc, reserve_sc,
+        return (cow_sc, calf_sc, prey_hl, defender_hl, wolf_sc, corzo_sc, active_sc, reserve_sc,
                 invest_line, cow_box, txt, banner, *cone_polys, *calf_lines, *deter_rings)
 
     anim = FuncAnimation(fig, update, frames=len(history),
