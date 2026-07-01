@@ -1,23 +1,77 @@
 """
-render.py — Visualización con matplotlib.
+render.py — Visualización con matplotlib (emojis de color + barra de batería).
 
-REGLA DE ARQUITECTURA: el render SOLO lee estado, nunca avanza la dinámica.
-Consume el `history` (lista de snapshots) que produce el bucle de main.py y lo
-reproduce. Así el World queda totalmente desacoplado de la visualización.
+REGLA DE ARQUITECTURA: el render SOLO lee estado, nunca avanza la dinámica. Consume el
+`history` (lista de snapshots) que produce el bucle de main.py y lo reproduce. Así el World
+queda totalmente desacoplado de la visualización.
+
+Emojis: matplotlib NO pinta emojis a color (FreeType sin glifos COLR/CBDT). Se renderizan con
+PIL (`embedded_color=True`, fuente de emoji del sistema) a SPRITES RGBA y se colocan con
+AnnotationBbox → color de verdad, sin "tofu". Si no hay PIL o fuente de emoji, cae al render
+de marcadores de siempre (scatter) — así nunca se rompe.
+Barra de batería: encima de cada dron, [0,1], verde llena → roja casi vacía (necesita el campo
+"battery" en el snapshot; main.py lo añade). Si no está, no se dibuja.
 """
 
 from __future__ import annotations
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from matplotlib.animation import FuncAnimation
+from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 from world import ACTIVE, DETER_RADIUS
+
+# --- Emojis por entidad ---
+EMOJI = {"cow": "🐄", "calf": "🐄", "wolf": "🐺", "corzo": "🦌", "drone": "🚁"}
+_LEGEND = [("cow", "vaca"), ("calf", "ternero"), ("wolf", "lobo"),
+           ("corzo", "corzo"), ("drone", "dron")]
+
+
+def _find_emoji_font() -> str | None:
+    """Primera fuente de emoji A COLOR disponible (Segoe UI Emoji / Noto / Apple)."""
+    for p in ("C:/Windows/Fonts/seguiemj.ttf",
+              "/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf",
+              "/usr/share/fonts/noto/NotoColorEmoji.ttf",
+              "/System/Library/Fonts/Apple Color Emoji.ttc"):
+        if os.path.exists(p):
+            return p
+    return None
+
+
+_EMOJI_FONT = _find_emoji_font()
+try:
+    from PIL import Image, ImageDraw, ImageFont
+    EMOJI_OK = _EMOJI_FONT is not None
+except Exception:
+    EMOJI_OK = False
+
+_sprite_cache: dict = {}
+
+
+def _sprite(name: str, px: int = 96, fade: float = 1.0) -> np.ndarray:
+    """Sprite RGBA (numpy [0,1]) del emoji, recortado a su contenido. `fade` atenúa el alfa
+    (entidades muertas / corzos descartados). Cacheado."""
+    key = (name, px, round(fade, 2))
+    if key in _sprite_cache:
+        return _sprite_cache[key]
+    font = ImageFont.truetype(_EMOJI_FONT, px)
+    img = Image.new("RGBA", (px + 12, px + 12), (0, 0, 0, 0))
+    ImageDraw.Draw(img).text((6, 6), EMOJI[name], font=font, embedded_color=True)
+    img = img.crop(img.getbbox() or (0, 0, px, px))
+    arr = np.asarray(img).astype(float) / 255.0
+    if fade < 1.0:
+        arr = arr.copy()
+        arr[..., 3] *= fade
+    _sprite_cache[key] = arr
+    return arr
 
 
 def render_episode(world, history, interval: int = 40, save_path: str | None = None):
     W, H = world.W, world.H
     sx, sy, sr = world.safe_zone
     cx, cy, cr = world.central_station
+    m = min(W, H)
 
     fig, ax = plt.subplots(figsize=(7, 7))
     ax.set_xlim(0, W)
@@ -26,21 +80,16 @@ def render_episode(world, history, interval: int = 40, save_path: str | None = N
 
     # --- elementos estáticos ---
     ax.add_patch(patches.Rectangle((0, 0), W, H, fill=False, ec="black"))
-    # Establo (zona segura): centro del campo.
     ax.add_patch(patches.Circle((sx, sy), sr, fc="#cfe8cf", ec="green",
                                  alpha=0.6, label="zona segura (establo)"))
-    # Estación central de carga: pegada al establo pero distinta.
     ax.add_patch(patches.Circle((cx, cy), cr, fc="#ffe4b5", ec="darkorange",
                                  ls=":", lw=1.5, alpha=0.9, label="estación central (reserva)"))
-    # Zona vacas: bounding box dinámico (se recalcula cada frame).
     cow_box = patches.Rectangle((0, 0), 0, 0, fill=False, ec="gray", ls="--", lw=1.2,
                                 label="zona vacas (bbox)")
     ax.add_patch(cow_box)
 
-    # --- elementos dinámicos ---
+    # --- elementos dinámicos (estructura: conos, realces, líneas, anillos) ---
     empty = np.empty((0, 2))
-    # Cono de seguridad frontal de cada vaca (cuña ±cone_half_angle, radio r_face_safe). Es lo que
-    # de verdad cubre al "dar la cara" (sustituye a la flecha). Se dibuja como polígono actualizable.
     cone_half, r_face = float(world.cone_half_angle), float(world.r_face_safe)
     K_ARC = 14
     cone_polys = [patches.Polygon(np.zeros((K_ARC + 1, 2)), closed=True, fc="green", ec="none", alpha=0.13)
@@ -48,28 +97,13 @@ def render_episode(world, history, interval: int = 40, save_path: str | None = N
     for p in cone_polys:
         ax.add_patch(p)
     cone_polys[0].set_label("cono de seguridad (±45°)")
-    # Realce de la presa fijada de la manada (commitment); ahora puede ser un ternero.
-    prey_hl = ax.scatter(*empty.T, s=260, facecolors="none", edgecolors="black", linewidths=1.6,
-                         marker="o", label="presa fijada", zorder=4)
-    # Terneros + línea a su defensora + realce de la madre (nº fijo por episodio).
+    prey_hl = ax.scatter(*empty.T, s=360, facecolors="none", edgecolors="black", linewidths=1.6,
+                         marker="o", label="presa fijada", zorder=7)
     n_calves = len(history[0]["calves"])
     calf_lines = [ax.plot([], [], color="saddlebrown", lw=0.8, alpha=0.6, zorder=3)[0]
                   for _ in range(n_calves)]
-    defender_hl = ax.scatter(*empty.T, s=150, facecolors="none", edgecolors="purple", linewidths=1.4,
-                             marker="o", label="defensora", zorder=4)
-    calf_sc = ax.scatter(*empty.T, c="navajowhite", s=45, edgecolors="saddlebrown",
-                         label="terneros", zorder=5)
-    cow_sc = ax.scatter(*empty.T, c="saddlebrown", s=60, label="vacas", zorder=5)
-    # Lobos: el color se actualiza por frame (oro = frenado en el cono / rojo = flanqueando).
-    wolf_sc = ax.scatter(*empty.T, c="red", s=110, marker="X", label="lobos", zorder=6)
-    # Corzos (3c, cuerpos NO-amenaza): rombo verde oliva; gris claro si ya CONFIRMADOS no-amenaza (descartados).
-    corzo_sc = ax.scatter(*empty.T, c="olive", s=70, marker="d", edgecolors="black",
-                          linewidths=0.5, label="corzos (no amenaza)", zorder=5)
-    active_sc = ax.scatter(*empty.T, c="royalblue", s=90, marker="^", label="drones activos")
-    reserve_sc = ax.scatter(*empty.T, c="lightskyblue", s=70, marker="^",
-                            edgecolors="royalblue", label="drones reserva")
-    # Radio de DISUASIÓN (hazing) de cada dron ACTIVE: dentro de él el lobo esquiva + frena. Solo en el
-    # escenario de escolta (escort_enabled); en combate puro no hay disuasión -> no se dibuja (render intacto).
+    defender_hl = ax.scatter(*empty.T, s=240, facecolors="none", edgecolors="purple", linewidths=1.4,
+                             marker="o", label="defensora", zorder=7)
     deter_show = bool(getattr(world, "escort_enabled", False))
     deter_rings = [patches.Circle((0, 0), DETER_RADIUS, fill=False, ec="royalblue", ls=":", lw=1.0,
                                   alpha=0.35, visible=False) for _ in range(world.n_drones)]
@@ -77,81 +111,121 @@ def render_episode(world, history, interval: int = 40, save_path: str | None = N
         ax.add_patch(r)
     if deter_show and deter_rings:
         deter_rings[0].set_label("radio disuasión")
-    # Línea dron INVESTIGANDO -> su contacto (cuando un dron se despega a verificar un lobo).
     invest_line, = ax.plot([], [], color="royalblue", lw=1.4, ls="--", alpha=0.8, zorder=4,
                            label="investigando")
-    txt = ax.text(0.02, 0.98, "", transform=ax.transAxes, va="top", fontsize=9,
-                  bbox=dict(boxstyle="round", fc="white", alpha=0.8))
-    # Banner del terminal (ÉXITO / DEPREDACIÓN / TIMEOUT + contadores), visible al resolverse.
-    banner = ax.text(0.5, 0.02, "", transform=ax.transAxes, ha="center", va="bottom",
-                     fontsize=12, weight="bold", color="white", zorder=10,
-                     bbox=dict(boxstyle="round", fc="gray", alpha=0.9))
-    ax.legend(loc="upper right", fontsize=7)
 
-    # Colores de las reses según su estado: en juego (marrón) / refugiada (verde) / cazada (gris).
-    def _herd_colors(alive, safe, base):
-        return [("dimgray" if not a else ("forestgreen" if s else base))
-                for a, s in zip(alive, safe)]
+    # --- entidades: sprites de emoji (o scatter de reserva si no hay emojis) ---
+    ZOOM = {"cow": 0.42 * (m / 300), "calf": 0.30 * (m / 300),
+            "wolf": 0.40 * (m / 300), "corzo": 0.38 * (m / 300), "drone": 0.40 * (m / 300)}
+
+    def _pool(name, n, z):
+        pool = []
+        for _ in range(n):
+            oi = OffsetImage(_sprite(name), zoom=z)
+            ab = AnnotationBbox(oi, (0, 0), frameon=False, pad=0.0, zorder=6,
+                                box_alignment=(0.5, 0.5))
+            ab.set_visible(False)
+            ax.add_artist(ab)
+            pool.append([ab, oi, name])
+        return pool
+
+    scatters = {}
+    if EMOJI_OK:
+        cow_pool = _pool("cow", world.n_cows, ZOOM["cow"])
+        calf_pool = _pool("calf", n_calves, ZOOM["calf"])
+        wolf_pool = _pool("wolf", len(history[0]["wolves"]) or 5, ZOOM["wolf"])
+        corzo_pool = _pool("corzo", len(history[0].get("corzos", [])) or 3, ZOOM["corzo"])
+        drone_pool = _pool("drone", world.n_drones, ZOOM["drone"])
+    else:  # --- FALLBACK (sin emojis): marcadores de siempre ---
+        scatters["cow"] = ax.scatter(*empty.T, c="saddlebrown", s=60, label="vacas", zorder=6)
+        scatters["calf"] = ax.scatter(*empty.T, c="navajowhite", s=45, edgecolors="saddlebrown", label="terneros", zorder=6)
+        scatters["wolf"] = ax.scatter(*empty.T, c="red", s=110, marker="X", label="lobos", zorder=6)
+        scatters["corzo"] = ax.scatter(*empty.T, c="olive", s=70, marker="d", edgecolors="black", lw=0.5, label="corzos", zorder=6)
+        scatters["drone"] = ax.scatter(*empty.T, c="royalblue", s=90, marker="^", label="drones", zorder=6)
+
+    # --- barra de batería sobre cada dron ---
+    BAR_W, BAR_H, BAR_DY = 0.05 * m, 0.011 * m, 0.035 * m
+    bat_bg = [patches.Rectangle((0, 0), BAR_W, BAR_H, fc="#e6e6e6", ec="black", lw=0.4,
+                                zorder=8, visible=False) for _ in range(world.n_drones)]
+    bat_fill = [patches.Rectangle((0, 0), 0, BAR_H, fc="green", ec="none",
+                                  zorder=9, visible=False) for _ in range(world.n_drones)]
+    for r in bat_bg + bat_fill:
+        ax.add_patch(r)
+    bat_cmap = plt.get_cmap("RdYlGn")
+
+    txt = ax.text(0.02, 0.98, "", transform=ax.transAxes, va="top", fontsize=9,
+                  bbox=dict(boxstyle="round", fc="white", alpha=0.8), zorder=11)
+    banner = ax.text(0.5, 0.02, "", transform=ax.transAxes, ha="center", va="bottom",
+                     fontsize=12, weight="bold", color="white", zorder=12,
+                     bbox=dict(boxstyle="round", fc="gray", alpha=0.9))
+    ax.legend(loc="lower right", fontsize=6.5, framealpha=0.85)
+
+    # Leyenda de emojis (sprites + etiqueta) en la esquina inferior izquierda.
+    if EMOJI_OK:
+        for k, (name, label) in enumerate(_LEGEND):
+            yf = 0.28 - 0.05 * k
+            ab = AnnotationBbox(OffsetImage(_sprite(name), zoom=0.28), (0.045, yf),
+                                xycoords="axes fraction", frameon=False, box_alignment=(0.5, 0.5), zorder=11)
+            ax.add_artist(ab)
+            ax.text(0.085, yf, label, transform=ax.transAxes, va="center", fontsize=8, zorder=11)
+
+    def _faded(alive, safe):  # muertas atenuadas (las a-salvo se quedan normales, junto al establo)
+        return [not a for a in alive]
+
+    def _place(pool, positions, faded=None):
+        for k, (ab, oi, name) in enumerate(pool):
+            if k < len(positions):
+                ab.xy = (positions[k, 0], positions[k, 1])
+                ab.xybox = (positions[k, 0], positions[k, 1])
+                ab.set_visible(True)
+                if faded is not None:
+                    oi.set_data(_sprite(name, fade=0.3) if faded[k] else _sprite(name))
+            else:
+                ab.set_visible(False)
 
     _TERMINAL = {"success": ("ÉXITO", "forestgreen"), "predation": ("DEPREDACIÓN", "firebrick"),
                  "timeout": ("TIMEOUT", "darkorange")}
 
+    def _herd_colors(alive, safe, base):
+        return [("dimgray" if not a else ("forestgreen" if s else base)) for a, s in zip(alive, safe)]
+
     def update(frame):
         snap = history[frame]
-        cows = snap["cows"]
-        drones = snap["drones"]
-        head = snap["cow_heading"]
-        wolves = snap["wolves"]
-        calves = snap["calves"]
-        cdef = snap["calf_defender"]
-        cow_sc.set_offsets(cows)
-        # Color por estado: refugiadas (verde) y cazadas (gris) se distinguen de las en juego.
-        cow_sc.set_color(_herd_colors(snap["cow_alive"], snap["cow_safe"], "saddlebrown"))
+        cows, drones, head = snap["cows"], snap["drones"], snap["cow_heading"]
+        wolves, calves, cdef = snap["wolves"], snap["calves"], snap["calf_defender"]
+        corzos = snap.get("corzos")
+        corzos = corzos if corzos is not None else empty
 
-        # Cuña del cono frontal: centrada en cada vaca, orientada a su heading, radio r_face_safe.
+        # Conos frontales.
         for i in range(len(cows)):
             a = np.linspace(head[i] - cone_half, head[i] + cone_half, K_ARC)
             arc = cows[i] + r_face * np.column_stack([np.cos(a), np.sin(a)])
             cone_polys[i].set_xy(np.vstack([cows[i], arc]))
 
-        # Terneros + línea a su defensora + realce de la madre.
-        calf_sc.set_offsets(calves if len(calves) else empty)
-        if len(calves):
-            calf_sc.set_color(_herd_colors(snap["calf_alive"], snap["calf_safe"], "navajowhite"))
+        # Realces + líneas ternero->defensora.
         defender_hl.set_offsets(cows[cdef] if len(cdef) else empty)
         for k, ln in enumerate(calf_lines):
             ln.set_data([calves[k, 0], cows[cdef[k], 0]], [calves[k, 1], cows[cdef[k], 1]])
-
-        # Presa fijada de la manada (adulta o ternero), si la hay.
         prey_pos = snap["prey_pos"]
         prey_hl.set_offsets(prey_pos[None, :] if prey_pos is not None else empty)
 
-        # Lobos: color según su relación con el cono que defiende a la presa (oro = a raya / rojo = flanco).
-        wolf_sc.set_offsets(wolves)
-        cone_pos = snap["prey_cone_pos"]
-        if cone_pos is not None and len(wolves):
-            f = np.array([np.cos(snap["prey_cone_head"]), np.sin(snap["prey_cone_head"])])
-            rel = wolves - cone_pos
-            d = np.maximum(np.linalg.norm(rel, axis=1), 1e-9)
-            in_cone = (rel / d[:, None]) @ f >= np.cos(cone_half)
-            wolf_sc.set_color(np.where(in_cone, "gold", "red").tolist())
-        else:
-            wolf_sc.set_color("red")
-
-        # Corzos (3c): oliva si aún cuentan como contacto, gris claro si ya CONFIRMADOS no-amenaza (descartados).
-        corzos = snap.get("corzos")
-        if corzos is not None and len(corzos):
-            corzo_sc.set_offsets(corzos)
+        # Entidades.
+        if EMOJI_OK:
+            _place(cow_pool, cows, faded=_faded(snap["cow_alive"], snap["cow_safe"]))
+            _place(calf_pool, calves, faded=_faded(snap["calf_alive"], snap["calf_safe"]))
+            _place(wolf_pool, wolves)
             dism = snap.get("corzo_dismissed")
-            if dism is not None and len(dism) == len(corzos):
-                corzo_sc.set_color(["lightgray" if d else "olive" for d in dism])
+            cf = [bool(dism[i]) for i in range(len(corzos))] if (dism is not None and len(dism) == len(corzos)) else None
+            _place(corzo_pool, corzos, faded=cf)
+            _place(drone_pool, drones)
         else:
-            corzo_sc.set_offsets(empty)
+            scatters["cow"].set_offsets(cows); scatters["cow"].set_color(_herd_colors(snap["cow_alive"], snap["cow_safe"], "saddlebrown"))
+            scatters["calf"].set_offsets(calves if len(calves) else empty)
+            scatters["wolf"].set_offsets(wolves)
+            scatters["corzo"].set_offsets(corzos if len(corzos) else empty)
+            scatters["drone"].set_offsets(drones)
 
-        active_sc.set_offsets(drones[:world.n_active])
-        reserve_sc.set_offsets(drones[world.n_active:])
-
-        # Radio de disuasión alrededor de cada dron ACTIVE (solo en el escenario de escolta).
+        # Radio de disuasión de los ACTIVE (solo escolta).
         dstate = snap.get("drone_state")
         for i, ring in enumerate(deter_rings):
             on = deter_show and dstate is not None and dstate[i] == ACTIVE
@@ -159,7 +233,18 @@ def render_episode(world, history, interval: int = 40, save_path: str | None = N
                 ring.center = (drones[i, 0], drones[i, 1])
             ring.set_visible(on)
 
-        # Dron INVESTIGANDO -> línea a su contacto (despegar a verificar el lobo).
+        # Barra de batería sobre cada dron.
+        bat = snap.get("battery")
+        for i in range(world.n_drones):
+            if bat is None:
+                bat_bg[i].set_visible(False); bat_fill[i].set_visible(False); continue
+            bx, by = drones[i, 0] - BAR_W / 2.0, drones[i, 1] + BAR_DY
+            b = float(np.clip(bat[i], 0.0, 1.0))
+            bat_bg[i].set_xy((bx, by)); bat_bg[i].set_visible(True)
+            bat_fill[i].set_xy((bx, by)); bat_fill[i].set_width(BAR_W * b)
+            bat_fill[i].set_facecolor(bat_cmap(b)); bat_fill[i].set_visible(True)
+
+        # Dron investigando -> línea a su contacto.
         inv = np.where(snap["drone_investigating"])[0]
         if inv.size:
             i = int(inv[0]); cpos = snap["drone_contact"][i]
@@ -167,27 +252,31 @@ def render_episode(world, history, interval: int = 40, save_path: str | None = N
         else:
             invest_line.set_data([], [])
 
-        # Zona vacas: derivada de las posiciones actuales -> flota con el rebaño.
         xmin, ymin, xmax, ymax = world.cows_bbox(cows)
         cow_box.set_bounds(xmin, ymin, xmax - xmin, ymax - ymin)
 
         prey_lbl = "ternero" if snap["prey_is_calf"] else ("adulta" if prey_pos is not None else "-")
         ek = snap.get("episode_kind")
-        nc = len(corzos) if corzos is not None else 0
+        nc = len(corzos)
         extra = f"   episodio={ek}   corzos={nc}" if ek and ek != "lobos" else ""
         txt.set_text(f"FASE: {snap['phase']}    t={snap['t']:.1f}s   paso={snap['step']}   "
                      f"lobos={len(wolves)}   presa={prey_lbl}{extra}\n"
                      f"a salvo={snap['n_safe']}   cazadas={snap['n_depredadas']}   fuera={snap['n_fuera']}")
 
-        # Banner del terminal: aparece cuando el episodio se ha resuelto (status != running).
         if snap["status"] in _TERMINAL:
             label, color = _TERMINAL[snap["status"]]
             banner.set_text(f"{label}   ·   a salvo {snap['n_safe']} / cazadas {snap['n_depredadas']} / fuera {snap['n_fuera']}")
             banner.get_bbox_patch().set_facecolor(color)
         else:
             banner.set_text("")
-        return (cow_sc, calf_sc, prey_hl, defender_hl, wolf_sc, corzo_sc, active_sc, reserve_sc,
-                invest_line, cow_box, txt, banner, *cone_polys, *calf_lines, *deter_rings)
+
+        arts = [prey_hl, defender_hl, invest_line, cow_box, txt, banner,
+                *cone_polys, *calf_lines, *deter_rings, *bat_bg, *bat_fill]
+        if EMOJI_OK:
+            arts += [ab for pool in (cow_pool, calf_pool, wolf_pool, corzo_pool, drone_pool) for ab, _, _ in pool]
+        else:
+            arts += list(scatters.values())
+        return tuple(arts)
 
     anim = FuncAnimation(fig, update, frames=len(history),
                          interval=interval, blit=False, repeat=False)

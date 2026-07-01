@@ -8,10 +8,11 @@ el bucle y se lo pasamos a render_episode para reproducirlo.
 Bucle: reset -> [observar -> coordinar -> aplicar+step -> terminal] -> métricas.
 
 Uso:
-    python main.py                          # seed aleatoria; tipo de episodio sorteado (~1/3 solo-lobos / solo-corzos / mixto)
-    python main.py 42                       # seed fija -> episodio reproducible
-    python main.py --escenario solo-corzos  # FUERZA el tipo (solo-lobos / solo-corzos / mixto); ver corzos a voluntad
-    python main.py 42 --escenario mixto     # seed fija + tipo forzado
+    python main.py                                        # seed aleatoria; tipo sorteado; coordinador dummy (drones quietos)
+    python main.py 42                                     # seed fija -> episodio reproducible
+    python main.py --escenario solo-corzos                # FUERZA el tipo (solo-lobos / solo-corzos / mixto)
+    python main.py --coordinador reactive                 # barrera de apantallado + patrulla (drones que se MUEVEN)
+    python main.py --coordinador reactive --escenario solo-lobos   # barrera en acción, emojis + barra de batería
 """
 
 from __future__ import annotations
@@ -19,8 +20,13 @@ import argparse
 import numpy as np
 
 from world import World
-from coordinators import DummyCoordinator
+from coordinators import DummyCoordinator, ReactiveCoordinator
 from render import render_episode
+
+# El render dibuja una barra de batería sobre cada dron -> el history necesita la batería por frame.
+# La añadimos aquí (main solo LEE el estado; no toca la física ni snapshot()).
+def _snap(world: World) -> dict:
+    return {**world.snapshot(), "battery": world.battery.copy()}
 
 # CLI --escenario -> episode_kind del World (3c). El mundo de la baseline v2 lleva corzos activos
 # (corzos_max>0) y sortea el tipo por episodio; --escenario lo fuerza para ver corzos sin depender del azar.
@@ -28,16 +34,16 @@ ESCENARIOS = {"solo-lobos": "lobos", "solo-corzos": "corzos", "mixto": "mixto"}
 CORZOS_MAX = 3   # 1-3 corzos en los episodios que los tienen (mismo mundo v2 que mide la baseline por tipo)
 
 
-def run_episode(world: World, coordinator: DummyCoordinator):
+def run_episode(world: World, coordinator):
     world.reset()
-    history = [world.snapshot()]
+    history = [_snap(world)]
     total_reward = 0.0
 
     while True:
         obs = world.get_observation()                                   # observar
         actions = coordinator.act(obs)                                  # coordinar
         obs, reward, terminated, truncated, info = world.step(actions)  # aplicar + step
-        history.append(world.snapshot())
+        history.append(_snap(world))
         total_reward += reward
         if terminated or truncated:                                     # terminal
             break
@@ -64,17 +70,19 @@ def main():
     parser.add_argument("seed", nargs="?", type=int, default=None, help="seed (omítela para una aleatoria)")
     parser.add_argument("--escenario", choices=list(ESCENARIOS), default=None,
                         help="fuerza el tipo de episodio (si se omite, se sortea ~1/3 cada uno)")
+    parser.add_argument("--coordinador", choices=["dummy", "reactive"], default="dummy",
+                        help="dummy = drones quietos (baseline); reactive = barrera de apantallado + patrulla")
     args = parser.parse_args()
     seed = args.seed if args.seed is not None else int(np.random.randint(0, 10000))
     episode_kind = ESCENARIOS.get(args.escenario)   # None -> sorteo sembrado
 
     world = World(seed=seed, teleport_guard=True, corzos_max=CORZOS_MAX, episode_kind=episode_kind)
-    coordinator = DummyCoordinator(world.n_drones)
+    coordinator = ReactiveCoordinator(world) if args.coordinador == "reactive" else DummyCoordinator(world.n_drones)
 
     forzado = f"  (forzado: --escenario {args.escenario})" if args.escenario else "  (sorteado)"
-    print(f"seed = {seed}  (reproduce con: python main.py {seed}"
-          + (f" --escenario {args.escenario}" if args.escenario else "") + ")")
-    print(f"episodio = {world.episode_kind}{forzado}  |  lobos = {world.n_wolves}  corzos = {world.n_corzos}")
+    repro = f"python main.py {seed} --coordinador {args.coordinador}" + (f" --escenario {args.escenario}" if args.escenario else "")
+    print(f"seed = {seed}  (reproduce con: {repro})")
+    print(f"coordinador = {args.coordinador}  |  episodio = {world.episode_kind}{forzado}  |  lobos = {world.n_wolves}  corzos = {world.n_corzos}")
 
     history, metrics = run_episode(world, coordinator)
 
