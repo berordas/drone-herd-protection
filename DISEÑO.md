@@ -14,9 +14,10 @@
 > (huyen juntos al ritmo de la cría, más lenta) · **los LOBOS no se pillan en la zona segura** (la BORDEAN, no entran) ·
 > **CORZOS (3c)** (cuerpos NO-amenaza: deambulan+huyen, detectables, ORÁCULO a r_confirm, 3 tipos de episodio) ·
 > **v2 CONGELADA (tag `v2-baseline`)** (la física NO cambia más; `baseline.py` = arnés de evaluación POR TIPO,
-> severidad solo-lobos 4.45 / solo-corzos 0.00 / mixto 4.41, N=100).
-> **Pendiente:** POSICIONAMIENTO del coordinador (interponer drones para bajar la severidad;
-> y discriminar amenaza: no malgastar drones en corzos) · coordinadores (reflejo trivial, MARL).
+> severidad Dummy solo-lobos 4.45 / solo-corzos 0.00 / mixto 4.41, N=100) ·
+> **ReactiveCoordinator** (1er coordinador clásico: BARRERA de apantallado; regla fija, NO aprende) →
+> severidad 3.27 / 0 / 3.40 (−1.18 / − / −1.01 vs Dummy; n_safe sube).
+> **Pendiente:** **MARL** (debe batir la barrera) · reflejo-reactivo que consume el mensaje del reflejo.
 > **Commits:** `194a3ad` base · `37910b3` terminal · `e663504` disparador por dron · `4d1e708` campo
 > 300×300 + escala biológica absoluta · `886bd45` dispersión del rebaño · `a15e2df` movimiento de
 > drones (3a) · `fd893b8` detectar→confirmar (3b) · `49e0e22` consolidar DISEÑO+CLAUDE · `144b7bd` guiado (paso 2)
@@ -641,7 +642,9 @@ el DGX va sobrado.
 Carpeta `AI_LAB/` (proyecto Python local). Estructura:
 - `world.py` — clase `World`: estado, dinámica, recompensa, **terminal de escolta + máquina de fases + guiado al refugio NO-HOLONÓMICO** (`escort_enabled`). **Sin** ROS/render dentro.
 - `render.py` — animación matplotlib (por reproducción: lee estado, nunca llama a `step`). Dibuja el **cono** como cuña ±45°, colorea los lobos por su relación con el cono de la presa, realza la **presa fijada**, pinta **terneros** (color propio) con **línea a su defensora**, **colorea las reses refugiadas (verde) / cazadas (gris)**, muestra la **FASE** (VIGILANCIA/SOSPECHA/ESCOLTA), una **línea del dron que INVESTIGA a su contacto**, y un **banner del terminal** (ÉXITO/DEPREDACIÓN/TIMEOUT + contadores).
-- `coordinators.py` — `DummyCoordinator` (no comanda nada → drones mantienen waypoint = quietos); reflejo trivial y MARL después. El movimiento es capacidad del mundo (`command_waypoint`), que el coordinador usará en 3b+.
+- `coordinators.py` — `DummyCoordinator` (no comanda nada → drones mantienen waypoint = quietos, BASELINE) y **`ReactiveCoordinator`** (1er coordinador CLÁSICO, regla FIJA: **BARRERA de apantallado** entre la manada y las vacas más cercanas + PATRULLA sin amenaza + caso PENETRADO; solo comanda a los ACTIVE libres, no usa la presa fijada, no toca `world.py`). MARL después. El movimiento es capacidad del mundo (`command_waypoint`).
+- `reactive_check.py` — verificación del **ReactiveCoordinator** (comportamiento, NO física): barrera repartida entre manada y rebaño, reactivo (sigue al paquete), NO usa `pack_prey`, caso penetrado (cubre a las vacas), patrulla en órbita (solo-corzos), severidad de muestra (Reactive ≤ Dummy), reproducibilidad, sin regresiones. Guarda `reactive_barrera.gif` + `reactive_patrulla.gif`.
+- `reactive_eval.py` — evalúa el `ReactiveCoordinator` con el MISMO arnés (`baseline.evaluate`, mismas semillas/CONFIG_V2) y lo compara con la baseline Dummy CONGELADA (`baseline_v2.json`). Guarda `baseline_v2_reactive.json`/`.csv` (tabla comparada POR TIPO).
 - `main.py` — bucle: reset → obs → coordinador → acciones → step → terminal → métricas (incluye fase final, n_safe/n_depredadas/n_fuera).
 - `baseline.py` — **arnés de EVALUACIÓN de la v2 CONGELADA** (tag `v2-baseline`): `CONFIG_V2` (config del mundo, **corzos ON**, 3 tipos) + cross-check de **fidelidad** (`CONFIG_V2 ≡ defaults+corzos` bit a bit) + `evaluate(coordinator_factory)` que corre el `DummyCoordinator` sobre `range(100)` semillas × 3 tipos (tipo forzado) y reporta **POR TIPO** (severidad media±desv, terminales, n_safe). Guarda `baseline_v2.json` (por episodio) + `baseline_v2.csv` (tabla); self-check de deriva vs `REFERENCE_SEVERITY`. **Protocolo de comparación:** un coordinador nuevo se mide con el MISMO arnés (misma config/semillas), cambiando solo el coordinador.
 - `battery_check.py` — verificación macro del subsistema de batería (régimen permanente 4/2/2, escalonado, reproducible).
@@ -965,20 +968,35 @@ cambiando SOLO el coordinador → se compara la severidad POR TIPO. **Verja 12/1
 `world.py` → face_check MUERTE paso 29 idéntico). Esto fue **FIJAR Y MEDIR**: la baseline es la que salió; NO se tuneó
 la física para "mejorarla" — bajar la severidad es trabajo del COORDINADOR (post-v2).
 
+**COORDINADOR REACTIVO HECHO — barrera de apantallado (1er coordinador de verdad, regla FIJA).** El primer
+coordinador que BATE al Dummy: una heurística a mano (SIN aprendizaje) que posiciona los drones LIBRES para
+APANTALLAR al rebaño. `ReactiveCoordinator` (en `coordinators.py`) recibe el estado del mundo, devuelve waypoints
+para los **ACTIVE libres** (NO toca el reflejo/investigador ni los relevos de batería: les deja su waypoint) y deja
+que la **DISUASIÓN** del mundo (automática, de los ACTIVE a ≤`DETER_RADIUS` de un lobo) haga el trabajo. **ESCOLTA:**
+BARRERA perpendicular al eje rebaño→manada, entre el paquete y las vacas más cercanas, a `barrier_standoff`=`DETER_RADIUS`
+por delante, con los drones REPARTIDOS a `drone_spacing`≈1.6·`DETER_RADIUS` (los campos de disuasión TEJEN un frente)
+— **COORDINADO** (no cada uno a por un lobo) y **REACTIVO** (recalcula cada paso). **Defiende a TODO el rebaño:** NO usa
+la presa fijada (`pack_prey`); solo ve posiciones de lobos y de vacas vivas no-a-salvo (incl. terneros). **PENETRADO**
+(la manada ya está entre las vacas): degrada con gracia a cubrir a los lobos MÁS CERCANOS a ellas (`engage_standoff`=
+2·`r_face_safe`), no una barrera externa inútil. **Sin amenaza** (VIGILANCIA/SOSPECHA, solo-corzos): PATRULLA en órbita
+alrededor del rebaño. **NO toca la física** (`world.py`/`baseline.py` intactos → baseline Dummy IDÉNTICA, verja 12/12
+verde). **Evaluado con el MISMO arnés** (`reactive_eval.py` → `baseline.evaluate`, mismas semillas/CONFIG_V2):
+**SEVERIDAD solo-lobos 4.45→3.27 (−1.18) · mixto 4.41→3.40 (−1.01) · solo-corzos 0→0** (n_safe SUBE 2.39→3.59 /
+2.43→3.44; el reparto de terminales apenas cambia —sigue habiendo alguna caza por episodio— pero se pierden MENOS
+cabezas y se salvan MÁS). Es la referencia CLÁSICA que el MARL deberá batir; **MEDIDA, no objetivo** (el frente es
+finito y a corta distancia la disuasión es PARCIAL → no es un escudo perfecto). Parámetros etiquetados/afinables.
+Verificado en `reactive_check.py` (8 tests) + `reactive_barrera.gif` / `reactive_patrulla.gif`.
+
 **SIGUIENTE (opciones):**
-- **POSICIONAMIENTO del coordinador (lo que baja la SEVERIDAD):** la disuasión ya existe; falta que el
-  coordinador **mande los drones a interponerse** entre los lobos y la presa (despejar pins activamente,
-  no solo la disuasión pasiva del Dummy). Eso es el **coordinador** (post-v2, ya CONGELADA): baja la severidad
-  por tipo (solo-lobos **4.45** / mixto **4.41**, la referencia honesta — ahora importa MÁS, el Dummy quieto cubre
-  poco) y desbloquea el ÉXITO; con corzos además aprende a **NO malgastar drones** en lo que no es amenaza
-  (solo-corzos ya es 0). + hooks de batería (travel-time, hueco de cobertura, dron tirado).
-- **Reflejo-reactivo:** un coordinador clásico (no-Dummy) que CONSUME el mensaje del reflejo de investigación y
-  recoloca a los DEMÁS drones; primera rama a batir la baseline con el MISMO `baseline.py`.
-Luego: percepción imperfecta (YOLO) → MARL → comparación, todo **sobre la v2 ya congelada** (la referencia fija).
+- **MARL (MAPPO):** aprender la coordinación de drones y **BATIR la barrera reactiva** (3.27 / 0 / 3.40) sobre la v2
+  congelada, con el MISMO arnés. Con corzos: aprender a **NO malgastar drones** en lo que no es amenaza (solo-corzos ya 0).
+- **Afinar/variar el coordinador clásico:** tunear standoff/spacing/ancho del frente por render; o un **reflejo-reactivo**
+  que CONSUMA el mensaje del reflejo de investigación (recolocar a los DEMÁS drones con el contacto). + hooks de batería.
+Luego: percepción imperfecta (YOLO). Todo **sobre la v2 ya congelada** (la referencia fija).
 
 **Ruta sugerida (orden tentativo, aún sin decidir):** 3a ✓ → 3b ✓ → **paso 2 (guiado) ✓** → **disuasión del
 dron ✓** → **matanza excedente ✓** → **fix pin + envolvente ✓** → **evitación al huir ✓** → **el más cercano
-investiga ✓** → **afinar disuasión (radio corto + bordeo) ✓** → **madre no abandona al ternero ✓** → **lobos no se pillan en la zona segura ✓** (severidad v2 honesta ~4.40) → **3c (corzos) ✓** → **congelar v2 ✓ (tag `v2-baseline`; sev por tipo solo-lobos 4.45 / solo-corzos 0.00 / mixto 4.41, N=100)** → **coordinador: posicionar/interponer drones** + reflejo-reactivo → **MARL**.
+investiga ✓** → **afinar disuasión (radio corto + bordeo) ✓** → **madre no abandona al ternero ✓** → **lobos no se pillan en la zona segura ✓** (severidad v2 honesta ~4.40) → **3c (corzos) ✓** → **congelar v2 ✓ (tag `v2-baseline`; sev por tipo solo-lobos 4.45 / solo-corzos 0.00 / mixto 4.41, N=100)** → **coordinador reactivo: barrera de apantallado ✓ (sev 3.27 / 0 / 3.40 vs Dummy 4.45 / 0 / 4.41)** → **MARL** (debe batir la barrera).
 
 *(Pendiente de decisión menor, NO en este paso: lobo solo vs ternero salió 0% — la madre frena siempre.
 Si se quiere que sea disputado (a veces se cuela), afinar `face_cooldown`/`r_face_safe`. Parámetros del
