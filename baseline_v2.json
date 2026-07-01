@@ -1,5 +1,5 @@
 {
-  "frozen_tag": "v2-baseline",
+  "frozen_tag": "v2.1-baseline",
   "coordinator": "DummyCoordinator",
   "n_per_kind": 100,
   "seeds": [
@@ -165,6 +165,7 @@
     "battery_capacity": 600.0,
     "charge_full": 300.0,
     "announce_threshold": 0.2,
+    "relay_handoff_tol": 2.0,
     "teleport_guard": false,
     "motion_tol": 1.5
   },
@@ -173,7 +174,7 @@
       "label": "solo-lobos",
       "n": 100,
       "severity_mean": 4.45,
-      "severity_std": 2.1511624764298953,
+      "severity_std": 2.137171027316251,
       "severity_max": 8,
       "n_safe_mean": 2.39,
       "terminals": {
@@ -638,9 +639,9 @@
           "n_wolves": 3,
           "n_corzos": 0,
           "n_corzos_descartados": 0,
-          "n_depredadas": 6,
+          "n_depredadas": 5,
           "n_safe": 2,
-          "steps": 10344
+          "steps": 14142
         },
         {
           "status": "predation",
@@ -848,9 +849,9 @@
           "n_wolves": 3,
           "n_corzos": 0,
           "n_corzos_descartados": 0,
-          "n_depredadas": 2,
+          "n_depredadas": 3,
           "n_safe": 4,
-          "steps": 14142
+          "steps": 13064
         },
         {
           "status": "predation",
@@ -3218,7 +3219,7 @@
   "aggregate": {
     "n": 300,
     "severity_mean": 2.953333333333333,
-    "severity_std": 2.736997543944012,
+    "severity_std": 2.733341463402543,
     "severity_max": 8,
     "n_safe_mean": 1.6066666666666667,
     "terminals": {

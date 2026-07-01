@@ -16,8 +16,11 @@
 > **v2 CONGELADA (tag `v2-baseline`)** (la física NO cambia más; `baseline.py` = arnés de evaluación POR TIPO,
 > severidad Dummy solo-lobos 4.45 / solo-corzos 0.00 / mixto 4.41, N=100) ·
 > **ReactiveCoordinator** (1er coordinador clásico: BARRERA de apantallado; regla fija, NO aprende) →
-> severidad 3.27 / 0 / 3.40 (−1.18 / − / −1.01 vs Dummy; n_safe sube).
-> **Pendiente:** **MARL** (debe batir la barrera) · reflejo-reactivo que consume el mensaje del reflejo.
+> severidad 3.27 / 0 / 3.40 (−1.18 / − / −1.01 vs Dummy; n_safe sube) ·
+> **RELEVO de flota REALISTA (v2.1, tag `v2.1-baseline`)** (hand-off, SIN teletransporte: la reserva VUELA al
+> puesto, el bajo cubre hasta el relevo, vuelve a cargar; STRANDED bajo estrés → moverse tiene COSTE real;
+> mismos números, RE-CONGELADO).
+> **Pendiente:** **MARL** (debe batir la barrera, gestionando la energía) · reflejo-reactivo que consume el mensaje del reflejo.
 > **Commits:** `194a3ad` base · `37910b3` terminal · `e663504` disparador por dron · `4d1e708` campo
 > 300×300 + escala biológica absoluta · `886bd45` dispersión del rebaño · `a15e2df` movimiento de
 > drones (3a) · `fd893b8` detectar→confirmar (3b) · `49e0e22` consolidar DISEÑO+CLAUDE · `144b7bd` guiado (paso 2)
@@ -25,8 +28,24 @@
 > `26bce79` disuasión del dron · `bd57a8f` matanza excedente · `1b54b49` fix pin + envolvente · `bbee8c0`
 > evitación al huir · `e15d43d` el más cercano investiga · `5a9dddb` afinar disuasión (radio corto + bordeo) ·
 > `101558f` la madre no abandona al ternero · `4250488` los lobos no se pillan en la zona segura ·
-> `bda6156` corzos (3c) · `e44d7c2` fix: main.py no spawneaba corzos + `--escenario` · `<este commit>` afinar corzos
-> (vuela e investiga, agrupados, dentro de SOSPECHA, render a ritmo natural).
+> `bda6156` corzos (3c) · `e44d7c2` fix: main.py no spawneaba corzos + `--escenario` · `9e11a29` afinar corzos
+> (vuela e investiga, agrupados, SOSPECHA, render natural) · `b04e8d9` congelar v2 (tag `v2-baseline`) ·
+> `2ad268b` ReactiveCoordinator (barrera de apantallado) · `<este commit>` relevo de flota REALISTA (v2.1,
+> RE-CONGELADO tag `v2.1-baseline`).
+>
+> **Patch — RELEVO de flota REALISTA (v2.1) + RE-CONGELAR.** El relevo de batería era un **swap INSTANTÁNEO**
+> (teletransporte de rol+posición). Ahora **con hand-off, SIN teletransporte** (`_step_battery`, estados nuevos
+> `INCOMING`/`STRANDED`): al bajar de `announce_threshold`=0.20 el ACTIVE se **CLAVA en su puesto** (sigue
+> cubriendo/disuadiendo; el coordinador ya no lo comanda) y la central despacha al READY más cargado, que **VUELA**
+> al puesto (`INCOMING`); al llegar ENCIMA (≤`relay_handoff_tol`=2 m) → **hand-off** (relevo→ACTIVE, bajo→`RETURNING`
+> →central→`CHARGING`). **Cobertura CONTINUA** salvo **`STRANDED`** (bajo a ~0 antes del relevo: en el puesto, SIN
+> disuadir, hasta el hand-off) = el hueco real bajo estrés que un buen coordinador evita (no agotar la flota
+> moviéndose de más). Moverse pasa a tener **coste energético REAL** (compromiso para el MARL). Solo el relevo:
+> `_step_battery`/`_init_battery` + free-mask de `_apply_drone_actions` + pool de investigación + enum; **NO** toca
+> caza/disuasión/reflejo/coordinadores (la disuasión sigue keyed en ACTIVE → INCOMING/RETURNING/STRANDED no disuaden).
+> **NO usa el RNG** → **face_check 12/12 bit a bit**; `battery_check` actualizado (4/2/2 + tránsito · sin teletransporte
+> · stranded bajo estrés · reproducible); escort/drone verdes. **RE-CONGELADO v2.1** (tag `v2.1-baseline`): Dummy
+> **4.45/0/4.41** y Reactive **3.27/0/3.40** SIN cambios (re-medidos; la cobertura se mantiene).
 >
 > **Patch — CORZOS afinados (que se vean e investiguen bien).** Cuatro mejoras del escenario de corzos. **(1) BUG del
 > reflejo:** un corzo dejaba la fase **PILLADA en SOSPECHA** (solo se latcheaba ESCOLTA para lobos) y el dron
@@ -431,16 +450,23 @@ vs ternero salió **0%** (la madre frena siempre con los parámetros actuales); 
 ### 4.3. Batería y estación de carga  ✅ IMPLEMENTADO (mecánica del mundo)
 
 **Implementado** (`world.py: _init_battery/_step_battery`, verificado en `battery_check.py`):
-máquina de estados por dron `ACTIVE → RETURNING → CHARGING → READY → ACTIVE`; batería fracción
-[0,1] con tasas DERIVADAS de las capacidades (`drain=1/600 s⁻¹`, `charge=1/300 s⁻¹`); **cola sin
-emparejamiento** (al liberarse un puesto sale el más cargado de la central, sin esperar al 100%);
-**arranque escalonado** (RNG, solo en operación continua). Régimen permanente verificado:
-**4 activos / 2 cargando / 2 listos**, relevos escalonados (~1 cada 125 s, 0 simultáneos), siempre
-4 puestos cubiertos, **dinámica vaca/lobo intacta** (no usa el RNG → no perturba la tasa sin drones).
-Es **automático por umbral** (regla del mundo), no
-acción del coordinador (seam para exponer "pedir relevo" luego). **Hooks**: `battery_activity`
-(coste de persecución, bandera #7), `relay_travel_time` (vuelo de vuelta + hueco de cobertura),
-`drone_stranded` (dron tirado), y stagger/randomización de batería inicial de episodio.
+máquina de estados por dron **`READY → INCOMING → ACTIVE → RETURNING → CHARGING → READY`** (+ `STRANDED`);
+batería fracción [0,1] con tasas DERIVADAS (`drain=1/600 s⁻¹`, `charge=1/300 s⁻¹`); **arranque escalonado**
+(RNG, solo en operación continua).
+**RELEVO REALISTA (hand-off, SIN teletransporte):** cuando un ACTIVE baja de `announce_threshold`=0.20 se
+**CLAVA en su puesto** (sigue cubriendo/disuadiendo; el coordinador ya no lo comanda —`drone_relief_hold`—) y
+la central **DESPACHA al READY más cargado**, que **VUELA** hasta el puesto (`INCOMING`, la reserva se mueve de
+verdad con la dinámica de vuelo). Al llegar **ENCIMA** (≤ `relay_handoff_tol`=2 m) → **hand-off**: el relevo pasa
+a `ACTIVE` y el bajo a `RETURNING` (vuela a la central → al entrar `CHARGING`). **Cobertura CONTINUA** (el bajo
+NO se va hasta que llega el relevo). Sin reserva lista, el bajo sigue drenando; si llega a ~0 → **`STRANDED`**
+(en el puesto, SIN disuadir —ya no es ACTIVE—, hasta el hand-off): el hueco de cobertura real que un buen
+coordinador debe evitar (no agotar la flota moviéndose de más). El **tiempo de vuelo del relevo EMERGE** de la
+dinámica (ya no es un hook fijo). Régimen permanente verificado: **~4 ACTIVE / ~2 CHARGING / ~2 READY** (+ tránsito
+INCOMING/RETURNING ocasional), ~1 hand-off cada ~118 s, 4 puestos SIEMPRE cubiertos a carga hover (STRANDED solo
+bajo estrés), **sin saltos de posición** (salto máx/paso = tope físico). Es **automático** (regla del mundo, no
+acción del coordinador); **NO usa el RNG** (determinista → dinámica vaca/lobo intacta, face_check bit a bit).
+**Hooks REALIZADOS**: `RETURNING` (antes sin usar), travel-time (ahora emergente), `drone_stranded`;
+`battery_activity` (coste de persecución/movimiento, #7) sigue multiplicando el drenaje.
 
 Diseño de referencia (sigue válido):
 - **8 drones**: 4 activos + 4 en reserva cargando. **Batería = 10 min, carga = 5 min** (elegido
@@ -745,13 +771,14 @@ Decisiones de diseño ratificadas:
   baseline. busca-huecos/amago son adversarios posteriores de la escalera, no este baseline.
 - ⚠️ NO tocar estos parámetros una vez empiece la comparación; si se recalibra, re-medir ambas ramas.
 
-🔋 **Batería + cola de carga — IMPLEMENTADO** (`_init_battery`/`_step_battery`, `battery_check.py`):
-régimen permanente 4 activos / 2 cargando / 2 listos, relevos escalonados (~1 cada 125 s, 0
-simultáneos), invariante "4 puestos siempre cubiertos", reproducible, **dinámica vaca/lobo intacta**
-(la batería no usa el RNG → no mueve la tasa sin drones).
-Automático por umbral; arrays de batería paralelos a posiciones; hooks para persecución
-(`battery_activity`) / travel-time (`relay_travel_time`) / dron tirado (`drone_stranded`). Sin
-movimiento de drones todavía (el relevo es un swap de puesto instantáneo).
+🔋 **Batería + cola de carga + RELEVO REALISTA — IMPLEMENTADO (v2.1)** (`_init_battery`/`_step_battery`,
+`battery_check.py`): régimen permanente ~4 activos / ~2 cargando / ~2 listos (+ tránsito INCOMING/RETURNING),
+~1 hand-off cada ~118 s escalonados, invariante "4 puestos cubiertos" a carga hover (STRANDED solo bajo
+estrés), **sin teletransporte** (salto máx/paso = tope físico), reproducible, **dinámica vaca/lobo intacta**
+(la batería no usa el RNG → no mueve la tasa sin drones; face_check bit a bit).
+Automático por umbral; el relevo VUELA al puesto (hand-off) y el saliente vuelve a cargar por `RETURNING`;
+hooks REALIZADOS (persecución `battery_activity`, travel-time emergente, dron tirado `STRANDED`/`drone_stranded`).
+Ver §4.3.
 
 ---
 
@@ -786,11 +813,13 @@ movimiento de drones todavía (el relevo es un swap de puesto instantáneo).
 7. ✅ **RESUELTA (coste de persecución) — Batería que crece con el movimiento.** Con la dinámica de
    vuelo (paso 3a), `battery_activity` ya se calcula del **esfuerzo** (drenaje ACTIVE = flote ×
    (1+`DRONE_MOVE_DRAIN`·v/vmax)): flotar es el suelo, reposicionar a tope gasta ~2.5×. Verificado en
-   `drone_check.py` (mover drena 2.2× flotar). **Pendiente (relacionado):** que el coordinador no se
-   comprometa a una persecución que no pueda costear (proteger reserva de retorno) — es política, no
-   mecánica. El **hueco de cobertura** lo **abre** ahora el dron que sale a investigar (deja su sector) y
-   lo **tapará** el coordinador reactivo (consumiendo el mensaje del reflejo). El negativo por "dron tirado"
-   (`drone_stranded`) y el `relay_travel_time` del relevo siguen pendientes.
+   `drone_check.py` (mover drena 2.2× flotar). **RELEVO REALISTA ✅ (v2.1):** el `relay_travel_time` ya NO es un
+   hook fijo — el relevo VUELA al puesto (hand-off, sin teletransporte; ver §4.3), el saliente vuelve por
+   `RETURNING` a cargar, y bajo estrés un dron puede quedar **`STRANDED`** (batería a ~0 esperando relevo → sin
+   cobertura efectiva). Así **moverse mucho tiene coste real** (más relevos → reservas en tránsito → huecos/
+   stranded): la energía es un COMPROMISO que el coordinador (y el MARL) deben gestionar, no un recurso gratis.
+   **Pendiente (política, no mecánica):** que el coordinador no agote la flota moviéndose de más (proteger la
+   reserva de retorno). El **hueco de cobertura** también lo abre el dron que sale a investigar (deja su sector).
 8. **Alerta como acción aprendible.** En la v1 la alerta es **automática por umbral**. Dejar que
    la política aprenda *cuándo/qué* comunicar es **extensión avanzada** (y zona inestable del
    MARL: premiar/penalizar el avisar directamente puede enseñar a callar amenazas — ir con pies
@@ -987,16 +1016,27 @@ cabezas y se salvan MÁS). Es la referencia CLÁSICA que el MARL deberá batir; 
 finito y a corta distancia la disuasión es PARCIAL → no es un escudo perfecto). Parámetros etiquetados/afinables.
 Verificado en `reactive_check.py` (8 tests) + `reactive_barrera.gif` / `reactive_patrulla.gif`.
 
+**RELEVO de flota REALISTA HECHO (v2.1) — sin teletransporte + RE-CONGELAR.** El relevo de batería era un swap
+INSTANTÁNEO (teletransporte de rol+posición). Ahora el bajo se **CLAVA en su puesto** y cubre hasta que llega el
+relevo, que **VUELA** desde la central (hand-off al estar ENCIMA); el saliente vuelve por `RETURNING` a cargar.
+Estados nuevos `INCOMING`/`STRANDED`; bajo estrés un dron puede quedar **STRANDED** (batería a ~0 esperando relevo
+→ hueco de cobertura real). Ver §4.3 y bandera #7. Moverse pasa a tener **coste energético REAL** → la energía es un
+COMPROMISO que el coordinador/MARL debe gestionar (no agotar la flota moviéndose de más). Solo el relevo (`_step_battery`/
+`_init_battery` + free-mask + enum); NO toca caza/disuasión/reflejo/coordinadores; **NO usa el RNG** → **face_check
+12/12 bit a bit**; `battery_check` actualizado (4/2/2 + tránsito · sin teletransporte · stranded bajo estrés · reproducible).
+**RE-CONGELADO v2.1** (tag `v2.1-baseline`): Dummy **4.45/0/4.41** y Reactive **3.27/0/3.40** SIN cambios (re-medidos;
+la cobertura se mantiene, solo cambia el coste de moverse).
+
 **SIGUIENTE (opciones):**
-- **MARL (MAPPO):** aprender la coordinación de drones y **BATIR la barrera reactiva** (3.27 / 0 / 3.40) sobre la v2
-  congelada, con el MISMO arnés. Con corzos: aprender a **NO malgastar drones** en lo que no es amenaza (solo-corzos ya 0).
+- **MARL (MAPPO):** aprender la coordinación de drones y **BATIR la barrera reactiva** (3.27 / 0 / 3.40) sobre la v2.1
+  congelada, con el MISMO arnés, **gestionando la energía** (relevos/tránsito/stranded ahora cuestan). Con corzos: aprender a **NO malgastar drones** en lo que no es amenaza (solo-corzos ya 0).
 - **Afinar/variar el coordinador clásico:** tunear standoff/spacing/ancho del frente por render; o un **reflejo-reactivo**
   que CONSUMA el mensaje del reflejo de investigación (recolocar a los DEMÁS drones con el contacto). + hooks de batería.
 Luego: percepción imperfecta (YOLO). Todo **sobre la v2 ya congelada** (la referencia fija).
 
 **Ruta sugerida (orden tentativo, aún sin decidir):** 3a ✓ → 3b ✓ → **paso 2 (guiado) ✓** → **disuasión del
 dron ✓** → **matanza excedente ✓** → **fix pin + envolvente ✓** → **evitación al huir ✓** → **el más cercano
-investiga ✓** → **afinar disuasión (radio corto + bordeo) ✓** → **madre no abandona al ternero ✓** → **lobos no se pillan en la zona segura ✓** (severidad v2 honesta ~4.40) → **3c (corzos) ✓** → **congelar v2 ✓ (tag `v2-baseline`; sev por tipo solo-lobos 4.45 / solo-corzos 0.00 / mixto 4.41, N=100)** → **coordinador reactivo: barrera de apantallado ✓ (sev 3.27 / 0 / 3.40 vs Dummy 4.45 / 0 / 4.41)** → **MARL** (debe batir la barrera).
+investiga ✓** → **afinar disuasión (radio corto + bordeo) ✓** → **madre no abandona al ternero ✓** → **lobos no se pillan en la zona segura ✓** (severidad v2 honesta ~4.40) → **3c (corzos) ✓** → **congelar v2 ✓ (tag `v2-baseline`; sev por tipo solo-lobos 4.45 / solo-corzos 0.00 / mixto 4.41, N=100)** → **coordinador reactivo: barrera de apantallado ✓ (sev 3.27 / 0 / 3.40 vs Dummy 4.45 / 0 / 4.41)** → **relevo de flota REALISTA ✓ (v2.1: hand-off sin teletransporte; RE-CONGELADO tag `v2.1-baseline`, mismos números)** → **MARL** (debe batir la barrera, gestionando la energía).
 
 *(Pendiente de decisión menor, NO en este paso: lobo solo vs ternero salió 0% — la madre frena siempre.
 Si se quiere que sea disputado (a veces se cuela), afinar `face_cooldown`/`r_face_safe`. Parámetros del

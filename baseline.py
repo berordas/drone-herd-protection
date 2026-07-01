@@ -1,12 +1,15 @@
 """
 baseline.py — Arnés de EVALUACIÓN de la v2 CONGELADA (DummyCoordinator + física v2).
 
-================================  v2 CONGELADA  ================================
-A partir del tag git `v2-baseline` el MUNDO (la física) NO cambia: es la referencia
-fija que los coordinadores deberán BATIR. Este fichero NO es el mundo —es el banco
-de medida del mundo—: fija la config de evaluación (`CONFIG_V2`, corzos ON con los
-3 tipos de episodio), corre el `DummyCoordinator` (drones quietos = SIN intervención)
-sobre un set FIJO de semillas, N por tipo, y reporta las métricas POR TIPO.
+================================  v2.1 CONGELADA  ================================
+A partir del tag git `v2.1-baseline` el MUNDO (la física) NO cambia: es la referencia
+fija que los coordinadores deberán BATIR. (v2.1 = v2 + RELEVO de flota REALISTA con
+hand-off, sin teletransporte; ver world.py/_step_battery. La severidad Dummy es idéntica
+a v2 —4.45/0/4.41— porque las muertes ocurren en episodios cortos sin relevos; cambia el
+COSTE energético de moverse, que pesa sobre el coordinador.) Este fichero NO es el mundo
+—es el banco de medida—: fija la config de evaluación (`CONFIG_V2`, corzos ON con los 3
+tipos de episodio), corre el `DummyCoordinator` (drones quietos) sobre un set FIJO de
+semillas, N por tipo, y reporta las métricas POR TIPO.
 
 ⚠️ Esto es FIJAR Y MEDIR, no tunear. La baseline es la que salga. NO se cambia la
    física para "mejorar" estos números; se baja la severidad con el COORDINADOR
@@ -83,8 +86,8 @@ CONFIG_V2 = dict(
     wolf_envelop_gain=3.0, n_min_adult=2, cone_band=0.12, wolf_inertia=0.35,
     # --- escolta / terminal (máquina de fases + guiado al refugio + disuasión) ---
     r_detect=100.0, r_confirm=40.0, episode_time_factor=4.0, escort_enabled=True,
-    # --- batería / cola de carga ---
-    battery_capacity=600.0, charge_full=300.0, announce_threshold=0.20,
+    # --- batería / cola de carga + RELEVO REALISTA (hand-off, sin teletransporte) ---
+    battery_capacity=600.0, charge_full=300.0, announce_threshold=0.20, relay_handoff_tol=2.0,
     # --- guardia de teletransporte: solo LOGUEA (no afecta la dinámica) ---
     teleport_guard=False, motion_tol=1.5,
 )
@@ -95,7 +98,7 @@ EVAL_SEEDS = tuple(range(N_PER_KIND))
 KINDS = ("lobos", "corzos", "mixto")
 KIND_LABEL = {"lobos": "solo-lobos", "corzos": "solo-corzos", "mixto": "mixto"}
 TERMINALS = ("success", "predation", "timeout")
-FROZEN_TAG = "v2-baseline"   # tag git del commit congelado (la física no cambia a partir de él)
+FROZEN_TAG = "v2.1-baseline"   # tag git del commit congelado (v2 + relevo realista; la física no cambia a partir de él)
 
 # Referencia CONGELADA de severidad (media de muertes/ep) por tipo, para detectar DERIVA.
 # Se rellena tras la primera medición; en re-corridas debe coincidir (mundo reproducible).

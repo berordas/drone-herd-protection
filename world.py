@@ -27,9 +27,13 @@ import numpy as np
 
 # Estados de batería de cada dron (máquina de estados del MUNDO, distinta del futuro
 # coordinador FSM). RETURNING existe para el vuelo de vuelta real cuando haya movimiento;
-# por ahora es instantáneo (se colapsa dentro del relevo).
-ACTIVE, RETURNING, CHARGING, READY = 0, 1, 2, 3
-DRONE_STATE_NAMES = {ACTIVE: "ACTIVE", RETURNING: "RETURNING", CHARGING: "CHARGING", READY: "READY"}
+# RELEVO REALISTA (con hand-off, sin teletransporte): la reserva vuela al puesto (INCOMING), el bajo
+# lo cubre hasta que llega y hace hand-off, luego vuelve a cargar (RETURNING). STRANDED = bajo a ~0 antes
+# de que llegue el relevo (se queda en el puesto, sin disuadir, hasta el hand-off). Ciclo:
+# READY -> INCOMING -> ACTIVE -> RETURNING -> CHARGING -> READY  (STRANDED = fallo de ACTIVE bajo estrés).
+ACTIVE, RETURNING, CHARGING, READY, INCOMING, STRANDED = 0, 1, 2, 3, 4, 5
+DRONE_STATE_NAMES = {ACTIVE: "ACTIVE", RETURNING: "RETURNING", CHARGING: "CHARGING", READY: "READY",
+                     INCOMING: "INCOMING", STRANDED: "STRANDED"}
 
 # --- HUELLA DEL REBAÑO AL PASTAR (escala biológica ABSOLUTA, en metros; NO depende del campo) ---
 # Par fácil de afinar por render: con un campo de 300 m el rebaño debe verse DISPERSO ("dar la cara,
@@ -188,6 +192,7 @@ class World:
         charge_full: float = 300.0,        # s para cargar de 0 a full (~5 min) -> ratio vuelo:carga 2:1
         announce_threshold: float = 0.20,  # fracción de batería a la que se pide relevo. TUNE
         charge_capacity: int | None = None,  # puestos de carga en paralelo (default = nº de reserva)
+        relay_handoff_tol: float = 2.0,    # m: el relevo debe estar ESTO cerca del bajo para el hand-off (sin teletransporte). TUNE
         seed: int | None = None,
     ):
         # --- configuración (inmutable durante el episodio) ---
@@ -334,7 +339,10 @@ class World:
         self.charge_capacity = (
             charge_capacity if charge_capacity is not None else self.n_drones - self.n_active
         )
-        self.relay_travel_time = 0.0   # HOOK: tiempo de vuelo del relevo (0 = instantáneo por ahora)
+        # RELEVO REALISTA: el tiempo de vuelo del relevo ya NO es un hook fijo -> EMERGE de la dinámica de
+        # vuelo (DRONE_MAX_SPEED y la distancia central<->puesto). Solo queda como param la tolerancia de
+        # hand-off ("estar encima" del bajo para relevarlo).
+        self.relay_handoff_tol = relay_handoff_tol
 
         self._seed = seed
 
@@ -372,7 +380,9 @@ class World:
         self.battery: np.ndarray | None = None          # (n_drones,) fracción [0,1]
         self.drone_state: np.ndarray | None = None      # (n_drones,) ACTIVE/RETURNING/CHARGING/READY
         self.battery_activity: np.ndarray | None = None # (n_drones,) HOOK persecución (bandera #7): multiplica el drenaje
-        self.drone_stranded: np.ndarray | None = None   # (n_drones,) HOOK "dron tirado" (sin travel-time no se activa)
+        self.drone_stranded: np.ndarray | None = None   # (n_drones,) "dron tirado": ACTIVE que llega a ~0 esperando relevo
+        self.drone_relief_hold: np.ndarray | None = None # (n_drones,) ACTIVE que se clava en su puesto esperando/recibiendo relevo (el coordinador NO lo comanda)
+        self.relief_target: np.ndarray | None = None     # (n_drones,) para un INCOMING: índice del dron bajo que va a relevar (-1 si no)
         self._wolf_attacking: bool = False              # ¿la manada flanquea de verdad este paso? (instrumentación)
         self.pack_prey: int = -1                        # índice de la presa COMÚN fijada (-1 = ninguna)
         self.pack_prey_kind: str | None = None          # "adult" | "calf" | None (a qué array indexa pack_prey)
@@ -615,7 +625,9 @@ class World:
         afecta a los drones NO investigando; None = mantener. Fija battery_activity por el esfuerzo (#7)."""
         if actions is not None:
             wp = np.asarray(actions, dtype=float).reshape(self.n_drones, 2)
-            free = ~self.drone_investigating              # el coordinador NO toca al investigador (precedencia)
+            # PRECEDENCIA: el coordinador NO toca al INVESTIGADOR (reflejo) ni al dron CLAVADO esperando/recibiendo
+            # relevo (drone_relief_hold: mantiene su puesto para el hand-off). El resto sí.
+            free = ~self.drone_investigating & ~self.drone_relief_hold
             self.drone_waypoint[free] = wp[free]
         self._update_investigation_waypoint()             # reflejo: el investigador persigue su contacto
 
@@ -650,7 +662,9 @@ class World:
         self.drone_state = np.full(n, READY, dtype=int)
         self.drone_state[:na] = ACTIVE
         self.battery_activity = np.ones(n)        # HOOK persecución (1.0 = patrulla)
-        self.drone_stranded = np.zeros(n, dtype=bool)  # HOOK "dron tirado" (no se activa sin travel-time)
+        self.drone_stranded = np.zeros(n, dtype=bool)   # ACTIVE tirado (batería a ~0 esperando relevo)
+        self.drone_relief_hold = np.zeros(n, dtype=bool)  # ACTIVE clavado en su puesto esperando/recibiendo relevo
+        self.relief_target = np.full(n, -1, dtype=int)  # INCOMING -> índice del bajo que releva (-1 si no)
         if not stagger:
             return
 
@@ -668,14 +682,23 @@ class World:
         self.battery[central[n_ready:]] = self.rng.uniform(a, 1.0, size=central.size - n_ready)
 
     def _step_battery(self) -> None:
-        """Avanza la batería y resuelve los relevos. Independiente de vacas/lobo: solo toca
-        batería/estado/posición de drones (drivable en aislado para battery_check.py).
-        NO usa el RNG (determinista) -> no perturba el stream de vacas/lobo (baseline intacto)."""
-        st, bat = self.drone_state, self.battery
+        """Avanza la batería y resuelve el RELEVO REALISTA (con hand-off, SIN teletransporte). Independiente
+        de vacas/lobo y NO usa el RNG (determinista -> no perturba el stream; baseline intacto). El MOVIMIENTO
+        de los drones lo hace la dinámica de vuelo (_apply_drone_actions); aquí solo se fijan waypoints/estados.
 
-        # 1) Drenaje de activos. HOOK persecución (bandera #7): battery_activity multiplica.
-        active = st == ACTIVE
-        bat[active] -= self.drain_rate_active * self.battery_activity[active] * self.dt
+        Relevo: cuando un ACTIVE baja de announce_threshold se CLAVA en su puesto (sigue cubriendo/disuadiendo,
+        el coordinador ya no lo comanda) y la central DESPACHA al READY más cargado, que VUELA hasta el puesto
+        (INCOMING). Al llegar ENCIMA (<= relay_handoff_tol) -> HAND-OFF: el relevo pasa a ACTIVE y el bajo a
+        RETURNING (vuela a la central; al entrar -> CHARGING). Sin reserva lista, el bajo sigue drenando; si
+        llega a ~0 antes del relevo -> STRANDED (en el puesto, SIN disuadir —ya no es ACTIVE—, hasta el hand-off).
+        Cobertura CONTINUA (el bajo no se va hasta que llega el relevo), salvo el hueco del caso STRANDED."""
+        st, bat = self.drone_state, self.battery
+        cc, cr = self.central_station[:2], self.central_station[2]
+
+        # 1) Drenaje de los que VUELAN/cubren: ACTIVE (incl. el que espera relevo, sigue cubriendo), INCOMING
+        #    (reserva en tránsito al puesto) y RETURNING (saliente de vuelta). battery_activity (#7) multiplica.
+        flying = (st == ACTIVE) | (st == INCOMING) | (st == RETURNING)
+        bat[flying] -= self.drain_rate_active * self.battery_activity[flying] * self.dt
 
         # 2) Carga en paralelo hasta charge_capacity (si sobran, cargan los más vacíos).
         charging = np.where(st == CHARGING)[0]
@@ -685,28 +708,57 @@ class World:
             bat[slots] += self.charge_rate * self.dt
         np.clip(bat, 0.0, 1.0, out=bat)
 
-        # 3) Cargado a tope -> READY (ni drena ni carga, espera puesto libre).
+        # 3) Cargado a tope -> READY (ni drena ni carga, espera a que un puesto pida relevo).
         st[(st == CHARGING) & (bat >= 1.0 - 1e-9)] = READY
 
-        # 4) Activo bajo umbral -> relevo automático (regla del mundo; SEAM: exponer como
-        #    acción "pedir relevo" del coordinador más adelante).
-        for i in np.where(active & (bat <= self.announce_threshold))[0]:
-            central = np.where((st == CHARGING) | (st == READY))[0]
-            if central.size == 0:
-                break  # invariante: n_drones > n_active -> siempre hay drones en central
-            j = central[np.argmax(bat[central])]   # el MÁS cargado (no espera al 100%)
-            # Relevo INSTANTÁNEO = swap de rol + puesto (posición). HOOK travel-time
-            # (relay_travel_time): con movimiento, el saliente iría por RETURNING dejando el
-            # puesto descubierto (hueco de cobertura) y el entrante tardaría en llegar.
-            self.drones[[i, j]] = self.drones[[j, i]]
-            # El relevo es un salto de puesto (instantáneo; HOOK travel-time): los dos drones MANTIENEN
-            # su nuevo puesto (waypoint = nueva posición) y parten parados (no vuelan al puesto viejo).
-            self.drone_waypoint[[i, j]] = self.drones[[i, j]]
+        # 4) HAND-OFF: cada relevo INCOMING que ya está ENCIMA de su bajo (<= relay_handoff_tol) toma el puesto
+        #    (-> ACTIVE) y libera al bajo (-> RETURNING, a la central). Mientras vuela, el waypoint SIGUE al bajo
+        #    (que está clavado -> punto fijo). Nada salta de posición (sin teletransporte).
+        for j in np.where(st == INCOMING)[0]:
+            i = int(self.relief_target[j])
+            self.drone_waypoint[j] = self.drones[i].copy()
+            if float(np.linalg.norm(self.drones[j] - self.drones[i])) <= self.relay_handoff_tol:
+                st[j] = ACTIVE                                  # el relevo cubre el puesto
+                st[i] = RETURNING                              # el bajo (o el tirado) se retira a cargar
+                self.drone_waypoint[i] = cc.copy()             # vuela a la central
+                self.relief_target[j] = -1
+                self.drone_relief_hold[i] = False
+                self.drone_stranded[i] = False
+
+        # 5) RETURNING que entra en la central -> CHARGING (aparca donde entra; empieza a cargar).
+        for i in np.where(st == RETURNING)[0]:
+            if float(np.linalg.norm(self.drones[i] - cc)) <= cr:
+                st[i] = CHARGING
+                self.drone_waypoint[i] = self.drones[i].copy()
+                self.drone_vel[i] = 0.0
+
+        # 6) ACTIVE que baja del umbral -> se CLAVA en su puesto (cobertura continua) y deja de obedecer al
+        #    coordinador (drone_relief_hold). Excluye al investigador: el reflejo tiene precedencia.
+        newly = np.where((st == ACTIVE) & (bat <= self.announce_threshold)
+                         & ~self.drone_relief_hold & ~self.drone_investigating)[0]
+        for i in newly:
+            self.drone_relief_hold[i] = True
+            self.drone_waypoint[i] = self.drones[i].copy()
             self.drone_vel[i] = 0.0
-            self.drone_vel[j] = 0.0
-            self.drone_investigating[i] = False   # si investigaba, lo deja al irse a cargar (se re-detecta)
-            st[i] = CHARGING   # saliente -> central (carga desde ~announce_threshold)
-            st[j] = ACTIVE     # entrante cubre el puesto liberado
+
+        # 7) DESPACHO: por cada puesto esperando relevo (ACTIVE clavado o STRANDED) SIN relevo en camino, sale
+        #    el READY MÁS cargado (siempre ~lleno) a volar al puesto. Sin READY, el bajo sigue (drenará/strand).
+        for i in np.where(((st == ACTIVE) & self.drone_relief_hold) | (st == STRANDED))[0]:
+            if bool((self.relief_target == i).any()):
+                continue                                       # ya tiene un relevo en camino
+            ready = np.where(st == READY)[0]
+            if ready.size == 0:
+                continue                                       # sin reserva lista: reintenta cuando haya READY
+            j = int(ready[np.argmax(bat[ready])])
+            st[j] = INCOMING
+            self.relief_target[j] = int(i)
+            self.drone_waypoint[j] = self.drones[i].copy()     # despega hacia el puesto
+
+        # 8) STRANDED: un ACTIVE clavado que se queda a ~0 antes del relevo -> tirado (deja de ser ACTIVE ->
+        #    ya NO disuade/detecta; se queda en el puesto, congelado, hasta que el relevo haga hand-off).
+        stuck = (st == ACTIVE) & self.drone_relief_hold & (bat <= 1e-9)
+        st[stuck] = STRANDED
+        self.drone_stranded[stuck] = True
 
     # ------------------------------------------------------------------ #
     # Vacas adultas: pastar disperso + dar la cara (confrontación) + inercia
@@ -1397,7 +1449,9 @@ class World:
         # tipo (lobo/corzo) es DESCONOCIDO de lejos -> el dron vuela igual hacia el contacto (waypoint en
         # _update_investigation_waypoint) y solo se revela a r_confirm. Guarda su PUESTO para volver si descarta.
         if not self.drone_investigating.any() and pos.shape[0] > 0:
-            i = self._pick_investigator(active & ~self.drone_investigating, pos)
+            # Elegible = ACTIVE libre y DISPONIBLE: excluye al que está clavado esperando/recibiendo relevo
+            # (batería baja, no debe abandonar su puesto). No cambia el comportamiento del reflejo, solo el pool.
+            i = self._pick_investigator(active & ~self.drone_investigating & ~self.drone_relief_hold, pos)
             if i >= 0:
                 self.drone_investigating[i] = True
                 self.drone_home[i] = self.drone_waypoint[i].copy()   # puesto previo (vuelve aquí si era un corzo)
