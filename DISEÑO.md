@@ -17,9 +17,11 @@
 > severidad Dummy solo-lobos 4.45 / solo-corzos 0.00 / mixto 4.41, N=100) ·
 > **ReactiveCoordinator** (1er coordinador clásico: BARRERA de apantallado; regla fija, NO aprende) →
 > severidad 3.27 / 0 / 3.40 (−1.18 / − / −1.01 vs Dummy; n_safe sube) ·
-> **RELEVO de flota REALISTA (v2.1, tag `v2.1-baseline`)** (hand-off, SIN teletransporte: la reserva VUELA al
-> puesto, el bajo cubre hasta el relevo, vuelve a cargar; STRANDED bajo estrés → moverse tiene COSTE real;
-> mismos números, RE-CONGELADO).
+> **RELEVO de flota REALISTA (v2.1)** (hand-off, SIN teletransporte: la reserva VUELA al puesto, el bajo cubre
+> hasta el relevo, vuelve a cargar; STRANDED bajo estrés → moverse tiene COSTE real) ·
+> **RENDER: emojis a color + barra de batería + `main.py --coordinador`** ·
+> **JABALÍ 🐗 como 2ª distracción (v2.2, tag `v2.2-baseline`)** (~50/50 con el corzo, mismo comportamiento,
+> substream RNG separado → spawns intactos; emojis más pequeños; mismos números, RE-CONGELADO).
 > **Pendiente:** **MARL** (debe batir la barrera, gestionando la energía) · reflejo-reactivo que consume el mensaje del reflejo.
 > **Commits:** `194a3ad` base · `37910b3` terminal · `e663504` disparador por dron · `4d1e708` campo
 > 300×300 + escala biológica absoluta · `886bd45` dispersión del rebaño · `a15e2df` movimiento de
@@ -30,8 +32,20 @@
 > `101558f` la madre no abandona al ternero · `4250488` los lobos no se pillan en la zona segura ·
 > `bda6156` corzos (3c) · `e44d7c2` fix: main.py no spawneaba corzos + `--escenario` · `9e11a29` afinar corzos
 > (vuela e investiga, agrupados, SOSPECHA, render natural) · `b04e8d9` congelar v2 (tag `v2-baseline`) ·
-> `2ad268b` ReactiveCoordinator (barrera de apantallado) · `<este commit>` relevo de flota REALISTA (v2.1,
-> RE-CONGELADO tag `v2.1-baseline`).
+> `2ad268b` ReactiveCoordinator (barrera de apantallado) · `bcd407f` relevo de flota REALISTA (v2.1, tag
+> `v2.1-baseline`) · `e14206a` render: emojis a color + barra de batería + `--coordinador` · `<este commit>`
+> jabalí como 2ª distracción + emojis más pequeños (v2.2, RE-CONGELADO tag `v2.2-baseline`).
+>
+> **Patch — JABALÍ 🐗 como 2ª distracción + emojis más pequeños (v2.2) + RE-CONGELAR.** La distracción era siempre
+> un corzo; ahora es corzo O **jabalí** ~50/50 (`distraction_species_prob`), MISMO comportamiento (mismo array
+> `corzos`, misma dinámica: deambula en grupo, detectable, ORÁCULO a `r_confirm` → el dron DESCARTA igual). La
+> especie se elige con un **SUBSTREAM RNG SEPARADO** (`_distraction_rng = default_rng(seed+offset)`) → NO consume del
+> stream principal → spawns de lobo/vaca **bit a bit** iguales → baseline comparable. El oráculo solo gana un tipo
+> más. Render: 🐗 con su sprite (según `distraction_species`); **emojis más pequeños** (`EMOJI_SCALE`). Solo mundo
+> (distracción) + render/main; **NO** toca caza/disuasión/detección/coordinadores/relevo. **face_check 12/12 bit a
+> bit** (el substream no perturba; solo-lobos == corzos-OFF). **RE-CONGELADO v2.2** (tag `v2.2-baseline`): Dummy
+> 4.45/0/4.41 y Reactive 3.27/0/3.40 SIN cambios (re-medidos). Verificado en `escort_check` 1j (especie ~50/50 ·
+> substream no perturba · jabalí descartado · reproducible).
 >
 > **Patch — RELEVO de flota REALISTA (v2.1) + RE-CONGELAR.** El relevo de batería era un **swap INSTANTÁNEO**
 > (teletransporte de rol+posición). Ahora **con hand-off, SIN teletransporte** (`_step_battery`, estados nuevos
@@ -667,7 +681,7 @@ el DGX va sobrado.
 
 Carpeta `AI_LAB/` (proyecto Python local). Estructura:
 - `world.py` — clase `World`: estado, dinámica, recompensa, **terminal de escolta + máquina de fases + guiado al refugio NO-HOLONÓMICO** (`escort_enabled`). **Sin** ROS/render dentro.
-- `render.py` — animación matplotlib (por reproducción: lee estado, nunca llama a `step`). **Entidades como EMOJIS de color** (🐄 vaca / 🐺 lobo / 🦌 corzo / 🚁 dron / ternero): matplotlib no pinta emojis a color, así que se renderizan con **PIL `embedded_color`** (fuente de emoji del sistema) a **sprites RGBA** colocados con `AnnotationBbox` → color de verdad, sin "tofu"; **fallback** a los marcadores de siempre (scatter) si no hay PIL/fuente. **Barra de batería** sobre cada dron ([0,1], verde llena → roja casi vacía; sube cargando / baja volando; lee `battery` del snapshot, que añade `main.py`). Además: **cono** ±45°, realce de la **presa fijada** / **defensora**, **línea ternero→defensora**, **radio de disuasión** de los ACTIVE, muertas/descartados **atenuados** (alfa), **FASE**, **línea del dron que INVESTIGA**, **banner del terminal**, y leyenda (emojis + estructura).
+- `render.py` — animación matplotlib (por reproducción: lee estado, nunca llama a `step`). **Entidades como EMOJIS de color** (🐄 vaca / 🐺 lobo / 🦌 corzo / 🐗 jabalí / 🚁 dron / ternero): matplotlib no pinta emojis a color, así que se renderizan con **PIL `embedded_color`** (fuente de emoji del sistema) a **sprites RGBA** colocados con `AnnotationBbox` → color de verdad, sin "tofu"; tamaño **`EMOJI_SCALE`** (afinable, pequeños); la distracción se dibuja 🦌 o 🐗 según `distraction_species`; **fallback** a marcadores (scatter) si no hay PIL/fuente. **Barra de batería** sobre cada dron ([0,1], verde llena → roja casi vacía; sube cargando / baja volando; lee `battery` del snapshot, que añade `main.py`). Además: **cono** ±45°, realce de **presa fijada**/**defensora**, **línea ternero→defensora**, **radio de disuasión** de los ACTIVE, muertas/descartados **atenuados**, **FASE**, **línea del INVESTIGADOR**, **banner del terminal**, leyenda (emojis + estructura).
 - `coordinators.py` — `DummyCoordinator` (no comanda nada → drones mantienen waypoint = quietos, BASELINE) y **`ReactiveCoordinator`** (1er coordinador CLÁSICO, regla FIJA: **BARRERA de apantallado** entre la manada y las vacas más cercanas + PATRULLA sin amenaza + caso PENETRADO; solo comanda a los ACTIVE libres, no usa la presa fijada, no toca `world.py`). MARL después. El movimiento es capacidad del mundo (`command_waypoint`).
 - `reactive_check.py` — verificación del **ReactiveCoordinator** (comportamiento, NO física): barrera repartida entre manada y rebaño, reactivo (sigue al paquete), NO usa `pack_prey`, caso penetrado (cubre a las vacas), patrulla en órbita (solo-corzos), severidad de muestra (Reactive ≤ Dummy), reproducibilidad, sin regresiones. Guarda `reactive_barrera.gif` + `reactive_patrulla.gif`.
 - `reactive_eval.py` — evalúa el `ReactiveCoordinator` con el MISMO arnés (`baseline.evaluate`, mismas semillas/CONFIG_V2) y lo compara con la baseline Dummy CONGELADA (`baseline_v2.json`). Guarda `baseline_v2_reactive.json`/`.csv` (tabla comparada POR TIPO).
@@ -1036,7 +1050,7 @@ Luego: percepción imperfecta (YOLO). Todo **sobre la v2 ya congelada** (la refe
 
 **Ruta sugerida (orden tentativo, aún sin decidir):** 3a ✓ → 3b ✓ → **paso 2 (guiado) ✓** → **disuasión del
 dron ✓** → **matanza excedente ✓** → **fix pin + envolvente ✓** → **evitación al huir ✓** → **el más cercano
-investiga ✓** → **afinar disuasión (radio corto + bordeo) ✓** → **madre no abandona al ternero ✓** → **lobos no se pillan en la zona segura ✓** (severidad v2 honesta ~4.40) → **3c (corzos) ✓** → **congelar v2 ✓ (tag `v2-baseline`; sev por tipo solo-lobos 4.45 / solo-corzos 0.00 / mixto 4.41, N=100)** → **coordinador reactivo: barrera de apantallado ✓ (sev 3.27 / 0 / 3.40 vs Dummy 4.45 / 0 / 4.41)** → **relevo de flota REALISTA ✓ (v2.1: hand-off sin teletransporte; RE-CONGELADO tag `v2.1-baseline`, mismos números)** → **MARL** (debe batir la barrera, gestionando la energía).
+investiga ✓** → **afinar disuasión (radio corto + bordeo) ✓** → **madre no abandona al ternero ✓** → **lobos no se pillan en la zona segura ✓** (severidad v2 honesta ~4.40) → **3c (corzos) ✓** → **congelar v2 ✓ (tag `v2-baseline`; sev por tipo solo-lobos 4.45 / solo-corzos 0.00 / mixto 4.41, N=100)** → **coordinador reactivo: barrera de apantallado ✓ (sev 3.27 / 0 / 3.40 vs Dummy 4.45 / 0 / 4.41)** → **relevo de flota REALISTA ✓ (v2.1: hand-off sin teletransporte)** → **render: emojis + barra de batería + `--coordinador` ✓** → **jabalí como 2ª distracción + emojis más pequeños ✓ (v2.2: RE-CONGELADO tag `v2.2-baseline`, mismos números)** → **MARL** (debe batir la barrera, gestionando la energía).
 
 *(Pendiente de decisión menor, NO en este paso: lobo solo vs ternero salió 0% — la madre frena siempre.
 Si se quiere que sea disputado (a veces se cuela), afinar `face_cooldown`/`r_face_safe`. Parámetros del

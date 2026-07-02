@@ -124,6 +124,8 @@ class World:
         corzos_max: int = 0,            # 0 = SIN corzos (y sin sorteo de tipo de episodio) -> mundo actual intacto
         corzo_speed: float = 4.0,       # m/s del corzo (esquivo, escapa); etiquetado/afinable. TUNE
         corzo_episode_probs: tuple[float, float, float] = (1/3, 1/3, 1/3),  # P(solo-lobos / solo-corzos / mixto) si corzos_max>0
+        distraction_species_prob: float = 0.5,  # P(la distracción sea CORZO); 1-p = JABALÍ. La MISMA prob de que haya distracción;
+                                                 #   solo cambia la especie (corzo/jabalí, mismo comportamiento). Substream RNG SEPARADO -> no perturba spawns.
         episode_kind: str | None = None,  # fuerza el tipo ('lobos'/'corzos'/'mixto') en vez de sortear (tests deterministas)
         parcel_size: tuple[float, float] = (300.0, 300.0),   # ~9 ha (parcela realista); r_detect=100 m -> 1/3 del campo
         safe_radius: float | None = None,     # establo (centro del campo)
@@ -208,8 +210,10 @@ class World:
         self.corzo_speed = corzo_speed
         self.corzo_episode_probs = np.asarray(corzo_episode_probs, dtype=float)
         self.corzo_episode_probs = self.corzo_episode_probs / self.corzo_episode_probs.sum()
+        self.distraction_species_prob = float(distraction_species_prob)   # P(corzo); 1-p = jabalí
         self._episode_kind_forced = episode_kind
         self.episode_kind = "lobos"      # se fija en reset() (sorteo o forzado); default sin corzos
+        self.distraction_species = "corzo"  # 'corzo' / 'jabali': especie de la distracción este episodio (se fija en reset)
         self.W, self.H = parcel_size
         m = min(self.W, self.H)  # escala de LAYOUT (establo/central/spawn/perímetro derivan de m y SÍ escalan)
 
@@ -370,6 +374,7 @@ class World:
         self.corzo_vel: np.ndarray | None = None     # (n_corzos,2) velocidad (inercia)
         self._corzo_graze_dir: np.ndarray | None = None  # (n_corzos,) deambular leve
         self.corzo_dismissed: np.ndarray | None = None   # (n_corzos,) bool: ya confirmado NO-amenaza -> no se reinvestiga
+        self._distraction_rng = None                     # substream RNG SEPARADO para el tipo de distracción (corzo/jabalí): NO perturba spawns de lobo/vaca
         self.drones: np.ndarray | None = None
         self.drone_vel: np.ndarray | None = None        # (n_drones,2) velocidad (dinámica de vuelo, flag #1 para drones)
         self.drone_waypoint: np.ndarray | None = None   # (n_drones,2) destino comandado (command_waypoint); hold = posición
@@ -420,6 +425,9 @@ class World:
         if seed is not None:
             self._seed = seed
         self.rng = np.random.default_rng(self._seed)
+        # Substream INDEPENDIENTE (seed desplazado) para el tipo de distracción (corzo/jabalí): sortear la especie
+        # NO consume del stream principal -> los spawns de lobos/vacas/corzos quedan bit a bit iguales (baseline comparable).
+        self._distraction_rng = np.random.default_rng(None if self._seed is None else self._seed + 1_000_003)
 
         # Vacas: REPARTIDAS por el área de pasto (dispersas, no apiñadas), con separación
         # mínima al nacer y fuera de establo/central. Determinista con la seed.
@@ -493,6 +501,7 @@ class World:
             self.n_corzos = 0
             self.corzos = np.zeros((0, 2)); self.corzo_vel = np.zeros((0, 2))
             self._corzo_graze_dir = np.zeros(0); self.corzo_dismissed = np.zeros(0, dtype=bool)
+            self.distraction_species = "corzo"      # sin distracción (no se usa)
         else:
             self.n_corzos = int(self.rng.integers(self.corzos_min, self.corzos_max + 1))
             self.corzos = self._spawn_corzos(self.n_corzos)
@@ -500,6 +509,9 @@ class World:
             self.corzo_vel = np.zeros((self.n_corzos, 2))
             self._corzo_graze_dir = self.rng.uniform(0.0, 2 * np.pi, size=self.n_corzos)
             self.corzo_dismissed = np.zeros(self.n_corzos, dtype=bool)
+            # Especie de la distracción (grupo entero): corzo o jabalí ~50/50 (mismo comportamiento). Del SUBSTREAM
+            # separado -> no perturba el spawn. Un tipo MÁS para el oráculo; el dron descarta igual (no es lobo).
+            self.distraction_species = "corzo" if self._distraction_rng.random() < self.distraction_species_prob else "jabali"
 
         # Batería a plena carga al reset (NO se aleatoriza en episodio: solo importa cuando los
         # drones actúan). HOOK: stagger=True (battery_check) reparte fases para operación continua.
@@ -1878,6 +1890,7 @@ class World:
             "corzos": self.corzos.copy(),                 # corzos (3c, cuerpos no-amenaza)
             "corzo_dismissed": self.corzo_dismissed.copy(),  # ya confirmados NO-amenaza (descartados)
             "episode_kind": self.episode_kind,            # 'lobos' / 'corzos' / 'mixto'
+            "distraction_species": self.distraction_species,  # 'corzo' / 'jabali': especie de la distracción (para el render)
             "drones": self.drones.copy(),
             "drone_state": self.drone_state.copy(),       # para dibujar el radio de disuasión de los ACTIVE
             "drone_investigating": self.drone_investigating.copy(),

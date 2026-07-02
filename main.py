@@ -81,8 +81,10 @@ def main():
 
     forzado = f"  (forzado: --escenario {args.escenario})" if args.escenario else "  (sorteado)"
     repro = f"python main.py {seed} --coordinador {args.coordinador}" + (f" --escenario {args.escenario}" if args.escenario else "")
+    esp = "corzos" if world.distraction_species == "corzo" else "jabalíes"
+    dist = f"{world.n_corzos} {esp}" if world.n_corzos else "0"
     print(f"seed = {seed}  (reproduce con: {repro})")
-    print(f"coordinador = {args.coordinador}  |  episodio = {world.episode_kind}{forzado}  |  lobos = {world.n_wolves}  corzos = {world.n_corzos}")
+    print(f"coordinador = {args.coordinador}  |  episodio = {world.episode_kind}{forzado}  |  lobos = {world.n_wolves}  |  distracción = {dist}")
 
     history, metrics = run_episode(world, coordinator)
 

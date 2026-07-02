@@ -714,6 +714,50 @@ def test_corzos():
     print("  OK\n")
 
 
+def test_distraccion_especie():
+    print("=== 1j) DISTRACCIÓN = corzo o JABALÍ (~50/50, substream RNG separado, ambos descartados) ===")
+    from collections import Counter
+    # (a) Especie ~50/50 sobre semillas (episodios con distracción).
+    cnt = Counter(World(seed=s, corzos_max=3, episode_kind="corzos").distraction_species for s in range(200))
+    fc = cnt["corzo"] / 200.0
+    print("  (a) 200 seeds: corzo=%d jabali=%d (P(corzo)=%.2f, ~0.50)" % (cnt["corzo"], cnt["jabali"], fc))
+    assert 0.38 <= fc <= 0.62, "FALLO: la especie no es ~50/50 (%.2f)" % fc
+
+    # (b) SUBSTREAM SEPARADO: forzar la especie (prob 1.0 vs 0.0) NO cambia los spawns (lobo/vaca/cuerpos).
+    a = World(seed=5, corzos_max=3, episode_kind="mixto", distraction_species_prob=1.0); a.reset()
+    b = World(seed=5, corzos_max=3, episode_kind="mixto", distraction_species_prob=0.0); b.reset()
+    same = (a.n_wolves == b.n_wolves and a.n_corzos == b.n_corzos
+            and np.allclose(a.wolves, b.wolves) and np.allclose(a.cows, b.cows) and np.allclose(a.corzos, b.corzos))
+    print("  (b) especie forzada distinta (%s vs %s) -> spawns IDÉNTICOS: %s" % (a.distraction_species, b.distraction_species, same))
+    assert same and a.distraction_species == "corzo" and b.distraction_species == "jabali", \
+        "FALLO: el substream de especie perturba los spawns (baseline no comparable)"
+
+    # (b2) Bit a bit vs corzos-OFF (v2.1): el substream no consume del stream principal.
+    c = World(seed=5, corzos_max=3, episode_kind="lobos"); c.reset()
+    d = World(seed=5, corzos_max=0); d.reset()
+    assert c.n_wolves == d.n_wolves and np.allclose(c.wolves, d.wolves) and np.allclose(c.cows, d.cows), \
+        "FALLO: con distracción activa, solo-lobos difiere de corzos-OFF (stream principal perturbado)"
+    print("  (b2) solo-lobos == corzos-OFF (stream principal intacto): OK")
+
+    # (c) El JABALÍ se descarta a r_confirm igual que el corzo -> solo-distracción severidad 0.
+    for sp, prob in (("corzo", 1.0), ("jabali", 0.0)):
+        w = World(seed=0, corzos_max=3, episode_kind="corzos", distraction_species_prob=prob)
+        cc = DummyCoordinator(w.n_drones)
+        while True:
+            _, _, t, tr, info = w.step(cc.act(None))
+            if t or tr:
+                break
+        print("  (c) %-6s solo-distracción: sev=%d descartados=%d/%d status=%s" % (w.distraction_species, w.n_depredadas, int(w.corzo_dismissed.sum()), w.n_corzos, info["status"]))
+        assert w.distraction_species == sp and w.n_depredadas == 0 and w.corzo_dismissed.all(), \
+            "FALLO: %s no se descartó / hubo depredación" % sp
+
+    # (d) Reproducible.
+    assert World(seed=11, corzos_max=3, episode_kind="corzos").distraction_species == \
+           World(seed=11, corzos_max=3, episode_kind="corzos").distraction_species, "FALLO: especie no reproducible"
+    print("  (d) especie reproducible (misma seed)")
+    print("  OK\n")
+
+
 def _pin_scene(with_drone):
     """Adulta CLAVADA (ESCOLTA) FUERA del establo + 4 lobos a 10 m en N/E/S/O. Sin/con un dron a tiro."""
     w = World(seed=0, n_cows=1, wolves_min=4, wolves_max=4, calf_count_probs=NO_CALVES,
@@ -1302,6 +1346,7 @@ if __name__ == "__main__":
     test_madre_no_abandona()
     test_zona_bordeo()
     test_corzos()
+    test_distraccion_especie()
     test_depredacion()
     test_timeout()
     test_refugio_suelta_presa()

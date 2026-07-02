@@ -23,9 +23,11 @@ from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 from world import ACTIVE, DETER_RADIUS
 
 # --- Emojis por entidad ---
-EMOJI = {"cow": "🐄", "calf": "🐄", "wolf": "🐺", "corzo": "🦌", "drone": "🚁"}
+EMOJI = {"cow": "🐄", "calf": "🐄", "wolf": "🐺", "corzo": "🦌", "jabali": "🐗", "drone": "🚁"}
 _LEGEND = [("cow", "vaca"), ("calf", "ternero"), ("wolf", "lobo"),
-           ("corzo", "corzo"), ("drone", "dron")]
+           ("corzo", "corzo"), ("jabali", "jabalí"), ("drone", "dron")]
+# Tamaño de los sprites de emoji (afinable). Más pequeño = se distinguen sin dominar la escena.
+EMOJI_SCALE = 0.55
 
 
 def _find_emoji_font() -> str | None:
@@ -115,8 +117,9 @@ def render_episode(world, history, interval: int = 40, save_path: str | None = N
                            label="investigando")
 
     # --- entidades: sprites de emoji (o scatter de reserva si no hay emojis) ---
-    ZOOM = {"cow": 0.42 * (m / 300), "calf": 0.30 * (m / 300),
-            "wolf": 0.40 * (m / 300), "corzo": 0.38 * (m / 300), "drone": 0.40 * (m / 300)}
+    zf = EMOJI_SCALE * (m / 300)
+    ZOOM = {"cow": 0.42 * zf, "calf": 0.30 * zf, "wolf": 0.40 * zf,
+            "corzo": 0.38 * zf, "jabali": 0.38 * zf, "drone": 0.40 * zf}
 
     def _pool(name, n, z):
         pool = []
@@ -163,23 +166,23 @@ def render_episode(world, history, interval: int = 40, save_path: str | None = N
     # Leyenda de emojis (sprites + etiqueta) en la esquina inferior izquierda.
     if EMOJI_OK:
         for k, (name, label) in enumerate(_LEGEND):
-            yf = 0.28 - 0.05 * k
-            ab = AnnotationBbox(OffsetImage(_sprite(name), zoom=0.28), (0.045, yf),
+            yf = 0.30 - 0.048 * k
+            ab = AnnotationBbox(OffsetImage(_sprite(name), zoom=0.22), (0.04, yf),
                                 xycoords="axes fraction", frameon=False, box_alignment=(0.5, 0.5), zorder=11)
             ax.add_artist(ab)
-            ax.text(0.085, yf, label, transform=ax.transAxes, va="center", fontsize=8, zorder=11)
+            ax.text(0.075, yf, label, transform=ax.transAxes, va="center", fontsize=7.5, zorder=11)
 
     def _faded(alive, safe):  # muertas atenuadas (las a-salvo se quedan normales, junto al establo)
         return [not a for a in alive]
 
-    def _place(pool, positions, faded=None):
+    def _place(pool, positions, faded=None, name_override=None):
         for k, (ab, oi, name) in enumerate(pool):
             if k < len(positions):
                 ab.xy = (positions[k, 0], positions[k, 1])
                 ab.xybox = (positions[k, 0], positions[k, 1])
                 ab.set_visible(True)
-                if faded is not None:
-                    oi.set_data(_sprite(name, fade=0.3) if faded[k] else _sprite(name))
+                if faded is not None or name_override is not None:   # corzo/jabalí (especie) o atenuación (muerta/descartado)
+                    oi.set_data(_sprite(name_override or name, fade=0.3 if (faded is not None and faded[k]) else 1.0))
             else:
                 ab.set_visible(False)
 
@@ -216,7 +219,8 @@ def render_episode(world, history, interval: int = 40, save_path: str | None = N
             _place(wolf_pool, wolves)
             dism = snap.get("corzo_dismissed")
             cf = [bool(dism[i]) for i in range(len(corzos))] if (dism is not None and len(dism) == len(corzos)) else None
-            _place(corzo_pool, corzos, faded=cf)
+            dist_name = "jabali" if snap.get("distraction_species") == "jabali" else "corzo"
+            _place(corzo_pool, corzos, faded=cf, name_override=dist_name)
             _place(drone_pool, drones)
         else:
             scatters["cow"].set_offsets(cows); scatters["cow"].set_color(_herd_colors(snap["cow_alive"], snap["cow_safe"], "saddlebrown"))
@@ -258,7 +262,8 @@ def render_episode(world, history, interval: int = 40, save_path: str | None = N
         prey_lbl = "ternero" if snap["prey_is_calf"] else ("adulta" if prey_pos is not None else "-")
         ek = snap.get("episode_kind")
         nc = len(corzos)
-        extra = f"   episodio={ek}   corzos={nc}" if ek and ek != "lobos" else ""
+        spn = "jabalíes" if snap.get("distraction_species") == "jabali" else "corzos"
+        extra = f"   episodio={ek}   distracción={nc} {spn}" if ek and ek != "lobos" else ""
         txt.set_text(f"FASE: {snap['phase']}    t={snap['t']:.1f}s   paso={snap['step']}   "
                      f"lobos={len(wolves)}   presa={prey_lbl}{extra}\n"
                      f"a salvo={snap['n_safe']}   cazadas={snap['n_depredadas']}   fuera={snap['n_fuera']}")
