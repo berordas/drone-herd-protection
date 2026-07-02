@@ -16,12 +16,15 @@
 > **v2 CONGELADA (tag `v2-baseline`)** (la física NO cambia más; `baseline.py` = arnés de evaluación POR TIPO,
 > severidad Dummy solo-lobos 4.45 / solo-corzos 0.00 / mixto 4.41, N=100) ·
 > **ReactiveCoordinator** (1er coordinador clásico: BARRERA de apantallado; regla fija, NO aprende) →
-> severidad 3.27 / 0 / 3.40 (−1.18 / − / −1.01 vs Dummy; n_safe sube) ·
+> severidad 3.36 / 0 / 3.42 (−1.09 / − / −0.99 vs Dummy; n_safe sube) ·
 > **RELEVO de flota REALISTA (v2.1)** (hand-off, SIN teletransporte: la reserva VUELA al puesto, el bajo cubre
 > hasta el relevo, vuelve a cargar; STRANDED bajo estrés → moverse tiene COSTE real) ·
 > **RENDER: emojis a color + barra de batería + `main.py --coordinador`** ·
 > **JABALÍ 🐗 como 2ª distracción (v2.2, tag `v2.2-baseline`)** (~50/50 con el corzo, mismo comportamiento,
 > substream RNG separado → spawns intactos; emojis más pequeños; mismos números, RE-CONGELADO).
+> **Retoques visuales + fix del ARRANQUE del reactivo** (emojis aún más pequeños `EMOJI_SCALE`=0.45, SIN leyenda de
+> entidades, **🔊 al disuadir**; la PATRULLA ancla la fase a la posición angular ACTUAL → los drones se abren a su ranura
+> más cercana desde t=0, sin cruzar el centro; Reactive 3.27/3.40→**3.36/3.42**, Dummy/física INTACTOS, NO re-congela).
 > **Pendiente:** **MARL** (debe batir la barrera, gestionando la energía) · reflejo-reactivo que consume el mensaje del reflejo.
 > **Commits:** `194a3ad` base · `37910b3` terminal · `e663504` disparador por dron · `4d1e708` campo
 > 300×300 + escala biológica absoluta · `886bd45` dispersión del rebaño · `a15e2df` movimiento de
@@ -33,8 +36,23 @@
 > `bda6156` corzos (3c) · `e44d7c2` fix: main.py no spawneaba corzos + `--escenario` · `9e11a29` afinar corzos
 > (vuela e investiga, agrupados, SOSPECHA, render natural) · `b04e8d9` congelar v2 (tag `v2-baseline`) ·
 > `2ad268b` ReactiveCoordinator (barrera de apantallado) · `bcd407f` relevo de flota REALISTA (v2.1, tag
-> `v2.1-baseline`) · `e14206a` render: emojis a color + barra de batería + `--coordinador` · `<este commit>`
-> jabalí como 2ª distracción + emojis más pequeños (v2.2, RE-CONGELADO tag `v2.2-baseline`).
+> `v2.1-baseline`) · `e14206a` render: emojis a color + barra de batería + `--coordinador` · `11dc90d`
+> jabalí como 2ª distracción + emojis más pequeños (v2.2, RE-CONGELADO tag `v2.2-baseline`) · `<este commit>`
+> retoques visuales + fix arranque del reactivo (patrulla anclada, sin cruces; Reactive 3.36/0/3.42).
+>
+> **Patch — Retoques visuales + fix del ARRANQUE del reactivo.** Dos bloques, sin tocar la física del mundo.
+> **(1) Cosmética (solo `render.py`):** emojis un escalón más pequeños (`EMOJI_SCALE` 0.55→0.45); FUERA la leyenda de
+> entidades de abajo-izq (se explican solos; queda la de zonas); **🔊** bajo el dron ACTIVE que "emite ruido" (algún lobo
+> a ≤`DETER_RADIUS` → disuade) — puro dibujo: el render LEE lobos/estado del snapshot y usa el mismo radio de config, NO
+> toca la lógica de disuasión. **(2) Bug del arranque del reactivo (solo `coordinators.py`):** los drones salían TODOS al
+> medio y se CRUZABAN. CAUSA (diagnóstico empírico): nacen en las ESQUINAS del rebaño (~225°+90°i) pero `_patrol` los
+> mandaba a la ranura `i·2π/k` (~135° OPUESTA) → cruzaban el centro (error angular 135°, sep mínima ~16 m). FIX: la PATRULLA
+> ancla la FASE de la formación (media circular) a la posición angular ACTUAL → cada dron va a su ranura MÁS CERCANA (error
+> 10°, sep 41 m, sin cruces) y luego órbita rígida sin reasignaciones. Solo el coordinador: Reactive 3.27/3.40→**3.36/3.42**
+> (+0.09/+0.02 — el bug apoyaba números en un center-hugging accidental), Dummy/física/baseline INTACTOS (**NO re-congela**).
+> `test_arranque` nuevo + `test_severidad_muestra` n=15→30 (con n=15 caía en el slice de menor beneficio y el ruido cambiaba
+> el signo). **face 12/12 bit a bit · battery · escort · drone · reactive verdes.** **Rombo de carga: NO hecho** — los slots
+> de reserva viven en `world.py` (reset, fila recta) → tocarlos movería la baseline; PARADO a la espera de decisión.
 >
 > **Patch — JABALÍ 🐗 como 2ª distracción + emojis más pequeños (v2.2) + RE-CONGELAR.** La distracción era siempre
 > un corzo; ahora es corzo O **jabalí** ~50/50 (`distraction_species_prob`), MISMO comportamiento (mismo array
@@ -1041,8 +1059,18 @@ COMPROMISO que el coordinador/MARL debe gestionar (no agotar la flota moviéndos
 **RE-CONGELADO v2.1** (tag `v2.1-baseline`): Dummy **4.45/0/4.41** y Reactive **3.27/0/3.40** SIN cambios (re-medidos;
 la cobertura se mantiene, solo cambia el coste de moverse).
 
+**RETOQUES VISUALES + FIX DEL ARRANQUE DEL REACTIVO (HECHO).** (1) `render.py`: emojis más pequeños (`EMOJI_SCALE`
+0.55→0.45), sin la leyenda de entidades (se explican solos; queda la de zonas), y **🔊 bajo el dron ACTIVE que disuade**
+(algún lobo a ≤`DETER_RADIUS`; el render calcula la condición con los mismos radios, NO toca la disuasión). (2)
+`coordinators.py`: la PATRULLA mandaba a los drones (que nacen en las esquinas del rebaño, ~225°+90°i) a la ranura
+`i·2π/k` ~135° OPUESTA → cruzaban el centro al arrancar (diagnóstico: error angular 135°, sep mínima ~16 m). Ahora ANCLA
+la fase de la formación a su posición angular ACTUAL → cada dron va a su ranura MÁS CERCANA (error 135°→10°, sep 16→41 m,
+sin cruces) y órbita rígida. Solo el coordinador: **Reactive 3.27/3.40 → 3.36/3.42** (+0.09/+0.02; el bug apoyaba números
+en un center-hugging accidental), Dummy/física INTACTOS (**NO re-congela**). `test_arranque` nuevo + `test_severidad_muestra`
+n=15→30. face 12/12 bit a bit · verja verde. (Rombo de carga PARADO: los slots de reserva viven en `world.py`.)
+
 **SIGUIENTE (opciones):**
-- **MARL (MAPPO):** aprender la coordinación de drones y **BATIR la barrera reactiva** (3.27 / 0 / 3.40) sobre la v2.1
+- **MARL (MAPPO):** aprender la coordinación de drones y **BATIR la barrera reactiva** (3.36 / 0 / 3.42) sobre la v2.1
   congelada, con el MISMO arnés, **gestionando la energía** (relevos/tránsito/stranded ahora cuestan). Con corzos: aprender a **NO malgastar drones** en lo que no es amenaza (solo-corzos ya 0).
 - **Afinar/variar el coordinador clásico:** tunear standoff/spacing/ancho del frente por render; o un **reflejo-reactivo**
   que CONSUMA el mensaje del reflejo de investigación (recolocar a los DEMÁS drones con el contacto). + hooks de batería.
@@ -1050,7 +1078,7 @@ Luego: percepción imperfecta (YOLO). Todo **sobre la v2 ya congelada** (la refe
 
 **Ruta sugerida (orden tentativo, aún sin decidir):** 3a ✓ → 3b ✓ → **paso 2 (guiado) ✓** → **disuasión del
 dron ✓** → **matanza excedente ✓** → **fix pin + envolvente ✓** → **evitación al huir ✓** → **el más cercano
-investiga ✓** → **afinar disuasión (radio corto + bordeo) ✓** → **madre no abandona al ternero ✓** → **lobos no se pillan en la zona segura ✓** (severidad v2 honesta ~4.40) → **3c (corzos) ✓** → **congelar v2 ✓ (tag `v2-baseline`; sev por tipo solo-lobos 4.45 / solo-corzos 0.00 / mixto 4.41, N=100)** → **coordinador reactivo: barrera de apantallado ✓ (sev 3.27 / 0 / 3.40 vs Dummy 4.45 / 0 / 4.41)** → **relevo de flota REALISTA ✓ (v2.1: hand-off sin teletransporte)** → **render: emojis + barra de batería + `--coordinador` ✓** → **jabalí como 2ª distracción + emojis más pequeños ✓ (v2.2: RE-CONGELADO tag `v2.2-baseline`, mismos números)** → **MARL** (debe batir la barrera, gestionando la energía).
+investiga ✓** → **afinar disuasión (radio corto + bordeo) ✓** → **madre no abandona al ternero ✓** → **lobos no se pillan en la zona segura ✓** (severidad v2 honesta ~4.40) → **3c (corzos) ✓** → **congelar v2 ✓ (tag `v2-baseline`; sev por tipo solo-lobos 4.45 / solo-corzos 0.00 / mixto 4.41, N=100)** → **coordinador reactivo: barrera de apantallado ✓ (sev 3.27 / 0 / 3.40 vs Dummy 4.45 / 0 / 4.41)** → **relevo de flota REALISTA ✓ (v2.1: hand-off sin teletransporte)** → **render: emojis + barra de batería + `--coordinador` ✓** → **jabalí como 2ª distracción + emojis más pequeños ✓ (v2.2: RE-CONGELADO tag `v2.2-baseline`, mismos números)** → **retoques visuales + fix arranque del reactivo ✓ (patrulla anclada, sin cruces; Reactive → 3.36/0/3.42; Dummy/física intactos)** → **MARL** (debe batir la barrera, gestionando la energía).
 
 *(Pendiente de decisión menor, NO en este paso: lobo solo vs ternero salió 0% — la madre frena siempre.
 Si se quiere que sea disputado (a veces se cuela), afinar `face_cooldown`/`r_face_safe`. Parámetros del

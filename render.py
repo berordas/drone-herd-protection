@@ -23,11 +23,10 @@ from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 from world import ACTIVE, DETER_RADIUS
 
 # --- Emojis por entidad ---
-EMOJI = {"cow": "🐄", "calf": "🐄", "wolf": "🐺", "corzo": "🦌", "jabali": "🐗", "drone": "🚁"}
-_LEGEND = [("cow", "vaca"), ("calf", "ternero"), ("wolf", "lobo"),
-           ("corzo", "corzo"), ("jabali", "jabalí"), ("drone", "dron")]
+EMOJI = {"cow": "🐄", "calf": "🐄", "wolf": "🐺", "corzo": "🦌", "jabali": "🐗", "drone": "🚁",
+         "sound": "🔊"}   # 🔊 = el dron ACTIVE "emite ruido" (hay un lobo a <= DETER_RADIUS -> disuade)
 # Tamaño de los sprites de emoji (afinable). Más pequeño = se distinguen sin dominar la escena.
-EMOJI_SCALE = 0.55
+EMOJI_SCALE = 0.45
 
 
 def _find_emoji_font() -> str | None:
@@ -119,7 +118,7 @@ def render_episode(world, history, interval: int = 40, save_path: str | None = N
     # --- entidades: sprites de emoji (o scatter de reserva si no hay emojis) ---
     zf = EMOJI_SCALE * (m / 300)
     ZOOM = {"cow": 0.42 * zf, "calf": 0.30 * zf, "wolf": 0.40 * zf,
-            "corzo": 0.38 * zf, "jabali": 0.38 * zf, "drone": 0.40 * zf}
+            "corzo": 0.38 * zf, "jabali": 0.38 * zf, "drone": 0.40 * zf, "sound": 0.30 * zf}
 
     def _pool(name, n, z):
         pool = []
@@ -139,6 +138,7 @@ def render_episode(world, history, interval: int = 40, save_path: str | None = N
         wolf_pool = _pool("wolf", len(history[0]["wolves"]) or 5, ZOOM["wolf"])
         corzo_pool = _pool("corzo", len(history[0].get("corzos", [])) or 3, ZOOM["corzo"])
         drone_pool = _pool("drone", world.n_drones, ZOOM["drone"])
+        sound_pool = _pool("sound", world.n_drones, ZOOM["sound"])   # 🔊 bajo cada dron que disuade
     else:  # --- FALLBACK (sin emojis): marcadores de siempre ---
         scatters["cow"] = ax.scatter(*empty.T, c="saddlebrown", s=60, label="vacas", zorder=6)
         scatters["calf"] = ax.scatter(*empty.T, c="navajowhite", s=45, edgecolors="saddlebrown", label="terneros", zorder=6)
@@ -161,16 +161,9 @@ def render_episode(world, history, interval: int = 40, save_path: str | None = N
     banner = ax.text(0.5, 0.02, "", transform=ax.transAxes, ha="center", va="bottom",
                      fontsize=12, weight="bold", color="white", zorder=12,
                      bbox=dict(boxstyle="round", fc="gray", alpha=0.9))
-    ax.legend(loc="lower right", fontsize=6.5, framealpha=0.85)
+    ax.legend(loc="lower right", fontsize=6.5, framealpha=0.85)   # solo zonas/estructura (la leyenda de entidades se quitó: los emojis se explican solos)
 
-    # Leyenda de emojis (sprites + etiqueta) en la esquina inferior izquierda.
-    if EMOJI_OK:
-        for k, (name, label) in enumerate(_LEGEND):
-            yf = 0.30 - 0.048 * k
-            ab = AnnotationBbox(OffsetImage(_sprite(name), zoom=0.22), (0.04, yf),
-                                xycoords="axes fraction", frameon=False, box_alignment=(0.5, 0.5), zorder=11)
-            ax.add_artist(ab)
-            ax.text(0.075, yf, label, transform=ax.transAxes, va="center", fontsize=7.5, zorder=11)
+    SOUND_DY = 0.035 * m   # desplazamiento del 🔊 justo por DEBAJO del dron (la barra de batería va encima)
 
     def _faded(alive, safe):  # muertas atenuadas (las a-salvo se quedan normales, junto al establo)
         return [not a for a in alive]
@@ -237,6 +230,18 @@ def render_episode(world, history, interval: int = 40, save_path: str | None = N
                 ring.center = (drones[i, 0], drones[i, 1])
             ring.set_visible(on)
 
+        # 🔊 bajo cada dron ACTIVE que "emite ruido" (algún lobo a <= DETER_RADIUS -> disuade). Puro dibujo:
+        # el render LEE lobos/estado del snapshot y calcula la condición con el MISMO radio de config; NO toca
+        # la lógica de disuasión del mundo.
+        if EMOJI_OK:
+            for i, (ab, _oi, _name) in enumerate(sound_pool):
+                noisy = bool(deter_show and dstate is not None and dstate[i] == ACTIVE and len(wolves)
+                             and float(np.linalg.norm(wolves - drones[i], axis=1).min()) <= DETER_RADIUS)
+                if noisy:
+                    ab.xy = (drones[i, 0], drones[i, 1] - SOUND_DY)
+                    ab.xybox = (drones[i, 0], drones[i, 1] - SOUND_DY)
+                ab.set_visible(noisy)
+
         # Barra de batería sobre cada dron.
         bat = snap.get("battery")
         for i in range(world.n_drones):
@@ -278,7 +283,7 @@ def render_episode(world, history, interval: int = 40, save_path: str | None = N
         arts = [prey_hl, defender_hl, invest_line, cow_box, txt, banner,
                 *cone_polys, *calf_lines, *deter_rings, *bat_bg, *bat_fill]
         if EMOJI_OK:
-            arts += [ab for pool in (cow_pool, calf_pool, wolf_pool, corzo_pool, drone_pool) for ab, _, _ in pool]
+            arts += [ab for pool in (cow_pool, calf_pool, wolf_pool, corzo_pool, drone_pool, sound_pool) for ab, _, _ in pool]
         else:
             arts += list(scatters.values())
         return tuple(arts)

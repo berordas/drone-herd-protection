@@ -10,6 +10,8 @@ Comprueba el COMPORTAMIENTO del primer coordinador de verdad (NO la física, con
   5) PATRULLA: sin amenaza confirmada (solo-corzos), orbitan alrededor del rebaño.
   6) SEVERIDAD (muestra pequeña): Reactive <= Dummy en solo-lobos/mixto; solo-corzos sigue 0.
   7) REPRODUCIBILIDAD.
+  9) ARRANQUE: la patrulla reparte a los drones desde t=0 (a su ranura MÁS CERCANA), sin mandarlos
+     al centro ni cruzarse (la fase de la formación se ancla a su posición angular actual).
 Guarda dos renders: barrera en acción (solo-lobos/mixto) y patrulla (solo-corzos).
 
 El mundo NO se toca (world.py congelado); solo se añade y verifica el coordinador. La baseline Dummy
@@ -22,7 +24,7 @@ import subprocess
 
 import numpy as np
 
-from world import World, ACTIVE
+from world import World, ACTIVE, DETER_RADIUS
 from coordinators import ReactiveCoordinator, DummyCoordinator
 from render import render_episode
 
@@ -148,15 +150,48 @@ def _ring_angles(w) -> np.ndarray:
     return np.degrees(np.arctan2(d[:, 1], d[:, 0]))
 
 
+def test_arranque():
+    print("=== 9) ARRANQUE: la patrulla reparte a los drones desde t=0 (NO al centro, NO se cruzan) ===")
+    for seed in (0, 3, 5):
+        w = World(seed=seed, corzos_max=3, episode_kind="mixto"); w.reset()
+        c = ReactiveCoordinator(w)
+        idx = np.where(_free(w))[0]
+        hc = _herd(w).mean(0)
+        d = w.drones[idx] - hc
+        theta0 = np.arctan2(d[:, 1], d[:, 0])
+        tgt = c.act(w.get_observation())[idx] - hc                     # ranura asignada a cada dron (paso 0)
+        slot = np.arctan2(tgt[:, 1], tgt[:, 0])
+        ang_err = np.degrees(np.abs(((slot - theta0 + np.pi) % (2 * np.pi)) - np.pi))
+        minsep = np.inf
+        for _ in range(40):                                           # ventana de arranque
+            w.step(c.act(w.get_observation()))
+            cur = w.drones[idx]
+            sep = np.linalg.norm(cur[:, None, :] - cur[None, :, :], axis=2)
+            np.fill_diagonal(sep, np.inf)
+            minsep = min(minsep, float(sep.min()))
+        print("  seed=%d | error angular dron->ranura (t=0): media %.0f° máx %.0f° | sep MÍNIMA en 40 pasos: %.1f m"
+              % (seed, ang_err.mean(), ang_err.max(), minsep))
+        # Cada dron va a su ranura MÁS CERCANA (no a la opuesta ~180°): antes del fix media ~135°.
+        assert ang_err.max() < 45.0, "FALLO: un dron va a una ranura LEJANA (cruza el centro al arrancar)"
+        # sep mínima alta = nadie se junta en el centro (si se cruzaran, tocaría ~0). Antes del fix bajaba a ~5 m.
+        assert minsep > DETER_RADIUS, "FALLO: los drones se juntan en el centro al arrancar (se cruzan)"
+    print("  OK\n")
+
+
 def test_severidad_muestra():
-    print("=== 6) SEVERIDAD (muestra n=15): Reactive vs Dummy (mismas semillas/CONFIG_V2) ===")
+    # n=30 (no 15): la patrulla anclada desplaza la FASE de la formación, y las primeras semillas son el
+    # slice de MENOR beneficio del reactivo -> con n=15 el margen es tan fino que el ruido cambiaba el signo
+    # (lobos +0.13). Con n=30 el reactivo es determinísticamente MEJOR que el Dummy en ambos tipos, y la
+    # medida autoritativa (N=100, reactive_eval) confirma el gran margen: solo-lobos 3.36 / mixto 3.42.
+    N = 30
+    print("=== 6) SEVERIDAD (muestra n=%d): Reactive vs Dummy (mismas semillas/CONFIG_V2) ===" % N)
     from baseline import build_world, run_episode_metrics
     def sev(kind, n, factory):
         d = [run_episode_metrics(build_world(s, kind), factory(build_world(s, kind)))["n_depredadas"] for s in range(n)]
         return float(np.mean(d)), int(np.max(d))
     for kind in ("lobos", "mixto"):
-        md, _ = sev(kind, 15, lambda w: DummyCoordinator(w.n_drones))
-        mr, xr = sev(kind, 15, lambda w: ReactiveCoordinator(w))
+        md, _ = sev(kind, N, lambda w: DummyCoordinator(w.n_drones))
+        mr, xr = sev(kind, N, lambda w: ReactiveCoordinator(w))
         print("  %-6s  Dummy=%.2f  Reactive=%.2f (máx %d)  -> %+.2f" % (kind, md, mr, xr, mr - md))
         assert mr <= md + 1e-9, "FALLO: Reactive EMPEORA la severidad en %s (muestra)" % kind
     mc, _ = sev("corzos", 3, lambda w: ReactiveCoordinator(w))
@@ -251,6 +286,7 @@ if __name__ == "__main__":
     test_sin_presa_fijada()
     test_penetrado()
     test_patrulla()
+    test_arranque()
     test_severidad_muestra()
     test_reproducible()
     test_no_regresiones()

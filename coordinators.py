@@ -59,6 +59,13 @@ class ReactiveCoordinator:
         self.engage_standoff = engage_standoff if engage_standoff is not None else 2.0 * world.r_face_safe  # penetrado: dron entre la vaca y el lobo enganchado
         self.patrol_radius = patrol_radius                                                                 # órbita de patrulla (None -> adaptativo al tamaño del rebaño)
         self.patrol_omega = patrol_omega                                                                   # giro de la órbita (patrulla en movimiento)
+        # Estado de la PATRULLA: ancla la FASE de la formación a la posición angular ACTUAL de los drones
+        # -> desde el paso 0 cada dron va a su ranura MÁS CERCANA (no cruza el centro). Se re-ancla si cambia
+        # el nº de drones libres o si la patrulla se reanuda tras una interrupción (ESCOLTA).
+        self._patrol_base: float | None = None
+        self._patrol_k: int | None = None
+        self._patrol_step0: int = 0
+        self._patrol_last_step: int = -10
 
     # ------------------------------------------------------------------ #
     def act(self, observation: dict | None = None) -> np.ndarray:
@@ -132,14 +139,30 @@ class ReactiveCoordinator:
         return self._assign(idx, slots, None)
 
     def _patrol(self, idx: np.ndarray, herd: np.ndarray) -> np.ndarray:
-        """Sin amenaza confirmada: órbita lenta y repartida alrededor del centroide del rebaño."""
+        """Sin amenaza confirmada: órbita lenta y REPARTIDA alrededor del centroide del rebaño. Cada dron va
+        a SU ranura equiespaciada (i -> 2πi/k) y la FASE de la formación se ANCLA (media circular) a la
+        posición angular actual de los drones -> desde el paso 0 cada dron va a su ranura MÁS CERCANA (no
+        cruza el centro), y luego la formación gira RÍGIDA con patrol_omega (sin reasignaciones que crucen).
+        [Bug corregido: al anclar la fase a 0, los drones —que nacen en las ESQUINAS del rebaño, ~225°+90°i—
+        se enviaban a la ranura i·2π/k, ~135° OPUESTA, así que TODOS cruzaban el centro antes de recolocarse.]"""
         k = idx.size
         c = herd.mean(axis=0)
         r = self.patrol_radius
         if r is None:
             spread = float(np.linalg.norm(herd - c, axis=1).max()) if herd.shape[0] > 1 else 0.0
             r = spread + self.world.r_notice + DETER_RADIUS               # justo fuera del rebaño, listos para reaccionar
-        ang = self.patrol_omega * self.world.step_count + 2 * np.pi * np.arange(k) / max(k, 1)
+        step = self.world.step_count
+        grid = 2 * np.pi * np.arange(k) / max(k, 1)                        # ranura equiespaciada por dron (por índice)
+        # (Re)ancla la fase: primera patrulla, cambia el nº de libres, o se reanuda tras un hueco (ESCOLTA).
+        if self._patrol_base is None or self._patrol_k != k or step - self._patrol_last_step > 1:
+            d = self.world.drones[idx] - c
+            theta = np.arctan2(d[:, 1], d[:, 0])                          # ángulo actual de cada dron libre
+            resid = theta - grid                                         # desfase de cada dron respecto a su ranura
+            self._patrol_base = float(np.arctan2(np.sin(resid).mean(), np.cos(resid).mean()))  # media circular -> ancla
+            self._patrol_k = k
+            self._patrol_step0 = step
+        self._patrol_last_step = step
+        ang = self._patrol_base + self.patrol_omega * (step - self._patrol_step0) + grid
         return c[None, :] + r * np.column_stack([np.cos(ang), np.sin(ang)])
 
     def _assign(self, idx: np.ndarray, slots: np.ndarray, axis: np.ndarray | None) -> np.ndarray:
