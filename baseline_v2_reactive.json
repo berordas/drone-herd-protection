@@ -113,145 +113,25 @@
     "lobos": {
       "label": "solo-lobos",
       "n": 100,
-      "severity_mean": 3.36,
-      "severity_std": 1.8249383551232625,
-      "severity_max": 7,
-      "n_safe_mean": 3.49,
+      "severity_mean": 0.16,
+      "severity_std": 0.41761226035642196,
+      "severity_max": 2,
+      "n_safe_mean": 6.89,
       "terminals": {
-        "success": 4,
-        "predation": 87,
-        "timeout": 9
+        "success": 85,
+        "predation": 14,
+        "timeout": 1
       },
       "episodes": [
         {
-          "status": "predation",
+          "status": "success",
           "episodio": "lobos",
           "n_wolves": 2,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 3,
-          "n_safe": 4,
-          "steps": 1270
-        },
-        {
-          "status": "timeout",
-          "episodio": "lobos",
-          "n_wolves": 1,
           "n_corzos": 0,
           "n_corzos_descartados": 0,
           "n_depredadas": 0,
-          "n_safe": 5,
-          "steps": 14142
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 3,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 4,
-          "n_safe": 2,
-          "steps": 1105
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 4,
-          "n_safe": 2,
-          "steps": 537
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 2,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 5,
-          "n_safe": 3,
-          "steps": 743
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 3,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 7,
-          "n_safe": 1,
-          "steps": 750
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 3,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 4,
-          "n_safe": 3,
-          "steps": 1081
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 2,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 7,
-          "n_safe": 1,
-          "steps": 1293
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 3,
-          "n_safe": 4,
-          "steps": 1472
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 3,
-          "n_safe": 4,
-          "steps": 591
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 2,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 2,
-          "n_safe": 6,
-          "steps": 1266
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 2,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 2,
-          "n_safe": 5,
-          "steps": 1015
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 5,
-          "n_safe": 3,
-          "steps": 1425
+          "n_safe": 7,
+          "steps": 1462
         },
         {
           "status": "success",
@@ -260,148 +140,8 @@
           "n_corzos": 0,
           "n_corzos_descartados": 0,
           "n_depredadas": 0,
-          "n_safe": 6,
-          "steps": 1514
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 5,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 7,
-          "n_safe": 1,
-          "steps": 910
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 1,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 6,
-          "steps": 1432
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 1,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 6,
-          "steps": 1280
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 2,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 3,
-          "n_safe": 4,
-          "steps": 963
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 5,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 6,
-          "n_safe": 1,
-          "steps": 621
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 3,
-          "n_safe": 4,
-          "steps": 1123
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 6,
-          "n_safe": 2,
-          "steps": 858
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 3,
-          "n_safe": 5,
-          "steps": 930
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 2,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 3,
-          "n_safe": 3,
-          "steps": 1311
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 2,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 5,
-          "n_safe": 2,
-          "steps": 741
-        },
-        {
-          "status": "timeout",
-          "episodio": "lobos",
-          "n_wolves": 3,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 5,
-          "steps": 14142
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 2,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 6,
-          "n_safe": 0,
-          "steps": 1141
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 4,
-          "n_safe": 4,
-          "steps": 904
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 2,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 3,
-          "n_safe": 4,
-          "steps": 1024
+          "n_safe": 7,
+          "steps": 1290
         },
         {
           "status": "predation",
@@ -411,676 +151,156 @@
           "n_corzos_descartados": 0,
           "n_depredadas": 1,
           "n_safe": 5,
-          "steps": 891
+          "steps": 1723
         },
         {
-          "status": "predation",
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 974
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 2,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1070
+        },
+        {
+          "status": "success",
           "episodio": "lobos",
           "n_wolves": 3,
           "n_corzos": 0,
           "n_corzos_descartados": 0,
-          "n_depredadas": 3,
-          "n_safe": 4,
-          "steps": 14142
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1085
         },
         {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 2,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 3,
-          "n_safe": 4,
-          "steps": 907
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 2,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 5,
-          "n_safe": 3,
-          "steps": 975
-        },
-        {
-          "status": "predation",
+          "status": "success",
           "episodio": "lobos",
           "n_wolves": 3,
           "n_corzos": 0,
           "n_corzos_descartados": 0,
-          "n_depredadas": 3,
-          "n_safe": 4,
-          "steps": 1004
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1413
         },
         {
-          "status": "predation",
+          "status": "success",
           "episodio": "lobos",
           "n_wolves": 2,
           "n_corzos": 0,
           "n_corzos_descartados": 0,
-          "n_depredadas": 5,
-          "n_safe": 3,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1713
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1470
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1070
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 2,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1465
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 2,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1244
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1582
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 1,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 1457
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 5,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1396
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 1,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 1362
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 1,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 6,
           "steps": 1277
         },
         {
-          "status": "timeout",
-          "episodio": "lobos",
-          "n_wolves": 1,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 5,
-          "steps": 14142
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 5,
-          "n_safe": 3,
-          "steps": 542
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 5,
-          "n_safe": 2,
-          "steps": 1000
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 5,
-          "n_safe": 2,
-          "steps": 765
-        },
-        {
-          "status": "timeout",
-          "episodio": "lobos",
-          "n_wolves": 1,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 6,
-          "steps": 14142
-        },
-        {
           "status": "success",
           "episodio": "lobos",
-          "n_wolves": 1,
+          "n_wolves": 2,
           "n_corzos": 0,
           "n_corzos_descartados": 0,
           "n_depredadas": 0,
-          "n_safe": 6,
-          "steps": 1267
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 3,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 2,
-          "n_safe": 5,
-          "steps": 1140
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 4,
-          "n_safe": 4,
-          "steps": 1252
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 5,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 3,
-          "n_safe": 3,
-          "steps": 664
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 3,
-          "n_safe": 3,
-          "steps": 1125
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 2,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 3,
-          "n_safe": 5,
-          "steps": 993
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 3,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 5,
-          "n_safe": 3,
-          "steps": 1458
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 3,
-          "n_safe": 4,
-          "steps": 937
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 6,
-          "n_safe": 2,
-          "steps": 1273
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 3,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 1,
-          "n_safe": 6,
-          "steps": 14142
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 5,
-          "n_safe": 3,
-          "steps": 1227
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 3,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 5,
-          "n_safe": 3,
-          "steps": 1247
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 2,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 4,
-          "n_safe": 3,
-          "steps": 1295
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 4,
-          "n_safe": 2,
-          "steps": 622
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 5,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 3,
-          "n_safe": 4,
-          "steps": 1018
-        },
-        {
-          "status": "timeout",
-          "episodio": "lobos",
-          "n_wolves": 1,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 5,
-          "steps": 14142
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 3,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 5,
-          "n_safe": 2,
-          "steps": 868
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 3,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 4,
-          "n_safe": 4,
-          "steps": 880
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 5,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 4,
-          "n_safe": 2,
-          "steps": 1015
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 2,
-          "n_safe": 4,
-          "steps": 1218
-        },
-        {
-          "status": "timeout",
-          "episodio": "lobos",
-          "n_wolves": 1,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 6,
-          "steps": 14142
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 3,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 2,
-          "n_safe": 4,
-          "steps": 738
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 5,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 4,
-          "n_safe": 2,
-          "steps": 945
-        },
-        {
-          "status": "timeout",
-          "episodio": "lobos",
-          "n_wolves": 1,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 6,
-          "steps": 14142
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 4,
-          "n_safe": 4,
-          "steps": 1559
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 3,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 5,
-          "n_safe": 2,
-          "steps": 787
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 2,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 2,
-          "n_safe": 4,
-          "steps": 1105
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 3,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 4,
-          "n_safe": 3,
-          "steps": 1096
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 4,
-          "n_safe": 2,
-          "steps": 798
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 3,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 3,
-          "n_safe": 5,
-          "steps": 765
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 2,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 3,
-          "n_safe": 4,
-          "steps": 809
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 5,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 4,
-          "n_safe": 2,
-          "steps": 887
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 4,
-          "n_safe": 3,
-          "steps": 823
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 2,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 2,
-          "n_safe": 4,
-          "steps": 882
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 2,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 5,
-          "n_safe": 2,
-          "steps": 1172
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 3,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 3,
-          "n_safe": 5,
-          "steps": 1262
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 2,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 3,
-          "n_safe": 3,
-          "steps": 913
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 2,
-          "n_safe": 4,
-          "steps": 684
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 5,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 6,
-          "n_safe": 2,
-          "steps": 1220
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 3,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 4,
-          "n_safe": 4,
-          "steps": 1198
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 5,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 4,
-          "n_safe": 2,
-          "steps": 1312
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 3,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 5,
-          "n_safe": 3,
-          "steps": 754
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 4,
-          "n_safe": 1,
-          "steps": 14142
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 5,
-          "n_safe": 1,
-          "steps": 1064
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 4,
-          "n_safe": 3,
-          "steps": 1346
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 3,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 1,
-          "n_safe": 6,
-          "steps": 14142
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 2,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 4,
-          "n_safe": 4,
-          "steps": 1122
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 4,
-          "n_safe": 3,
-          "steps": 1220
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 5,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 3,
-          "n_safe": 3,
-          "steps": 1295
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 5,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 5,
-          "n_safe": 2,
-          "steps": 809
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 3,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 2,
-          "n_safe": 4,
-          "steps": 844
-        },
-        {
-          "status": "timeout",
-          "episodio": "lobos",
-          "n_wolves": 1,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 6,
-          "steps": 14142
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 5,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 3,
-          "n_safe": 4,
-          "steps": 941
-        },
-        {
-          "status": "timeout",
-          "episodio": "lobos",
-          "n_wolves": 1,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 5,
-          "steps": 14142
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 4,
-          "n_safe": 4,
-          "steps": 1061
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 5,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 7,
-          "n_safe": 1,
-          "steps": 1033
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 5,
-          "n_safe": 2,
+          "n_safe": 7,
           "steps": 1012
         },
         {
@@ -1089,9 +309,59 @@
           "n_wolves": 5,
           "n_corzos": 0,
           "n_corzos_descartados": 0,
-          "n_depredadas": 3,
-          "n_safe": 3,
-          "steps": 732
+          "n_depredadas": 2,
+          "n_safe": 5,
+          "steps": 1107
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1991
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1315
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1123
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 2,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 1194
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 2,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1014
         },
         {
           "status": "predation",
@@ -1099,19 +369,519 @@
           "n_wolves": 3,
           "n_corzos": 0,
           "n_corzos_descartados": 0,
-          "n_depredadas": 2,
+          "n_depredadas": 1,
+          "n_safe": 5,
+          "steps": 861
+        },
+        {
+          "status": "predation",
+          "episodio": "lobos",
+          "n_wolves": 2,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 1,
+          "n_safe": 5,
+          "steps": 1255
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1381
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 2,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1589
+        },
+        {
+          "status": "predation",
+          "episodio": "lobos",
+          "n_wolves": 3,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 1,
+          "n_safe": 5,
+          "steps": 1101
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 3,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1314
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 2,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1757
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 2,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1116
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 3,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1352
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 2,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1619
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 1,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1040
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1457
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1515
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1063
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 1,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1305
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 1,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 1212
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 3,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1052
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1268
+        },
+        {
+          "status": "predation",
+          "episodio": "lobos",
+          "n_wolves": 5,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 1,
+          "n_safe": 5,
+          "steps": 890
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 1562
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 2,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1370
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 3,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1370
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1503
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1255
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 3,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1354
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1702
+        },
+        {
+          "status": "predation",
+          "episodio": "lobos",
+          "n_wolves": 3,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 1,
+          "n_safe": 7,
+          "steps": 1608
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 2,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1611
+        },
+        {
+          "status": "predation",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 1,
+          "n_safe": 5,
+          "steps": 805
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 5,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1457
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 1,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1594
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 3,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 809
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 3,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1435
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 5,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 1172
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 1605
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 1,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1676
+        },
+        {
+          "status": "predation",
+          "episodio": "lobos",
+          "n_wolves": 3,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 1,
+          "n_safe": 5,
+          "steps": 608
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 5,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 1515
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 1,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1195
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1676
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 3,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1664
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 2,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 1221
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 3,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1190
+        },
+        {
+          "status": "predation",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 1,
+          "n_safe": 5,
+          "steps": 1451
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 3,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1252
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 2,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 924
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 5,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 964
+        },
+        {
+          "status": "timeout",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
           "n_safe": 5,
           "steps": 14142
         },
         {
           "status": "predation",
           "episodio": "lobos",
-          "n_wolves": 4,
+          "n_wolves": 2,
           "n_corzos": 0,
           "n_corzos_descartados": 0,
-          "n_depredadas": 5,
-          "n_safe": 1,
-          "steps": 1271
+          "n_depredadas": 2,
+          "n_safe": 4,
+          "steps": 1244
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 2,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1291
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 3,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1588
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 2,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 1116
         },
         {
           "status": "predation",
@@ -1119,9 +889,239 @@
           "n_wolves": 4,
           "n_corzos": 0,
           "n_corzos_descartados": 0,
-          "n_depredadas": 3,
+          "n_depredadas": 1,
           "n_safe": 5,
-          "steps": 987
+          "steps": 992
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 5,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1664
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 3,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1344
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 5,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 1123
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 3,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1196
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 1362
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 1286
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 2154
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 3,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1915
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 2,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1472
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1244
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 5,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 1557
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 5,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1279
+        },
+        {
+          "status": "predation",
+          "episodio": "lobos",
+          "n_wolves": 3,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 1,
+          "n_safe": 5,
+          "steps": 1193
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 1,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1060
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 5,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1379
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 1,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 983
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1513
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 5,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1573
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1154
+        },
+        {
+          "status": "predation",
+          "episodio": "lobos",
+          "n_wolves": 5,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 1,
+          "n_safe": 5,
+          "steps": 1378
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 3,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1154
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 1751
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1410
         }
       ]
     },
@@ -2143,35 +2143,35 @@
     "mixto": {
       "label": "mixto",
       "n": 100,
-      "severity_mean": 3.42,
-      "severity_std": 1.7560182231400676,
-      "severity_max": 7,
-      "n_safe_mean": 3.42,
+      "severity_mean": 0.18,
+      "severity_std": 0.45563142999578066,
+      "severity_max": 2,
+      "n_safe_mean": 6.87,
       "terminals": {
-        "success": 4,
-        "predation": 88,
-        "timeout": 8
+        "success": 84,
+        "predation": 15,
+        "timeout": 1
       },
       "episodes": [
         {
-          "status": "predation",
+          "status": "success",
           "episodio": "mixto",
           "n_wolves": 2,
           "n_corzos": 2,
           "n_corzos_descartados": 2,
-          "n_depredadas": 4,
-          "n_safe": 3,
-          "steps": 1475
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1489
         },
         {
-          "status": "timeout",
+          "status": "success",
           "episodio": "mixto",
           "n_wolves": 1,
           "n_corzos": 3,
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
-          "n_safe": 5,
-          "steps": 14142
+          "n_safe": 7,
+          "steps": 1343
         },
         {
           "status": "predation",
@@ -2179,109 +2179,519 @@
           "n_wolves": 3,
           "n_corzos": 3,
           "n_corzos_descartados": 3,
-          "n_depredadas": 3,
-          "n_safe": 3,
-          "steps": 1180
+          "n_depredadas": 1,
+          "n_safe": 5,
+          "steps": 1631
         },
         {
-          "status": "predation",
+          "status": "success",
           "episodio": "mixto",
           "n_wolves": 4,
           "n_corzos": 2,
           "n_corzos_descartados": 0,
-          "n_depredadas": 4,
-          "n_safe": 2,
-          "steps": 545
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 974
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 2,
+          "n_corzos": 2,
+          "n_corzos_descartados": 2,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1091
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 3,
+          "n_corzos": 1,
+          "n_corzos_descartados": 1,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1085
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 3,
+          "n_corzos": 3,
+          "n_corzos_descartados": 3,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1352
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 2,
+          "n_corzos": 2,
+          "n_corzos_descartados": 2,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1700
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 4,
+          "n_corzos": 3,
+          "n_corzos_descartados": 3,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1491
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 4,
+          "n_corzos": 2,
+          "n_corzos_descartados": 2,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1066
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 2,
+          "n_corzos": 2,
+          "n_corzos_descartados": 2,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1459
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 2,
+          "n_corzos": 3,
+          "n_corzos_descartados": 3,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1271
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 4,
+          "n_corzos": 3,
+          "n_corzos_descartados": 3,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1609
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 1,
+          "n_corzos": 2,
+          "n_corzos_descartados": 2,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 1427
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 5,
+          "n_corzos": 3,
+          "n_corzos_descartados": 3,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1384
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 1,
+          "n_corzos": 3,
+          "n_corzos_descartados": 3,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 1306
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 1,
+          "n_corzos": 3,
+          "n_corzos_descartados": 3,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 1216
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 2,
+          "n_corzos": 3,
+          "n_corzos_descartados": 3,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1012
+        },
+        {
+          "status": "predation",
+          "episodio": "mixto",
+          "n_wolves": 5,
+          "n_corzos": 1,
+          "n_corzos_descartados": 1,
+          "n_depredadas": 2,
+          "n_safe": 5,
+          "steps": 995
+        },
+        {
+          "status": "timeout",
+          "episodio": "mixto",
+          "n_wolves": 4,
+          "n_corzos": 1,
+          "n_corzos_descartados": 1,
+          "n_depredadas": 0,
+          "n_safe": 5,
+          "steps": 14142
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 4,
+          "n_corzos": 1,
+          "n_corzos_descartados": 1,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1314
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 4,
+          "n_corzos": 1,
+          "n_corzos_descartados": 1,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1096
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 2,
+          "n_corzos": 3,
+          "n_corzos_descartados": 3,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 1150
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 2,
+          "n_corzos": 3,
+          "n_corzos_descartados": 3,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1013
+        },
+        {
+          "status": "predation",
+          "episodio": "mixto",
+          "n_wolves": 3,
+          "n_corzos": 3,
+          "n_corzos_descartados": 3,
+          "n_depredadas": 1,
+          "n_safe": 5,
+          "steps": 832
         },
         {
           "status": "predation",
           "episodio": "mixto",
           "n_wolves": 2,
-          "n_corzos": 2,
-          "n_corzos_descartados": 2,
-          "n_depredadas": 5,
-          "n_safe": 3,
-          "steps": 774
+          "n_corzos": 3,
+          "n_corzos_descartados": 3,
+          "n_depredadas": 1,
+          "n_safe": 5,
+          "steps": 1222
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 4,
+          "n_corzos": 3,
+          "n_corzos_descartados": 3,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1366
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 2,
+          "n_corzos": 1,
+          "n_corzos_descartados": 1,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1635
         },
         {
           "status": "predation",
           "episodio": "mixto",
           "n_wolves": 3,
-          "n_corzos": 1,
-          "n_corzos_descartados": 1,
-          "n_depredadas": 4,
-          "n_safe": 4,
-          "steps": 812
+          "n_corzos": 2,
+          "n_corzos_descartados": 2,
+          "n_depredadas": 1,
+          "n_safe": 5,
+          "steps": 1002
         },
         {
-          "status": "predation",
+          "status": "success",
           "episodio": "mixto",
           "n_wolves": 3,
           "n_corzos": 3,
           "n_corzos_descartados": 3,
-          "n_depredadas": 4,
-          "n_safe": 3,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1346
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 2,
+          "n_corzos": 1,
+          "n_corzos_descartados": 1,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1823
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 2,
+          "n_corzos": 2,
+          "n_corzos_descartados": 2,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1051
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 3,
+          "n_corzos": 2,
+          "n_corzos_descartados": 2,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1316
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 2,
+          "n_corzos": 1,
+          "n_corzos_descartados": 1,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1685
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 1,
+          "n_corzos": 1,
+          "n_corzos_descartados": 1,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 992
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 4,
+          "n_corzos": 2,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1457
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 4,
+          "n_corzos": 3,
+          "n_corzos_descartados": 3,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1564
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 4,
+          "n_corzos": 1,
+          "n_corzos_descartados": 1,
+          "n_depredadas": 0,
+          "n_safe": 7,
           "steps": 1064
         },
         {
-          "status": "predation",
+          "status": "success",
           "episodio": "mixto",
-          "n_wolves": 2,
-          "n_corzos": 2,
-          "n_corzos_descartados": 2,
-          "n_depredadas": 4,
-          "n_safe": 3,
-          "steps": 14142
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 4,
+          "n_wolves": 1,
           "n_corzos": 3,
           "n_corzos_descartados": 3,
-          "n_depredadas": 4,
-          "n_safe": 3,
-          "steps": 1600
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1333
         },
         {
-          "status": "predation",
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 1,
+          "n_corzos": 3,
+          "n_corzos_descartados": 3,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 1249
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 3,
+          "n_corzos": 2,
+          "n_corzos_descartados": 2,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1063
+        },
+        {
+          "status": "success",
           "episodio": "mixto",
           "n_wolves": 4,
           "n_corzos": 2,
           "n_corzos_descartados": 2,
-          "n_depredadas": 3,
-          "n_safe": 4,
-          "steps": 582
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1343
         },
         {
           "status": "predation",
           "episodio": "mixto",
-          "n_wolves": 2,
+          "n_wolves": 5,
           "n_corzos": 2,
           "n_corzos_descartados": 2,
           "n_depredadas": 1,
-          "n_safe": 7,
-          "steps": 1223
+          "n_safe": 5,
+          "steps": 903
         },
         {
-          "status": "predation",
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 4,
+          "n_corzos": 2,
+          "n_corzos_descartados": 2,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 1451
+        },
+        {
+          "status": "success",
           "episodio": "mixto",
           "n_wolves": 2,
           "n_corzos": 3,
           "n_corzos_descartados": 3,
-          "n_depredadas": 2,
-          "n_safe": 5,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1372
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 3,
+          "n_corzos": 2,
+          "n_corzos_descartados": 2,
+          "n_depredadas": 0,
+          "n_safe": 8,
           "steps": 1349
         },
         {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 4,
+          "n_corzos": 1,
+          "n_corzos_descartados": 1,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1517
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 4,
+          "n_corzos": 2,
+          "n_corzos_descartados": 2,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1258
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 3,
+          "n_corzos": 1,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1354
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 4,
+          "n_corzos": 1,
+          "n_corzos_descartados": 1,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1665
+        },
+        {
+          "status": "predation",
+          "episodio": "mixto",
+          "n_wolves": 3,
+          "n_corzos": 3,
+          "n_corzos_descartados": 3,
+          "n_depredadas": 1,
+          "n_safe": 7,
+          "steps": 1585
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 2,
+          "n_corzos": 2,
+          "n_corzos_descartados": 2,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1667
+        },
+        {
           "status": "predation",
           "episodio": "mixto",
           "n_wolves": 4,
+          "n_corzos": 2,
+          "n_corzos_descartados": 2,
+          "n_depredadas": 1,
+          "n_safe": 5,
+          "steps": 812
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 5,
           "n_corzos": 3,
           "n_corzos_descartados": 3,
-          "n_depredadas": 4,
-          "n_safe": 4,
-          "steps": 1341
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1477
         },
         {
           "status": "success",
@@ -2290,428 +2700,58 @@
           "n_corzos": 2,
           "n_corzos_descartados": 2,
           "n_depredadas": 0,
-          "n_safe": 6,
-          "steps": 1542
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 5,
-          "n_corzos": 3,
-          "n_corzos_descartados": 3,
-          "n_depredadas": 7,
-          "n_safe": 1,
-          "steps": 1015
+          "n_safe": 7,
+          "steps": 1566
         },
         {
           "status": "success",
           "episodio": "mixto",
-          "n_wolves": 1,
+          "n_wolves": 3,
           "n_corzos": 3,
-          "n_corzos_descartados": 3,
+          "n_corzos_descartados": 2,
           "n_depredadas": 0,
-          "n_safe": 6,
-          "steps": 1379
+          "n_safe": 7,
+          "steps": 821
         },
         {
           "status": "success",
           "episodio": "mixto",
-          "n_wolves": 1,
+          "n_wolves": 3,
+          "n_corzos": 1,
+          "n_corzos_descartados": 1,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1441
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 5,
           "n_corzos": 3,
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 6,
-          "steps": 1221
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 2,
-          "n_corzos": 3,
-          "n_corzos_descartados": 3,
-          "n_depredadas": 4,
-          "n_safe": 3,
-          "steps": 941
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 5,
-          "n_corzos": 1,
-          "n_corzos_descartados": 1,
-          "n_depredadas": 6,
-          "n_safe": 1,
-          "steps": 599
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 4,
-          "n_corzos": 1,
-          "n_corzos_descartados": 1,
-          "n_depredadas": 3,
-          "n_safe": 4,
           "steps": 1176
         },
         {
-          "status": "predation",
+          "status": "success",
           "episodio": "mixto",
           "n_wolves": 4,
-          "n_corzos": 1,
-          "n_corzos_descartados": 1,
-          "n_depredadas": 7,
-          "n_safe": 1,
-          "steps": 945
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 4,
-          "n_corzos": 1,
-          "n_corzos_descartados": 1,
-          "n_depredadas": 4,
-          "n_safe": 4,
-          "steps": 960
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 2,
-          "n_corzos": 3,
-          "n_corzos_descartados": 3,
-          "n_depredadas": 3,
-          "n_safe": 3,
-          "steps": 1342
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 2,
-          "n_corzos": 3,
-          "n_corzos_descartados": 3,
-          "n_depredadas": 5,
-          "n_safe": 2,
-          "steps": 732
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 3,
-          "n_corzos": 3,
-          "n_corzos_descartados": 3,
-          "n_depredadas": 3,
-          "n_safe": 3,
-          "steps": 735
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 2,
-          "n_corzos": 3,
-          "n_corzos_descartados": 3,
-          "n_depredadas": 4,
-          "n_safe": 2,
-          "steps": 1070
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 4,
-          "n_corzos": 3,
-          "n_corzos_descartados": 3,
-          "n_depredadas": 4,
-          "n_safe": 4,
-          "steps": 953
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 2,
-          "n_corzos": 1,
-          "n_corzos_descartados": 1,
-          "n_depredadas": 3,
-          "n_safe": 4,
-          "steps": 1028
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 3,
           "n_corzos": 2,
           "n_corzos_descartados": 2,
-          "n_depredadas": 1,
-          "n_safe": 5,
-          "steps": 900
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 3,
-          "n_corzos": 3,
-          "n_corzos_descartados": 3,
-          "n_depredadas": 3,
-          "n_safe": 4,
-          "steps": 14142
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 2,
-          "n_corzos": 1,
-          "n_corzos_descartados": 1,
-          "n_depredadas": 3,
-          "n_safe": 4,
-          "steps": 942
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 2,
-          "n_corzos": 2,
-          "n_corzos_descartados": 2,
-          "n_depredadas": 3,
-          "n_safe": 5,
-          "steps": 1206
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 3,
-          "n_corzos": 2,
-          "n_corzos_descartados": 2,
-          "n_depredadas": 3,
-          "n_safe": 4,
-          "steps": 1047
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 2,
-          "n_corzos": 1,
-          "n_corzos_descartados": 1,
-          "n_depredadas": 5,
-          "n_safe": 3,
-          "steps": 1136
-        },
-        {
-          "status": "timeout",
-          "episodio": "mixto",
-          "n_wolves": 1,
-          "n_corzos": 1,
-          "n_corzos_descartados": 1,
-          "n_depredadas": 0,
-          "n_safe": 5,
-          "steps": 14142
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 4,
-          "n_corzos": 2,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 5,
-          "n_safe": 3,
-          "steps": 518
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 4,
-          "n_corzos": 3,
-          "n_corzos_descartados": 3,
-          "n_depredadas": 5,
-          "n_safe": 2,
-          "steps": 1076
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 4,
-          "n_corzos": 1,
-          "n_corzos_descartados": 1,
-          "n_depredadas": 5,
-          "n_safe": 2,
-          "steps": 705
-        },
-        {
-          "status": "timeout",
-          "episodio": "mixto",
-          "n_wolves": 1,
-          "n_corzos": 3,
-          "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 6,
-          "steps": 14142
+          "steps": 1819
         },
         {
           "status": "success",
           "episodio": "mixto",
           "n_wolves": 1,
-          "n_corzos": 3,
-          "n_corzos_descartados": 3,
-          "n_depredadas": 0,
-          "n_safe": 6,
-          "steps": 1298
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 3,
-          "n_corzos": 2,
-          "n_corzos_descartados": 2,
-          "n_depredadas": 5,
-          "n_safe": 2,
-          "steps": 698
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 4,
-          "n_corzos": 2,
-          "n_corzos_descartados": 2,
-          "n_depredadas": 4,
-          "n_safe": 4,
-          "steps": 1076
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 5,
-          "n_corzos": 2,
-          "n_corzos_descartados": 2,
-          "n_depredadas": 3,
-          "n_safe": 3,
-          "steps": 746
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 4,
-          "n_corzos": 2,
-          "n_corzos_descartados": 2,
-          "n_depredadas": 3,
-          "n_safe": 3,
-          "steps": 1040
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 2,
-          "n_corzos": 3,
-          "n_corzos_descartados": 3,
-          "n_depredadas": 3,
-          "n_safe": 5,
-          "steps": 983
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 3,
-          "n_corzos": 2,
-          "n_corzos_descartados": 2,
-          "n_depredadas": 1,
-          "n_safe": 6,
-          "steps": 14142
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 4,
           "n_corzos": 1,
           "n_corzos_descartados": 1,
-          "n_depredadas": 3,
-          "n_safe": 4,
-          "steps": 837
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 4,
-          "n_corzos": 2,
-          "n_corzos_descartados": 2,
-          "n_depredadas": 6,
-          "n_safe": 2,
-          "steps": 1247
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 3,
-          "n_corzos": 1,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 6,
-          "n_safe": 2,
-          "steps": 764
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 4,
-          "n_corzos": 1,
-          "n_corzos_descartados": 1,
-          "n_depredadas": 5,
-          "n_safe": 3,
-          "steps": 1211
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 3,
-          "n_corzos": 3,
-          "n_corzos_descartados": 3,
-          "n_depredadas": 6,
-          "n_safe": 2,
-          "steps": 1100
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 2,
-          "n_corzos": 2,
-          "n_corzos_descartados": 2,
-          "n_depredadas": 4,
-          "n_safe": 3,
-          "steps": 1521
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 4,
-          "n_corzos": 2,
-          "n_corzos_descartados": 2,
-          "n_depredadas": 4,
-          "n_safe": 2,
-          "steps": 616
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 5,
-          "n_corzos": 3,
-          "n_corzos_descartados": 3,
-          "n_depredadas": 3,
-          "n_safe": 4,
-          "steps": 1026
-        },
-        {
-          "status": "timeout",
-          "episodio": "mixto",
-          "n_wolves": 1,
-          "n_corzos": 2,
-          "n_corzos_descartados": 2,
           "n_depredadas": 0,
-          "n_safe": 5,
-          "steps": 14142
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 3,
-          "n_corzos": 3,
-          "n_corzos_descartados": 2,
-          "n_depredadas": 4,
-          "n_safe": 3,
-          "steps": 848
+          "n_safe": 8,
+          "steps": 1738
         },
         {
           "status": "predation",
@@ -2720,68 +2760,68 @@
           "n_corzos": 1,
           "n_corzos_descartados": 1,
           "n_depredadas": 1,
-          "n_safe": 6,
-          "steps": 14142
+          "n_safe": 5,
+          "steps": 657
         },
         {
           "status": "predation",
           "episodio": "mixto",
           "n_wolves": 5,
-          "n_corzos": 3,
-          "n_corzos_descartados": 3,
-          "n_depredadas": 4,
-          "n_safe": 2,
-          "steps": 951
+          "n_corzos": 1,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 1,
+          "n_safe": 5,
+          "steps": 1747
         },
         {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 4,
-          "n_corzos": 2,
-          "n_corzos_descartados": 2,
-          "n_depredadas": 3,
-          "n_safe": 3,
-          "steps": 1286
-        },
-        {
-          "status": "timeout",
+          "status": "success",
           "episodio": "mixto",
           "n_wolves": 1,
           "n_corzos": 1,
           "n_corzos_descartados": 1,
           "n_depredadas": 0,
-          "n_safe": 6,
-          "steps": 14142
+          "n_safe": 8,
+          "steps": 1152
         },
         {
-          "status": "predation",
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 4,
+          "n_corzos": 3,
+          "n_corzos_descartados": 3,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1717
+        },
+        {
+          "status": "success",
           "episodio": "mixto",
           "n_wolves": 3,
-          "n_corzos": 1,
-          "n_corzos_descartados": 1,
-          "n_depredadas": 2,
-          "n_safe": 4,
-          "steps": 647
+          "n_corzos": 2,
+          "n_corzos_descartados": 2,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1678
         },
         {
-          "status": "predation",
+          "status": "success",
           "episodio": "mixto",
-          "n_wolves": 5,
-          "n_corzos": 1,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 4,
-          "n_safe": 2,
-          "steps": 862
-        },
-        {
-          "status": "timeout",
-          "episodio": "mixto",
-          "n_wolves": 1,
+          "n_wolves": 2,
           "n_corzos": 1,
           "n_corzos_descartados": 1,
           "n_depredadas": 0,
           "n_safe": 6,
-          "steps": 14142
+          "steps": 1192
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 3,
+          "n_corzos": 3,
+          "n_corzos_descartados": 3,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1235
         },
         {
           "status": "predation",
@@ -2789,19 +2829,49 @@
           "n_wolves": 4,
           "n_corzos": 3,
           "n_corzos_descartados": 3,
-          "n_depredadas": 4,
-          "n_safe": 4,
-          "steps": 1348
+          "n_depredadas": 1,
+          "n_safe": 5,
+          "steps": 1457
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 3,
+          "n_corzos": 1,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1253
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 2,
+          "n_corzos": 3,
+          "n_corzos_descartados": 3,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 942
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 5,
+          "n_corzos": 3,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 964
         },
         {
           "status": "predation",
           "episodio": "mixto",
-          "n_wolves": 3,
-          "n_corzos": 2,
-          "n_corzos_descartados": 2,
-          "n_depredadas": 5,
-          "n_safe": 2,
-          "steps": 914
+          "n_wolves": 4,
+          "n_corzos": 3,
+          "n_corzos_descartados": 3,
+          "n_depredadas": 2,
+          "n_safe": 5,
+          "steps": 1106
         },
         {
           "status": "predation",
@@ -2811,371 +2881,301 @@
           "n_corzos_descartados": 1,
           "n_depredadas": 2,
           "n_safe": 4,
-          "steps": 1330
+          "steps": 1199
         },
         {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 3,
-          "n_corzos": 3,
-          "n_corzos_descartados": 3,
-          "n_depredadas": 5,
-          "n_safe": 2,
-          "steps": 1458
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 4,
-          "n_corzos": 3,
-          "n_corzos_descartados": 3,
-          "n_depredadas": 4,
-          "n_safe": 2,
-          "steps": 828
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 3,
-          "n_corzos": 1,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 3,
-          "n_safe": 5,
-          "steps": 788
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 2,
-          "n_corzos": 3,
-          "n_corzos_descartados": 3,
-          "n_depredadas": 3,
-          "n_safe": 4,
-          "steps": 764
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 5,
-          "n_corzos": 3,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 4,
-          "n_safe": 2,
-          "steps": 863
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 4,
-          "n_corzos": 3,
-          "n_corzos_descartados": 3,
-          "n_depredadas": 4,
-          "n_safe": 3,
-          "steps": 809
-        },
-        {
-          "status": "predation",
+          "status": "success",
           "episodio": "mixto",
           "n_wolves": 2,
           "n_corzos": 1,
           "n_corzos_descartados": 1,
-          "n_depredadas": 2,
-          "n_safe": 4,
-          "steps": 863
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1319
         },
         {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 2,
-          "n_corzos": 1,
-          "n_corzos_descartados": 1,
-          "n_depredadas": 5,
-          "n_safe": 2,
-          "steps": 1231
-        },
-        {
-          "status": "predation",
+          "status": "success",
           "episodio": "mixto",
           "n_wolves": 3,
           "n_corzos": 1,
           "n_corzos_descartados": 1,
-          "n_depredadas": 3,
-          "n_safe": 5,
-          "steps": 1342
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1627
         },
         {
-          "status": "predation",
+          "status": "success",
           "episodio": "mixto",
           "n_wolves": 2,
           "n_corzos": 3,
           "n_corzos_descartados": 3,
-          "n_depredadas": 3,
-          "n_safe": 3,
-          "steps": 917
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 4,
-          "n_corzos": 3,
-          "n_corzos_descartados": 2,
-          "n_depredadas": 3,
-          "n_safe": 3,
-          "steps": 701
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 5,
-          "n_corzos": 1,
-          "n_corzos_descartados": 1,
-          "n_depredadas": 6,
-          "n_safe": 2,
-          "steps": 1161
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 3,
-          "n_corzos": 1,
-          "n_corzos_descartados": 1,
-          "n_depredadas": 4,
-          "n_safe": 4,
-          "steps": 1145
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 5,
-          "n_corzos": 2,
-          "n_corzos_descartados": 2,
-          "n_depredadas": 4,
-          "n_safe": 2,
-          "steps": 1236
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 3,
-          "n_corzos": 3,
-          "n_corzos_descartados": 3,
-          "n_depredadas": 4,
-          "n_safe": 3,
-          "steps": 14142
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 4,
-          "n_corzos": 1,
-          "n_corzos_descartados": 1,
-          "n_depredadas": 4,
-          "n_safe": 2,
-          "steps": 1463
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 4,
-          "n_corzos": 3,
-          "n_corzos_descartados": 3,
-          "n_depredadas": 5,
-          "n_safe": 1,
-          "steps": 1112
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 4,
-          "n_corzos": 1,
-          "n_corzos_descartados": 1,
-          "n_depredadas": 5,
-          "n_safe": 2,
-          "steps": 1817
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 3,
-          "n_corzos": 3,
-          "n_corzos_descartados": 3,
-          "n_depredadas": 6,
-          "n_safe": 2,
-          "steps": 1546
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 2,
-          "n_corzos": 1,
-          "n_corzos_descartados": 1,
-          "n_depredadas": 4,
-          "n_safe": 4,
-          "steps": 1038
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 4,
-          "n_corzos": 3,
-          "n_corzos_descartados": 3,
-          "n_depredadas": 4,
-          "n_safe": 3,
-          "steps": 1139
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 5,
-          "n_corzos": 3,
-          "n_corzos_descartados": 3,
-          "n_depredadas": 3,
-          "n_safe": 3,
+          "n_depredadas": 0,
+          "n_safe": 6,
           "steps": 1169
         },
         {
           "status": "predation",
           "episodio": "mixto",
-          "n_wolves": 5,
-          "n_corzos": 2,
+          "n_wolves": 4,
+          "n_corzos": 3,
           "n_corzos_descartados": 2,
-          "n_depredadas": 5,
-          "n_safe": 2,
-          "steps": 916
+          "n_depredadas": 1,
+          "n_safe": 5,
+          "steps": 1095
         },
         {
-          "status": "predation",
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 5,
+          "n_corzos": 1,
+          "n_corzos_descartados": 1,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1664
+        },
+        {
+          "status": "success",
           "episodio": "mixto",
           "n_wolves": 3,
           "n_corzos": 1,
           "n_corzos_descartados": 1,
-          "n_depredadas": 2,
-          "n_safe": 3,
-          "steps": 14142
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1340
         },
         {
-          "status": "timeout",
+          "status": "success",
           "episodio": "mixto",
-          "n_wolves": 1,
+          "n_wolves": 5,
           "n_corzos": 2,
           "n_corzos_descartados": 2,
           "n_depredadas": 0,
           "n_safe": 6,
-          "steps": 14142
+          "steps": 1119
         },
         {
-          "status": "predation",
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 3,
+          "n_corzos": 3,
+          "n_corzos_descartados": 3,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1190
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 4,
+          "n_corzos": 1,
+          "n_corzos_descartados": 1,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 1356
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 4,
+          "n_corzos": 3,
+          "n_corzos_descartados": 3,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 1280
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 4,
+          "n_corzos": 1,
+          "n_corzos_descartados": 1,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 2014
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 3,
+          "n_corzos": 3,
+          "n_corzos_descartados": 3,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1929
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 2,
+          "n_corzos": 1,
+          "n_corzos_descartados": 1,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1455
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 4,
+          "n_corzos": 3,
+          "n_corzos_descartados": 3,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1281
+        },
+        {
+          "status": "success",
           "episodio": "mixto",
           "n_wolves": 5,
-          "n_corzos": 2,
-          "n_corzos_descartados": 2,
-          "n_depredadas": 3,
-          "n_safe": 4,
-          "steps": 929
+          "n_corzos": 3,
+          "n_corzos_descartados": 3,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 1549
         },
         {
-          "status": "timeout",
+          "status": "success",
           "episodio": "mixto",
-          "n_wolves": 1,
+          "n_wolves": 5,
           "n_corzos": 2,
           "n_corzos_descartados": 2,
           "n_depredadas": 0,
-          "n_safe": 5,
-          "steps": 14142
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 4,
-          "n_corzos": 2,
-          "n_corzos_descartados": 2,
-          "n_depredadas": 4,
-          "n_safe": 4,
-          "steps": 1214
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 5,
-          "n_corzos": 3,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 7,
-          "n_safe": 1,
-          "steps": 1065
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 4,
-          "n_corzos": 3,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 5,
-          "n_safe": 2,
-          "steps": 927
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 5,
-          "n_corzos": 2,
-          "n_corzos_descartados": 2,
-          "n_depredadas": 4,
-          "n_safe": 2,
-          "steps": 1067
+          "n_safe": 7,
+          "steps": 1282
         },
         {
           "status": "predation",
           "episodio": "mixto",
           "n_wolves": 3,
           "n_corzos": 1,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 2,
+          "n_corzos_descartados": 1,
+          "n_depredadas": 1,
           "n_safe": 5,
-          "steps": 14142
+          "steps": 1185
         },
         {
-          "status": "predation",
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 1,
+          "n_corzos": 2,
+          "n_corzos_descartados": 2,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1061
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 5,
+          "n_corzos": 2,
+          "n_corzos_descartados": 2,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1382
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 1,
+          "n_corzos": 2,
+          "n_corzos_descartados": 2,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 993
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 4,
+          "n_corzos": 2,
+          "n_corzos_descartados": 2,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1533
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 5,
+          "n_corzos": 3,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1576
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 4,
+          "n_corzos": 3,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1154
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 5,
+          "n_corzos": 2,
+          "n_corzos_descartados": 2,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 1308
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 3,
+          "n_corzos": 1,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1154
+        },
+        {
+          "status": "success",
           "episodio": "mixto",
           "n_wolves": 4,
           "n_corzos": 1,
           "n_corzos_descartados": 1,
-          "n_depredadas": 5,
-          "n_safe": 1,
-          "steps": 1193
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 1776
         },
         {
-          "status": "predation",
+          "status": "success",
           "episodio": "mixto",
           "n_wolves": 4,
           "n_corzos": 1,
           "n_corzos_descartados": 1,
-          "n_depredadas": 4,
-          "n_safe": 4,
-          "steps": 949
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1400
         }
       ]
     }
   },
   "aggregate": {
     "n": 300,
-    "severity_mean": 2.26,
-    "severity_std": 2.166194820416668,
-    "severity_max": 7,
-    "n_safe_mean": 2.3033333333333332,
+    "severity_mean": 0.11333333333333333,
+    "severity_std": 0.36581719782183864,
+    "severity_max": 2,
+    "n_safe_mean": 4.586666666666667,
     "terminals": {
-      "success": 8,
-      "predation": 175,
-      "timeout": 117
+      "success": 169,
+      "predation": 29,
+      "timeout": 102
     }
   },
   "dummy_reference": {
     "lobos": {
-      "severity_mean": 4.45,
-      "n_safe_mean": 2.39,
+      "severity_mean": 2.36,
+      "n_safe_mean": 4.19,
       "terminals": {
-        "success": 4,
-        "predation": 88,
-        "timeout": 8
+        "success": 6,
+        "predation": 74,
+        "timeout": 20
       }
     },
     "corzos": {
@@ -3188,12 +3188,12 @@
       }
     },
     "mixto": {
-      "severity_mean": 4.41,
-      "n_safe_mean": 2.43,
+      "severity_mean": 2.24,
+      "n_safe_mean": 4.3,
       "terminals": {
-        "success": 4,
-        "predation": 88,
-        "timeout": 8
+        "success": 7,
+        "predation": 73,
+        "timeout": 20
       }
     }
   }

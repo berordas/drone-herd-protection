@@ -1,12 +1,13 @@
 """
 baseline.py — Arnés de EVALUACIÓN de la v2 CONGELADA (DummyCoordinator + física v2).
 
-================================  v2.2 CONGELADA  ================================
-A partir del tag git `v2.2-baseline` el MUNDO (la física) NO cambia: es la referencia
+================================  v2.3 CONGELADA  ================================
+A partir del tag git `v2.3-baseline` el MUNDO (la física) NO cambia: es la referencia
 fija que los coordinadores deberán BATIR. (v2 → v2.1 = RELEVO de flota REALISTA; v2.1 →
-v2.2 = el JABALÍ como 2ª especie de distracción, ~50/50 con el corzo, mismo comportamiento,
-elegida con un substream RNG SEPARADO → los spawns de lobo/vaca no se perturban y la
-severidad Dummy sigue idéntica —4.45/0/4.41—.) Este fichero NO es el mundo
+v2.2 = el JABALÍ como 2ª distracción, substream RNG separado; v2.2 → v2.3 = SUSTO FUERTE:
+la disuasión pasa de PARCIAL a fuerte —un dron ACTIVE a ≤DETER_RADIUS EXPULSA al lobo y
+este NO mata mientras huye, sin excepción a corta—, por lo que la severidad Dummy se
+RE-MIDE y CAE ~a la mitad: 4.45/0/4.41 → 2.36/0/2.24.) Este fichero NO es el mundo
 —es el banco de medida—: fija la config de evaluación (`CONFIG_V2`, corzos ON con los 3
 tipos de episodio), corre el `DummyCoordinator` (drones quietos) sobre un set FIJO de
 semillas, N por tipo, y reporta las métricas POR TIPO.
@@ -19,11 +20,11 @@ semillas, N por tipo, y reporta las métricas POR TIPO.
 
 Métrica PRINCIPAL = SEVERIDAD = muertes (reses depredadas) por episodio. Más:
 reparto de terminales (success / predation / timeout) y n_safe medio. Números
-CONGELADOS (N=100/tipo, DummyCoordinator, semillas range(100)):
-  solo-lobos  4.45 ± 2.15 (máx 8) · n_safe 2.39 · success 4 / predation 88 / timeout 8
+CONGELADOS v2.3 (N=100/tipo, DummyCoordinator, semillas range(100)):
+  solo-lobos  2.36 ± 1.97 (máx 6) · n_safe 4.19 · success 6 / predation 74 / timeout 20
   solo-corzos 0.00 ± 0.00 (máx 0) · n_safe 0.00 · timeout 100        (SIN amenaza)
-  mixto       4.41 ± 2.18 (máx 8) · n_safe 2.43 · success 4 / predation 88 / timeout 8
-  AGREGADO    2.95 ± 2.74 (máx 8) · n_safe 1.61 · success 8 / predation 176 / timeout 116
+  mixto       2.24 ± 1.94 (máx 6) · n_safe 4.30 · success 7 / predation 73 / timeout 20
+  AGREGADO    1.53 ± 1.93 (máx 6) · n_safe 2.83 · success 13 / predation 147 / timeout 140
 mixto ≈ solo-lobos (los corzos solo consumen ciclos de investigación; el agregado
 mezclado es poco informativo: la comparación se hace POR TIPO).
 
@@ -99,14 +100,17 @@ EVAL_SEEDS = tuple(range(N_PER_KIND))
 KINDS = ("lobos", "corzos", "mixto")
 KIND_LABEL = {"lobos": "solo-lobos", "corzos": "solo-corzos", "mixto": "mixto"}
 TERMINALS = ("success", "predation", "timeout")
-FROZEN_TAG = "v2.2-baseline"   # tag git del commit congelado (v2.1 + jabalí como 2ª distracción; la física no cambia a partir de él)
+FROZEN_TAG = "v2.3-baseline"   # tag git del commit congelado (v2.2 + SUSTO FUERTE: la disuasión pasa de PARCIAL a fuerte; la física se RE-MIDE)
 
 # Referencia CONGELADA de severidad (media de muertes/ep) por tipo, para detectar DERIVA.
 # Se rellena tras la primera medición; en re-corridas debe coincidir (mundo reproducible).
+# v2.3 (SUSTO FUERTE): un dron ACTIVE a <=DETER_RADIUS EXPULSA al lobo y este NO mata mientras huye
+# (sin excepción a corta). Incluso los drones QUIETOS del Dummy (esquinas del rebaño + investigador)
+# asustan a los lobos que se acercan -> la severidad Dummy CAE ~a la mitad (4.45/4.41 -> 2.36/2.24).
 REFERENCE_SEVERITY = {
-    "lobos": 4.45,   # solo-lobos (amenaza pura) ≈ v2 honesta; succ 4 / pred 88 / timeout 8; n_safe 2.39
+    "lobos": 2.36,   # solo-lobos (amenaza pura); succ 6 / pred 74 / timeout 20; n_safe 4.19 (subió de 2.39)
     "corzos": 0.00,  # solo-corzos = SIN amenaza (100/100 timeout; el rebaño pasta, n_safe 0)
-    "mixto": 4.41,   # ≈ solo-lobos (los corzos solo consumen ciclos de investigación)
+    "mixto": 2.24,   # ≈ solo-lobos (los corzos solo consumen ciclos de investigación); n_safe 4.30
 }
 
 # Tolerancia de deriva (la media es exacta y reproducible bit a bit; margen mínimo por si

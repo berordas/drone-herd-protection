@@ -179,16 +179,21 @@ def test_arranque():
 
 
 def test_severidad_muestra():
-    # n=30 (no 15): la patrulla anclada desplaza la FASE de la formación, y las primeras semillas son el
-    # slice de MENOR beneficio del reactivo -> con n=15 el margen es tan fino que el ruido cambiaba el signo
-    # (lobos +0.13). Con n=30 el reactivo es determinísticamente MEJOR que el Dummy en ambos tipos, y la
-    # medida autoritativa (N=100, reactive_eval) confirma el gran margen: solo-lobos 3.36 / mixto 3.42.
+    # MEDIDA. En v2.3 (SUSTO FUERTE) la severidad CAE mucho: el Dummy QUIETO ya expulsa a los lobos que se
+    # acercan a sus drones (2.36/2.24), y el reactivo (barrera + susto) protege CASI DEL TODO. Medida
+    # autoritativa (N=100, reactive_eval): Reactive 0.16 / 0.18 -> SIGUE batiendo al Dummy con MUCHA holgura.
+    # BUG CORREGIDO: sev() construía el coordinador con un world DISTINTO al que corría -> el ReactiveCoordinator
+    # leía estado CONGELADO (nunca avanzaba) y salía artificialmente MAL (parecía PEOR que el Dummy); ahora usa
+    # el MISMO world -> Reactive ~0.2 en la muestra (coincide con reactive_eval).
     N = 30
-    print("=== 6) SEVERIDAD (muestra n=%d): Reactive vs Dummy (mismas semillas/CONFIG_V2) ===" % N)
+    print("=== 6) SEVERIDAD (muestra n=%d): Reactive vs Dummy en v2.3 (susto fuerte) ===" % N)
     from baseline import build_world, run_episode_metrics
     def sev(kind, n, factory):
-        d = [run_episode_metrics(build_world(s, kind), factory(build_world(s, kind)))["n_depredadas"] for s in range(n)]
-        return float(np.mean(d)), int(np.max(d))
+        out = []
+        for s in range(n):
+            w = build_world(s, kind)                       # el MISMO world para correr Y para el coordinador
+            out.append(run_episode_metrics(w, factory(w))["n_depredadas"])
+        return float(np.mean(out)), int(np.max(out))
     for kind in ("lobos", "mixto"):
         md, _ = sev(kind, N, lambda w: DummyCoordinator(w.n_drones))
         mr, xr = sev(kind, N, lambda w: ReactiveCoordinator(w))
