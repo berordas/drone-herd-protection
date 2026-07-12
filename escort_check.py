@@ -341,131 +341,131 @@ def _one_active_drone(w, pos):
 
 
 def test_disuasion():
-    print("=== 1d) DISUASIÓN del dron: ESQUIVA + FRENA / PARCIAL (emergente) / DESPEJA EL PIN ===")
-    # (a) EXPULSIÓN (v2.3): un lobo cruzando junto a un dron ACTIVE HUYE de él (se desvía FUERTE, alejándose)
-    #     en vez de pasar de largo. Dentro del radio la huida SUSTITUYE a la caza (sin "frenado parcial"); la
-    #     rapidez de huida nunca supera el cap del lobo. Aislado: un dron quieto, un lobo pasando.
-    def pass_by(with_drone):
-        w = World(seed=0, n_cows=1, wolves_min=1, wolves_max=1, calf_count_probs=NO_CALVES)  # escort_enabled=True (default)
+    print("=== 1d) SUSTO POR MOVIMIENTO: dron ESTÁTICO = poste (apenas desvía) / dron que EMBISTE = EXPULSA ===")
+    # (a) EXPULSIÓN POR MOVIMIENTO (v2.4): un lobo lanzado al este por y=150. Un dron QUIETO a 12 m de su paso
+    #     apenas lo toca (es un POSTE, los depredadores se habitúan); un dron que lo INTERCEPTA (se lanza a por
+    #     él) lo EXPULSA fuerte (se desvía radial, alejándose). La rapidez de huida nunca supera el cap del lobo.
+    def pass_by(mode):   # 'none' | 'static' | 'dive'
+        w = World(seed=0, n_cows=1, wolves_min=1, wolves_max=1, calf_count_probs=NO_CALVES)  # escort_enabled=True
         c = DummyCoordinator(w.n_drones)
         w.cows[0] = np.array([260.0, 150.0]); w.cow_vel[0] = 0.0; w.cow_speeds[0] = 0.0  # "objetivo" lejos al este
         w.wolves[0] = np.array([60.0, 150.0]); w.wolf_vel[0] = np.array([4.0, 0.0])      # lobo lanzado al este
-        if with_drone:
-            _one_active_drone(w, [140.0, 162.0])     # 12 m al norte del paso del lobo (<DETER_RADIUS)
-        else:
-            w.drone_state[:] = READY; w.drones[:] = np.array([1e4, 1e4])
+        w.drone_state[:] = READY; w.drones[:] = np.array([1e4, 1e4])
+        if mode == "static":
+            _one_active_drone(w, [150.0, 162.0])       # QUIETO, 12 m al norte del paso (> SCARE_STATIC_RADIUS -> poste)
+        elif mode == "dive":
+            w.drone_state[0] = ACTIVE; w.drones[0] = np.array([120.0, 176.0]); w.drone_vel[0] = 0.0
+            w.drone_waypoint[0] = w.drones[0].copy()
         ys, sp = [], []
         for _ in range(80):
-            w.pack_prey = -1; w.pack_prey_kind = None     # sin presa -> standoff recto al este (aísla la huida)
+            w.pack_prey = -1; w.pack_prey_kind = None     # sin presa -> standoff recto al este (aísla el susto)
+            if mode == "dive":
+                w.command_waypoint(0, w.wolves[0].copy())  # se LANZA a por el lobo (embiste)
+            elif mode == "static":
+                _one_active_drone(w, [150.0, 162.0])       # mantener QUIETO
             w.step(c.act(None))
             ys.append(float(w.wolves[0, 1])); sp.append(float(np.linalg.norm(w.wolf_vel[0])))
             if w.wolves[0, 0] > 200:
                 break
         return np.max(np.abs(np.array(ys) - 150.0)), max(sp)
-    lat0, _ = pass_by(False)
-    lat1, spmax1 = pass_by(True)
-    print("  (a) EXPULSIÓN: sin dron desvío lateral=%.2f m | con dron desvío=%.2f m, rapidez máx=%.2f m/s (cap %.1f)"
-          % (lat0, lat1, spmax1, 4.0))
-    assert lat1 > lat0 + 5.0, "FALLO: el lobo no fue EXPULSADO por el dron (poca desviación)"
-    assert spmax1 <= 4.0 + 1e-6, "FALLO: la huida del lobo supera su cap de velocidad"
-    # (b) PARCIAL (emergente): una manada converge sobre UNA presa; un dron junto a UN lobo. Ese se desvía/
-    #     aguanta lejos (disuadido); los otros empujan a través y cierran. Mismos params -> "uno huye, otros aguantan".
-    #     La presa va FUERA del establo (si estuviera dentro se marcaría a salvo -> objetivos agotados -> coast).
-    w = World(seed=0, n_cows=1, wolves_min=3, wolves_max=3, calf_count_probs=NO_CALVES)
+    lat_none, _ = pass_by("none")
+    lat_static, _ = pass_by("static")
+    lat_dive, spmax = pass_by("dive")
+    print("  (a) desvío lateral del lobo: sin dron=%.2f m | dron QUIETO=%.2f m (poste) | dron que EMBISTE=%.2f m (EXPULSA, vmáx=%.2f, cap %.1f)"
+          % (lat_none, lat_static, lat_dive, spmax, 4.0))
+    assert lat_dive > lat_static + 5.0, "FALLO: el dron que EMBISTE no expulsa más que un poste (susto por movimiento roto)"
+    assert lat_static < lat_none + 2.0, "FALLO: el dron QUIETO desvía como si expulsara (debería ser casi un poste)"
+    assert spmax <= 4.0 + 1e-6, "FALLO: la huida del lobo supera su cap de velocidad"
+    # (b) OBSTÁCULO: un dron QUIETO justo delante de un lobo cazando -> el lobo NO se asusta, RODEA el poste y
+    #     SIGUE cazando (llega a la presa). Un dron parado es un obstáculo, no una amenaza.
+    w = World(seed=0, n_cows=1, wolves_min=1, wolves_max=1, calf_count_probs=NO_CALVES)
     c = DummyCoordinator(w.n_drones)
-    P = np.array([80.0, 80.0])               # presa lejos del establo (centro 150,150) -> sigue cazable
+    P = np.array([80.0, 80.0])
     w.cows[0] = P.copy(); w.cow_vel[0] = 0.0; w.cow_speeds[0] = 0.0
-    w.wolves[:] = np.array([P + [-40, 0], P + [0, 40], P + [40, 0]], dtype=float)   # O/N/E a 40 m, separados
-    w.wolf_vel[:] = 0.0
-    w.pack_prey, w.pack_prey_kind = 0, "adult"
-    _one_active_drone(w, P + [-28.0, 0.0])   # 12 m al ESTE del lobo OESTE (lo empuja al oeste); >40 m de los otros 2
-    d0 = np.linalg.norm(w.wolves - w.cows[0], axis=1).copy()
+    w.phase = "ESCOLTA"; w.pack_prey, w.pack_prey_kind = 0, "adult"
+    w.wolves[0] = P + np.array([25.0, 0.0]); w.wolf_vel[0] = 0.0
+    _one_active_drone(w, P + np.array([12.0, 3.0]))    # QUIETO entre lobo y presa (ligeramente desviado)
+    d0 = float(np.linalg.norm(w.wolves[0] - P)); mind = np.inf; scared_any = False
     for _ in range(40):
-        w.pack_prey, w.pack_prey_kind = 0, "adult"
-        w.cow_vel[0] = 0.0; w.cows[0] = P.copy()
+        w.pack_prey, w.pack_prey_kind = 0, "adult"; w.cows[0] = P.copy(); w.cow_vel[0] = 0.0
+        _one_active_drone(w, P + np.array([12.0, 3.0]))
         w.step(c.act(None))
-    d1 = np.linalg.norm(w.wolves - w.cows[0], axis=1)
-    print("  (b) PARCIAL: lobo del dron dist a presa %.0f->%.0f m (disuadido) | los otros %.0f->%.0f y %.0f->%.0f (empujan)"
-          % (d0[0], d1[0], d0[1], d1[1], d0[2], d1[2]))
-    assert d1[0] > d1[1] + 5.0 and d1[0] > d1[2] + 5.0, "FALLO: el lobo del dron no quedó más lejos (no es parcial)"
-    assert d1[1] < d0[1] and d1[2] < d0[2], "FALLO: los lobos sin dron no cerraron (deberían empujar a través)"
-    # (c) DESPEJA/PREVIENE EL PIN — "aparta a los que se ACERCAN de lejos" (con el radio CORTO, R=20, el dron
-    #     PASIVO ya no expulsa a un pinador comprometido a 12 m —se asienta a ~16 m, dentro de r_notice—; pero
-    #     SÍ deflacta a un lobo que se ACERCA desde fuera de r_notice, impidiéndole cerrar el pin -> la vaca
-    #     sigue huyendo. Expulsar un pin ya cerrado pasa a ser trabajo del COORDINADOR, post-v2; ver DISEÑO §9).
-    def approach(with_drone):
-        w = World(seed=5, n_cows=1, wolves_min=1, wolves_max=1, calf_count_probs=NO_CALVES)
-        c = DummyCoordinator(w.n_drones)
-        w.phase = "ESCOLTA"; w.cow_speeds[0] = w.cow_speed
-        w.pack_prey, w.pack_prey_kind = 0, "adult"
-        ctr = w.safe_zone[:2]
-        w.cows[0] = ctr + np.array([90.0, 0.0]); w.cow_heading[0] = np.pi   # vaca lejos, huyendo al oeste
-        w.wolves[0] = w.cows[0] + np.array([28.0, 0.0]); w.wolf_vel[0] = 0.0  # lobo a 28 m: FUERA de r_notice=20
-        if with_drone:                                                       # dron interpuesto, 8 m del lobo
-            to_cow = (w.cows[0] - w.wolves[0]) / np.linalg.norm(w.cows[0] - w.wolves[0])
-            _one_active_drone(w, w.wolves[0] + to_cow * 8.0)
-        else:
-            w.drone_state[:] = READY; w.drones[:] = np.array([1e4, 1e4])
-        d0 = float(np.linalg.norm(w.cows[0] - ctr)); mind = np.inf; pinned = 0
-        for _ in range(120):
-            w.pack_prey, w.pack_prey_kind = 0, "adult"
-            w.step(c.act(None))                                              # el lobo lo mueve la caza/disuasión
-            dw = float(np.linalg.norm(w.wolves[0] - w.cows[0])); mind = min(mind, dw)
-            pinned += int(dw <= w.r_notice)
-        return mind, pinned, d0, float(np.linalg.norm(w.cows[0] - ctr))
-    m0, p0, d0, d1_0 = approach(False)     # sin dron: el lobo cierra y CLAVA -> la vaca casi no progresa
-    m1, p1, _, d1_1 = approach(True)       # con dron: el lobo NO cierra a r_notice -> la vaca sigue huyendo
-    print("  (c) APARTA AL QUE SE ACERCA (R=%.0f): sin dron lobo cierra a %.0f m (pina %d pasos, vaca %.0f->%.0f) |"
-          " con dron cierra a %.0f m (pina %d, vaca %.0f->%.0f)" % (DETER_RADIUS, m0, p0, d0, d1_0, m1, p1, d0, d1_1))
-    assert m1 > w.r_notice and p1 == 0, "FALLO: el dron no impidió que el lobo cerrara el pin (no aparta al que se acerca)"
-    assert d1_1 < d1_0 - 3.0, "FALLO: con el dron la vaca no progresó más (no se previno el pin)"
+        mind = min(mind, float(np.linalg.norm(w.wolves[0] - w.drones[0])))
+        scared_any = scared_any or bool(w._wolf_scared.any())
+    d1 = float(np.linalg.norm(w.wolves[0] - P))
+    print("  (b) OBSTÁCULO: dist lobo-presa %.1f->%.1f m (SIGUE cazando) | asustado=%s | min dist al poste=%.1f m (lo RODEA)"
+          % (d0, d1, scared_any, mind))
+    assert d1 < d0 - 3.0, "FALLO: el dron QUIETO frenó la caza (debería ser solo un obstáculo que se rodea)"
+    assert not scared_any, "FALLO: un dron QUIETO expulsó al lobo (solo debería asustar el que embiste)"
     print("  OK\n")
 
 
 def test_susto():
-    print("=== 1d') SUSTO FUERTE (v2.3): un dron ENCIMA expulsa al lobo pegado y este NO mata mientras huye ===")
+    print("=== 1d') SUSTO POR MOVIMIENTO (v2.4): QUIETO=obstáculo (sigue cazando) / EMBISTE=expulsión + PERSISTENTE ===")
     c = DummyCoordinator(World(seed=0).n_drones)
     P = np.array([80.0, 80.0])
-    # (1) lobo PEGADO a una vaca clavada; llega un dron ~ENCIMA -> EXPULSADO (se aleja), la vaca SOBREVIVE.
-    w = World(seed=0, n_cows=1, wolves_min=1, wolves_max=1, calf_count_probs=NO_CALVES)   # escort_enabled=True (default)
-    w.cows[0] = P.copy(); w.cow_vel[0] = 0.0; w.cow_speeds[0] = w.cow_speed; w.cow_heading[0] = np.pi
-    w.phase = "ESCOLTA"; w.pack_prey, w.pack_prey_kind = 0, "adult"
-    w.wolves[0] = P + np.array([3.0, 0.0]); w.wolf_vel[0] = 0.0     # lobo PEGADO (3 m)
-    w.drone_state[:] = READY; w.drones[:] = 1e4
-    for _ in range(20):                                            # sin dron: se queda pegado (parálisis del bug)
-        w.pack_prey, w.pack_prey_kind = 0, "adult"; w.step(c.act(None))
-    glued = float(np.linalg.norm(w.wolves[0] - w.cows[0]))
-    _one_active_drone(w, w.wolves[0].copy() + np.array([0.5, 0.0]))  # llega un dron ~encima del lobo
-    d_start = float(np.linalg.norm(w.wolves[0] - w.drones[0]))
-    for _ in range(40):
-        w.pack_prey, w.pack_prey_kind = 0, "adult"; w.step(c.act(None))
-    d_end = float(np.linalg.norm(w.wolves[0] - w.drones[0]))
-    print("  (1) lobo pegado (%.1f m sin dron) -> llega dron: dist lobo-dron %.1f->%.1f m (EXPULSADO) | viva=%s cazada=%d"
-          % (glued, d_start, d_end, bool(w.cow_alive[0]), int(w.n_depredadas)))
-    assert glued < 2.0, "FALLO: sin dron el lobo no estaba pegado a la vaca"
-    assert d_end > d_start + 5.0, "FALLO: el dron encima NO expulsó al lobo"
-    assert w.cow_alive[0] and w.n_depredadas == 0, "FALLO: la vaca murió pese al dron encima (el susto no la protegió)"
-    # (2) dron LEJOS (>DETER_RADIUS): cero efecto -> el lobo caza normal (se acerca a la presa).
+    # (A) dron QUIETO en el camino: el lobo NO se asusta, SIGUE cazando (se acerca a la presa). Un poste, no una
+    #     amenaza (los depredadores se habitúan a disuasores estáticos).
     w = World(seed=0, n_cows=1, wolves_min=1, wolves_max=1, calf_count_probs=NO_CALVES)
     w.cows[0] = P.copy(); w.cow_vel[0] = 0.0; w.cow_speeds[0] = 0.0
-    w.wolves[0] = P + np.array([15.0, 0.0]); w.pack_prey, w.pack_prey_kind = 0, "adult"
-    _one_active_drone(w, P + np.array([0.0, 60.0]))              # 60 m: MUY fuera del radio
-    d0 = float(np.linalg.norm(w.wolves[0] - w.cows[0]))
+    w.phase = "ESCOLTA"; w.pack_prey, w.pack_prey_kind = 0, "adult"
+    w.wolves[0] = P + np.array([20.0, 0.0]); w.wolf_vel[0] = 0.0     # lobo al este, cazando la presa (al oeste)
+    _one_active_drone(w, P + np.array([11.0, 2.0]))                 # dron QUIETO en su camino (ligeramente desviado)
+    d0 = float(np.linalg.norm(w.wolves[0] - P)); scared_any = False
     for _ in range(30):
+        w.pack_prey, w.pack_prey_kind = 0, "adult"; w.cows[0] = P.copy(); w.cow_vel[0] = 0.0
+        _one_active_drone(w, P + np.array([11.0, 2.0]))            # mantener el dron QUIETO
+        w.step(c.act(None))
+        scared_any = scared_any or bool(w._wolf_scared.any())
+    d1 = float(np.linalg.norm(w.wolves[0] - P))
+    print("  (A) dron QUIETO: dist lobo-presa %.1f->%.1f m (SIGUE cazando) | asustado alguna vez=%s (debe ser False)"
+          % (d0, d1, scared_any))
+    assert d1 < d0 - 3.0, "FALLO: el dron QUIETO frenó al lobo (debería ser solo un obstáculo)"
+    assert not scared_any, "FALLO: un dron QUIETO expulsó al lobo (solo debería asustar el que embiste)"
+    # (B) dron que EMBISTE (se lanza hacia el lobo, waypoint MÁS ALLÁ -> lo atraviesa a velocidad): EXPULSIÓN
+    #     (el lobo huye, marcado _wolf_scared, no mata). Al irse el dron -> PERSISTENTE: retoma la caza (sin cooldown).
+    w = World(seed=0, n_cows=1, wolves_min=1, wolves_max=1, calf_count_probs=NO_CALVES)
+    w.cows[0] = P.copy(); w.cow_vel[0] = 0.0; w.cow_speeds[0] = w.cow_speed; w.cow_heading[0] = np.pi
+    w.phase = "ESCOLTA"; w.pack_prey, w.pack_prey_kind = 0, "adult"
+    w.wolves[0] = P + np.array([12.0, 0.0]); w.wolf_vel[0] = 0.0
+    w.drone_state[:] = READY; w.drones[:] = 1e4
+    w.drone_state[0] = ACTIVE; w.drones[0] = P + np.array([12.0, 30.0]); w.drone_vel[0] = 0.0
+    far = P + np.array([12.0, -40.0])                              # más allá del lobo (por el sur) -> lo atraviesa a velocidad
+    scared_any = False
+    for _ in range(30):
+        w.pack_prey, w.pack_prey_kind = 0, "adult"; w.cows[0] = P.copy(); w.cow_vel[0] = 0.0
+        w.command_waypoint(0, far)
+        w.step(c.act(None))
+        scared_any = scared_any or bool(w._wolf_scared.any())
+    print("  (B) dron EMBISTE (atraviesa por el norte): expulsó (scared visto=%s) | cazada=%d" % (scared_any, w.n_depredadas))
+    assert scared_any and w.n_depredadas == 0, "FALLO: el dron que embiste no expulsó al lobo / hubo caza"
+    # PERSISTENTE (expulsado != rendido): retirado el dron, el lobo retoma la caza (SIN cooldown) -> vuelve a
+    # ENGANCHARSE a la presa (se asienta al standoff frontal r_face_safe) y deja de estar asustado.
+    w.drone_state[0] = READY; w.drones[0] = np.array([1e4, 1e4]); w.drone_vel[0] = 0.0
+    scared_resume = False
+    for _ in range(60):
         w.pack_prey, w.pack_prey_kind = 0, "adult"; w.cows[0] = P.copy(); w.cow_vel[0] = 0.0; w.step(c.act(None))
-    d1 = float(np.linalg.norm(w.wolves[0] - w.cows[0]))
-    print("  (2) dron a 60 m (>DETER_RADIUS): dist lobo-presa %.1f->%.1f m (caza normal, dron sin efecto)" % (d0, d1))
-    assert d1 < d0 - 2.0, "FALLO: un dron LEJANO afectó al lobo (debería ser cero efecto)"
-    # (3) rapidez de huida acotada [SCARE_SPEED_MIN, wolf_speed]: siempre se mueve (nunca cuadro congelado), nunca > cap.
+        scared_resume = scared_resume or bool(w._wolf_scared.any())
+    d1 = float(np.linalg.norm(w.wolves[0] - P))
+    print("  PERSISTENTE: al irse el dron, el lobo vuelve a %.1f m de la presa (standoff r_face_safe=%.0f) | asustado=%s"
+          % (d1, w.r_face_safe, scared_resume))
+    assert d1 <= w.r_face_safe + 3.0 and not scared_resume, "FALLO: el lobo no retomó la caza tras irse el dron (rendido, no persistente)"
+    # (C) rapidez de huida acotada [SCARE_SPEED_MIN, wolf_speed]: nunca supera el cap del lobo.
     w = World(seed=0, n_cows=1, wolves_min=1, wolves_max=1, calf_count_probs=NO_CALVES)
     w.cows[0] = P.copy(); w.cow_speeds[0] = 0.0; w.wolves[0] = P + np.array([5.0, 0.0]); w.pack_prey, w.pack_prey_kind = 0, "adult"
-    _one_active_drone(w, w.wolves[0].copy() + np.array([1.0, 0.0]))
+    w.phase = "ESCOLTA"; w.drone_state[:] = READY; w.drones[:] = 1e4
+    w.drone_state[0] = ACTIVE; w.drones[0] = P + np.array([25.0, 0.0]); w.drone_vel[0] = np.array([-15.0, 0.0])
     sp = []
     for _ in range(30):
-        w.pack_prey, w.pack_prey_kind = 0, "adult"; w.cows[0] = P.copy(); w.step(c.act(None)); sp.append(float(np.linalg.norm(w.wolf_vel[0])))
-    print("  (3) rapidez del lobo asustado: min=%.2f max=%.2f (MIN=%.1f, cap=%.1f) -> siempre se mueve, nunca supera el cap"
-          % (min(sp), max(sp), SCARE_SPEED_MIN, w.wolf_speed))
-    assert min(sp) > 1e-6 and max(sp) <= w.wolf_speed + 1e-6, "FALLO: huida a v~0 (congelado) o por encima del cap"
+        w.pack_prey, w.pack_prey_kind = 0, "adult"; w.cows[0] = P.copy()
+        w.command_waypoint(0, P + np.array([-30.0, 0.0]))
+        w.step(c.act(None))
+        if bool(w._wolf_scared.any()):
+            sp.append(float(np.linalg.norm(w.wolf_vel[0])))
+    print("  (C) rapidez del lobo asustado (%d pasos): min=%.2f max=%.2f (MIN=%.1f, cap=%.1f) -> nunca supera el cap"
+          % (len(sp), min(sp) if sp else -1, max(sp) if sp else -1, SCARE_SPEED_MIN, w.wolf_speed))
+    assert len(sp) > 0, "FALLO: el dron que embiste no llegó a expulsar (no hubo pasos de huida)"
+    assert max(sp) <= w.wolf_speed + 1e-6, "FALLO: la huida del lobo supera su cap de velocidad"
     print("  OK\n")
 
 
@@ -817,9 +817,9 @@ def _pin_scene(with_drone):
     w.wolf_vel[:] = 0.0
     w.drone_state[:] = READY; w.drones[:] = np.array([1e4, 1e4])
     if with_drone:
-        # Dron a 14 m de la presa: entra en el radio (DETER_RADIUS=20) del lobo ESTE (4 m) y de los N/S (~17 m)
-        # -> los EXPULSA (susto v2.3); esos 3 no cuentan como flanqueadores -> el quórum (n_min_adult=2) no se
-        # cierra con solo el lobo OESTE (24 m, fuera) -> la adulta SOBREVIVE (antes la disuasión parcial la mataba).
+        # Dron QUIETO a 14 m de la presa (v2.4, susto por MOVIMIENTO): un dron ESTÁTICO ya NO expulsa (es un
+        # POSTE) -> los 4 lobos flanquean y la adulta MUERE igual. Defender de verdad exige MOVERSE (lo que el
+        # coordinador/MARL deberá hacer): con drones clavados el Dummy pierde casi toda su disuasión.
         w.drone_state[0] = ACTIVE; w.drones[0] = P + [14.0, 0.0]; w.drone_vel[0] = 0.0
         w.drone_waypoint[0] = w.drones[0].copy()
     return w, P
@@ -840,10 +840,10 @@ def test_pin_envolvente():
         return None
     k_sin = kill_steps(False)
     k_con = kill_steps(True)
-    print("  SIN dron: la matan en %s pasos | CON dron a tiro: %s (el SUSTO expulsa a los lobos a tiro -> NO la matan)"
+    print("  SIN dron: la matan en %s pasos | CON dron QUIETO a tiro: %s (v2.4: un POSTE ya no expulsa -> la matan igual)"
           % (k_sin, k_con))
     assert k_sin is not None, "FALLO: el paquete NO mata a una adulta clavada en ESCOLTA (regresión del pin)"
-    assert k_con is None, "FALLO: con un dron a tiro la adulta clavada MUERE igual (el SUSTO ya no la protege; v2.3)"
+    assert k_con is not None, "FALLO: un dron QUIETO salvó a la adulta clavada (v2.4: un poste NO expulsa; solo el que EMBISTE)"
     # ENVOLVENTE: 4 lobos arrancando APIÑADOS en un costado se REPARTEN alrededor de la presa (no 2+2).
     w, P = _pin_scene(False)
     w.wolves[:] = P + np.array([[14, 3], [14, -3], [12, 6], [12, -6]], dtype=float)   # los 4 al ESTE (apiñados)
@@ -1022,10 +1022,10 @@ def test_tasa_escolta():
           % (100 * g_out["predation"] / n_g, np.mean(g_deaths), max(g_deaths)))
     print("  ADVERSARIO PURO (escort_enabled=False: sin escolta ni drones), n=%d: %s | tasa=%.0f%% | SEVERIDAD=%.2f (máx=%d)"
           % (n_u, dict(u_out), 100 * u_out["predation"] / n_u, np.mean(u_deaths), max(u_deaths)))
-    print("  -> BASELINE v2.3 (SUSTO FUERTE: un dron ACTIVE a <=DETER_RADIUS EXPULSA al lobo y este NO mata mientras huye;")
-    print("     sin excepción a corta -> ya no hay 'empuje a través'). Incluso los drones QUIETOS del Dummy (esquinas del")
-    print("     rebaño + investigador) asustan a los lobos que se acercan -> la severidad Dummy BAJA respecto a la disuasión")
-    print("     parcial anterior (~4.4). Números re-medidos por tipo en baseline.py (v2.3). ESTA es la referencia a batir.")
+    print("  -> BASELINE v2.4 (SUSTO POR MOVIMIENTO: solo un dron que SE ECHA ENCIMA —aproximación > umbral— expulsa;")
+    print("     un dron QUIETO es solo un obstáculo). Los drones CLAVADOS del Dummy (esquinas + investigador) ya casi NO")
+    print("     disuaden -> la severidad Dummy SUBE respecto a v2.3 (susto 'campo de fuerza'). Defender bien exige MOVERSE")
+    print("     con intención (trabajo del coordinador/MARL). Números re-medidos por tipo en baseline.py (v2.4).")
     assert max(g_deaths) >= 2 or max(u_deaths) >= 2, "FALLO: ningún episodio con >1 caza (la matanza excedente no ocurre)"
     assert g_out["success"] >= 1, "FALLO: debería haber ÉXITO orgánico en alguna seed"
     assert 100 * g_out["predation"] / n_g < 100 * u_out["predation"] / n_u, \
@@ -1054,8 +1054,8 @@ def test_severidad_por_tipo():
               % (kind, n, str(dict(out)), 100 * out["predation"] / n, np.mean(deaths), max(deaths)))
         if kind == "corzos":
             assert sum(deaths) == 0 and out["predation"] == 0, "FALLO: solo-corzos debería tener SEVERIDAD 0 (sin amenaza)"
-    print("  -> solo-lobos ~ v2 (~4.4; idéntico a corzos OFF) | solo-corzos = 0 (sin amenaza) | mixto ≈ solo-lobos bajo")
-    print("     Dummy (los corzos solo consumen ciclos de investigación; el agregado MEZCLADO es poco informativo).")
+    print("  -> v2.4 (susto por MOVIMIENTO): el Dummy QUIETO ya casi no disuade -> solo-lobos SUBE hacia ~v2.2 (~4.4);")
+    print("     solo-corzos = 0 (sin amenaza) | mixto ≈ solo-lobos. Números autoritativos por tipo en baseline.py (v2.4).")
     print("  OK\n")
 
 

@@ -5,7 +5,7 @@
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
 >
-> **Última actualización: 2026-06-27** · *escolta: BUCLE CERRADO + DIENTES + matanza excedente + pin + rodeo.*
+> **Última actualización: 2026-07-09** · *v2.4: SUSTO POR MOVIMIENTO (el estático es un poste) + baterías espejo + carga 1.5×.*
 > **Hecho:** terminal (el "juez") · disparador realista por detección de dron · reescalado a 300×300 (~9 ha) con
 > escala biológica absoluta · dispersión del rebaño · movimiento de drones · detectar→acercarse→confirmar ·
 > **guiado al refugio (paso 2)** · **huida NO-HOLONÓMICA en ESCOLTA** (pin) · **DISUASIÓN del dron** (radio CORTO + bordeo, parcial) ·
@@ -16,7 +16,8 @@
 > **v2 CONGELADA (tag `v2-baseline`)** (la física NO cambia más; `baseline.py` = arnés de evaluación POR TIPO,
 > severidad Dummy solo-lobos 4.45 / solo-corzos 0.00 / mixto 4.41, N=100) ·
 > **ReactiveCoordinator** (1er coordinador clásico: BARRERA de apantallado; regla fija, NO aprende) →
-> severidad (v2.3, SUSTO FUERTE) 0.16 / 0 / 0.18 (−2.20 / − / −2.06 vs Dummy 2.36/0/2.24; 85% success) ·
+> severidad (v2.4, SUSTO POR MOVIMIENTO) **2.80 / 0 / 2.78** (−1.61 / − / −1.56 vs Dummy 4.41/0/4.34) — SUBE desde
+> v2.3 (0.16/0.18) porque la barrera clavada es un POSTE, pero SIGUE batiendo al Dummy (su barrera se recoloca) ·
 > **RELEVO de flota REALISTA (v2.1)** (hand-off, SIN teletransporte: la reserva VUELA al puesto, el bajo cubre
 > hasta el relevo, vuelve a cargar; STRANDED bajo estrés → moverse tiene COSTE real) ·
 > **RENDER: emojis a color + barra de batería + `main.py --coordinador`** ·
@@ -26,10 +27,12 @@
 > entidades, **🔊 al disuadir**; la PATRULLA ancla la fase a la posición angular ACTUAL → los drones se abren a su ranura
 > más cercana desde t=0, sin cruzar el centro; Reactive 3.27/3.40→**3.36/3.42**, Dummy/física INTACTOS, NO re-congela).
 > **SUSTO FUERTE + rombo de carga (v2.3, tag `v2.3-baseline`)** (la disuasión pasa de PARCIAL a FUERTE: un dron ACTIVE a
-> ≤DETER_RADIUS EXPULSA al lobo —huida RADIAL creciente al acercarse, la huida SUSTITUYE a la caza, SIN excepción a corta—
-> y este NO mata mientras huye; arregla el 'cuadro congelado' lobo-vaca-dron; slots de reserva en ROMBO. RE-MEDIDO: Dummy
-> 4.45/4.41→**2.36/2.24**, Reactive 3.36/3.42→**0.16/0.18** —barrera+susto ≈ protección casi total—).
-> **Pendiente:** **MARL** (debe batir la barrera 0.16/0.18, gestionando la energía) · reflejo-reactivo que consume el mensaje del reflejo.
+> ≤DETER_RADIUS EXPULSA al lobo —campo de fuerza estático—; Dummy 4.45/4.41→2.36/2.24, Reactive 3.36/3.42→0.16/0.18).
+> **SUSTO POR MOVIMIENTO + baterías espejo + carga 1.5× (v2.4, tag `v2.4-baseline`)** (el lobo se HABITÚA a disuasores
+> estáticos: solo el dron que SE ECHA ENCIMA —aproximación > `SCARE_APPROACH_MIN`— expulsa; el QUIETO es un OBSTÁCULO que
+> se rodea. Baterías iniciales aleatorias + reserva espejo (substream separado); carga = 1.5× el vuelo pleno ≈160 s. La
+> disuasión estática se evapora → Dummy 2.36/2.24→**4.41/4.34** (≈v2.2), Reactive 0.16/0.18→**2.80/2.78** (sube, pero sigue batiendo al Dummy)).
+> **Pendiente:** **MARL** (debe batir la barrera 2.80/2.78 MOVIENDO los drones con intención, gestionando la energía) · reflejo-reactivo que consume el mensaje del reflejo.
 > **Commits:** `194a3ad` base · `37910b3` terminal · `e663504` disparador por dron · `4d1e708` campo
 > 300×300 + escala biológica absoluta · `886bd45` dispersión del rebaño · `a15e2df` movimiento de
 > drones (3a) · `fd893b8` detectar→confirmar (3b) · `49e0e22` consolidar DISEÑO+CLAUDE · `144b7bd` guiado (paso 2)
@@ -42,8 +45,37 @@
 > `2ad268b` ReactiveCoordinator (barrera de apantallado) · `bcd407f` relevo de flota REALISTA (v2.1, tag
 > `v2.1-baseline`) · `e14206a` render: emojis a color + barra de batería + `--coordinador` · `11dc90d`
 > jabalí como 2ª distracción + emojis más pequeños (v2.2, RE-CONGELADO tag `v2.2-baseline`) · `a97362d`
-> retoques visuales + fix arranque del reactivo (patrulla anclada, sin cruces; Reactive 3.36/0/3.42) · `<este commit>`
-> SUSTO FUERTE + rombo de carga (v2.3, RE-CONGELADO tag `v2.3-baseline`; Dummy 2.36/0/2.24, Reactive 0.16/0/0.18).
+> retoques visuales + fix arranque del reactivo (patrulla anclada, sin cruces; Reactive 3.36/0/3.42) · `49fd8c4`
+> SUSTO FUERTE + rombo de carga (v2.3, RE-CONGELADO tag `v2.3-baseline`; Dummy 2.36/0/2.24, Reactive 0.16/0/0.18) · `<este commit>`
+> SUSTO POR MOVIMIENTO + baterías espejo + carga 1.5× (v2.4, RE-CONGELADO tag `v2.4-baseline`; Dummy 4.41/0/4.34, Reactive 2.80/0/2.78).
+>
+> **Patch — SUSTO POR MOVIMIENTO + baterías iniciales realistas + carga 1.5× (v2.4) + RE-CONGELAR.** TRES cambios de
+> FÍSICA del mundo en una re-congelación (por eso RE-MIDE la baseline). **Motivo:** (1) el susto de v2.3 era un "campo de
+> fuerza" —el lobo no podía acercarse a un dron aunque estuviera QUIETO—; irreal: los depredadores se HABITÚAN a disuasores
+> estáticos, lo que asusta es algo lanzándose hacia ti. (2) Todos los drones arrancaban a tope; una flota real está a mitad
+> de ciclo. (3) La carga debe recuperar más deprisa de lo que el vuelo gasta, explícito.
+> **(1) SUSTO POR MOVIMIENTO (`_apply_deterrence`):** para cada lobo se mira la velocidad de APROXIMACIÓN de cada dron ACTIVE
+> a tiro (`≤ DETER_RADIUS=20`, = componente de la velocidad del dron hacia el lobo). **Acercándose** (aprox. `> SCARE_APPROACH_MIN`
+> =1.0) → EXPULSIÓN plena (mecanismo v2.3: huida radial del dron acercándose MÁS CERCANO, `clip(wolf_speed·(1−d/R), SCARE_SPEED_MIN,
+> wolf_speed)`, la huida SUSTITUYE a la caza, `_wolf_scared` → no mata mientras huye). **Estático/alejándose** (`≤ SCARE_STATIC_RADIUS`
+> =6) → miedo REDUCIDO: el lobo SIGUE cazando (v_target manda) pero esquiva suave el poste (repulsión radial renormalizada a la
+> rapidez de caza, solo redirige) → **puede matar con un dron parado al lado**. Marca `_drone_scaring` (drones que embisten) → el
+> render dibuja 🔊 solo al embestir de verdad. Solo ACTIVE; gateado por `escort_enabled` → combate puro NO asusta, `_wolf_scared`/
+> `_drone_scaring` todo False → **face_check bit a bit** (verificado: fingerprint de combate SHA idéntico v2.3≡v2.4).
+> **(2) Baterías iniciales:** los 4 ACTIVE en vuelo con batería ALEATORIA en `[battery_init_min=0.25, 1]` (>umbral → sin relevo
+> en t=0) y cada reserva EN CARGA es el ESPEJO de su pareja (`1−bat_activo_i`). Del SUBSTREAM `_battery_rng=default_rng(seed+2_000_003)`
+> → NO consume del stream principal → spawns bit a bit (verificado: distinto `battery_init_min` → spawns idénticos, baterías distintas).
+> **(3) Carga:** `charge_rate = CHARGE_TO_FLIGHT_RATIO=1.5 · drenaje_vuelo_pleno` (`drain_rate_active·(1+DRONE_MOVE_DRAIN)`) → tiempo de
+> carga completa DERIVADO ≈ **160 s** (antes `charge_full=300` fijo, ahora DEPRECATED). **NO toca:** caza (cono/flanqueo/envolvente/
+> matanza excedente), huida, madre-ternero, LÓGICA del relevo (umbrales/hand-off/estados/rombo), detección, coordinadores.
+> **RE-MEDIDO (N=100/tipo):** la disuasión estática se evapora → Dummy 2.36/0/2.24 → **4.41/0/4.34** (≈ v2.2 4.45/4.41: los drones
+> CLAVADOS del Dummy ya casi no disuaden; n_safe 4.19→2.38). Reactive 0.16/0.18 → **2.80/0/2.78** (−1.61/−1.56 vs Dummy; SUBE mucho
+> —la barrera clavada es un poste— pero SIGUE batiendo al Dummy porque se recoloca; MEDIDA, no objetivo). **Conclusión de diseño:**
+> casi toda la ventaja del clásico en v2.3 venía del campo de fuerza estático; con el susto por movimiento **defender bien exige
+> MOVER los drones con intención** — el trabajo del MARL (batir 2.80/2.78, no ya 0.16/0.18). **Verja:** `test_susto`/`test_disuasion`
+> adaptados (QUIETO=obstáculo sigue cazando · EMBISTE=expulsión + PERSISTENTE · huida acotada), `test_pin_envolvente` (un POSTE ya
+> no protege → k_con≠None), battery_check +arranque espejo +ratio de carga (estrés 2.5→5.0× porque la carga más rápida ya no agotaba
+> reservas a 2.5×). face 12/12 bit a bit · battery · escort (24 OK) · drone · reactive verdes; tag `v2.4-baseline`.
 >
 > **Patch — SUSTO FUERTE (la disuasión pasa de PARCIAL a FUERTE) + rombo de carga (v2.3) + RE-CONGELAR.** CAMBIO de FÍSICA
 > del mundo (por eso RE-MIDE la baseline). **Motivo (visto en render):** un lobo alcanzaba una vaca clavada y se quedaba
@@ -421,19 +453,21 @@ parámetros actuales; spec: reportar, **no tunear** `face_cooldown`/`r_face_safe
 **Número de lobos aleatorio por episodio** (1–5): de lobo solitario (no puede) a manada (sí puede).
 **Escalera de adversarios:** ingenuo → **manada direccional (ACTUAL)** → busca-huecos → con amago
 (los dos últimos cuando los drones se muevan).
-**SUSTO FUERTE del dron ✅ IMPLEMENTADO (v2.3; sustituye a la disuasión PARCIAL)** (`_apply_deterrence`, infraestructura
-gateada por `escort_enabled`): un lobo con un dron **ACTIVE** dentro de `DETER_RADIUS`=**20** m **HUYE** del dron y **NO
-caza mientras huye** → la velocidad de HUIDA **SUSTITUYE** al impulso de caza (no se le suma). Huida **RADIAL** (alejándose),
-módulo **CRECIENTE** cuanto más cerca el dron (`clip(wolf_speed·(1−d/R), SCARE_SPEED_MIN=0.8, wolf_speed)`, acotado
-`[MIN, cap del lobo]` → nunca supera la rapidez del lobo ni se queda a `v`≈0), con la **dirección de la SUMA** de los
-repulsores a tiro y el **módulo del dron MÁS CERCANO** (fallback = retroceder de la caza si se cancelan). **SIN excepción a
-corta:** un dron ENCIMA siempre lo EXPULSA (se ELIMINÓ el antiguo `deter_w`/"empuja a través y mata", y con él
-`DETER_REPULSION`/`DETER_TANGENT`/`DETER_SLOWDOWN`). Los lobos que huyen se marcan (`_wolf_scared`) y **NO cuentan como
-flanqueadores** en `_process_predation` → **no matan mientras huyen** (arregla el cuadro congelado lobo-vaca-dron: el lobo
-pegado sale despedido al llegar el dron → la vaca deja de tener lobo en `r_notice` → se despega). EXPULSADO ≠ rendido: fuera
-del radio retoma la caza (sin cooldown). Solo en escolta (combate puro `escort_enabled=False` NO asusta, `_wolf_scared` todo
-False → **face_check bit a bit**). **RE-MIDE la baseline (v2.3):** Dummy 4.45/4.41 → 2.36/2.24, Reactive 3.36/3.42 → 0.16/0.18.
-EKF de estimación del lobo: PENDIENTE (ver plan).
+**SUSTO POR MOVIMIENTO del dron ✅ IMPLEMENTADO (v2.4; sustituye al susto "campo de fuerza" de v2.3)** (`_apply_deterrence`,
+infraestructura gateada por `escort_enabled`): el miedo del lobo depende de **si el dron SE LE ECHA ENCIMA**, no solo de la
+distancia (los depredadores se HABITÚAN a disuasores estáticos). Para cada lobo se mira la **velocidad de APROXIMACIÓN** de
+cada dron **ACTIVE** a tiro (`≤ DETER_RADIUS`=**20** m, = componente de la velocidad del dron hacia el lobo). **(a) Dron
+ACERCÁNDOSE** (aprox. `> SCARE_APPROACH_MIN`=**1.0** m/s) → **EXPULSIÓN PLENA** (mecanismo v2.3): el lobo **HUYE** RADIAL del dron
+acercándose MÁS CERCANO (manda el más amenazante; desempate por índice), `clip(wolf_speed·(1−d/R), SCARE_SPEED_MIN=0.8, wolf_speed)`;
+la huida **SUSTITUYE** a la caza y **NO mata mientras huye** (`_wolf_scared` excluido de `_process_predation`). **(b) Dron
+ESTÁTICO/alejándose** (`≤ SCARE_STATIC_RADIUS`=**6** m) → **ESQUIVA SUAVE**: el lobo **SIGUE cazando** (v_target manda), solo añade
+una repulsión radial del poste renormalizada a la rapidez de caza (**solo redirige, no anula**) → **puede matar con un dron parado
+al lado** (un obstáculo, no una amenaza). EXPULSADO ≠ rendido: al frenar/alejarse el dron retoma la caza (sin cooldown). Marca
+`_drone_scaring` (drones que embisten) → el render dibuja 🔊 solo al embestir de verdad. Solo en escolta (combate puro
+`escort_enabled=False` NO asusta, `_wolf_scared`/`_drone_scaring` todo False → **face_check bit a bit**, fingerprint de combate
+idéntico v2.3≡v2.4). **RE-MIDE la baseline (v2.4):** la disuasión estática se evapora → Dummy 2.36/2.24 → **4.41/4.34** (≈ v2.2),
+Reactive 0.16/0.18 → **2.80/2.78** (sube —barrera clavada = poste— pero sigue batiendo al Dummy). Defender bien exige MOVER los
+drones con intención (trabajo del MARL). EKF de estimación del lobo: PENDIENTE (ver plan).
 
 ### 4.2. Vacas adultas — "DAR LA CARA" (confrontación direccional)  ✅ IMPLEMENTADO (+ guiado al refugio ✅)
 

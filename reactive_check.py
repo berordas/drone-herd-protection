@@ -179,14 +179,14 @@ def test_arranque():
 
 
 def test_severidad_muestra():
-    # MEDIDA. En v2.3 (SUSTO FUERTE) la severidad CAE mucho: el Dummy QUIETO ya expulsa a los lobos que se
-    # acercan a sus drones (2.36/2.24), y el reactivo (barrera + susto) protege CASI DEL TODO. Medida
-    # autoritativa (N=100, reactive_eval): Reactive 0.16 / 0.18 -> SIGUE batiendo al Dummy con MUCHA holgura.
-    # BUG CORREGIDO: sev() construía el coordinador con un world DISTINTO al que corría -> el ReactiveCoordinator
-    # leía estado CONGELADO (nunca avanzaba) y salía artificialmente MAL (parecía PEOR que el Dummy); ahora usa
-    # el MISMO world -> Reactive ~0.2 en la muestra (coincide con reactive_eval).
+    # MEDIDA. En v2.4 (SUSTO POR MOVIMIENTO) los drones QUIETOS ya casi no disuaden -> la severidad Dummy SUBE a
+    # ~v2.2 (4.41/4.34) y la del reactivo TAMBIÉN sube (su barrera se recoloca pero pasa tiempo quieta = poste).
+    # Aun así el reactivo BATE al Dummy: su barrera se MUEVE para recolocarse -> disuade parcialmente. Medida
+    # autoritativa (N=100, reactive_eval). BUG CORREGIDO (v2.3): sev() construía el coordinador con un world
+    # DISTINTO al que corría -> el ReactiveCoordinator leía estado CONGELADO y salía artificialmente mal; ahora
+    # usa el MISMO world.
     N = 30
-    print("=== 6) SEVERIDAD (muestra n=%d): Reactive vs Dummy en v2.3 (susto fuerte) ===" % N)
+    print("=== 6) SEVERIDAD (muestra n=%d): Reactive vs Dummy en v2.4 (susto por movimiento) ===" % N)
     from baseline import build_world, run_episode_metrics
     def sev(kind, n, factory):
         out = []

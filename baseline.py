@@ -1,16 +1,19 @@
 """
 baseline.py — Arnés de EVALUACIÓN de la v2 CONGELADA (DummyCoordinator + física v2).
 
-================================  v2.3 CONGELADA  ================================
-A partir del tag git `v2.3-baseline` el MUNDO (la física) NO cambia: es la referencia
+================================  v2.4 CONGELADA  ================================
+A partir del tag git `v2.4-baseline` el MUNDO (la física) NO cambia: es la referencia
 fija que los coordinadores deberán BATIR. (v2 → v2.1 = RELEVO de flota REALISTA; v2.1 →
-v2.2 = el JABALÍ como 2ª distracción, substream RNG separado; v2.2 → v2.3 = SUSTO FUERTE:
-la disuasión pasa de PARCIAL a fuerte —un dron ACTIVE a ≤DETER_RADIUS EXPULSA al lobo y
-este NO mata mientras huye, sin excepción a corta—, por lo que la severidad Dummy se
-RE-MIDE y CAE ~a la mitad: 4.45/0/4.41 → 2.36/0/2.24.) Este fichero NO es el mundo
-—es el banco de medida—: fija la config de evaluación (`CONFIG_V2`, corzos ON con los 3
-tipos de episodio), corre el `DummyCoordinator` (drones quietos) sobre un set FIJO de
-semillas, N por tipo, y reporta las métricas POR TIPO.
+v2.2 = el JABALÍ como 2ª distracción, substream RNG separado; v2.2 → v2.3 = SUSTO FUERTE
+—campo de fuerza estático—; v2.3 → v2.4 = SUSTO POR MOVIMIENTO: el lobo se HABITÚA a
+disuasores estáticos, solo un dron que SE ECHA ENCIMA —aproximación > umbral— lo expulsa;
+un dron QUIETO es solo un obstáculo. Los drones CLAVADOS del Dummy dejan de disuadir → la
+severidad Dummy RE-MEDIDA SUBE de 2.36/2.24 a 4.41/4.34 —≈ v2.2, la disuasión estática
+se evapora—. Además: baterías iniciales ALEATORIAS + reserva espejo, y carga 1.5× el vuelo
+pleno —charge_full≈160 s—.) Este fichero NO es el mundo —es el banco de medida—: fija la
+config de evaluación (`CONFIG_V2`, corzos ON con los 3 tipos de episodio), corre el
+`DummyCoordinator` (drones quietos) sobre un set FIJO de semillas, N por tipo, y reporta
+las métricas POR TIPO.
 
 ⚠️ Esto es FIJAR Y MEDIR, no tunear. La baseline es la que salga. NO se cambia la
    física para "mejorar" estos números; se baja la severidad con el COORDINADOR
@@ -20,11 +23,11 @@ semillas, N por tipo, y reporta las métricas POR TIPO.
 
 Métrica PRINCIPAL = SEVERIDAD = muertes (reses depredadas) por episodio. Más:
 reparto de terminales (success / predation / timeout) y n_safe medio. Números
-CONGELADOS v2.3 (N=100/tipo, DummyCoordinator, semillas range(100)):
-  solo-lobos  2.36 ± 1.97 (máx 6) · n_safe 4.19 · success 6 / predation 74 / timeout 20
+CONGELADOS v2.4 (N=100/tipo, DummyCoordinator, semillas range(100)):
+  solo-lobos  4.41 ± 2.15 (máx 8) · n_safe 2.38 · success 4 / predation 88 / timeout 8
   solo-corzos 0.00 ± 0.00 (máx 0) · n_safe 0.00 · timeout 100        (SIN amenaza)
-  mixto       2.24 ± 1.94 (máx 6) · n_safe 4.30 · success 7 / predation 73 / timeout 20
-  AGREGADO    1.53 ± 1.93 (máx 6) · n_safe 2.83 · success 13 / predation 147 / timeout 140
+  mixto       4.34 ± 2.25 (máx 8) · n_safe 2.50 · success 5 / predation 87 / timeout 8
+  AGREGADO    2.92 ± 2.74 (máx 8) · n_safe 1.63 · success 9 / predation 175 / timeout 116
 mixto ≈ solo-lobos (los corzos solo consumen ciclos de investigación; el agregado
 mezclado es poco informativo: la comparación se hace POR TIPO).
 
@@ -61,6 +64,7 @@ from coordinators import DummyCoordinator
 #   capture_radius=3.0  r_standoff=12.0  wolf_repulsion_radius=12.0  wolf_skirt_margin=6.0
 #   wolf_spawn_dispersion=5.0  calf_personal_space=1.5  refuge_margin=3.6
 #   max_episode_steps=14142 (=int(4·√(300²+300²)/1.2/0.1))  charge_capacity=4 (=n_reserve)
+#   charge_full≈160 (DERIVADO de CHARGE_TO_FLIGHT_RATIO=1.5, v2.4; param charge_full DEPRECATED, no se pasa)
 # Las CONSTANTES FÍSICAS de módulo (escala biológica absoluta HERD_*, dron DRONE_*,
 # disuasión DETER_*, bordeo de zona WOLF_ZONE_SKIRT_*, evitación COW_AVOID_*/W_*, corzos
 # CORZO_*) viven en la cabecera de world.py y quedan congeladas por el tag (no son params
@@ -89,7 +93,9 @@ CONFIG_V2 = dict(
     # --- escolta / terminal (máquina de fases + guiado al refugio + disuasión) ---
     r_detect=100.0, r_confirm=40.0, episode_time_factor=4.0, escort_enabled=True,
     # --- batería / cola de carga + RELEVO REALISTA (hand-off, sin teletransporte) ---
-    battery_capacity=600.0, charge_full=300.0, announce_threshold=0.20, relay_handoff_tol=2.0,
+    #     v2.4: la CARGA se DERIVA (CHARGE_TO_FLIGHT_RATIO=1.5 -> charge_full≈160 s; charge_full es DEPRECATED, no se
+    #     pasa); baterías iniciales ALEATORIAS [battery_init_min=0.25, 1] + reserva espejo (substream RNG separado).
+    battery_capacity=600.0, battery_init_min=0.25, announce_threshold=0.20, relay_handoff_tol=2.0,
     # --- guardia de teletransporte: solo LOGUEA (no afecta la dinámica) ---
     teleport_guard=False, motion_tol=1.5,
 )
@@ -100,17 +106,17 @@ EVAL_SEEDS = tuple(range(N_PER_KIND))
 KINDS = ("lobos", "corzos", "mixto")
 KIND_LABEL = {"lobos": "solo-lobos", "corzos": "solo-corzos", "mixto": "mixto"}
 TERMINALS = ("success", "predation", "timeout")
-FROZEN_TAG = "v2.3-baseline"   # tag git del commit congelado (v2.2 + SUSTO FUERTE: la disuasión pasa de PARCIAL a fuerte; la física se RE-MIDE)
+FROZEN_TAG = "v2.4-baseline"   # tag git del commit congelado (v2.3 + SUSTO POR MOVIMIENTO + baterías espejo + carga 1.5x; la física se RE-MIDE)
 
 # Referencia CONGELADA de severidad (media de muertes/ep) por tipo, para detectar DERIVA.
 # Se rellena tras la primera medición; en re-corridas debe coincidir (mundo reproducible).
-# v2.3 (SUSTO FUERTE): un dron ACTIVE a <=DETER_RADIUS EXPULSA al lobo y este NO mata mientras huye
-# (sin excepción a corta). Incluso los drones QUIETOS del Dummy (esquinas del rebaño + investigador)
-# asustan a los lobos que se acercan -> la severidad Dummy CAE ~a la mitad (4.45/4.41 -> 2.36/2.24).
+# v2.4 (SUSTO POR MOVIMIENTO): solo un dron que SE ECHA ENCIMA (aproximación > umbral) expulsa; un dron
+# QUIETO es solo un obstáculo. Los drones CLAVADOS del Dummy ya casi NO disuaden -> la severidad Dummy
+# SUBE respecto a v2.3 (2.36/2.24) y VUELVE a ~v2.2 (4.45/4.41): 4.41/4.34. Defender bien exige MOVERSE.
 REFERENCE_SEVERITY = {
-    "lobos": 2.36,   # solo-lobos (amenaza pura); succ 6 / pred 74 / timeout 20; n_safe 4.19 (subió de 2.39)
+    "lobos": 4.41,   # solo-lobos (amenaza pura); succ 4 / pred 88 / timeout 8; n_safe 2.38 (bajó de 4.19)
     "corzos": 0.00,  # solo-corzos = SIN amenaza (100/100 timeout; el rebaño pasta, n_safe 0)
-    "mixto": 2.24,   # ≈ solo-lobos (los corzos solo consumen ciclos de investigación); n_safe 4.30
+    "mixto": 4.34,   # ≈ solo-lobos (los corzos solo consumen ciclos de investigación); n_safe 2.50
 }
 
 # Tolerancia de deriva (la media es exacta y reproducible bit a bit; margen mínimo por si

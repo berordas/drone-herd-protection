@@ -230,13 +230,13 @@ def render_episode(world, history, interval: int = 40, save_path: str | None = N
                 ring.center = (drones[i, 0], drones[i, 1])
             ring.set_visible(on)
 
-        # 🔊 bajo cada dron ACTIVE que "emite ruido" (algún lobo a <= DETER_RADIUS -> disuade). Puro dibujo:
-        # el render LEE lobos/estado del snapshot y calcula la condición con el MISMO radio de config; NO toca
-        # la lógica de disuasión del mundo.
+        # 🔊 bajo cada dron ACTIVE que de verdad SE ACERCA a un lobo a tiro (susto por movimiento v2.4). Puro
+        # dibujo: el render LEE el flag drone_scaring que calcula el mundo en _apply_deterrence (un dron ESTÁTICO
+        # ya no "ladra": solo asusta el que embiste). Sin el flag (snapshots viejos) no se dibuja.
+        scaring = snap.get("drone_scaring")
         if EMOJI_OK:
             for i, (ab, _oi, _name) in enumerate(sound_pool):
-                noisy = bool(deter_show and dstate is not None and dstate[i] == ACTIVE and len(wolves)
-                             and float(np.linalg.norm(wolves - drones[i], axis=1).min()) <= DETER_RADIUS)
+                noisy = bool(deter_show and scaring is not None and i < len(scaring) and scaring[i])
                 if noisy:
                     ab.xy = (drones[i, 0], drones[i, 1] - SOUND_DY)
                     ab.xybox = (drones[i, 0], drones[i, 1] - SOUND_DY)

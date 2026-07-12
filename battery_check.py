@@ -76,9 +76,12 @@ def main():
     print("  total de drones conservado (=%d):  %s" % (w.n_drones, bool((occ.sum(axis=1) == w.n_drones).all())))
     print("  drones STRANDED: máx=%d  (0 esperado a carga hover: las reservas dan abasto)" % stranded_max)
 
-    # Estrés: drenaje sostenido alto -> las reservas no dan abasto -> STRANDED (fallo esperado, no bug).
-    _, _, _, min_active_s, stranded_s, _ = run(seed=0, stress=2.5)
-    print("\n=== Estrés (drenaje 2.5x sostenido: moverse a tope sin parar) ===")
+    # Estrés: drenaje sostenido alto -> las reservas no dan abasto -> STRANDED (fallo esperado, no bug). v2.4: con
+    # la carga 1.5x MÁS RÁPIDA (charge_full≈160 s vs 300 s), el estrés 2.5x ya NO agota las reservas (dan abasto);
+    # se sube a 5.0x (drenaje/carga > 1 -> depleción neta) para seguir verificando el mecanismo de STRANDED.
+    STRESS = 5.0
+    _, _, _, min_active_s, stranded_s, _ = run(seed=0, stress=STRESS)
+    print("\n=== Estrés (drenaje %.1fx sostenido: moverse a tope sin parar; carga v2.4 más rápida) ===" % STRESS)
     print("  drones STRANDED: máx=%d  (>0 = reservas no dan abasto -> FALLO ESPERADO que el coordinador debe evitar)" % stranded_s)
     print("  min ACTIVE = %d  (<4 = hueco de cobertura mientras hay un dron tirado)" % min_active_s)
 
@@ -95,7 +98,57 @@ def main():
     assert avg[ACTIVE] >= w.n_active - 1e-9, "FALLO: ACTIVE medio < n_active"
     assert stranded_s >= 1, "FALLO: el estrés no produjo STRANDED (el mecanismo de fallo no se verifica)"
     assert repro, "FALLO: no reproducible"
+
+    test_reset_baterias()
+    test_charge_ratio()
     print("\nbattery_check: TODO OK.")
+
+
+def test_reset_baterias():
+    """v2.4: arranque de EPISODIO con baterías aleatorias + reserva ESPEJO (substream separado)."""
+    print("\n=== Arranque de EPISODIO (v2.4): baterías aleatorias [0.25,1] + reserva espejo (substream) ===")
+    w = World(seed=7, corzos_max=3, episode_kind="mixto")   # reset ya corrido en el constructor
+    na, nr = w.n_active, w.n_reserve
+    act, res = w.battery[:na], w.battery[na:na + nr]
+    print("  activos EN VUELO: %s (todos en [%.2f,1]) | reservas EN CARGA (espejo 1-pareja): %s"
+          % (np.round(act, 3), w.battery_init_min, np.round(res, 3)))
+    assert (act >= w.battery_init_min - 1e-9).all() and (act <= 1.0 + 1e-9).all(), "FALLO: activos fuera de [init_min,1]"
+    assert np.allclose(res, 1.0 - act[:nr]), "FALLO: la reserva NO es el espejo exacto (1 - pareja)"
+    assert (w.drone_state[:na] == ACTIVE).all() and (w.drone_state[na:] == CHARGING).all(), "FALLO: estados de arranque"
+    assert (w.battery[:na] > w.announce_threshold).all(), "FALLO: algún activo arranca bajo el umbral (dispararía relevo en t=0)"
+    # Reproducible + SUBSTREAM separado (cambiar battery_init_min NO perturba los spawns).
+    w2 = World(seed=7, corzos_max=3, episode_kind="mixto")
+    assert np.allclose(w.battery, w2.battery), "FALLO: baterías no reproducibles"
+    a = World(seed=5, corzos_max=3, episode_kind="mixto", battery_init_min=0.25)
+    b = World(seed=5, corzos_max=3, episode_kind="mixto", battery_init_min=0.90)
+    same_spawn = (a.n_wolves == b.n_wolves and np.allclose(a.wolves, b.wolves)
+                  and np.allclose(a.cows, b.cows) and np.allclose(a.corzos, b.corzos))
+    diff_bat = not np.allclose(a.battery[:a.n_active], b.battery[:b.n_active])
+    print("  reproducible=OK | substream: distinto init_min -> spawns idénticos=%s, baterías distintas=%s" % (same_spawn, diff_bat))
+    assert same_spawn and diff_bat, "FALLO: el substream de batería perturba los spawns (o no cambia las baterías)"
+    print("  OK")
+
+
+def test_charge_ratio():
+    """v2.4: cargar recupera ≈ CHARGE_TO_FLIGHT_RATIO x lo que el vuelo PLENO gasta por segundo."""
+    from world import CHARGE_TO_FLIGHT_RATIO, DRONE_MOVE_DRAIN
+    print("\n=== Ratio de carga (v2.4): carga = %.1fx el gasto de vuelo PLENO ===" % CHARGE_TO_FLIGHT_RATIO)
+    w = World(seed=0)
+    flight_full = w.drain_rate_active * (1.0 + DRONE_MOVE_DRAIN)   # gasto a vuelo pleno (fracción/s)
+    # Medida empírica: UN dron CHARGING de 0 a lleno; cuenta el tiempo -> tasa de recuperación (el resto READY,
+    # sin ACTIVE -> el paso de batería solo carga; sin dispatch/relevos que interfieran).
+    w.drone_state[:] = READY
+    w.drone_state[0] = CHARGING; w.battery[:] = 1.0; w.battery[0] = 0.0
+    steps = 0
+    while w.battery[0] < 1.0 - 1e-9 and steps < 100000:
+        w._step_battery(); steps += 1
+    charge_rate_meas = 1.0 / (steps * w.dt)                        # fracción/s recuperada
+    ratio_meas = charge_rate_meas / flight_full
+    print("  gasto vuelo pleno=%.5f/s | carga medida=%.5f/s | ratio=%.3f (esperado %.2f) | carga completa=%.0f s (~160)"
+          % (flight_full, charge_rate_meas, ratio_meas, CHARGE_TO_FLIGHT_RATIO, steps * w.dt))
+    assert abs(ratio_meas - CHARGE_TO_FLIGHT_RATIO) < 0.02, "FALLO: la carga no recupera 1.5x el vuelo pleno"
+    assert abs(steps * w.dt - 160.0) < 1.0, "FALLO: el tiempo de carga completa no es ~160 s"
+    print("  OK")
 
 
 if __name__ == "__main__":
