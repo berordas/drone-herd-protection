@@ -5,7 +5,7 @@
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
 >
-> **Última actualización: 2026-07-09** · *v2.4: SUSTO POR MOVIMIENTO (el estático es un poste) + baterías espejo + carga 1.5×.*
+> **Última actualización: 2026-07-12** · *refactor: controlador de lobos ENCHUFABLE (scripted | learned), bit a bit — prepara la fase RL.*
 > **Hecho:** terminal (el "juez") · disparador realista por detección de dron · reescalado a 300×300 (~9 ha) con
 > escala biológica absoluta · dispersión del rebaño · movimiento de drones · detectar→acercarse→confirmar ·
 > **guiado al refugio (paso 2)** · **huida NO-HOLONÓMICA en ESCOLTA** (pin) · **DISUASIÓN del dron** (radio CORTO + bordeo, parcial) ·
@@ -32,7 +32,13 @@
 > estáticos: solo el dron que SE ECHA ENCIMA —aproximación > `SCARE_APPROACH_MIN`— expulsa; el QUIETO es un OBSTÁCULO que
 > se rodea. Baterías iniciales aleatorias + reserva espejo (substream separado); carga = 1.5× el vuelo pleno ≈160 s. La
 > disuasión estática se evapora → Dummy 2.36/2.24→**4.41/4.34** (≈v2.2), Reactive 0.16/0.18→**2.80/2.78** (sube, pero sigue batiendo al Dummy)).
-> **Pendiente:** **MARL** (debe batir la barrera 2.80/2.78 MOVIENDO los drones con intención, gestionando la energía) · reflejo-reactivo que consume el mensaje del reflejo.
+> **Refactor — CONTROLADOR DE LOBOS ENCHUFABLE (`wolf_controllers.py`)** (scripted | learned; el scriptado es el
+> default BIT A BIT idéntico a v2.4). Extrae la POLÍTICA del lobo (táctica: fijación de presa, flanqueo, rodeo,
+> envolvente, coasting) a una interfaz `decide(world) -> (v_target, coasting)`; el mundo impone la FÍSICA (susto,
+> inercia+integración, cap, captura). Prepara la fase RL (lobos que burlan la barrera). CERO cambio de comportamiento,
+> CERO re-congelación (fingerprint bit a bit vs v2.4; verja verde SIN adaptar).
+> **Pendiente:** **fase RL** — (1) entrenar LOBOS (`learned`) que burlen la barrera reactiva y congelarlos; (2) **MARL**
+> de drones (debe batir la barrera 2.80/2.78 MOVIENDO los drones con intención, gestionando la energía) contra esos lobos.
 > **Commits:** `194a3ad` base · `37910b3` terminal · `e663504` disparador por dron · `4d1e708` campo
 > 300×300 + escala biológica absoluta · `886bd45` dispersión del rebaño · `a15e2df` movimiento de
 > drones (3a) · `fd893b8` detectar→confirmar (3b) · `49e0e22` consolidar DISEÑO+CLAUDE · `144b7bd` guiado (paso 2)
@@ -46,8 +52,40 @@
 > `v2.1-baseline`) · `e14206a` render: emojis a color + barra de batería + `--coordinador` · `11dc90d`
 > jabalí como 2ª distracción + emojis más pequeños (v2.2, RE-CONGELADO tag `v2.2-baseline`) · `a97362d`
 > retoques visuales + fix arranque del reactivo (patrulla anclada, sin cruces; Reactive 3.36/0/3.42) · `49fd8c4`
-> SUSTO FUERTE + rombo de carga (v2.3, RE-CONGELADO tag `v2.3-baseline`; Dummy 2.36/0/2.24, Reactive 0.16/0/0.18) · `<este commit>`
-> SUSTO POR MOVIMIENTO + baterías espejo + carga 1.5× (v2.4, RE-CONGELADO tag `v2.4-baseline`; Dummy 4.41/0/4.34, Reactive 2.80/0/2.78).
+> SUSTO FUERTE + rombo de carga (v2.3, RE-CONGELADO tag `v2.3-baseline`; Dummy 2.36/0/2.24, Reactive 0.16/0/0.18) · `7cf7381`
+> SUSTO POR MOVIMIENTO + baterías espejo + carga 1.5× (v2.4, RE-CONGELADO tag `v2.4-baseline`; Dummy 4.41/0/4.34, Reactive 2.80/0/2.78) · `<este commit>`
+> refactor: controlador de lobos ENCHUFABLE (scripted | learned), bit a bit vs v2.4 — prepara la fase RL (SIN re-congelar).
+>
+> **Patch — REFACTOR: controlador de lobos ENCHUFABLE (scripted | learned), SIN cambio de comportamiento.** Refactor
+> PURO que prepara la fase RL (lobos APRENDIDOS que burlen la barrera): extrae la toma de decisiones de los lobos a
+> una interfaz `WolfController` (`wolf_controllers.py`), con el SCRIPTADO actual como default BIT A BIT idéntico a
+> v2.4. CERO cambio de comportamiento, CERO re-congelación (la baseline NO se toca).
+> **FRONTERA POLÍTICA / FÍSICA (el corazón del refactor; será el contrato del RL — el controlador DECIDE, el mundo IMPONE):**
+> *POLÍTICA* (va al controlador, un cerebro aprendido podrá sustituirlo): a dónde quiere ir cada lobo — fijación/re-fijación
+> de la presa común (matanza excedente), standoff, cierre por el cono/flanqueo, rodeo del rebaño, ataque ENVOLVENTE,
+> repulsión entre lobos, bordeo de zonas, coasting al agotar. **Salida:** `decide(world) -> (v_target (nw,2), coasting)`
+> = VELOCIDAD deseada por lobo (será la ACCIÓN del RL). *FÍSICA* (se queda en el mundo, innegociable para CUALQUIER
+> controlador): el CAP de velocidad (wolf_speed=4.0) y la integración (inercia); el **SUSTO** (v2.4, `_apply_deterrence`)
+> —si un dron embiste, el mundo IMPONE la huida SOBRE la intención; un lobo huyendo NO mata ni flanquea, el miedo NO es
+> opcional—; la evitación suave del dron estático; las reglas de captura/muerte (radio, dar-la-cara/r_face_safe, cadáveres);
+> la percepción, la dinámica de vacas/terneros/corzos y la detección/confirmación de drones; los clamps de zona.
+> **AMBIGÜEDAD RESUELTA (pregunté al usuario):** la **presa común** (`pack_prey`, `pack_prey_kind`, `n_refix`,
+> `_ever_committed`, `_wolf_attacking`) es TÁCTICA del lobo PERO la LEEN partes que no son del lobo —el **PIN** de la vaca
+> (una vaca solo encara si es la presa fijada), la instrumentación (`is_pack_prey`) y el render—. Decisión (usuario): VIVE en
+> el **World** (contrato compartido); el controlador la ESCRIBE. Cuando llegue el controlador APRENDIDO tendrá que emitir
+> TAMBIÉN su 'presa objetivo' para que el pin funcione (se decide en la fase RL). **Salida = VELOCIDAD** (no dirección,
+> decisión del usuario): el mundo la trata como intención; el cap es física pero el mundo NO recorta al scriptado (que ya
+> emite a tope) para el bit a bit —recortará al aprendido—. **`_update_wolves`** pasa a ser un ORQUESTADOR fino
+> (`v_target, coasting = wolf_controller.decide(self)`; si no coasting → `_apply_deterrence`; inercia + integración + clamps);
+> el scriptado se movió TAL CUAL a `ScriptedWolfController` (mismos números). Selección análoga a `--coordinador`:
+> `World(wolf_policy="scripted"|"learned", wolf_controller=<instancia>)`, `main.py --lobos scripted` (default; `learned` =
+> `NotImplementedError`, hueco RL). **NO toca:** ningún comportamiento observable, la config congelada, la baseline.
+> **Verificación:** **fingerprint de equivalencia bit a bit** (SHA del estado de combate + escolta Dummy + escolta Reactive
+> —drones móviles, susto activo, coast, re-fijación— en episodios completos, `git stash` HEAD vs refactor → IDÉNTICO
+> `4425c866…`). **Verja verde SIN adaptar** (face 12/12 · battery · escort · drone · reactive). `wolf_controller_check.py`
+> nuevo (interfaz · el controlador no integra/asusta · **susto INNEGOCIABLE**: la embestida sobrescribe la intención de caza
+> · spot-check 15 episodios == baseline v2.4). Diff acotado: `wolf_controllers.py` (nuevo) + `world.py` (orquestador + param)
+> + `main.py` (flag) + docs. SIN re-congelación (v2.4-baseline sigue vigente).
 >
 > **Patch — SUSTO POR MOVIMIENTO + baterías iniciales realistas + carga 1.5× (v2.4) + RE-CONGELAR.** TRES cambios de
 > FÍSICA del mundo en una re-congelación (por eso RE-MIDE la baseline). **Motivo:** (1) el susto de v2.3 era un "campo de

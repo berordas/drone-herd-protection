@@ -13,6 +13,7 @@ Uso:
     python main.py --escenario solo-corzos                # FUERZA el tipo (solo-lobos / solo-corzos / mixto)
     python main.py --coordinador reactive                 # barrera de apantallado + patrulla (drones que se MUEVEN)
     python main.py --coordinador reactive --escenario solo-lobos   # barrera en acción, emojis + barra de batería
+    python main.py --lobos scripted                       # cerebro de los lobos (default; 'learned' pendiente RL)
 """
 
 from __future__ import annotations
@@ -72,11 +73,14 @@ def main():
                         help="fuerza el tipo de episodio (si se omite, se sortea ~1/3 cada uno)")
     parser.add_argument("--coordinador", choices=["dummy", "reactive"], default="dummy",
                         help="dummy = drones quietos (baseline); reactive = barrera de apantallado + patrulla")
+    parser.add_argument("--lobos", choices=["scripted", "learned"], default="scripted",
+                        help="cerebro de los LOBOS: scripted = comportamiento v2.4 (default); learned = pendiente RL")
     args = parser.parse_args()
     seed = args.seed if args.seed is not None else int(np.random.randint(0, 10000))
     episode_kind = ESCENARIOS.get(args.escenario)   # None -> sorteo sembrado
 
-    world = World(seed=seed, teleport_guard=True, corzos_max=CORZOS_MAX, episode_kind=episode_kind)
+    world = World(seed=seed, teleport_guard=True, corzos_max=CORZOS_MAX, episode_kind=episode_kind,
+                  wolf_policy=args.lobos)
     coordinator = ReactiveCoordinator(world) if args.coordinador == "reactive" else DummyCoordinator(world.n_drones)
 
     forzado = f"  (forzado: --escenario {args.escenario})" if args.escenario else "  (sorteado)"
@@ -84,7 +88,7 @@ def main():
     esp = "corzos" if world.distraction_species == "corzo" else "jabalíes"
     dist = f"{world.n_corzos} {esp}" if world.n_corzos else "0"
     print(f"seed = {seed}  (reproduce con: {repro})")
-    print(f"coordinador = {args.coordinador}  |  episodio = {world.episode_kind}{forzado}  |  lobos = {world.n_wolves}  |  distracción = {dist}")
+    print(f"coordinador = {args.coordinador}  |  lobos({args.lobos}) = {world.n_wolves}  |  episodio = {world.episode_kind}{forzado}  |  distracción = {dist}")
 
     history, metrics = run_episode(world, coordinator)
 

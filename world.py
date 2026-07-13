@@ -207,6 +207,11 @@ class World:
         announce_threshold: float = 0.20,  # fracción de batería a la que se pide relevo. TUNE
         charge_capacity: int | None = None,  # puestos de carga en paralelo (default = nº de reserva)
         relay_handoff_tol: float = 2.0,    # m: el relevo debe estar ESTO cerca del bajo para el hand-off (sin teletransporte). TUNE
+        # --- Cerebro ENCHUFABLE de los lobos (política de movimiento; ver wolf_controllers.py). El default
+        #     'scripted' es el comportamiento v2.4 BIT A BIT. El mundo consume el controlador en _update_wolves;
+        #     'learned' quedará para la fase RL (lobos que burlan la barrera). Análogo al coordinador de drones. ---
+        wolf_policy: str = "scripted",     # 'scripted' (default) | 'learned' (pendiente RL)
+        wolf_controller=None,              # inyección directa de una instancia WolfController (precede a wolf_policy; para el RL)
         seed: int | None = None,
     ):
         # --- configuración (inmutable durante el episodio) ---
@@ -363,6 +368,16 @@ class World:
         # vuelo (DRONE_MAX_SPEED y la distancia central<->puesto). Solo queda como param la tolerancia de
         # hand-off ("estar encima" del bajo para relevarlo).
         self.relay_handoff_tol = relay_handoff_tol
+
+        # Cerebro ENCHUFABLE de los lobos: instancia inyectada, o construida por política (default scripted =
+        # v2.4 bit a bit). Import PEREZOSO (wolf_controllers importa `world` para las constantes de bordeo de
+        # zona -> se evita el ciclo importándolo aquí, ya cargado el módulo). No consume RNG (bit a bit).
+        if wolf_controller is not None:
+            self.wolf_controller = wolf_controller
+        else:
+            from wolf_controllers import make_wolf_controller
+            self.wolf_controller = make_wolf_controller(wolf_policy)
+        self.wolf_policy = wolf_policy
 
         self._seed = seed
 
@@ -1068,170 +1083,38 @@ class World:
             self.calves[active] = sub
 
     def _update_wolves(self) -> None:
-        """Lobo DIRECCIONAL con PRESA COMÚN de la manada (corazón del flanqueo).
+        """Orquestador POLÍTICA -> FÍSICA de los lobos. La TÁCTICA (a dónde quiere ir cada lobo: fijación de
+        presa común, standoff, cono/flanqueo, rodeo, envolvente, repulsión, bordeo de zonas, coasting al
+        agotar) la decide el CONTROLADOR enchufable (`self.wolf_controller`, scriptado por defecto = v2.4 bit
+        a bit; ver wolf_controllers.py). El controlador devuelve la VELOCIDAD deseada por lobo (la intención)
+        y fija/re-fija la presa común (estado del World, contrato compartido: la LEE el 'pin' de la vaca).
 
-        La manada comparte UNA presa, FIJADA EN t=0 (_commit_initial_prey en reset) y mantenida hasta que
-        deja de ser cazable. Sin presa común no hay confluencia -> N duelos 1-contra-1, no pincer.
-          - Fijación inicial: en el reset, si hay caza (ternero, o >= n_min_adult lobos), se elige la presa
-            (_select_prey: ternero blando / adulta más expuesta) y TODA la manada va a por ESA desde el inicio.
-          - MATANZA EXCEDENTE: se suelta solo si deja de ser cazable (_prey_lost_reason). Tras MATAR o
-            REFUGIARSE la presa, el paquete RE-FIJA la res viva no-a-salvo MÁS CERCANA (_recommit_nearest_prey)
-            y SIGUE cazando -> en presa confinada (cercada/clavada) caza varias hasta agotar objetivos. n_refix
-            sube en ambos casos. Ya NO se abandona por distancia (empieza lejos del perímetro).
-          - Objetivos AGOTADOS (todas muertas o a salvo): el paquete se DESENGANCHA y FRENA (coastea a parada,
-            no orbita). Sin presa pero con reses vivas fuera (lobo solo sin ternero): standoff AMPLIO (no caza).
-        Reparto de roles EMERGENTE: repulsión entre lobos alrededor de la presa única -> uno de frente
-        (ella lo encara), los demás a los flancos/grupa. Si el rebaño se interpone, el lobo lo BORDEA
-        (componente tangencial) en vez de atravesarlo. Velocidad con INERCIA.
+        La FÍSICA la impone AQUÍ el mundo (innegociable para cualquier controlador, aprendido incluido):
+          - el SUSTO por movimiento (`_apply_deterrence`): si un dron EMBISTE, la huida SUSTITUYE a la
+            intención (un lobo huyendo no mata ni flanquea); un dron estático es un obstáculo (esquiva suave);
+          - la INERCIA (suavizado) + la integración del movimiento + los clamps de zona (`_push_outside_circle`).
+        El CAP wolf_speed es física; el scriptado ya emite a tope por construcción, así que el mundo NO recorta
+        su salida (cap implícito, bit a bit); recortará la salida de un controlador APRENDIDO (fase RL).
+
+        Coasting (objetivos AGOTADOS): el controlador devuelve v=0 y coasting=True -> el mundo desacelera
+        (inercia sobre v=0) y OMITE el susto ese paso (no hay velocidad de caza que sobrescribir), igual que v2.4.
         """
         if self.n_wolves == 0:
             self.pack_prey = -1
             self._wolf_attacking = False
             return
 
-        d_wc = np.linalg.norm(self.cows[None, :, :] - self.wolves[:, None, :], axis=2)  # (nw, nc)
+        # POLÍTICA: el controlador decide la velocidad deseada por lobo (y fija/re-fija la presa común).
+        v_target, coasting = self.wolf_controller.decide(self)
 
-        # La presa viene fijada de t=0. Se SUELTA solo si deja de ser cazable (_prey_lost_reason): MUERE o
-        # se REFUGIA. En AMBOS casos (matanza excedente) la manada RE-FIJA la res viva no-a-salvo MÁS CERCANA
-        # (_recommit_nearest_prey) y sigue cazando -> varias muertes hasta agotar objetivos. n_refix cuenta
-        # SOLO las re-fijaciones por REFUGIO (indicador de oscilación); la muerte re-fija pero no es oscilación.
-        reason = self._prey_lost_reason()
-        if reason is not None:
-            self.pack_prey = -1; self.pack_prey_kind = None
-            if reason == "refuge":
-                self.n_refix += 1
-            self._recommit_nearest_prey()   # va a por la siguiente más cercana (tras matar o refugiarse)
+        # FÍSICA: el SUSTO se impone SOBRE la intención (salvo en coast, que no tiene velocidad de caza que
+        # sobrescribir -> se omite, exactamente como v2.4). Marca _wolf_scared (lo lee _process_predation) y
+        # _drone_scaring (🔊 del render). Gateado internamente por escort_enabled (combate puro -> face_check bit a bit).
+        if not coasting:
+            v_target = self._apply_deterrence(v_target)
 
-        if self._targets_exhausted():
-            # Objetivos AGOTADOS (todas las reses muertas o a salvo): el paquete se DESENGANCHA y FRENA. No
-            # vuelve al standoff+repulsión, que con la manada agrupada lo haría ORBITAR (tembleque); coastea
-            # a parada -> movimiento FIRME (esto mantiene face_check test 3 sano). El clamp #5 sigue.
-            self.wolf_vel += self.wolf_inertia * (-self.wolf_vel)
-            self.wolves = self.wolves + self.wolf_vel * self.dt
-            self._clip_to_parcel(self.wolves)
-            self._push_outside_circle(self.wolves, self.safe_zone)
-            self._push_outside_circle(self.wolves, self.central_station)
-            self._wolf_attacking = False
-            return
-
-        if self.pack_prey < 0:
-            # Rondar sin comprometerse: standoff amplio a la vaca más cercana de cada lobo.
-            nearest = self.cows[d_wc.argmin(axis=1)]
-            rel = self.wolves - nearest
-            dist = np.linalg.norm(rel, axis=1, keepdims=True)
-            rhat = rel / np.maximum(dist, 1e-9)
-            desired = -rhat * (dist - self.r_standoff)
-            self._wolf_attacking = False
-        else:
-            # El cono que estorba es el de la presa adulta o el de la DEFENSORA del ternero; el lobo
-            # CIERRA hacia la presa (ternero o adulta). Para una adulta, cono y presa coinciden.
-            prey_pos = self._prey_pos()
-            cone_pos, f = self._prey_cone()
-            rel = self.wolves - cone_pos                 # ángulo respecto al cono (defensora/adulta)
-            dist = np.linalg.norm(rel, axis=1, keepdims=True)
-            rhat = rel / np.maximum(dist, 1e-9)
-            cosphi = rhat @ f
-            at_flank = cosphi < np.cos(self.cone_half_angle + self.cone_band)   # fuera del cono (banda muerta)
-            close_in = prey_pos - self.wolves            # hacia la PRESA (cerrar a matar)
-            cross = f[0] * rhat[:, 1] - f[1] * rhat[:, 0]    # signo de phi -> circular hacia el flanco
-            tang = np.where((cross >= 0.0)[:, None],
-                            np.column_stack([-rhat[:, 1], rhat[:, 0]]),
-                            np.column_stack([rhat[:, 1], -rhat[:, 0]]))
-            radial_hold = -rhat * (dist - self.r_face_safe)
-            circle = tang + radial_hold
-            desired = np.where(at_flank[:, None], close_in, circle)
-            self._wolf_attacking = bool(np.any(at_flank & (dist.ravel() <= self.r_face_safe)))
-
-        # --- RODEAR el rebaño (no atravesarlo): si las NO-presa se interponen entre el lobo y la
-        #     presa, añade una componente TANGENCIAL (perpendicular a lobo->presa) hacia el lado
-        #     OPUESTO al cúmulo -> el lobo ARQUEA alrededor del rebaño hasta el costado de la presa,
-        #     en vez de beelinear y atascarse contra las vacas que lo encaran. Tangencial (no solo
-        #     repulsión radial, que lo dejaría parado de frente) y comprometido con un lado (sign de s).
-        if self.pack_prey >= 0:
-            prey_pos = self._prey_pos()
-            mask = self.cow_alive & ~self.cow_safe           # solo las CAZABLES son obstáculo (las muertas/refugiadas no)
-            if self.pack_prey_kind == "adult":
-                mask[self.pack_prey] = False                 # la presa adulta no es obstáculo de sí misma
-            herd = self.cows[mask]
-            if herd.shape[0] >= 2:
-                C = herd.mean(axis=0)                                          # centroide del cúmulo
-                R_herd = float(np.linalg.norm(herd - C, axis=1).mean()) + self.wolf_skirt_margin
-                to_prey = prey_pos[None, :] - self.wolves
-                L = np.linalg.norm(to_prey, axis=1, keepdims=True)
-                u = to_prey / np.maximum(L, 1e-9)
-                perp = np.column_stack([-u[:, 1], u[:, 0]])
-                to_C = C[None, :] - self.wolves
-                proj = np.sum(to_C * u, axis=1)                               # avance hasta la proyección de C
-                s = np.sum(to_C * perp, axis=1)                               # offset perpendicular de C (con signo)
-                between = (proj > 0.0) & (proj < L.ravel())                   # C está ENTRE el lobo y la presa
-                gate = between * np.clip(1.0 - np.abs(s) / max(R_herd, 1e-9), 0.0, 1.0)  # cruza el cúmulo
-                side = np.where(s >= 0.0, -1.0, 1.0)                          # rodea por el lado OPUESTO a C (commit)
-                skirt = self.wolf_skirt_gain * (gate * L.ravel())[:, None] * (side[:, None] * perp)
-                desired = desired + skirt
-
-        # --- ATAQUE ENVOLVENTE: reparte los rumbos del paquete en ángulos EQUIESPACIADOS alrededor de la
-        #     presa fijada (N lobos -> 2π/N; 4 → ~N/E/S/O, 3 → ~120°), anclado al ángulo medio actual (mínima
-        #     rotación). Empuje TANGENCIAL hacia el slot asignado -> los lobos comprometidos se separan a
-        #     costados opuestos y SALEN del cono frontal a flancos LIMPIOS. Sin esto, contra una presa CLAVADA
-        #     (parada) se apiñan en el cono y "dar la cara" los mantiene a TODOS a raya (a r_face_safe) -> la
-        #     presa era invulnerable. La rapidez del slot la fija wolf_envelop_gain. Solo con presa fijada. ---
-        if self.pack_prey >= 0 and self.wolf_envelop_gain > 0.0:
-            prey_pos = self._prey_pos()
-            d_prey = np.linalg.norm(self.wolves - prey_pos, axis=1)
-            eng = np.where(d_prey <= self.r_notice)[0]           # lobos comprometidos (cerca de la presa)
-            if eng.size >= 2:
-                slot = self._envelop_slots(prey_pos, eng)        # ángulo objetivo equiespaciado por lobo
-                rel = self.wolves[eng] - prey_pos
-                cur = np.arctan2(rel[:, 1], rel[:, 0])
-                ang_err = ((slot - cur + np.pi) % (2 * np.pi)) - np.pi   # error angular con signo -> a qué lado rotar
-                rhat = rel / np.maximum(d_prey[eng][:, None], 1e-9)
-                tang = np.column_stack([-rhat[:, 1], rhat[:, 0]])        # tangente CCW alrededor de la presa
-                desired[eng] = desired[eng] + self.wolf_envelop_gain * ang_err[:, None] * tang
-
-        # Repulsión entre lobos cerca del rebaño -> reparto angular alrededor de la presa (pincer).
-        engaged_w = d_wc.min(axis=1) <= self.r_notice
-        dd_w = self.wolves[:, None, :] - self.wolves[None, :, :]
-        ddn = np.linalg.norm(dd_w, axis=2)
-        near = (ddn < self.wolf_repulsion_radius) & engaged_w[None, :]
-        np.fill_diagonal(near, False)
-        rep_units = dd_w / np.maximum(ddn[:, :, None], 1e-9)
-        repulsion = (rep_units * near[:, :, None]).sum(axis=1) * engaged_w[:, None] * self.wolf_repulsion_strength
-        desired = desired + repulsion
-
-        # --- BORDEAR las ZONAS PROHIBIDAS (refugio/central): un lobo que persigue HACIA una zona se clavaba en
-        #     su borde (el clamp lo frena de frente -> atasco radial). Cerca de la frontera añade una TANGENCIAL
-        #     -> el lobo ARQUEA por FUERA de la zona hasta el objetivo del otro lado (NO entra: el clamp sigue).
-        #     Análogo al bordeo del dron y del rebaño. Se suma a `desired` (antes de normalizar) -> solo redirige,
-        #     no acelera. Gateado por escort_enabled (en combate la presa no se refugia -> face_check bit a bit).
-        if self.escort_enabled:
-            dnorm = np.linalg.norm(desired, axis=1, keepdims=True)
-            vd = desired / np.maximum(dnorm, 1e-9)               # dirección de caza por lobo
-            for circle in (self.safe_zone, self.central_station):
-                C, rz = circle[:2], circle[2]
-                to_zone = C - self.wolves                        # lobo -> centro de la zona
-                d = np.linalg.norm(to_zone, axis=1)
-                band = rz + WOLF_ZONE_SKIRT_BAND
-                near_z = (d < band) & (d > 1e-9)
-                if not near_z.any():
-                    continue
-                u = to_zone / np.maximum(d[:, None], 1e-9)       # hacia el centro de la zona
-                block = np.clip(np.sum(vd * u, axis=1), 0.0, 1.0)            # 1 = la caza apunta de frente a la zona
-                fall = np.clip((band - d) / WOLF_ZONE_SKIRT_BAND, 0.0, 1.0) * near_z  # 1 en el borde, 0 a `band`
-                perp = np.column_stack([-u[:, 1], u[:, 0]])
-                side = np.where(np.sum(perp * vd, axis=1) >= 0.0, 1.0, -1.0)  # lado que conserva el avance (det.)
-                tang = perp * side[:, None]                                   # tangente unitaria que rodea la zona
-                desired = desired + WOLF_ZONE_SKIRT_GAIN * (fall * block * dnorm.ravel())[:, None] * tang
-
-        # Dirección deseada -> velocidad objetivo a rapidez plena (el "impulso de caza" hacia la presa/standoff).
-        dn = np.linalg.norm(desired, axis=1, keepdims=True)
-        desired_dir = np.where(dn > 1e-9, desired / np.maximum(dn, 1e-9), 0.0)
-        v_target = desired_dir * self.wolf_speed
-        # SUSTO POR MOVIMIENTO (v2.4): un dron ACTIVE que SE ECHA ENCIMA (aproximación > umbral) a <= DETER_RADIUS
-        # EXPULSA al lobo (la huida SUSTITUYE a la caza; no mata mientras huye); un dron estático/alejándose es solo
-        # un obstáculo que el lobo rodea (sigue cazando). Gateado por escort_enabled (combate puro intacto, face_check
-        # bit a bit). Marca _wolf_scared (lo lee _process_predation) y _drone_scaring (🔊 del render).
-        v_target = self._apply_deterrence(v_target)
-        self.wolf_vel += self.wolf_inertia * (v_target - self.wolf_vel)   # INERCIA (suavizado, sin saltos)
+        # FÍSICA: INERCIA (suavizado, sin saltos) + integración + clamps de zona.
+        self.wolf_vel += self.wolf_inertia * (v_target - self.wolf_vel)
         self.wolves = self.wolves + self.wolf_vel * self.dt
         self._clip_to_parcel(self.wolves)
         self._push_outside_circle(self.wolves, self.safe_zone)
