@@ -13,3 +13,10 @@ venv/
 .DS_Store
 .vscode/
 .idea/
+
+# Artefactos RL (los checkpoints/logs van a ~/rl_data, montado como /data — FUERA del repo;
+# esto es el cinturón por si alguien escribe dentro del repo por error)
+rl_data/
+runs/
+*.zip
+events.out.tfevents.*

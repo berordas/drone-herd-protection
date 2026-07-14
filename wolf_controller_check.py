@@ -8,8 +8,9 @@ comprueba:
      impone susto + inercia + integración. El controlador SÍ fija la presa común (estado del World).
   3) SUSTO INNEGOCIABLE: si un dron EMBISTE, el mundo IMPONE la huida SOBRE la intención del controlador
      (aunque la intención diga "sigue a la presa"); un lobo huyendo no mata.
-  4) SPOT-CHECK vs baseline v2.4 CONGELADA (baseline_v2.json): mismas semillas -> severidades IDÉNTICAS
-     (no se re-mide; solo se confirma que el refactor no movió nada).
+  4) SPOT-CHECK vs baseline v2.4.1 CONGELADA (baseline_v2.json, METRO DGX: medida dentro del contenedor
+     del proyecto — fuera puede salir rojo por deriva FP entre plataformas): mismas semillas ->
+     severidades IDÉNTICAS (no se re-mide; solo se confirma que nada movió la baseline).
 
 El fingerprint de equivalencia (SHA del estado en episodios completos, git stash HEAD vs refactor) es la
 prueba REINA; esto son comprobaciones dirigidas complementarias. face_check/battery/escort/drone/reactive
@@ -115,10 +116,12 @@ def test_susto_innegociable():
 
 
 def test_spotcheck_baseline():
-    print("=== 4) SPOT-CHECK vs baseline v2.4 CONGELADA (baseline_v2.json): severidades IDÉNTICAS (no re-medir) ===")
+    print("=== 4) SPOT-CHECK vs baseline v2.4.1 CONGELADA (baseline_v2.json, metro DGX): severidades IDÉNTICAS (no re-medir) ===")
     with open("baseline_v2.json", encoding="utf-8") as f:
         ref = json.load(f)
-    assert ref["frozen_tag"] == "v2.4-baseline", "baseline_v2.json no es v2.4"
+    # v2.4.1 = MISMA física que v2.4, re-medida en el contenedor canónico de la DGX (metro oficial).
+    # Este spot-check solo es reproducible DENTRO de ese entorno (fuera puede salir rojo: deriva FP).
+    assert ref["frozen_tag"] == "v2.4.1-baseline", "baseline_v2.json no es v2.4.1 (metro DGX)"
     from baseline import build_world, run_episode_metrics
     checked = 0
     for kind in ("lobos", "corzos", "mixto"):
@@ -127,10 +130,10 @@ def test_spotcheck_baseline():
             w = build_world(seed, kind)
             m = run_episode_metrics(w, DummyCoordinator(w.n_drones))
             exp = eps[seed]["n_depredadas"]
-            assert m["n_depredadas"] == exp, ("FALLO: %s seed=%d severidad %d != v2.4 %d (el refactor movió la baseline)"
+            assert m["n_depredadas"] == exp, ("FALLO: %s seed=%d severidad %d != v2.4.1 %d (algo movió la baseline)"
                                               % (kind, seed, m["n_depredadas"], exp))
             checked += 1
-    print("  %d episodios (3 tipos × 5 semillas): n_depredadas IDÉNTICO a v2.4 (refactor no movió la baseline)" % checked)
+    print("  %d episodios (3 tipos × 5 semillas): n_depredadas IDÉNTICO a v2.4.1 (nada movió la baseline)" % checked)
     print("  OK\n")
 
 

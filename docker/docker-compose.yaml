@@ -1,0 +1,49 @@
+# Contenedor del PROYECTO para la fase RL de lobos. Basado en el compose del laboratorio
+# (~/compose_base_python): misma imagen/pins; cambia el USO — queda IDLE para `docker exec`
+# (sin Jupyter ni nada escuchando), UNA sola GPU (buen vecino: DGX compartida) y los
+# volúmenes del proyecto (el repo como zona de trabajo + ~/rl_data para checkpoints/logs).
+#
+# Uso:   mkdir -p ~/rl_data
+#        cd docker && docker compose up -d --build     # levantar
+#        ./conectar.sh                                 # entrar (bash como jovyan en /workspace)
+#        docker compose down                           # PARAR al terminar la sesión (buen vecino)
+name: "${USER}-wolves" # nombre de proyecto EXPLÍCITO -> sin colisiones con otros alumnos
+
+services:
+  wolves:
+    container_name: "${USER}-wolves"
+    build: .
+    user: root # start.sh remapea jovyan -> HOST_UID/HOST_GID y ejecuta el command como jovyan
+    tty: true
+    stdin_open: true
+    shm_size: '2gb' # SubprocVecEnv (memoria compartida entre workers)
+    networks:
+      - alumnos
+    working_dir: /workspace
+    volumes:
+      - ..:/workspace # el repo (zona de trabajo; los GIFs/__pycache__ quedan del uid del host)
+      - ${HOME}/rl_data:/data # TODOS los checkpoints/logs/tb van a /data (persiste; el contenedor es efímero)
+    # Idle: el contenedor no arranca nada; se trabaja con docker exec (conectar.sh).
+    # El ENTRYPOINT de la imagen (start.sh, docker-stacks) remapea jovyan -> NB_UID/NB_GID
+    # y ejecuta este command como jovyan.
+    command: sleep infinity
+    healthcheck:
+      disable: true # el healthcheck de la imagen base sondea Jupyter, que aquí no corre
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1 # buen vecino: UNA GPU (y el smoke test va en CPU igualmente)
+              capabilities: [gpu]
+    environment:
+      - NB_UID=${HOST_UID:-1047} # uid/gid del dueño del repo en el host (ver docker/.env);
+      - NB_GID=${HOST_GID:-987} #   así lo que se escribe en los volúmenes queda del usuario
+      - CHOWN_HOME=yes
+      - CHOWN_HOME_OPTS=-R
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+      - PYTHONPATH=/workspace # world.py y rl/ importables desde cualquier cwd (checks, SubprocVecEnv)
+
+networks:
+  alumnos:
+    external: true

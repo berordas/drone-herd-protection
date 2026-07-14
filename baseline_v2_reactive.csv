@@ -1,4 +1,4 @@
 tipo,n,dummy_sev,reactive_sev,reactive_desv,delta_sev,reactive_max,dummy_n_safe,reactive_n_safe,success,predation,timeout
-solo-lobos,100,4.4100,2.8000,1.5166,-1.6100,7,2.3800,4.0800,4,90,6
+solo-lobos,100,4.5400,2.7700,1.4619,-1.7700,6,2.2500,4.1200,4,90,6
 solo-corzos,100,0.0000,0.0000,0.0000,+0.0000,0,0.0000,0.0000,0,0,100
-mixto,100,4.3400,2.7800,1.4531,-1.5600,6,2.5000,4.0900,4,88,8
+mixto,100,4.4600,2.8000,1.4832,-1.6600,6,2.3800,4.0800,4,88,8

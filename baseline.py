@@ -22,14 +22,23 @@ las métricas POR TIPO.
    config: apples-to-apples.
 
 Métrica PRINCIPAL = SEVERIDAD = muertes (reses depredadas) por episodio. Más:
-reparto de terminales (success / predation / timeout) y n_safe medio. Números
-CONGELADOS v2.4 (N=100/tipo, DummyCoordinator, semillas range(100)):
-  solo-lobos  4.41 ± 2.15 (máx 8) · n_safe 2.38 · success 4 / predation 88 / timeout 8
+reparto de terminales (success / predation / timeout) y n_safe medio.
+
+⚠️ METRO CANÓNICO (v2.4.1): estos números se miden DENTRO del contenedor del proyecto
+en la DGX (docker/) — decisión 2026-07-14. La FÍSICA no cambió respecto a v2.4 (mismos
+spawns, mismo RNG, mismas reglas); lo que cambió es el ENTORNO de medida: la referencia
+anterior se midió en el portátil y la deriva FP entre plataformas (última ULP de
+libm/hardware, amplificada por el caos) mueve ~0.1 la media. Los spot-checks contra los
+artefactos pueden salir ROJOS fuera del contenedor (portátil) — ESPERADO.
+
+Números CONGELADOS v2.4.1 (N=100/tipo, DummyCoordinator, semillas range(100), DGX):
+  solo-lobos  4.54 ± 2.21 (máx 8) · n_safe 2.25 · success 4 / predation 88 / timeout 8
   solo-corzos 0.00 ± 0.00 (máx 0) · n_safe 0.00 · timeout 100        (SIN amenaza)
-  mixto       4.34 ± 2.25 (máx 8) · n_safe 2.50 · success 5 / predation 87 / timeout 8
-  AGREGADO    2.92 ± 2.74 (máx 8) · n_safe 1.63 · success 9 / predation 175 / timeout 116
+  mixto       4.46 ± 2.27 (máx 8) · n_safe 2.38 · success 5 / predation 86 / timeout 9
+  AGREGADO    3.00 ± 2.80 (máx 8) · n_safe 1.54 · success 9 / predation 174 / timeout 117
 mixto ≈ solo-lobos (los corzos solo consumen ciclos de investigación; el agregado
 mezclado es poco informativo: la comparación se hace POR TIPO).
+(Lineage portátil v2.4: 4.41 / 0.00 / 4.34 — mismo mundo, otro metro.)
 
 Resultados guardados en baseline_v2.json (rico, por episodio) y baseline_v2.csv
 (tabla). `python baseline.py` re-mide y comprueba que no ha derivado.
@@ -106,17 +115,17 @@ EVAL_SEEDS = tuple(range(N_PER_KIND))
 KINDS = ("lobos", "corzos", "mixto")
 KIND_LABEL = {"lobos": "solo-lobos", "corzos": "solo-corzos", "mixto": "mixto"}
 TERMINALS = ("success", "predation", "timeout")
-FROZEN_TAG = "v2.4-baseline"   # tag git del commit congelado (v2.3 + SUSTO POR MOVIMIENTO + baterías espejo + carga 1.5x; la física se RE-MIDE)
+FROZEN_TAG = "v2.4.1-baseline"   # tag git del commit congelado: MISMO mundo que v2.4, METRO DGX (re-medición canónica en el contenedor)
 
 # Referencia CONGELADA de severidad (media de muertes/ep) por tipo, para detectar DERIVA.
-# Se rellena tras la primera medición; en re-corridas debe coincidir (mundo reproducible).
-# v2.4 (SUSTO POR MOVIMIENTO): solo un dron que SE ECHA ENCIMA (aproximación > umbral) expulsa; un dron
-# QUIETO es solo un obstáculo. Los drones CLAVADOS del Dummy ya casi NO disuaden -> la severidad Dummy
-# SUBE respecto a v2.3 (2.36/2.24) y VUELVE a ~v2.2 (4.45/4.41): 4.41/4.34. Defender bien exige MOVERSE.
+# Se rellena tras la primera medición; en re-corridas debe coincidir (mundo reproducible POR ENTORNO).
+# v2.4.1 (METRO DGX): la MISMA física v2.4 re-medida DENTRO del contenedor canónico (docker/). La
+# referencia del portátil (4.41/0.00/4.34) no se reproduce entre plataformas (deriva FP amplificada
+# por el caos; spawns/RNG idénticos) -> desde 2026-07-14 el metro oficial es el contenedor de la DGX.
 REFERENCE_SEVERITY = {
-    "lobos": 4.41,   # solo-lobos (amenaza pura); succ 4 / pred 88 / timeout 8; n_safe 2.38 (bajó de 4.19)
+    "lobos": 4.54,   # solo-lobos (amenaza pura); succ 4 / pred 88 / timeout 8; n_safe 2.25
     "corzos": 0.00,  # solo-corzos = SIN amenaza (100/100 timeout; el rebaño pasta, n_safe 0)
-    "mixto": 4.34,   # ≈ solo-lobos (los corzos solo consumen ciclos de investigación); n_safe 2.50
+    "mixto": 4.46,   # ≈ solo-lobos (los corzos solo consumen ciclos de investigación); n_safe 2.38
 }
 
 # Tolerancia de deriva (la media es exacta y reproducible bit a bit; margen mínimo por si
@@ -124,9 +133,12 @@ REFERENCE_SEVERITY = {
 DRIFT_TOL = 0.005
 
 
-def build_world(seed: int, kind: str) -> World:
-    """World v2 (CONFIG_V2) con el tipo de episodio FORZADO (muestra por tipo)."""
-    return World(seed=seed, episode_kind=kind, **CONFIG_V2)
+def build_world(seed: int, kind: str, wolf_controller=None) -> World:
+    """World v2 (CONFIG_V2) con el tipo de episodio FORZADO (muestra por tipo).
+    `wolf_controller` (fase RL, opcional): instancia WolfController inyectada al World
+    (lobos aprendidos); con None (default) TODO queda exactamente como estaba (scriptado
+    v2.4 — pasar None es el default del propio World)."""
+    return World(seed=seed, episode_kind=kind, wolf_controller=wolf_controller, **CONFIG_V2)
 
 
 def run_episode_metrics(world: World, coordinator) -> dict:
@@ -151,16 +163,21 @@ def run_episode_metrics(world: World, coordinator) -> dict:
 
 
 def evaluate(coordinator_factory=lambda w: DummyCoordinator(w.n_drones),
-             seeds=EVAL_SEEDS, kinds=KINDS) -> dict:
+             seeds=EVAL_SEEDS, kinds=KINDS, wolf_controller_factory=None) -> dict:
     """Evalúa un coordinador sobre el mundo v2: para CADA tipo, corre todas las semillas y
     agrega severidad (media±desv), reparto de terminales y n_safe medio. Reutilízalo para
-    comparar un coordinador nuevo: pasa su factory; misma config, mismas semillas."""
+    comparar un coordinador nuevo: pasa su factory; misma config, mismas semillas.
+    `wolf_controller_factory` (fase RL, opcional): callable SIN argumentos que devuelve una
+    instancia WolfController FRESCA por episodio (lobos aprendidos con el MISMO arnés y
+    semillas: apples-to-apples también para el adversario). Con None (default), scriptado
+    v2.4 — bit a bit lo de siempre."""
     by_kind = {}
     all_deaths, all_safe, all_terms = [], [], Counter()
     for kind in kinds:
         deaths, safe, terms, episodes = [], [], Counter(), []
         for s in seeds:
-            w = build_world(s, kind)
+            wc = wolf_controller_factory() if wolf_controller_factory is not None else None
+            w = build_world(s, kind, wolf_controller=wc)
             m = run_episode_metrics(w, coordinator_factory(w))
             deaths.append(m["n_depredadas"]); safe.append(m["n_safe"]); terms[m["status"]] += 1
             episodes.append(m)

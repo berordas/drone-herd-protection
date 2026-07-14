@@ -5,7 +5,7 @@
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
 >
-> **Última actualización: 2026-07-12** · *refactor: controlador de lobos ENCHUFABLE (scripted | learned), bit a bit — prepara la fase RL.*
+> **Última actualización: 2026-07-14** · *andamiaje RL de lobos (contenedor + Gymnasium + train_wolves + rl_env_check) + **v2.4.1-baseline**: mismo mundo, METRO DGX (el contenedor pasa a ser el entorno canónico de medida; re-medición Dummy/Reactive dentro).*
 > **Hecho:** terminal (el "juez") · disparador realista por detección de dron · reescalado a 300×300 (~9 ha) con
 > escala biológica absoluta · dispersión del rebaño · movimiento de drones · detectar→acercarse→confirmar ·
 > **guiado al refugio (paso 2)** · **huida NO-HOLONÓMICA en ESCOLTA** (pin) · **DISUASIÓN del dron** (radio CORTO + bordeo, parcial) ·
@@ -16,8 +16,9 @@
 > **v2 CONGELADA (tag `v2-baseline`)** (la física NO cambia más; `baseline.py` = arnés de evaluación POR TIPO,
 > severidad Dummy solo-lobos 4.45 / solo-corzos 0.00 / mixto 4.41, N=100) ·
 > **ReactiveCoordinator** (1er coordinador clásico: BARRERA de apantallado; regla fija, NO aprende) →
-> severidad (v2.4, SUSTO POR MOVIMIENTO) **2.80 / 0 / 2.78** (−1.61 / − / −1.56 vs Dummy 4.41/0/4.34) — SUBE desde
-> v2.3 (0.16/0.18) porque la barrera clavada es un POSTE, pero SIGUE batiendo al Dummy (su barrera se recoloca) ·
+> severidad (v2.4.1, metro DGX) **2.77 / 0 / 2.80** (−1.77 / − / −1.66 vs Dummy 4.54/0/4.46; en el metro portátil
+> v2.4 era 2.80/2.78 vs 4.41/4.34) — SUBE desde v2.3 (0.16/0.18) porque la barrera clavada es un POSTE, pero SIGUE
+> batiendo al Dummy (su barrera se recoloca) ·
 > **RELEVO de flota REALISTA (v2.1)** (hand-off, SIN teletransporte: la reserva VUELA al puesto, el bajo cubre
 > hasta el relevo, vuelve a cargar; STRANDED bajo estrés → moverse tiene COSTE real) ·
 > **RENDER: emojis a color + barra de batería + `main.py --coordinador`** ·
@@ -37,8 +38,10 @@
 > envolvente, coasting) a una interfaz `decide(world) -> (v_target, coasting)`; el mundo impone la FÍSICA (susto,
 > inercia+integración, cap, captura). Prepara la fase RL (lobos que burlan la barrera). CERO cambio de comportamiento,
 > CERO re-congelación (fingerprint bit a bit vs v2.4; verja verde SIN adaptar).
-> **Pendiente:** **fase RL** — (1) entrenar LOBOS (`learned`) que burlen la barrera reactiva y congelarlos; (2) **MARL**
-> de drones (debe batir la barrera 2.80/2.78 MOVIENDO los drones con intención, gestionando la energía) contra esos lobos.
+> **Pendiente:** **fase RL** — (1) lobos: el ANDAMIAJE ya está (contenedor + WolfPackEnv + train_wolves + rl_env_check);
+> falta ENTRENAR en serio lobos (`learned`) que burlen la barrera reactiva, evaluarlos con el arnés y congelarlos; (2) **MARL**
+> de drones (debe batir la barrera **2.77 / 0 / 2.80** —metro DGX v2.4.1— MOVIENDO los drones con intención, gestionando la
+> energía) contra esos lobos.
 > **Commits:** `194a3ad` base · `37910b3` terminal · `e663504` disparador por dron · `4d1e708` campo
 > 300×300 + escala biológica absoluta · `886bd45` dispersión del rebaño · `a15e2df` movimiento de
 > drones (3a) · `fd893b8` detectar→confirmar (3b) · `49e0e22` consolidar DISEÑO+CLAUDE · `144b7bd` guiado (paso 2)
@@ -53,8 +56,87 @@
 > jabalí como 2ª distracción + emojis más pequeños (v2.2, RE-CONGELADO tag `v2.2-baseline`) · `a97362d`
 > retoques visuales + fix arranque del reactivo (patrulla anclada, sin cruces; Reactive 3.36/0/3.42) · `49fd8c4`
 > SUSTO FUERTE + rombo de carga (v2.3, RE-CONGELADO tag `v2.3-baseline`; Dummy 2.36/0/2.24, Reactive 0.16/0/0.18) · `7cf7381`
-> SUSTO POR MOVIMIENTO + baterías espejo + carga 1.5× (v2.4, RE-CONGELADO tag `v2.4-baseline`; Dummy 4.41/0/4.34, Reactive 2.80/0/2.78) · `<este commit>`
-> refactor: controlador de lobos ENCHUFABLE (scripted | learned), bit a bit vs v2.4 — prepara la fase RL (SIN re-congelar).
+> SUSTO POR MOVIMIENTO + baterías espejo + carga 1.5× (v2.4, RE-CONGELADO tag `v2.4-baseline`; Dummy 4.41/0/4.34, Reactive 2.80/0/2.78) · `aa77e0a`
+> refactor: controlador de lobos ENCHUFABLE (scripted | learned), bit a bit vs v2.4 — prepara la fase RL (SIN re-congelar) ·
+> `<este commit>` ANDAMIAJE RL de lobos (docker/ + rl/: WolfPackEnv, RLWolfController, train_wolves + rl_env_check en la
+> verja) **+ v2.4.1-baseline: mismo mundo, METRO DGX** (la baseline del portátil no se reproducía entre plataformas —deriva
+> FP amplificada por el caos—; re-medición canónica DENTRO del contenedor: Dummy 4.54/0/4.46, Reactive 2.77/0/2.80; tag
+> `v2.4.1-baseline`).
+>
+> **Patch — ANDAMIAJE RL de LOBOS: contenedor + envoltorio Gymnasium + train_wolves + smoke (SIN entrenar en serio).**
+> Toda la FONTANERÍA del entrenamiento de lobos, demostrada girando; la física v2.4 INTACTA (`world.py`/`wolf_controllers.py`
+> SIN tocar; `make_wolf_controller("learned")` SIGUE en NotImplementedError — el entrenamiento INYECTA
+> `wolf_controller=RLWolfController(...)` directo; el cableado del modelo entrenado a la factoría/main = paso posterior).
+> **Decisiones:** cerebro ÚNICO del paquete (una política mueve a TODOS los lobos); **PPO (Stable-Baselines3) + Gymnasium
+> single-agent** (`rl/wolf_env.py: WolfPackEnv`; PettingZoo queda para la fase de drones); **recompensa RALA** = +1 por res
+> matada (compartida, Δ`n_depredadas` por tramo), SIN castigo por tiempo ni por a-salvo (shaping = plan B futuro); **acción**
+> = velocidad deseada por lobo (`Box(-1,1,(10,))` = 5 slots × 2, desnormalizada ×`wolf_speed`), decidida cada **frame_skip=5**
+> pasos de física (0.5 s) y MANTENIDA entre decisiones (slots de lobos inexistentes se ignoran); **obs de tamaño FIJO
+> (122, float32)** con padding y máscaras — 5 lobos×[pos,vel,scared,present] + 6 vacas×[pos,vel,alive,safe] +
+> 2 terneros×[pos,vel,alive,safe,present] + 8 drones×[pos,vel,is_active] + [reses en juego, reloj] — marco RELATIVO al
+> establo, posiciones /(W/2,H/2), velocidades /v_max de su especie; SIN corzos, SIN batería, SIN presa fijada (layout con
+> índices = docstring de `rl/wolf_env.py`, la referencia); se construye leyendo ATRIBUTOS del World (get_observation() es
+> parcial). **Episodios lobos/mixto ~50/50, NUNCA corzos** (sin lobos no hay nada que aprender); adversario =
+> **ReactiveCoordinator congelado** DENTRO del env (mismo bucle que evaluate). **Semillas:** cada reset() toma semilla FRESCA
+> de una secuencia propia del env (`World.reset(None)` REPITE el mismo episodio) → mismo seed del env = misma secuencia
+> (reproducible, verificado).
+> **CAP EN LA FRONTERA (decisión):** el contrato del refactor decía "el mundo recortará la salida del aprendido"; world.py
+> está CONGELADO y no se toca, así que el recorte prometido vive en la FRONTERA del controlador (`rl/rl_wolf_controller.py`
+> recorta la NORMA de cada velocidad a `wolf_speed` ANTES de devolverla → el mundo nunca ve una intención por encima del cap;
+> equivalente, verificado en el check, y REVISABLE si algún día se descongela el mundo). **pack_prey por REGLA FIJA** (no lo
+> decide la red; el pin de la vaca la lee): ternero vivo no-a-salvo más cercano al centroide del paquete; si no, vaca viva
+> no-a-salvo más cercana; nada → -1/None (índices según convención: en `cows` si "adult", en `calves` si "calf").
+> **coasting DETERMINISTA** (True solo sin res viva no-a-salvo = `_targets_exhausted`, como el scriptado; v=0).
+> **Arnés extendido RETROCOMPATIBLE:** `build_world(seed, kind, wolf_controller=None)` y
+> `evaluate(..., wolf_controller_factory=None)` (factory SIN args → instancia fresca por episodio) — con None TODO queda
+> bit a bit como estaba (verificado: `python baseline.py` DENTRO del contenedor → números idénticos, deriva verde);
+> `_verify_fidelity`/`REFERENCE_SEVERITY`/artefactos SIN tocar.
+> **Contenedor del PROYECTO (`docker/`):** imagen CALCADA de la del lab (mismo requirements.txt lockfile: numpy 2.2.6 ·
+> matplotlib 3.10.6 · pillow 11.3.0 · torch 2.8.0 · gymnasium 1.2.1 · SB3 2.7.0 · tensorboard 2.20.0; SIN
+> pettingzoo/benchmarl —fase de drones—; + libgl1/libglib2.0-0: el opencv del lockfile moría sin libGL en servidor sin X),
+> contenedor `${USER}-wolves` IDLE para docker exec (`conectar.sh`; sin Jupyter), **GPU count:1** (buen vecino; el smoke va
+> en CPU), shm 2gb (SubprocVecEnv), repo→`/workspace` + `~/rl_data`→`/data` (TODOS los checkpoints/logs FUERA del repo;
+> persisten), `PYTHONPATH=/workspace`, uid remapeado al del host (NB_UID/GID vía docker/.env) → los archivos quedan del
+> usuario. **`rl/train_wolves.py`:** PPO MlpPolicy [128,128] (hiperparámetros anotados en config.json), SubprocVecEnv
+> (**fork**: el forkserver default de SB3 re-importa el stack y moría con cv2 sin libGL) + VecMonitor, CheckpointCallback +
+> TensorBoard + summary.json (fps, episodios, recompensa por tramos) en el outdir (verifica que es escribible ANTES de
+> entrenar); `--smoke` = 60k pasos / 4 envs / CPU.
+> **Verificación (TODO dentro del contenedor):** **`rl_env_check.py` NUEVO (ENTRA en la verja), 6 tests VERDES:**
+> formas/máscaras del layout · determinismo (misma semilla = misma secuencia y trayectoria) · CAP (acción desbocada →
+> intención y velocidad efectiva ≤ wolf_speed) · regla de presa (calf→adult→refugiada se suelta→-1/coasting) ·
+> **CANAL DE RECOMPENSA dirigido, el más importante** (política de mano que caza → ≥1 muerte y recompensa ==
+> n_depredadas EXACTO episodio a episodio; 21 muertes en 6 semillas: obs→acción→mundo→recompensa conectado de VERDAD) ·
+> física intacta (spot-check semillas 0/1/7 × 3 tipos == baseline_v2.json + 'learned' sigue NotImplementedError) ·
+> **smoke** de principio a fin SIN NaNs (65.536 pasos, 96 s, **681 fps**, 60 episodios; recompensa 0.0 — política
+> aleatoria vs barrera con recompensa RALA: el punto de partida esperado, el canal está probado por el test dirigido)
+> con artefactos PERSISTENTES en ~/rl_data. Diff acotado: `docker/` + `rl/` + `rl_env_check.py` + `baseline.py`
+> (extensión) + `.gitignore` + docs.
+> **⚠️ HALLAZGO — LA BASELINE CONGELADA ES DEPENDIENTE DEL ENTORNO (deriva FP portátil↔DGX), DECISIÓN PENDIENTE.**
+> Al reproducir `python baseline.py` DENTRO del contenedor: solo-lobos **4.54** y mixto **4.46** vs los congelados
+> 4.41/4.34 (solo-corzos 0.00 exacto — sus métricas son insensibles por construcción: siempre timeout limpio).
+> Diagnóstico (código EXONERADO): (1) el `baseline.py` de HEAD (sin la extensión) da EN el contenedor los MISMOS
+> valores derivados (seed 2 lobos 2 muertes/14142 steps vs congelado 4/868) → la extensión no es la causa; (2) la
+> imagen ORIGINAL del lab (mismo lockfile numpy 2.2.6 / python 3.13.14) da también los MISMOS valores derivados →
+> ningún entorno de la DGX reproduce los números congelados; (3) ~70% de los episodios con LOBOS difieren en ±pocos
+> steps y ~13/100 voltean muertes (en ambos sentidos) → patrón de diferencias de ÚLTIMA ULP en coma flotante entre
+> plataformas (libm/hardware; la v2.4 se midió presumiblemente en el portátil —macOS—) AMPLIFICADAS por el caos; los
+> spawns/RNG son idénticos (semillas 0/1/7 exactas; fidelidad verde). La reproducibilidad "bit a bit" del mundo es
+> POR ENTORNO, no entre plataformas. **Consecuencia:** en el contenedor, el spot-check de `wolf_controller_check`
+> (semillas 0,1,**2**,3,7) caía en ROJO (seed 2 lobos 4→2) — no porque nada hubiera cambiado, sino porque la
+> REFERENCIA era de otro entorno.
+> **DECISIÓN (usuario, 2026-07-14): opción (a) — el contenedor de la DGX (docker/) es desde ahora el ENTORNO
+> CANÓNICO de medida ("mismo mundo, metro DGX").** Re-medición COMPLETA dentro del contenedor (baseline.py +
+> reactive_eval.py, mismas semillas range(100) × 3 tipos, sin tunear NADA — es medida, no objetivo):
+> `REFERENCE_SEVERITY` y TODOS los artefactos actualizados con lo que salió; `FROZEN_TAG` y tag git
+> **`v2.4.1-baseline`** (la física v2.4 NO cambió: mismos spawns, mismo RNG, mismas reglas — solo cambia el metro).
+> El PORTÁTIL deja de ser referencia de números: sus spot-checks contra los artefactos (wolf_controller_check
+> test 4, rl_env_check test 6, la deriva de baseline.py) pueden salir ROJOS fuera del contenedor — ESPERADO y
+> documentado en los propios checks. **NÚMEROS v2.4.1 (N=100/tipo, dentro del contenedor):** Dummy solo-lobos
+> **4.54**±2.21 (succ 4/pred 88/tout 8; n_safe 2.25) · solo-corzos **0.00** (100 timeout) · mixto **4.46**±2.27
+> (succ 5/pred 86/tout 9; n_safe 2.38); Reactive solo-lobos **2.77**±1.46 (Δ−1.77; n_safe 4.12; succ 4/pred 90/
+> tout 6) · solo-corzos **0.00** · mixto **2.80**±1.48 (Δ−1.66; n_safe 4.08; succ 4/pred 88/tout 8) — casi
+> calcados a los del portátil (2.80/2.78): mismo mundo, otro metro. **El objetivo del MARL pasa a ser batir
+> 2.77 / 0 / 2.80.** Verja completa (7 checks) VERDE dentro del contenedor con la nueva referencia.
 >
 > **Patch — REFACTOR: controlador de lobos ENCHUFABLE (scripted | learned), SIN cambio de comportamiento.** Refactor
 > PURO que prepara la fase RL (lobos APRENDIDOS que burlen la barrera): extrae la toma de decisiones de los lobos a
@@ -762,8 +844,15 @@ recompensa está hackeada — saberlo antes de la defensa.
 - El valor del DGX para este proyecto es la **velocidad** (muchas semillas × configuraciones para
   la comparación), no la memoria (la política es diminuta). Las animaciones se **guardan y se
   descargan** (no se ven por SSH).
-- Cuando toque, pedir a Claude el `requirements.txt` (`torch`, `pettingzoo`, `benchmarl`,
-  `numpy`, `matplotlib`) y el `docker-compose.yaml` exactos.
+- **HECHO (fase RL de lobos): el contenedor del PROYECTO vive en `docker/`** (imagen calcada de la del
+  lab + mismo `requirements.txt` lockfile — torch/gymnasium/SB3/tensorboard pinned; `pettingzoo`/`benchmarl`
+  se añadirán con la fase de drones). **Flujo de trabajo en la DGX:** `mkdir -p ~/rl_data` (una vez) →
+  `cd docker && docker compose up -d --build` → `./conectar.sh` (bash como jovyan en `/workspace` = el repo)
+  → dentro: correr la VERJA (`python face_check.py` … `python rl_env_check.py`), reproducir la baseline
+  (`python baseline.py`) y entrenar (`python rl/train_wolves.py --smoke --outdir /data/wolves/smoke`);
+  los checkpoints/logs/TensorBoard quedan en `~/rl_data` del host (= `/data` del contenedor, FUERA del
+  repo) → al terminar la sesión, `docker compose down` (buen vecino). OJO: el python3 del HOST no tiene
+  numpy — TODO corre dentro del contenedor.
 
 ---
 
