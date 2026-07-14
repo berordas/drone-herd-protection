@@ -5,7 +5,7 @@
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
 >
-> **Última actualización: 2026-07-14 (2ª)** · *evaluador de lobos aprendidos (obs de origen único + equivalencia bit a bit) + primer entrenamiento serio lanzado (run01, 10M pasos, desacoplado).*
+> **Última actualización: 2026-07-14 (2ª)** · *evaluador de lobos aprendidos (obs de origen único + equivalencia bit a bit) + primer run serio (run01) — ABORTADO a 2,48M por el criterio pactado: la recompensa RALA no arranca contra la barrera; decisión del plan B (shaping) PENDIENTE del usuario.*
 > **Hecho:** terminal (el "juez") · disparador realista por detección de dron · reescalado a 300×300 (~9 ha) con
 > escala biológica absoluta · dispersión del rebaño · movimiento de drones · detectar→acercarse→confirmar ·
 > **guiado al refugio (paso 2)** · **huida NO-HOLONÓMICA en ESCOLTA** (pin) · **DISUASIÓN del dron** (radio CORTO + bordeo, parcial) ·
@@ -38,10 +38,11 @@
 > envolvente, coasting) a una interfaz `decide(world) -> (v_target, coasting)`; el mundo impone la FÍSICA (susto,
 > inercia+integración, cap, captura). Prepara la fase RL (lobos que burlan la barrera). CERO cambio de comportamiento,
 > CERO re-congelación (fingerprint bit a bit vs v2.4; verja verde SIN adaptar).
-> **Pendiente:** **fase RL** — (1) lobos: el ANDAMIAJE ya está (contenedor + WolfPackEnv + train_wolves + rl_env_check);
-> falta ENTRENAR en serio lobos (`learned`) que burlen la barrera reactiva, evaluarlos con el arnés y congelarlos; (2) **MARL**
-> de drones (debe batir la barrera **2.77 / 0 / 2.80** —metro DGX v2.4.1— MOVIENDO los drones con intención, gestionando la
-> energía) contra esos lobos.
+> **Pendiente:** **fase RL** — (1) lobos: andamiaje + evaluador LISTOS; el run01 con recompensa RALA quedó ABORTADO por el
+> criterio pactado (0 señal a 2M) → **DECISIÓN DEL USUARIO pendiente: activar el plan B (shaping por potencial) u otra vía
+> (currículo, exploración)**; después entrenar lobos que burlen la barrera, evaluarlos con eval_wolves y congelarlos;
+> (2) **MARL** de drones (debe batir la barrera **2.77 / 0 / 2.80** —metro DGX v2.4.1— MOVIENDO los drones con intención,
+> gestionando la energía) contra esos lobos.
 > **Commits:** `194a3ad` base · `37910b3` terminal · `e663504` disparador por dron · `4d1e708` campo
 > 300×300 + escala biológica absoluta · `886bd45` dispersión del rebaño · `a15e2df` movimiento de
 > drones (3a) · `fd893b8` detectar→confirmar (3b) · `49e0e22` consolidar DISEÑO+CLAUDE · `144b7bd` guiado (paso 2)
@@ -84,10 +85,20 @@
 > documenta el CRITERIO DE ABORTO pactado: si a ~2M de pasos ep_rew_mean sigue en 0.00, parar y reportar — el shaping por
 > potencial es plan B y lo DECIDE EL USUARIO) y **eval ligera periódica** (cada 250k pasos: 10 episodios deterministas de
 > lobos con el mecanismo del evaluador → muertes_media al log; la eval completa de 100 semillas es manual con
-> eval_wolves). **run01 lanzado DESACOPLADO** (docker exec -d + nohup dentro del contenedor; sobrevive a desconexiones
+> eval_wolves). **run01 lanzado DESACOPLADO** (docker exec -d + exec dentro del contenedor; sobrevive a desconexiones
 > SSH): 10M pasos, n_envs=12 (224 cores, load ~14 — buen vecino), CPU, seed 0, artefactos en /data/wolves/run01
-> (checkpoints/, tb/, train.log, nohup.out, train.pid). El contenedor queda ARRIBA mientras viva el run (bajarlo al
-> terminar). Verja tocada por estos cambios: rl_env_check 7/7 + face_check + wolf_controller_check verdes dentro.
+> (checkpoints/, tb/, train.log, nohup.out, train.pid). Verja tocada por estos cambios: rl_env_check 7/7 + face_check +
+> wolf_controller_check verdes dentro.
+> **DESENLACE run01 — ABORTADO a 2,48M pasos por el criterio pactado (la recompensa RALA no arranca).** fps ~1.070
+> sostenidos; ep_len_mean ~1.000–1.500 pasos de env (los episodios se RESUELVEN: la barrera + el guiado llevan al rebaño
+> al refugio); **ep_rew_mean 0.000 en todo el run** salvo UNA ventana (0.010 a ~1,08M = UNA única muerte espontánea en
+> ~2.400 episodios, que PPO no aprovechó — el gradiente no tuvo señal); **10/10 evals ligeras deterministas (250k→2,5M)
+> con muertes_media 0.00**. Parado LIMPIO con SIGINT (workers cerrados, sin zombis); checkpoints conservados en
+> ~/rl_data/wolves/run01/checkpoints (500k/1M/1,5M/2M/2,5M). Lectura: contra la barrera reactiva una política inicial
+> ~aleatoria casi nunca llega a matar (la manada necesita flanquear COORDINADA a una presa concreta antes de que el
+> rebaño se refugie) → exploración insuficiente para la rala pura. **El shaping por potencial (plan B pactado) NO se ha
+> implementado: la decisión es del usuario** (alternativas a valorar: shaping Φ, currículo —lobos más cerca / barrera
+> debilitada al inicio—, ent_coef mayor, arranque desde demostraciones del scriptado).
 >
 > **Patch — ANDAMIAJE RL de LOBOS: contenedor + envoltorio Gymnasium + train_wolves + smoke (SIN entrenar en serio).**
 > Toda la FONTANERÍA del entrenamiento de lobos, demostrada girando; la física v2.4 INTACTA (`world.py`/`wolf_controllers.py`
