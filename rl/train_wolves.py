@@ -41,7 +41,7 @@ from rl.wolf_env import VALID_KINDS, WolfPackEnv
 HYPER = dict(
     n_steps=2048,            # rollout por env (episodios largos: hasta ~2830 pasos de env)
     batch_size=512,
-    gamma=0.995,             # horizonte efectivo ~200 decisiones (~100 s sim)
+    gamma=0.999,             # horizonte LARGO (~1000 decisiones ≈ 500 s sim: la recompensa rala llega tarde)
     gae_lambda=0.95,
     learning_rate=3e-4,
     ent_coef=0.01,           # algo de exploración (recompensa RALA)
@@ -49,6 +49,13 @@ HYPER = dict(
     n_epochs=10,
 )
 NET_ARCH = [128, 128]
+
+# Criterio de ABORTO pactado (se escribe en train.log al arrancar): si a ~2M de pasos
+# ep_rew_mean sigue en 0.00 (ninguna muerte espontánea), PARAR el run y reportar; el plan B
+# (shaping basado en potencial) NO se implementa sin decisión del usuario.
+ABORT_NOTE = ("CRITERIO DE ABORTO (pactado): si a ~2.000.000 de pasos ep_rew_mean sigue en 0.00 "
+              "(ninguna muerte espontánea), parar el run y reportar. El shaping por potencial es "
+              "plan B y lo decide el usuario — NO implementarlo por cuenta propia.")
 
 
 def make_env(seed: int, kinds: tuple[str, ...], frame_skip: int):
@@ -74,6 +81,83 @@ class EpisodeLog(BaseCallback):
         return True
 
 
+class TrainLog(BaseCallback):
+    """Log periódico LEGIBLE a outdir/train.log (lo que se consulta con `tail -f`): una línea
+    por rollout con timestamp, pasos, fps y medias móviles de recompensa/longitud (últimos
+    100 episodios, vía VecMonitor). La cabecera documenta el criterio de aborto pactado."""
+
+    def __init__(self, logpath: Path, run_config: str):
+        super().__init__()
+        self.logpath = logpath
+        self.run_config = run_config
+        self._t0 = None
+
+    def _write(self, line: str) -> None:
+        with open(self.logpath, "a", encoding="utf-8") as f:
+            f.write(line + "\n")
+
+    def _on_training_start(self) -> None:
+        self._t0 = time.time()
+        self._write("=" * 100)
+        self._write(f"[{datetime.now().isoformat(timespec='seconds')}] ARRANQUE  {self.run_config}")
+        self._write(ABORT_NOTE)
+        self._write("columnas: timestamp | pasos | fps | ep_rew_mean (últimos 100 eps) | ep_len_mean")
+
+    def _on_rollout_end(self) -> None:
+        buf = self.model.ep_info_buffer
+        rew = float(np.mean([e["r"] for e in buf])) if buf else float("nan")
+        length = float(np.mean([e["l"] for e in buf])) if buf else float("nan")
+        fps = self.num_timesteps / max(time.time() - self._t0, 1e-9)
+        self._write(f"[{datetime.now().isoformat(timespec='seconds')}] pasos={self.num_timesteps:>10,}  "
+                    f"fps={fps:7.1f}  ep_rew_mean={rew:6.3f}  ep_len_mean={length:8.1f}")
+
+    def _on_step(self) -> bool:
+        return True
+
+    def _on_training_end(self) -> None:
+        self._write(f"[{datetime.now().isoformat(timespec='seconds')}] FIN  pasos={self.num_timesteps:,}")
+
+
+class LightEval(BaseCallback):
+    """Eval periódica LIGERA (cada eval_every pasos): 10 episodios DETERMINISTAS en semillas
+    fijas de 'lobos' con la política actual contra la barrera (mismo mecanismo que el
+    evaluador: PolicyWolfController + SyncedReactiveCoordinator) → media de muertes al
+    train.log. La eval COMPLETA (100 semillas) es solo con rl/eval_wolves.py, manual."""
+
+    EVAL_SEEDS_LIGHT = tuple(range(10))
+
+    def __init__(self, logpath: Path, eval_every: int = 250_000):
+        super().__init__()
+        self.logpath = logpath
+        self.eval_every = int(eval_every)
+        self._next_at = self.eval_every
+
+    def _on_step(self) -> bool:
+        if self.eval_every <= 0 or self.num_timesteps < self._next_at:
+            return True
+        self._next_at += self.eval_every
+        from baseline import build_world
+        from rl.policy_wolf_controller import PolicyWolfController, SyncedReactiveCoordinator
+        t0 = time.time()
+        deaths = []
+        for s in self.EVAL_SEEDS_LIGHT:
+            ctrl = PolicyWolfController(model=self.model)
+            w = build_world(s, "lobos", wolf_controller=ctrl)
+            w.reset()
+            coord = SyncedReactiveCoordinator(w)
+            while True:
+                _o, _r, term, trunc, _i = w.step(coord.act(w.get_observation()))
+                if term or trunc:
+                    break
+            deaths.append(w.n_depredadas)
+        line = (f"[{datetime.now().isoformat(timespec='seconds')}] EVAL_LIGERA pasos={self.num_timesteps:>10,}  "
+                f"muertes_media={np.mean(deaths):.2f}  (n=10 semillas lobos, determinista; "
+                f"detalle={deaths}; {time.time() - t0:.0f}s)")
+        with open(self.logpath, "a", encoding="utf-8") as f:
+            f.write(line + "\n")
+        return True
+
+
 def _reward_por_tramos(episodes: list[dict], n_tramos: int = 4) -> list[dict]:
     """Media/máx de recompensa por tramos consecutivos de episodios (progresión del smoke)."""
     if not episodes:
@@ -96,6 +180,8 @@ def main() -> None:
     p.add_argument("--device", type=str, default="cpu", help="cpu (def., lo cortés en la DGX compartida) | cuda")
     p.add_argument("--frame-skip", type=int, default=5, help="pasos de física por decisión (0.5 s)")
     p.add_argument("--smoke", action="store_true", help="preset humo: 60k pasos, 4 envs (demuestra que gira)")
+    p.add_argument("--resume", type=str, default=None, help="checkpoint .zip del que RETOMAR (PPO.load, sin resetear el contador)")
+    p.add_argument("--eval-every", type=int, default=250_000, help="eval ligera (10 eps deterministas) cada N pasos; 0 = off")
     args = p.parse_args()
 
     if args.smoke:
@@ -122,6 +208,7 @@ def main() -> None:
         "args": vars(args) | {"kinds": list(kinds), "outdir": str(outdir)},
         "hyper": HYPER, "net_arch": NET_ARCH, "algo": "PPO(MlpPolicy)",
         "reward": "+1 por res matada (rala, compartida); sin castigo por tiempo ni por a-salvo",
+        "abort": ABORT_NOTE,
         "fecha": datetime.now().isoformat(timespec="seconds"),
     }
     (outdir / "config.json").write_text(json.dumps(config, indent=2, ensure_ascii=False))
@@ -133,17 +220,30 @@ def main() -> None:
                          start_method="fork")
     venv = VecMonitor(venv)
 
-    model = PPO("MlpPolicy", venv, verbose=1, seed=args.seed, device=args.device,
-                tensorboard_log=str(outdir / "tb"),
-                policy_kwargs=dict(net_arch=NET_ARCH), **HYPER)
+    if args.resume:
+        # Retomar de checkpoint: mismos hiperparámetros embebidos en el .zip; el contador de
+        # pasos NO se resetea (learn(reset_num_timesteps=False)) -> checkpoints/log continúan.
+        model = PPO.load(args.resume, env=venv, device=args.device,
+                         tensorboard_log=str(outdir / "tb"))
+        print(f"  RESUME desde {args.resume} (pasos ya entrenados: {model.num_timesteps:,})")
+    else:
+        model = PPO("MlpPolicy", venv, verbose=1, seed=args.seed, device=args.device,
+                    tensorboard_log=str(outdir / "tb"),
+                    policy_kwargs=dict(net_arch=NET_ARCH), **HYPER)
 
+    run_desc = (f"total_steps={args.total_steps:,} n_envs={args.n_envs} seed={args.seed} "
+                f"device={args.device} kinds={kinds} frame_skip={args.frame_skip} "
+                f"resume={args.resume or '-'} outdir={outdir}")
     ep_log = EpisodeLog()
-    checkpoints = CheckpointCallback(save_freq=max(50_000 // args.n_envs, 1),
+    train_log = TrainLog(outdir / "train.log", run_desc)
+    light_eval = LightEval(outdir / "train.log", eval_every=args.eval_every)
+    checkpoints = CheckpointCallback(save_freq=max(500_000 // args.n_envs, 1),   # ~cada 500k pasos totales
                                      save_path=str(outdir / "checkpoints"), name_prefix="ppo_wolves")
 
     t0 = time.time()
     try:
-        model.learn(total_timesteps=args.total_steps, callback=[ep_log, checkpoints])
+        model.learn(total_timesteps=args.total_steps, callback=[ep_log, train_log, light_eval, checkpoints],
+                    reset_num_timesteps=not args.resume)
     finally:
         venv.close()                                   # sin workers colgados (buen vecino)
     elapsed = time.time() - t0

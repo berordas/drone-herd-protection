@@ -5,7 +5,7 @@
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
 >
-> **Última actualización: 2026-07-14** · *andamiaje RL de lobos (contenedor + Gymnasium + train_wolves + rl_env_check) + **v2.4.1-baseline**: mismo mundo, METRO DGX (el contenedor pasa a ser el entorno canónico de medida; re-medición Dummy/Reactive dentro).*
+> **Última actualización: 2026-07-14 (2ª)** · *evaluador de lobos aprendidos (obs de origen único + equivalencia bit a bit) + primer entrenamiento serio lanzado (run01, 10M pasos, desacoplado).*
 > **Hecho:** terminal (el "juez") · disparador realista por detección de dron · reescalado a 300×300 (~9 ha) con
 > escala biológica absoluta · dispersión del rebaño · movimiento de drones · detectar→acercarse→confirmar ·
 > **guiado al refugio (paso 2)** · **huida NO-HOLONÓMICA en ESCOLTA** (pin) · **DISUASIÓN del dron** (radio CORTO + bordeo, parcial) ·
@@ -58,10 +58,36 @@
 > SUSTO FUERTE + rombo de carga (v2.3, RE-CONGELADO tag `v2.3-baseline`; Dummy 2.36/0/2.24, Reactive 0.16/0/0.18) · `7cf7381`
 > SUSTO POR MOVIMIENTO + baterías espejo + carga 1.5× (v2.4, RE-CONGELADO tag `v2.4-baseline`; Dummy 4.41/0/4.34, Reactive 2.80/0/2.78) · `aa77e0a`
 > refactor: controlador de lobos ENCHUFABLE (scripted | learned), bit a bit vs v2.4 — prepara la fase RL (SIN re-congelar) ·
-> `<este commit>` ANDAMIAJE RL de lobos (docker/ + rl/: WolfPackEnv, RLWolfController, train_wolves + rl_env_check en la
+> `6b936c4` ANDAMIAJE RL de lobos (docker/ + rl/: WolfPackEnv, RLWolfController, train_wolves + rl_env_check en la
 > verja) **+ v2.4.1-baseline: mismo mundo, METRO DGX** (la baseline del portátil no se reproducía entre plataformas —deriva
 > FP amplificada por el caos—; re-medición canónica DENTRO del contenedor: Dummy 4.54/0/4.46, Reactive 2.77/0/2.80; tag
-> `v2.4.1-baseline`).
+> `v2.4.1-baseline`) · `<este commit>` EVALUADOR de lobos aprendidos (rl/obs.py origen único + PolicyWolfController +
+> SyncedReactiveCoordinator + rl/eval_wolves.py; equivalencia env↔evaluador bit a bit = rl_env_check test 7) + train serio
+> (gamma 0.999, --resume, train.log, eval ligera) — run01 10M lanzado desacoplado tras el commit.
+>
+> **Patch — EVALUADOR de lobos aprendidos + primer RUN serio (run01, 10M).** Dos piezas sobre el andamiaje verde:
+> **(1) OBS DE UN SOLO ORIGEN (`rl/obs.py`):** el constructor de la observación (layout 122 + normalizaciones) se extrae
+> a `build_obs(world)` — lo consumen el env de entrenamiento Y el evaluador; si divergieran, el evaluador mediría OTRA
+> política. **(2) `PolicyWolfController` (`rl/policy_wolf_controller.py`):** WolfController autónomo de EVALUACIÓN que
+> lleva el modelo SB3 dentro (predict determinista, mismo frame-skip 5, desnormaliza y HEREDA de RLWolfController el cap
+> por norma + presa ternero-primero + coasting). **Sutileza clave — el INSTANTE de muestreo:** el env construye la obs en
+> la FRONTERA del step, pero `decide()` corre DENTRO de la física (drones/vacas ya movidos dt) → el refresco va enganchado
+> al coordinador: **`SyncedReactiveCoordinator`** (envuelve al Reactive congelado) llama a `controller.refresh(world)` en
+> cada `act()` — el mismo instante que el env — y `decide()` solo APLICA la acción vigente. **Equivalencia BIT A BIT
+> verificada** (rl_env_check **test 7**, hermético con un PPO sembrado sin entrenar: 2.829 fronteras idénticas
+> lobos+vacas+muertes+reloj en un episodio completo). **(3) `rl/eval_wolves.py`:** evalúa un model.zip con el ARNÉS DE
+> SIEMPRE (`evaluate`, MISMAS 100 semillas, misma CONFIG_V2, barrera congelada) y compara contra los lobos SCRIPTADOS
+> (2.77 lobos / 2.80 mixto, leídos de baseline_v2_reactive.json; MÁS muertes = mejores lobos); JSON a /data, nunca al
+> repo. Smoke del evaluador con el modelo del smoke (política ~aleatoria, 10 semillas): severidad ~0, pipeline limpio.
+> **(4) `train_wolves.py` para el run serio:** gamma 0.995→**0.999** (la recompensa rala llega tarde), `--resume <ckpt>`,
+> checkpoints ~cada 500k, `train.log` legible (timestamp/pasos/fps/ep_rew_mean/ep_len_mean por rollout; la cabecera
+> documenta el CRITERIO DE ABORTO pactado: si a ~2M de pasos ep_rew_mean sigue en 0.00, parar y reportar — el shaping por
+> potencial es plan B y lo DECIDE EL USUARIO) y **eval ligera periódica** (cada 250k pasos: 10 episodios deterministas de
+> lobos con el mecanismo del evaluador → muertes_media al log; la eval completa de 100 semillas es manual con
+> eval_wolves). **run01 lanzado DESACOPLADO** (docker exec -d + nohup dentro del contenedor; sobrevive a desconexiones
+> SSH): 10M pasos, n_envs=12 (224 cores, load ~14 — buen vecino), CPU, seed 0, artefactos en /data/wolves/run01
+> (checkpoints/, tb/, train.log, nohup.out, train.pid). El contenedor queda ARRIBA mientras viva el run (bajarlo al
+> terminar). Verja tocada por estos cambios: rl_env_check 7/7 + face_check + wolf_controller_check verdes dentro.
 >
 > **Patch — ANDAMIAJE RL de LOBOS: contenedor + envoltorio Gymnasium + train_wolves + smoke (SIN entrenar en serio).**
 > Toda la FONTANERÍA del entrenamiento de lobos, demostrada girando; la física v2.4 INTACTA (`world.py`/`wolf_controllers.py`

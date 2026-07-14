@@ -16,6 +16,11 @@ comprueba (asserts, estilo de los demás checks; corre con `python rl_env_check.
   6) EL MUNDO SCRIPTADO NO CAMBIÓ: spot-check contra baseline_v2.json (como wolf_controller_check)
      + make_wolf_controller('learned') SIGUE lanzando NotImplementedError + la extensión del
      arnés (build_world/evaluate) es retrocompatible.
+  7) EQUIVALENCIA ENV ↔ CONTROLADOR DE EVALUACIÓN (obs de un solo origen, rl/obs.py): con el
+     MISMO modelo (PPO sembrado sin entrenar, hermético) y la MISMA semilla de mundo, la
+     trayectoria del env (WolfPackEnv + predict por fuera) y la del evaluador
+     (PolicyWolfController + SyncedReactiveCoordinator, refresco en la FRONTERA del step)
+     son BIT A BIT idénticas — si divergieran, eval_wolves mediría OTRA política.
 """
 
 import json
@@ -252,6 +257,60 @@ def test_mundo_scriptado_intacto():
     print("  OK\n")
 
 
+def test_equivalencia_env_controlador():
+    print("=== 7) EQUIVALENCIA ENV ↔ CONTROLADOR DE EVALUACIÓN: misma política ⇒ misma trayectoria (bit a bit) ===")
+    from stable_baselines3 import PPO
+    from rl.policy_wolf_controller import PolicyWolfController, SyncedReactiveCoordinator
+
+    # Modelo HERMÉTICO: PPO sembrado SIN entrenar (determinista con predict(deterministic=True));
+    # no depende de ningún model.zip en /data. El env del modelo es aparte (solo fija los espacios).
+    model = PPO("MlpPolicy", WolfPackEnv(kinds=("lobos",), seed=999), seed=0, device="cpu")
+
+    # LADO ENV (como en entrenamiento): predict fuera, obs del env, frame-skip interno.
+    env = WolfPackEnv(kinds=("lobos",), seed=17)
+    obs, info = env.reset()
+    traj_env, fin = [], False
+    for _ in range(3500):
+        action, _ = model.predict(obs, deterministic=True)
+        obs, _r, term, trunc, _ = env.step(action)
+        w = env._world
+        traj_env.append((w.wolves.copy(), w.cows.copy(), int(w.n_depredadas), int(w.step_count)))
+        if term or trunc:
+            fin = True
+            break
+    assert fin, "el episodio del env no terminó (cap 3500 pasos de env)"
+    status_env = env._world.status
+
+    # LADO EVALUADOR: mismo mundo (world_seed del env), PolicyWolfController + coordinador
+    # SINCRONIZADO (refresca la política en la FRONTERA, antes de cada world.step — el mismo
+    # instante en que el env construye su obs). Muestreamos en las MISMAS fronteras (cada 5
+    # pasos de física y al terminal).
+    ctrl = PolicyWolfController(model=model)
+    w = World(seed=info["world_seed"], episode_kind=info["episode_kind"],
+              wolf_controller=ctrl, **CONFIG_V2)
+    coord = SyncedReactiveCoordinator(w)
+    traj_ctl, k = [], 0
+    while True:
+        _o, _r, term, trunc, _i = w.step(coord.act(w.get_observation()))
+        k += 1
+        if k % 5 == 0 or term or trunc:
+            traj_ctl.append((w.wolves.copy(), w.cows.copy(), int(w.n_depredadas), int(w.step_count)))
+        if term or trunc:
+            break
+        assert k < 20000, "el episodio del evaluador no termina (desincronizado)"
+
+    assert len(traj_env) == len(traj_ctl), \
+        "nº de fronteras distinto: env=%d vs controlador=%d" % (len(traj_env), len(traj_ctl))
+    for j, (a, b) in enumerate(zip(traj_env, traj_ctl)):
+        assert (np.array_equal(a[0], b[0]) and np.array_equal(a[1], b[1])
+                and a[2] == b[2] and a[3] == b[3]), \
+            "trayectorias divergen en la frontera %d (paso de física %d)" % (j, b[3])
+    assert status_env == w.status and env._world.n_depredadas == w.n_depredadas
+    print("  %d fronteras idénticas (lobos+vacas+muertes+reloj, bit a bit) | terminal %s con %d muertes en ambos"
+          % (len(traj_env), w.status, w.n_depredadas))
+    print("  OK\n")
+
+
 if __name__ == "__main__":
     test_formas_y_mascaras()
     test_determinismo()
@@ -259,4 +318,5 @@ if __name__ == "__main__":
     test_regla_presa()
     test_canal_recompensa()
     test_mundo_scriptado_intacto()
+    test_equivalencia_env_controlador()
     print("rl_env_check: TODO OK.")
