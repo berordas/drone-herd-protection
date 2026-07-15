@@ -53,15 +53,25 @@ HYPER = dict(
 )
 NET_ARCH = [128, 128]
 
-# Criterio de ABORTO pactado (se escribe en train.log al arrancar). run02 (plan B, shaping por
-# potencial ON): el shaping se nota en ep_shape_mean desde el principio; lo que DECIDE es
-# ep_kills_mean — si a ~3M de pasos sigue ≈ 0.00 (sin muertes emergiendo pese al acercamiento),
-# PARAR el run y reportar; el plan C (currículo/BC) NO se implementa sin decisión del usuario.
-ABORT_NOTE = ("CRITERIO DE ABORTO (pactado, run02/shaping): ep_shape_mean debe ser != 0 desde el "
-              "principio (señal de que el gradiente llega); lo que decide es ep_kills_mean — si a "
-              "~3.000.000 de pasos sigue ~0.00 (sin muertes emergiendo pese al acercamiento), parar "
-              "el run y reportar. El plan C (currículo/BC) lo decide el usuario — NO implementarlo "
-              "por cuenta propia.")
+# Criterios de ABORTO pactados (el que toque se escribe en train.log al arrancar y en config.json).
+# - SHAPING (run02, plan B): decide ep_kills_mean ≈ 0.00 a ~3M → parar.
+# - WARM-START (run03, plan C, --init-from): el modo de fallo es que el crítico IGNORANTE (value
+#   fresco) desaprenda la política clonada — se vigila con la eval ligera vs el nivel del clon.
+ABORT_NOTE_SHAPING = (
+    "CRITERIO DE ABORTO (pactado, shaping): ep_shape_mean debe ser != 0 desde el "
+    "principio (señal de que el gradiente llega); lo que decide es ep_kills_mean — si a "
+    "~3.000.000 de pasos sigue ~0.00 (sin muertes emergiendo pese al acercamiento), parar "
+    "el run y reportar. El plan C (currículo/BC) lo decide el usuario — NO implementarlo "
+    "por cuenta propia.")
+ABORT_NOTE_WARMSTART = (
+    "CRITERIO DE ABORTO (pactado, warm-start/--init-from): el modo de fallo es que el crítico "
+    "IGNORANTE (value fresco) desaprenda la política clonada. Si la eval ligera cae por debajo "
+    "de la MITAD del nivel del clon (%s) y se mantiene ahí >=1.500.000 pasos sin recuperarse, "
+    "PARAR el run y reportar. Las mitigaciones (LR aún menor, congelar la política mientras el "
+    "crítico calienta) las decide el usuario — NO aplicarlas por cuenta propia.")
+ABORT_NOTE_RALA = (
+    "CRITERIO DE ABORTO (pactado, rala pura): si a ~2.000.000 de pasos ep_kills_mean sigue en "
+    "0.00 (ninguna muerte espontánea), parar el run y reportar.")
 
 
 def make_env(seed: int, kinds: tuple[str, ...], frame_skip: int,
@@ -100,10 +110,11 @@ class TrainLog(BaseCallback):
     shaping — debe ser != 0 desde el principio si el shaping está ON) y longitud.
     La cabecera documenta el criterio de aborto pactado."""
 
-    def __init__(self, logpath: Path, run_config: str):
+    def __init__(self, logpath: Path, run_config: str, abort_note: str):
         super().__init__()
         self.logpath = logpath
         self.run_config = run_config
+        self.abort_note = abort_note
         self._t0 = None
         self._kills = deque(maxlen=100)     # componentes por episodio (info del env, al done)
         self._shape = deque(maxlen=100)
@@ -116,7 +127,7 @@ class TrainLog(BaseCallback):
         self._t0 = time.time()
         self._write("=" * 100)
         self._write(f"[{datetime.now().isoformat(timespec='seconds')}] ARRANQUE  {self.run_config}")
-        self._write(ABORT_NOTE)
+        self._write(self.abort_note)
         self._write("columnas: timestamp | pasos | fps | ep_rew_mean (total, últimos 100 eps) | "
                     "ep_kills_mean | ep_shape_mean | ep_len_mean")
 
@@ -210,8 +221,25 @@ def main() -> None:
     p.add_argument("--shaping", choices=("on", "off"), default="on",
                    help="shaping por potencial (plan B) al ENTRENAR; def. on (la eval nunca lo ve)")
     p.add_argument("--shaping-beta", type=float, default=1.0, help="β del potencial Φ = −β·dist_media/D_norm")
+    p.add_argument("--init-from", type=str, default=None,
+                   help="model.zip del que COPIAR la POLÍTICA (warm-start/BC, plan C); el value "
+                        "function nace FRESCO. Incompatible con --resume.")
+    p.add_argument("--lr", type=float, default=None,
+                   help="override de learning_rate (p.ej. 1e-4 en fine-tune para no destrozar el prior)")
+    p.add_argument("--abort-ref", type=float, default=None,
+                   help="nivel del clon (muertes_media de su eval ligera) para el criterio de aborto warm-start")
     args = p.parse_args()
     shaping = args.shaping == "on"
+    if args.init_from and args.resume:
+        p.error("--init-from (solo pesos de política, contador a 0) y --resume (run completo) son excluyentes")
+    if args.init_from:
+        ref = ("%.2f muertes_media en las 10 semillas de la eval ligera" % args.abort_ref
+               if args.abort_ref is not None else "su eval ligera; ver --abort-ref")
+        abort_note = ABORT_NOTE_WARMSTART % ref
+    elif shaping:
+        abort_note = ABORT_NOTE_SHAPING
+    else:
+        abort_note = ABORT_NOTE_RALA
 
     if args.smoke:
         args.total_steps = 60_000
@@ -223,8 +251,14 @@ def main() -> None:
 
     outdir = Path(args.outdir) if args.outdir else Path("/data/wolves") / datetime.now().strftime("%Y%m%d-%H%M%S")
 
+    hyper = dict(HYPER)
+    if args.lr is not None:
+        hyper["learning_rate"] = args.lr             # fine-tune: LR bajo para no destrozar el prior
+
     shaping_desc = (f"shaping ON (β={args.shaping_beta}, γ={HYPER['gamma']} = el del PPO)"
-                    if shaping else "shaping OFF (rala pura, como run01)")
+                    if shaping else "shaping OFF (rala pura)")
+    if args.init_from:
+        shaping_desc += f" init-from={args.init_from} lr={hyper['learning_rate']}"
     print("=== train_wolves (PPO, cerebro único del paquete, +1/muerte + %s) ===" % shaping_desc)
     print(f"  envs = {args.n_envs} (SubprocVecEnv)  |  device = {args.device}  |  seed = {args.seed}")
     print(f"  kinds = {kinds}  |  frame_skip = {args.frame_skip}  |  total_steps = {args.total_steps:,}")
@@ -237,13 +271,14 @@ def main() -> None:
 
     config = {
         "args": vars(args) | {"kinds": list(kinds), "outdir": str(outdir)},
-        "hyper": HYPER, "net_arch": NET_ARCH, "algo": "PPO(MlpPolicy)",
+        "hyper": hyper, "net_arch": NET_ARCH, "algo": "PPO(MlpPolicy)",
         "reward": "+1 por res matada (rala, compartida); sin castigo por tiempo ni por a-salvo"
                   + ("; + shaping por potencial (plan B, Ng et al.)" if shaping else ""),
         "shaping": {"on": shaping, "beta": args.shaping_beta, "gamma": HYPER["gamma"],
                     "phi": "-beta * mean_i dist(lobo_i, presa ternero-primero) / diagonal_campo; 0 si coasting",
                     "nota": "gamma EXACTAMENTE el del PPO (inocuidad de Ng et al.); la eval NUNCA ve el shaping"},
-        "abort": ABORT_NOTE,
+        "init_from": args.init_from,
+        "abort": abort_note,
         "fecha": datetime.now().isoformat(timespec="seconds"),
     }
     (outdir / "config.json").write_text(json.dumps(config, indent=2, ensure_ascii=False))
@@ -266,13 +301,29 @@ def main() -> None:
     else:
         model = PPO("MlpPolicy", venv, verbose=1, seed=args.seed, device=args.device,
                     tensorboard_log=str(outdir / "tb"),
-                    policy_kwargs=dict(net_arch=NET_ARCH), **HYPER)
+                    policy_kwargs=dict(net_arch=NET_ARCH), **hyper)
+        if args.init_from:
+            # WARM-START (plan C): copia SOLO los tensores de POLÍTICA del zip (red pi, cabeza de
+            # acción y log_std); el VALUE FUNCTION queda con su init fresco (en SB3 2.x pi y V son
+            # redes separadas). PPO nuevo → optimizador y contador de pasos desde cero.
+            src = PPO.load(args.init_from, device=args.device)
+            src_sd = src.policy.state_dict()
+            dst_sd = model.policy.state_dict()
+            pi_prefixes = ("mlp_extractor.policy_net", "action_net", "log_std")
+            copiadas = [k for k in dst_sd
+                        if k.startswith(pi_prefixes) and k in src_sd and src_sd[k].shape == dst_sd[k].shape]
+            assert copiadas, "--init-from: ningún tensor de política compatible (¿arquitectura distinta?)"
+            for k in copiadas:
+                dst_sd[k] = src_sd[k]
+            model.policy.load_state_dict(dst_sd)
+            print(f"  INIT-FROM {args.init_from}: {len(copiadas)} tensores de POLÍTICA copiados "
+                  f"(value function FRESCO; lr={hyper['learning_rate']})")
 
     run_desc = (f"total_steps={args.total_steps:,} n_envs={args.n_envs} seed={args.seed} "
                 f"device={args.device} kinds={kinds} frame_skip={args.frame_skip} "
                 f"{shaping_desc} resume={args.resume or '-'} outdir={outdir}")
     ep_log = EpisodeLog()
-    train_log = TrainLog(outdir / "train.log", run_desc)
+    train_log = TrainLog(outdir / "train.log", run_desc, abort_note)
     light_eval = LightEval(outdir / "train.log", eval_every=args.eval_every)
     checkpoints = CheckpointCallback(save_freq=max(500_000 // args.n_envs, 1),   # ~cada 500k pasos totales
                                      save_path=str(outdir / "checkpoints"), name_prefix="ppo_wolves")

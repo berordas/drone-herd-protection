@@ -5,7 +5,7 @@
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
 >
-> **Última actualización: 2026-07-15** · *plan B ACTIVADO (decisión del usuario): SHAPING POR POTENCIAL en la recompensa del env de lobos (Ng et al. 1999 — no cambia la política óptima) + run02 DE CERO (10M, shaping ON). rl_env_check pasa a 8 tests (el 8: telescopia/signo/kills intactos/off≡run01).*
+> **Última actualización: 2026-07-15 (2ª)** · *run02 (shaping) COMPLETÓ los 10M — las muertes despegaron (eval 100 semillas: 0.57/0.60; queda como ABLACIÓN desde-cero). Plan C (clonar al scriptado + fine-tune) CONSTRUIDO (collect_demos + bc_pretrain + --init-from), pero la CUNA BC sale ≈0 → investigación completa (pipeline exonerado; INFRAAJUSTE de [128,128] sobre el flanqueo) → run03 NO lanzado por la puerta pactada; DECISIÓN DEL USUARIO pendiente.*
 > **Hecho:** terminal (el "juez") · disparador realista por detección de dron · reescalado a 300×300 (~9 ha) con
 > escala biológica absoluta · dispersión del rebaño · movimiento de drones · detectar→acercarse→confirmar ·
 > **guiado al refugio (paso 2)** · **huida NO-HOLONÓMICA en ESCOLTA** (pin) · **DISUASIÓN del dron** (radio CORTO + bordeo, parcial) ·
@@ -38,12 +38,14 @@
 > envolvente, coasting) a una interfaz `decide(world) -> (v_target, coasting)`; el mundo impone la FÍSICA (susto,
 > inercia+integración, cap, captura). Prepara la fase RL (lobos que burlan la barrera). CERO cambio de comportamiento,
 > CERO re-congelación (fingerprint bit a bit vs v2.4; verja verde SIN adaptar).
-> **Pendiente:** **fase RL** — (1) lobos: run01 (rala pura) ABORTADO a 2,48M (0 señal); **plan B ACTIVADO** (decisión del
-> usuario 2026-07-15): shaping por potencial (β=1, γ=0.999 = el del PPO) → **run02 DE CERO (10M, shaping ON) corriendo**;
-> criterio de aborto adaptado: lo que decide es **ep_kills_mean ≈ 0.00 a ~3M** (el plan C —currículo/BC— NO se implementa
-> sin decisión del usuario); si las muertes despegan → 10M completos + eval_wolves (100 semillas) del último checkpoint y
-> del mejor; después congelar los lobos aprendidos; (2) **MARL** de drones (debe batir la barrera **2.77 / 0 / 2.80**
-> —metro DGX v2.4.1— MOVIENDO los drones con intención, gestionando la energía) contra esos lobos.
+> **Pendiente:** **fase RL** — (1) lobos: run01 (rala) 0 señal · run02 (shaping) 0.57/0.60 (ablación desde-cero) ·
+> plan C (BC del scriptado + fine-tune) CONSTRUIDO pero **PARADO en la puerta pactada** (cuna BC ≈0 con [128,128];
+> infraajuste medido, pipeline exonerado — el scriptado por el mismo camino da 2.5–2.7) → **DECISIÓN DEL USUARIO
+> pendiente**: (A) ampliar la política (p.ej. [256,256]) en BC+PPO — ataca la causa medida; (B) DAgger-lite; (C) run03
+> desde el clon ≈0 igualmente (cruza la barrera y merodea a r_face_safe: la exploración desde ahí ≠ run01); (D)
+> warm-start + shaping combinados. Después: entrenar lobos que batan 2.77/2.80, evaluarlos con eval_wolves y congelarlos;
+> (2) **MARL** de drones (debe batir la barrera **2.77 / 0 / 2.80** —metro DGX v2.4.1— MOVIENDO los drones con
+> intención, gestionando la energía) contra esos lobos.
 > **Commits:** `194a3ad` base · `37910b3` terminal · `e663504` disparador por dron · `4d1e708` campo
 > 300×300 + escala biológica absoluta · `886bd45` dispersión del rebaño · `a15e2df` movimiento de
 > drones (3a) · `fd893b8` detectar→confirmar (3b) · `49e0e22` consolidar DISEÑO+CLAUDE · `144b7bd` guiado (paso 2)
@@ -69,7 +71,46 @@
 > desenlace del run01 (ABORTADO a 2,48M por el criterio pactado — la rala no arranca) · `<este commit>` plan B ACTIVADO:
 > SHAPING POR POTENCIAL en WolfPackEnv (Φ = −β·dist media a la presa ternero-primero / diagonal; r_shape = γΦ′−Φ con el
 > γ del PPO; componentes en info/log; eval SIEMPRE sin shaping) + test 8 (telescopia/signo/kills/off≡run01) + run02 de
-> cero (10M, shaping ON) lanzado desacoplado tras el commit.
+> cero (10M, shaping ON) lanzado desacoplado tras el commit (`c77686d`) · `<este commit>` run02 COMPLETADO (tablas de
+> ablación 0.57/0.60) + plan C CONSTRUIDO (collect_demos con presa del contrato + bc_pretrain enmascarado/dir +
+> train_wolves --init-from) — cuna BC ≈0, investigación completa, run03 NO lanzado (puerta pactada); decisión pendiente.
+>
+> **Patch — run02 COMPLETADO (ablación desde-cero) + plan C CONSTRUIDO pero PARADO: la cuna BC no valida (2026-07-15).**
+> **run02 (shaping, 10M completos, ~3 h a ~920 fps):** ep_kills_mean del buffer 0.00→**0.35–0.40** (a 1M: 0.02; 3M: 0.16;
+> 5M: 0.33; 10M: 0.35) — el criterio de aborto (kills ≈ 0 a 3M) NO saltó; ep_shape_mean ~0.5 estable todo el run;
+> ep_len_mean 340→~2.000 (los lobos alargan la partida presionando la barrera); evals ligeras deterministas 0.00 (hasta
+> 1M) → 0.30–0.80 (pico 0.80 a 6,25M). **Tablas de 100 semillas (eval_wolves, arnés v2.4.1):** modelo FINAL (10M):
+> solo-lobos **0.57±0.72** / mixto **0.60±0.75** (success 16/15, predation 44/45, timeout 40/40; n_safe 5.57/5.48) vs
+> scriptados 2.77/2.80. Mejor checkpoint por evals ligeras (5,5M): ver eval_best_5.5M.json en /data/wolves/run02.
+> **Queda como ABLACIÓN desde-cero del plan C** (motivación de diseño del usuario: los lobos reales YA saben cazar; ante
+> los drones aprenden a ADAPTAR la caza → clonar al scriptado y afinar).
+> **Plan C construido:** `rl/collect_demos.py` (episodios scriptado-vs-barrera con el bucle del arnés; pares (obs,
+> acción) muestreados en las FRONTERAS del env —misma convención que test 7—; acción = v_target del scriptado ÷
+> wolf_speed; semillas 10_000+ DISJUNTAS del examen; paralelo por episodios con corte determinista; 120.214 pares / 150
+> episodios, experto 2.59±1.37 muertes/ep) · `rl/bc_pretrain.py` (la MISMA política PPO [128,128]; entrena SOLO π —value
+> y log_std frescos—; pérdida ENMASCARADA a slots presentes; `--loss mse` (receta) o `dir`=(1−cos)+(Δ|·|)²; split 90/10 +
+> early-stop; bc_model.zip SB3 estándar) · `train_wolves.py --init-from` (copia SOLO los tensores de π; value FRESCO;
+> `--lr` para fine-tune; criterio de aborto warm-start —eval ligera < mitad del clon ≥1,5M— en la cabecera del log).
+> **LA CUNA NO VALIDA — investigación (la rama "para e investiga" del prompt):** el clon salió 0.2 → diagnóstico:
+> **(a) pipeline EXONERADO** — el scriptado por el MISMO camino: puro 2.7 · con hold de 0.5 s **2.7** (el frame-skip no
+> cuesta) · con hold + PRESA DEL CONTRATO RL (ternero-primero pinada cada paso) **2.5** = el TECHO honesto de la cuna;
+> **(b) 1ª causa real encontrada — desajuste entrenamiento/servicio:** las demos v1 nacían con el pinning del scriptado
+> (histéresis, estado OCULTO que no viaja en la obs) y el clon sirve bajo el pin ternero-primero → se re-colectó con la
+> presa del contrato IMPUESTA tras cada decide (collect_demos documenta el orden exacto); **(c) pese a (b) y a la
+> máscara, el clon quedó en 0.0** con AMBAS pérdidas (mse y dir): en abierto |exp| = 1.000 SIEMPRE (la acción experta es
+> una DIRECCIÓN pura) pero |pred| ≈ 0.62 (p10 0.10) con 17% de cosenos NEGATIVOS y **train ≈ val ALTO en ambas losses →
+> INFRAAJUSTE**: la [128,128] no representa la asignación DISCONTINUA de huecos del envolvente (qué lobo toma qué ángulo);
+> **(d) en cerrado el clon SÍ cruza la barrera y merodea a r_face_safe (~6 m) miles de pasos sin sustos, pero jamás
+> completa el flanqueo que dispara el quórum** → 0 muertes. Conclusión: no es un bug — es capacidad/representación para
+> la maniobra que mata. **La puerta pactada (cuna ≥~1.5 antes de run03) NO se cumple → run03 NO LANZADO.** Opciones
+> (sin implementar, decisión del usuario): **(A)** ampliar la política (p.ej. [256,256]) en BC+PPO — ataca la causa
+> medida; rompe "misma arquitectura que run02" (la ablación pasa a ser cross-arquitectura, documentable); **(B)**
+> DAgger-lite (consultar al scriptado en los estados del clon) — ataca el compounding, NO el infraajuste (train≈val);
+> **(C)** run03 desde el clon ≈0 igualmente — el prior ya resuelve lo que mató a run01 (llegar a la presa a través de la
+> barrera); contraviene la puerta pactada, solo con OK explícito; **(D)** warm-start + shaping (plan B) combinados.
+> Artefactos en /data/wolves: demos/ (dataset+manifest+bc_model.zip+config), demos_v1_inconsistentes/ (histórico del
+> diagnóstico), run02/eval_final_10M.json + eval_best_5.5M.json. Verja tras el plan C: rl_env_check 8/8 + face_check +
+> wolf_controller_check verdes (los checks 1–8 intactos; el código nuevo no toca env/mundo/obs).
 >
 > **Patch — PLAN B ACTIVADO: SHAPING POR POTENCIAL + run02 de cero (decisión del usuario, 2026-07-15).** run01 demostró
 > que la rala pura no arranca (1 muerte en 2,5M pasos: la exploración gaussiana por-lobo no coordina flanqueos por
