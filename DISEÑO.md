@@ -81,7 +81,8 @@
 > ep_len_mean 340→~2.000 (los lobos alargan la partida presionando la barrera); evals ligeras deterministas 0.00 (hasta
 > 1M) → 0.30–0.80 (pico 0.80 a 6,25M). **Tablas de 100 semillas (eval_wolves, arnés v2.4.1):** modelo FINAL (10M):
 > solo-lobos **0.57±0.72** / mixto **0.60±0.75** (success 16/15, predation 44/45, timeout 40/40; n_safe 5.57/5.48) vs
-> scriptados 2.77/2.80. Mejor checkpoint por evals ligeras (5,5M): ver eval_best_5.5M.json en /data/wolves/run02.
+> scriptados 2.77/2.80. Mejor checkpoint por evals ligeras (5,5M): **0.57±0.71 / 0.56±0.67** (success 28/24) — la meseta
+> de run02 es ROBUSTA al checkpoint (final ≡ mejor); ambas tablas en /data/wolves/run02/eval_*.json.
 > **Queda como ABLACIÓN desde-cero del plan C** (motivación de diseño del usuario: los lobos reales YA saben cazar; ante
 > los drones aprenden a ADAPTAR la caza → clonar al scriptado y afinar).
 > **Plan C construido:** `rl/collect_demos.py` (episodios scriptado-vs-barrera con el bucle del arnés; pares (obs,
