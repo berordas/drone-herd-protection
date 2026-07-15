@@ -51,7 +51,11 @@ HYPER = dict(
     clip_range=0.2,
     n_epochs=10,
 )
-NET_ARCH = [128, 128]
+# [128,128]→[256,256] (plan C, decisión del usuario 2026-07-15): la [128,128] INFRAAJUSTABA la
+# asignación discontinua de huecos del envolvente al clonar al scriptado (train≈val alto en BC,
+# |pred|~0.62 vs |exp|=1.000 → 0 muertes en cerrado); π del BC y del fine-tune DEBEN coincidir
+# (--init-from copia tensores por forma). run02 ([128,128]) queda como ablación CROSS-ARQUITECTURA.
+NET_ARCH = [256, 256]
 
 # Criterios de ABORTO pactados (el que toque se escribe en train.log al arrancar y en config.json).
 # - SHAPING (run02, plan B): decide ep_kills_mean ≈ 0.00 a ~3M → parar.

@@ -5,7 +5,7 @@
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
 >
-> **Última actualización: 2026-07-15 (2ª)** · *run02 (shaping) COMPLETÓ los 10M — las muertes despegaron (eval 100 semillas: 0.57/0.60; queda como ABLACIÓN desde-cero). Plan C (clonar al scriptado + fine-tune) CONSTRUIDO (collect_demos + bc_pretrain + --init-from), pero la CUNA BC sale ≈0 → investigación completa (pipeline exonerado; INFRAAJUSTE de [128,128] sobre el flanqueo) → run03 NO lanzado por la puerta pactada; DECISIÓN DEL USUARIO pendiente.*
+> **Última actualización: 2026-07-15 (3ª)** · *Opción A ejecutada: BC con π [256,256] — apenas mueve la val (0.424→0.406) y el clon SIGUE en 0.0 → rama ≈0 del árbol pactado: run03 NO lanzado. HALLAZGO NUEVO (medido): ALIASING DE LA ETIQUETA — el 31% de las etiquetas expertas consecutivas (0,5 s) INVIERTEN el sentido (mediana 0.995: bimodal estable-o-flip) → ~1/3 de la supervisión es cuasi-ruido para una red sin memoria; no era capacidad. Candidatos (sin implementar): etiqueta = MEDIA de la ventana · run03 desde el clon que merodea · DAgger.*
 > **Hecho:** terminal (el "juez") · disparador realista por detección de dron · reescalado a 300×300 (~9 ha) con
 > escala biológica absoluta · dispersión del rebaño · movimiento de drones · detectar→acercarse→confirmar ·
 > **guiado al refugio (paso 2)** · **huida NO-HOLONÓMICA en ESCOLTA** (pin) · **DISUASIÓN del dron** (radio CORTO + bordeo, parcial) ·
@@ -38,14 +38,12 @@
 > envolvente, coasting) a una interfaz `decide(world) -> (v_target, coasting)`; el mundo impone la FÍSICA (susto,
 > inercia+integración, cap, captura). Prepara la fase RL (lobos que burlan la barrera). CERO cambio de comportamiento,
 > CERO re-congelación (fingerprint bit a bit vs v2.4; verja verde SIN adaptar).
-> **Pendiente:** **fase RL** — (1) lobos: run01 (rala) 0 señal · run02 (shaping) 0.57/0.60 (ablación desde-cero) ·
-> plan C (BC del scriptado + fine-tune) CONSTRUIDO pero **PARADO en la puerta pactada** (cuna BC ≈0 con [128,128];
-> infraajuste medido, pipeline exonerado — el scriptado por el mismo camino da 2.5–2.7) → **DECISIÓN DEL USUARIO
-> pendiente**: (A) ampliar la política (p.ej. [256,256]) en BC+PPO — ataca la causa medida; (B) DAgger-lite; (C) run03
-> desde el clon ≈0 igualmente (cruza la barrera y merodea a r_face_safe: la exploración desde ahí ≠ run01); (D)
-> warm-start + shaping combinados. Después: entrenar lobos que batan 2.77/2.80, evaluarlos con eval_wolves y congelarlos;
-> (2) **MARL** de drones (debe batir la barrera **2.77 / 0 / 2.80** —metro DGX v2.4.1— MOVIENDO los drones con
-> intención, gestionando la energía) contra esos lobos.
+> **Pendiente:** **fase RL** — (1) lobos: run01 (rala) 0 señal · run02 (shaping) 0.57/0.60 (ablación desde-cero,
+> cross-arquitectura desde el plan C) · plan C con π [256,256] (opción A) TAMBIÉN ≈0 → causa raíz MEDIDA: **aliasing de
+> la etiqueta** (31% de flips a 0,5 s) → **DECISIÓN DEL USUARIO pendiente** entre (A′) re-etiquetar con la MEDIA de la
+> ventana (candidata natural), (C) run03 desde el clon que merodea (--init-from listo), (B) DAgger. Después: entrenar
+> lobos que batan 2.77/2.80, evaluarlos con eval_wolves y congelarlos; (2) **MARL** de drones (debe batir la barrera
+> **2.77 / 0 / 2.80** —metro DGX v2.4.1— MOVIENDO los drones con intención, gestionando la energía) contra esos lobos.
 > **Commits:** `194a3ad` base · `37910b3` terminal · `e663504` disparador por dron · `4d1e708` campo
 > 300×300 + escala biológica absoluta · `886bd45` dispersión del rebaño · `a15e2df` movimiento de
 > drones (3a) · `fd893b8` detectar→confirmar (3b) · `49e0e22` consolidar DISEÑO+CLAUDE · `144b7bd` guiado (paso 2)
@@ -71,9 +69,11 @@
 > desenlace del run01 (ABORTADO a 2,48M por el criterio pactado — la rala no arranca) · `<este commit>` plan B ACTIVADO:
 > SHAPING POR POTENCIAL en WolfPackEnv (Φ = −β·dist media a la presa ternero-primero / diagonal; r_shape = γΦ′−Φ con el
 > γ del PPO; componentes en info/log; eval SIEMPRE sin shaping) + test 8 (telescopia/signo/kills/off≡run01) + run02 de
-> cero (10M, shaping ON) lanzado desacoplado tras el commit (`c77686d`) · `<este commit>` run02 COMPLETADO (tablas de
+> cero (10M, shaping ON) lanzado desacoplado tras el commit (`c77686d`) · `2620471` run02 COMPLETADO (tablas de
 > ablación 0.57/0.60) + plan C CONSTRUIDO (collect_demos con presa del contrato + bc_pretrain enmascarado/dir +
-> train_wolves --init-from) — cuna BC ≈0, investigación completa, run03 NO lanzado (puerta pactada); decisión pendiente.
+> train_wolves --init-from) — cuna BC ≈0, investigación completa, run03 NO lanzado (puerta pactada) · `0d1e5fb` docs:
+> tabla del mejor ckpt de run02 · `<este commit>` opción A (π [256,256]): clon SIGUE ≈0 → hallazgo del ALIASING de la
+> etiqueta (31% de flips a 0,5 s); run03 sigue sin lanzarse (rama ≈0 del árbol); candidatos A′/C/B documentados.
 >
 > **Patch — run02 COMPLETADO (ablación desde-cero) + plan C CONSTRUIDO pero PARADO: la cuna BC no valida (2026-07-15).**
 > **run02 (shaping, 10M completos, ~3 h a ~920 fps):** ep_kills_mean del buffer 0.00→**0.35–0.40** (a 1M: 0.02; 3M: 0.16;
@@ -112,6 +112,25 @@
 > Artefactos en /data/wolves: demos/ (dataset+manifest+bc_model.zip+config), demos_v1_inconsistentes/ (histórico del
 > diagnóstico), run02/eval_final_10M.json + eval_best_5.5M.json. Verja tras el plan C: rl_env_check 8/8 + face_check +
 > wolf_controller_check verdes (los checks 1–8 intactos; el código nuevo no toca env/mundo/obs).
+>
+> **Patch — Opción A ejecutada (π [256,256]) y NUEVO diagnóstico: ALIASING de la etiqueta (2026-07-15, 3ª).** Decisión
+> del usuario: re-entrenar el BC con política [256,256] (NET_ARCH de train_wolves cambia [128,128]→[256,256] — π del BC
+> y del fine-tune deben coincidir para --init-from; **la ablación run02 pasa a ser CROSS-ARQUITECTURA**, conscientemente,
+> porque la [128,128] infraajustaba lo medido) y árbol escalonado sobre el clon nuevo: ≥1.5 → run03 · 0.5–1.5 con bucle
+> cerrado sano → run03 con puerta RELAJADA anotada · ≈0 → PARAR. **Resultado: rama ≈0** — val dir 0.424→0.406 (mejora
+> marginal pese a 4× parámetros) y clon 0.0/10 → doblar la anchura NO era la palanca; la eval de 100 semillas se omitió
+> (10/10 a cero la hace redundante). **HALLAZGO (medido sobre las 244.681 parejas de etiquetas consecutivas del
+> dataset):** el **31,4% invierten el sentido entre fronteras** (cos<0 a 0,5 s; mediana 0.995 → distribución BIMODAL:
+> o estable o flip) — el v_target del scriptado oscila (acercar/retirar/tangente alrededor de r_face_safe + cono +
+> re-anclaje del envolvente) MÁS RÁPIDO de lo que muestrea la frontera del env → la etiqueta de PRIMER PASO es
+> cuasi-ruido en ~⅓ del dataset para una política sin memoria. Encaja todo: train≈val alto e insensible a la capacidad,
+> módulos encogidos (la media de direcciones que flipean ≈ 0), el clon llega y MERODEA pero no ejecuta la danza, y el
+> "held scripted" sí mata 2.7 (evalúa la superficie exacta EN VIVO en vez de predecirla). **Candidatos para la próxima
+> decisión (sin implementar):** (A′) etiqueta = MEDIA de los 5 v_target de la ventana (la intención NETA que el hold
+> ejecuta de verdad; suaviza el flip; sigue siendo clonar al scriptado — un flag en collect_demos) · (C) run03 desde el
+> clon actual (la exploración global —cruzar la barrera, llegar a la presa— YA está resuelta por el prior; PPO solo debe
+> descubrir la maniobra final) · (B) DAgger (menos indicado: el problema es el OBJETIVO, no solo el drift) · memoria en
+> la política (LSTM/frame-stack) descartada por contrato (obs congelada).
 >
 > **Patch — PLAN B ACTIVADO: SHAPING POR POTENCIAL + run02 de cero (decisión del usuario, 2026-07-15).** run01 demostró
 > que la rala pura no arranca (1 muerte en 2,5M pasos: la exploración gaussiana por-lobo no coordina flanqueos por
