@@ -1,7 +1,9 @@
 """train_wolves.py — Entrenador PPO del paquete de lobos (SB3) contra la barrera reactiva.
 
-PPO("MlpPolicy") de Stable-Baselines3 sobre WolfPackEnv (cerebro único, recompensa RALA
-+1/muerte), con SubprocVecEnv (n envs en paralelo) + VecMonitor. TODOS los artefactos
+PPO("MlpPolicy") de Stable-Baselines3 sobre WolfPackEnv (cerebro único, recompensa
++1/muerte y, por defecto desde run02, + SHAPING POR POTENCIAL —plan B, ver wolf_env.py;
+`--shaping off` reproduce la rala pura de run01—), con SubprocVecEnv (n envs en paralelo)
++ VecMonitor. TODOS los artefactos
 (checkpoints, TensorBoard, model.zip, config.json, summary.json) van al outdir — que debe
 vivir en /data (= ~/rl_data del host, FUERA del repo; persiste aunque el contenedor muera).
 
@@ -20,6 +22,7 @@ import json
 import os
 import sys
 import time
+from collections import deque
 from datetime import datetime
 from pathlib import Path
 
@@ -50,23 +53,29 @@ HYPER = dict(
 )
 NET_ARCH = [128, 128]
 
-# Criterio de ABORTO pactado (se escribe en train.log al arrancar): si a ~2M de pasos
-# ep_rew_mean sigue en 0.00 (ninguna muerte espontánea), PARAR el run y reportar; el plan B
-# (shaping basado en potencial) NO se implementa sin decisión del usuario.
-ABORT_NOTE = ("CRITERIO DE ABORTO (pactado): si a ~2.000.000 de pasos ep_rew_mean sigue en 0.00 "
-              "(ninguna muerte espontánea), parar el run y reportar. El shaping por potencial es "
-              "plan B y lo decide el usuario — NO implementarlo por cuenta propia.")
+# Criterio de ABORTO pactado (se escribe en train.log al arrancar). run02 (plan B, shaping por
+# potencial ON): el shaping se nota en ep_shape_mean desde el principio; lo que DECIDE es
+# ep_kills_mean — si a ~3M de pasos sigue ≈ 0.00 (sin muertes emergiendo pese al acercamiento),
+# PARAR el run y reportar; el plan C (currículo/BC) NO se implementa sin decisión del usuario.
+ABORT_NOTE = ("CRITERIO DE ABORTO (pactado, run02/shaping): ep_shape_mean debe ser != 0 desde el "
+              "principio (señal de que el gradiente llega); lo que decide es ep_kills_mean — si a "
+              "~3.000.000 de pasos sigue ~0.00 (sin muertes emergiendo pese al acercamiento), parar "
+              "el run y reportar. El plan C (currículo/BC) lo decide el usuario — NO implementarlo "
+              "por cuenta propia.")
 
 
-def make_env(seed: int, kinds: tuple[str, ...], frame_skip: int):
+def make_env(seed: int, kinds: tuple[str, ...], frame_skip: int,
+             shaping: bool, shaping_beta: float, shaping_gamma: float):
     """Thunk picklable para SubprocVecEnv (cada worker importa rl.wolf_env vía PYTHONPATH)."""
     def _thunk():
-        return WolfPackEnv(kinds=kinds, frame_skip=frame_skip, seed=seed)
+        return WolfPackEnv(kinds=kinds, frame_skip=frame_skip, seed=seed,
+                           shaping=shaping, shaping_beta=shaping_beta, shaping_gamma=shaping_gamma)
     return _thunk
 
 
 class EpisodeLog(BaseCallback):
-    """Recoge (timestep, recompensa, longitud) de cada episodio terminado (vía VecMonitor)."""
+    """Recoge (timestep, recompensa, longitud) de cada episodio terminado (vía VecMonitor);
+    con shaping, también las COMPONENTES del episodio (kills/shape, del info del env)."""
 
     def __init__(self):
         super().__init__()
@@ -76,21 +85,28 @@ class EpisodeLog(BaseCallback):
         for info in self.locals.get("infos", ()):
             ep = info.get("episode")
             if ep is not None:
-                self.episodes.append({"t": int(self.num_timesteps),
-                                      "r": float(ep["r"]), "l": int(ep["l"])})
+                e = {"t": int(self.num_timesteps), "r": float(ep["r"]), "l": int(ep["l"])}
+                if "ep_kills" in info:
+                    e["kills"] = float(info["ep_kills"])
+                    e["shape"] = float(info["ep_shape"])
+                self.episodes.append(e)
         return True
 
 
 class TrainLog(BaseCallback):
     """Log periódico LEGIBLE a outdir/train.log (lo que se consulta con `tail -f`): una línea
-    por rollout con timestamp, pasos, fps y medias móviles de recompensa/longitud (últimos
-    100 episodios, vía VecMonitor). La cabecera documenta el criterio de aborto pactado."""
+    por rollout con timestamp, pasos, fps y medias móviles (últimos 100 episodios) de
+    recompensa TOTAL, ep_kills_mean (LA señal que importa), ep_shape_mean (el término de
+    shaping — debe ser != 0 desde el principio si el shaping está ON) y longitud.
+    La cabecera documenta el criterio de aborto pactado."""
 
     def __init__(self, logpath: Path, run_config: str):
         super().__init__()
         self.logpath = logpath
         self.run_config = run_config
         self._t0 = None
+        self._kills = deque(maxlen=100)     # componentes por episodio (info del env, al done)
+        self._shape = deque(maxlen=100)
 
     def _write(self, line: str) -> None:
         with open(self.logpath, "a", encoding="utf-8") as f:
@@ -101,17 +117,25 @@ class TrainLog(BaseCallback):
         self._write("=" * 100)
         self._write(f"[{datetime.now().isoformat(timespec='seconds')}] ARRANQUE  {self.run_config}")
         self._write(ABORT_NOTE)
-        self._write("columnas: timestamp | pasos | fps | ep_rew_mean (últimos 100 eps) | ep_len_mean")
+        self._write("columnas: timestamp | pasos | fps | ep_rew_mean (total, últimos 100 eps) | "
+                    "ep_kills_mean | ep_shape_mean | ep_len_mean")
 
     def _on_rollout_end(self) -> None:
         buf = self.model.ep_info_buffer
         rew = float(np.mean([e["r"] for e in buf])) if buf else float("nan")
         length = float(np.mean([e["l"] for e in buf])) if buf else float("nan")
+        kills = float(np.mean(self._kills)) if self._kills else float("nan")
+        shape = float(np.mean(self._shape)) if self._shape else float("nan")
         fps = self.num_timesteps / max(time.time() - self._t0, 1e-9)
         self._write(f"[{datetime.now().isoformat(timespec='seconds')}] pasos={self.num_timesteps:>10,}  "
-                    f"fps={fps:7.1f}  ep_rew_mean={rew:6.3f}  ep_len_mean={length:8.1f}")
+                    f"fps={fps:7.1f}  ep_rew_mean={rew:7.3f}  ep_kills_mean={kills:6.3f}  "
+                    f"ep_shape_mean={shape:7.3f}  ep_len_mean={length:8.1f}")
 
     def _on_step(self) -> bool:
+        for info in self.locals.get("infos", ()):
+            if "ep_kills" in info:          # solo llega al done (terminal del episodio)
+                self._kills.append(float(info["ep_kills"]))
+                self._shape.append(float(info["ep_shape"]))
         return True
 
     def _on_training_end(self) -> None:
@@ -122,7 +146,8 @@ class LightEval(BaseCallback):
     """Eval periódica LIGERA (cada eval_every pasos): 10 episodios DETERMINISTAS en semillas
     fijas de 'lobos' con la política actual contra la barrera (mismo mecanismo que el
     evaluador: PolicyWolfController + SyncedReactiveCoordinator) → media de muertes al
-    train.log. La eval COMPLETA (100 semillas) es solo con rl/eval_wolves.py, manual."""
+    train.log. SIEMPRE SIN SHAPING (va por el World directo y cuenta muertes: lo que se
+    puntúa). La eval COMPLETA (100 semillas) es solo con rl/eval_wolves.py, manual."""
 
     EVAL_SEEDS_LIGHT = tuple(range(10))
 
@@ -182,7 +207,11 @@ def main() -> None:
     p.add_argument("--smoke", action="store_true", help="preset humo: 60k pasos, 4 envs (demuestra que gira)")
     p.add_argument("--resume", type=str, default=None, help="checkpoint .zip del que RETOMAR (PPO.load, sin resetear el contador)")
     p.add_argument("--eval-every", type=int, default=250_000, help="eval ligera (10 eps deterministas) cada N pasos; 0 = off")
+    p.add_argument("--shaping", choices=("on", "off"), default="on",
+                   help="shaping por potencial (plan B) al ENTRENAR; def. on (la eval nunca lo ve)")
+    p.add_argument("--shaping-beta", type=float, default=1.0, help="β del potencial Φ = −β·dist_media/D_norm")
     args = p.parse_args()
+    shaping = args.shaping == "on"
 
     if args.smoke:
         args.total_steps = 60_000
@@ -194,7 +223,9 @@ def main() -> None:
 
     outdir = Path(args.outdir) if args.outdir else Path("/data/wolves") / datetime.now().strftime("%Y%m%d-%H%M%S")
 
-    print("=== train_wolves (PPO, cerebro único del paquete, recompensa RALA +1/muerte) ===")
+    shaping_desc = (f"shaping ON (β={args.shaping_beta}, γ={HYPER['gamma']} = el del PPO)"
+                    if shaping else "shaping OFF (rala pura, como run01)")
+    print("=== train_wolves (PPO, cerebro único del paquete, +1/muerte + %s) ===" % shaping_desc)
     print(f"  envs = {args.n_envs} (SubprocVecEnv)  |  device = {args.device}  |  seed = {args.seed}")
     print(f"  kinds = {kinds}  |  frame_skip = {args.frame_skip}  |  total_steps = {args.total_steps:,}")
     print(f"  outdir = {outdir}")
@@ -207,7 +238,11 @@ def main() -> None:
     config = {
         "args": vars(args) | {"kinds": list(kinds), "outdir": str(outdir)},
         "hyper": HYPER, "net_arch": NET_ARCH, "algo": "PPO(MlpPolicy)",
-        "reward": "+1 por res matada (rala, compartida); sin castigo por tiempo ni por a-salvo",
+        "reward": "+1 por res matada (rala, compartida); sin castigo por tiempo ni por a-salvo"
+                  + ("; + shaping por potencial (plan B, Ng et al.)" if shaping else ""),
+        "shaping": {"on": shaping, "beta": args.shaping_beta, "gamma": HYPER["gamma"],
+                    "phi": "-beta * mean_i dist(lobo_i, presa ternero-primero) / diagonal_campo; 0 si coasting",
+                    "nota": "gamma EXACTAMENTE el del PPO (inocuidad de Ng et al.); la eval NUNCA ve el shaping"},
         "abort": ABORT_NOTE,
         "fecha": datetime.now().isoformat(timespec="seconds"),
     }
@@ -216,7 +251,9 @@ def main() -> None:
     # start_method="fork" (Linux): los workers HEREDAN el estado del padre. El default de SB3
     # (forkserver) arranca un proceso limpio que re-importa el stack y moría en la imagen del
     # lab importando cv2 (opencv del lockfile) sin libGL (arreglado también en docker/Dockerfile).
-    venv = SubprocVecEnv([make_env(args.seed + i, kinds, args.frame_skip) for i in range(args.n_envs)],
+    venv = SubprocVecEnv([make_env(args.seed + i, kinds, args.frame_skip,
+                                   shaping, args.shaping_beta, HYPER["gamma"])   # γ del PPO, EXACTO
+                          for i in range(args.n_envs)],
                          start_method="fork")
     venv = VecMonitor(venv)
 
@@ -233,7 +270,7 @@ def main() -> None:
 
     run_desc = (f"total_steps={args.total_steps:,} n_envs={args.n_envs} seed={args.seed} "
                 f"device={args.device} kinds={kinds} frame_skip={args.frame_skip} "
-                f"resume={args.resume or '-'} outdir={outdir}")
+                f"{shaping_desc} resume={args.resume or '-'} outdir={outdir}")
     ep_log = EpisodeLog()
     train_log = TrainLog(outdir / "train.log", run_desc)
     light_eval = LightEval(outdir / "train.log", eval_every=args.eval_every)
@@ -252,6 +289,7 @@ def main() -> None:
 
     rs = np.array([e["r"] for e in ep_log.episodes], dtype=float)
     assert rs.size == 0 or np.isfinite(rs).all(), "recompensas no finitas (NaN/inf) — pipeline roto"
+    ks = np.array([e["kills"] for e in ep_log.episodes if "kills" in e], dtype=float)
     summary = {
         "total_steps": int(model.num_timesteps),
         "elapsed_s": round(elapsed, 1),
@@ -259,6 +297,8 @@ def main() -> None:
         "episodios": len(ep_log.episodes),
         "reward_media": float(rs.mean()) if rs.size else None,
         "reward_max": float(rs.max()) if rs.size else None,
+        "kills_media": float(ks.mean()) if ks.size else None,   # la señal que importa (sin shaping)
+        "kills_max": float(ks.max()) if ks.size else None,
         "reward_por_tramos": _reward_por_tramos(ep_log.episodes),
         "longitud_media_ep": float(np.mean([e["l"] for e in ep_log.episodes])) if ep_log.episodes else None,
     }

@@ -5,7 +5,7 @@
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
 >
-> **Última actualización: 2026-07-14 (2ª)** · *evaluador de lobos aprendidos (obs de origen único + equivalencia bit a bit) + primer run serio (run01) — ABORTADO a 2,48M por el criterio pactado: la recompensa RALA no arranca contra la barrera; decisión del plan B (shaping) PENDIENTE del usuario.*
+> **Última actualización: 2026-07-15** · *plan B ACTIVADO (decisión del usuario): SHAPING POR POTENCIAL en la recompensa del env de lobos (Ng et al. 1999 — no cambia la política óptima) + run02 DE CERO (10M, shaping ON). rl_env_check pasa a 8 tests (el 8: telescopia/signo/kills intactos/off≡run01).*
 > **Hecho:** terminal (el "juez") · disparador realista por detección de dron · reescalado a 300×300 (~9 ha) con
 > escala biológica absoluta · dispersión del rebaño · movimiento de drones · detectar→acercarse→confirmar ·
 > **guiado al refugio (paso 2)** · **huida NO-HOLONÓMICA en ESCOLTA** (pin) · **DISUASIÓN del dron** (radio CORTO + bordeo, parcial) ·
@@ -38,11 +38,12 @@
 > envolvente, coasting) a una interfaz `decide(world) -> (v_target, coasting)`; el mundo impone la FÍSICA (susto,
 > inercia+integración, cap, captura). Prepara la fase RL (lobos que burlan la barrera). CERO cambio de comportamiento,
 > CERO re-congelación (fingerprint bit a bit vs v2.4; verja verde SIN adaptar).
-> **Pendiente:** **fase RL** — (1) lobos: andamiaje + evaluador LISTOS; el run01 con recompensa RALA quedó ABORTADO por el
-> criterio pactado (0 señal a 2M) → **DECISIÓN DEL USUARIO pendiente: activar el plan B (shaping por potencial) u otra vía
-> (currículo, exploración)**; después entrenar lobos que burlen la barrera, evaluarlos con eval_wolves y congelarlos;
-> (2) **MARL** de drones (debe batir la barrera **2.77 / 0 / 2.80** —metro DGX v2.4.1— MOVIENDO los drones con intención,
-> gestionando la energía) contra esos lobos.
+> **Pendiente:** **fase RL** — (1) lobos: run01 (rala pura) ABORTADO a 2,48M (0 señal); **plan B ACTIVADO** (decisión del
+> usuario 2026-07-15): shaping por potencial (β=1, γ=0.999 = el del PPO) → **run02 DE CERO (10M, shaping ON) corriendo**;
+> criterio de aborto adaptado: lo que decide es **ep_kills_mean ≈ 0.00 a ~3M** (el plan C —currículo/BC— NO se implementa
+> sin decisión del usuario); si las muertes despegan → 10M completos + eval_wolves (100 semillas) del último checkpoint y
+> del mejor; después congelar los lobos aprendidos; (2) **MARL** de drones (debe batir la barrera **2.77 / 0 / 2.80**
+> —metro DGX v2.4.1— MOVIENDO los drones con intención, gestionando la energía) contra esos lobos.
 > **Commits:** `194a3ad` base · `37910b3` terminal · `e663504` disparador por dron · `4d1e708` campo
 > 300×300 + escala biológica absoluta · `886bd45` dispersión del rebaño · `a15e2df` movimiento de
 > drones (3a) · `fd893b8` detectar→confirmar (3b) · `49e0e22` consolidar DISEÑO+CLAUDE · `144b7bd` guiado (paso 2)
@@ -62,9 +63,40 @@
 > `6b936c4` ANDAMIAJE RL de lobos (docker/ + rl/: WolfPackEnv, RLWolfController, train_wolves + rl_env_check en la
 > verja) **+ v2.4.1-baseline: mismo mundo, METRO DGX** (la baseline del portátil no se reproducía entre plataformas —deriva
 > FP amplificada por el caos—; re-medición canónica DENTRO del contenedor: Dummy 4.54/0/4.46, Reactive 2.77/0/2.80; tag
-> `v2.4.1-baseline`) · `<este commit>` EVALUADOR de lobos aprendidos (rl/obs.py origen único + PolicyWolfController +
+> `v2.4.1-baseline`) · `e1e1b31` EVALUADOR de lobos aprendidos (rl/obs.py origen único + PolicyWolfController +
 > SyncedReactiveCoordinator + rl/eval_wolves.py; equivalencia env↔evaluador bit a bit = rl_env_check test 7) + train serio
-> (gamma 0.999, --resume, train.log, eval ligera) — run01 10M lanzado desacoplado tras el commit.
+> (gamma 0.999, --resume, train.log, eval ligera) — run01 10M lanzado desacoplado tras el commit · `9fc906f` docs:
+> desenlace del run01 (ABORTADO a 2,48M por el criterio pactado — la rala no arranca) · `<este commit>` plan B ACTIVADO:
+> SHAPING POR POTENCIAL en WolfPackEnv (Φ = −β·dist media a la presa ternero-primero / diagonal; r_shape = γΦ′−Φ con el
+> γ del PPO; componentes en info/log; eval SIEMPRE sin shaping) + test 8 (telescopia/signo/kills/off≡run01) + run02 de
+> cero (10M, shaping ON) lanzado desacoplado tras el commit.
+>
+> **Patch — PLAN B ACTIVADO: SHAPING POR POTENCIAL + run02 de cero (decisión del usuario, 2026-07-15).** run01 demostró
+> que la rala pura no arranca (1 muerte en 2,5M pasos: la exploración gaussiana por-lobo no coordina flanqueos por
+> accidente antes de que el rebaño se refugie). Se activa el plan B ya esbozado en §5.2: **shaping basado en potencial**
+> (Ng, Harada & Russell 1999 — añadir r_shape = γ·Φ(s′) − Φ(s) NO cambia la política óptima si γ es EXACTAMENTE el del
+> descuento del agente; por eso el γ del PPO entra al env como parámetro, no se hardcodea dos veces). **Potencial:**
+> Φ(s) = −β · mean_i dist(lobo_i, presa designada) / D_norm, con la presa de la MISMA regla ternero-primero que escribe
+> el controlador (`RLWolfController._write_prey` — un solo criterio de verdad, re-aplicada en la frontera con
+> GUARDAR/RESTAURAR: las vacas se actualizan ANTES que los lobos en `World.step`, así que el pin lee el pack_prey del
+> paso anterior y NO debe ver el cálculo de la frontera), media sobre los lobos PRESENTES, D_norm = diagonal del campo
+> (≈424 m) → Φ ∈ (−β, 0]; sin res cazable (coasting) → Φ = 0. β afinable (`--shaping-beta`, def. 1.0). s y s′ son las
+> FRONTERAS del step del env (tras el frame-skip de 5), no los pasos internos de física. **Recompensa** r = r_kills +
+> r_shape (el +1/muerte INTACTO); `info` lleva las componentes (r_kills/r_shape por paso, ep_kills/ep_shape al terminal)
+> y `train.log` reporta ep_rew_mean / **ep_kills_mean (LA señal que importa)** / ep_shape_mean / ep_len_mean.
+> **La EVALUACIÓN NUNCA ve el shaping** (eval_wolves y la eval ligera van por el World directo y cuentan muertes — lo
+> que se puntúa); `--shaping off` reproduce el env de run01 BIT A BIT. **Verificación (rl_env_check test 8):**
+> TELESCOPIA (Σ γ^t·r_shape == γ^T·Φ(s_T) − Φ(s_0) exacto — el término está acotado por 2β sea cual sea T: no es
+> cultivable), SIGNO (acercarse a la presa acumula r_shape > 0; alejarse, < 0), KILLS INTACTOS (r_kills == Δn_depredadas
+> con shaping ON) y OFF ≡ run01 (obs bit a bit idénticas on/off paso a paso: el shaping no toca la DINÁMICA). Smoke 60k
+> con shaping ON: ep_shape_mean ~0.8–0.95 ≠ 0 desde el primer rollout (el gradiente ya ve señal), kills 0 (esperado).
+> **run02 (10M, shaping ON, β=1, DE CERO — sin --resume):** mismo protocolo desacoplado que run01, artefactos en
+> /data/wolves/run02. **CRITERIO DE ABORTO adaptado (en la cabecera del train.log):** ep_shape_mean debe ser ≠ 0 desde
+> el principio; lo que DECIDE es ep_kills_mean — si a ~3M sigue ≈ 0.00 (sin muertes emergiendo pese al acercamiento),
+> parar y reportar; **el plan C (currículo / BC desde demostraciones del scriptado) lo decide el usuario**. Si las
+> muertes despegan: 10M completos y eval_wolves (100 semillas) sobre el último checkpoint y el mejor según evals ligeras.
+> Nada más cambia: ni hiperparámetros (solo el γ ya existente entra al env), ni obs, ni mundo; los checks 1–7 quedan
+> intactos (solo se AÑADE el 8).
 >
 > **Patch — EVALUADOR de lobos aprendidos + primer RUN serio (run01, 10M).** Dos piezas sobre el andamiaje verde:
 > **(1) OBS DE UN SOLO ORIGEN (`rl/obs.py`):** el constructor de la observación (layout 122 + normalizaciones) se extrae
@@ -818,7 +850,9 @@ pastan cerca del borde) podría meterlo, así que se re-aplica el clamp como ÚL
 
 Para densificar la señal sin abrir agujeros: **shaping basado en potencial** (Ng, Harada &
 Russell, 1999): `F(s,s') = γ·Φ(s') − Φ(s)` → **demostrado** que no cambia la política óptima
-(no crea óptimos explotables; oscilar da cero neto).
+(no crea óptimos explotables; oscilar da cero neto). *(Estrenado ya en la fase de LOBOS:
+run02 entrena con Φ = −β·dist media del paquete a la presa designada — ver el patch del
+plan B en la cabecera y `rl/wolf_env.py`; verificado en rl_env_check test 8.)*
 
 Componentes propuestos:
 - **Negativo grande compartido** cuando un lobo alcanza a una vaca (el resultado a evitar).

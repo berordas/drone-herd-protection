@@ -21,6 +21,12 @@ comprueba (asserts, estilo de los demás checks; corre con `python rl_env_check.
      trayectoria del env (WolfPackEnv + predict por fuera) y la del evaluador
      (PolicyWolfController + SyncedReactiveCoordinator, refresco en la FRONTERA del step)
      son BIT A BIT idénticas — si divergieran, eval_wolves mediría OTRA política.
+  8) SHAPING POR POTENCIAL (plan B, r_shape = γ·Φ(s′) − Φ(s)): TELESCOPIA (la suma descontada
+     del término == γ^T·Φ(s_T) − Φ(s_0), acotada — no cultivable); SIGNO (acercarse a la presa
+     acumula r_shape > 0 al principio; alejarse, < 0); KILLS INTACTOS (con shaping ON,
+     r_kills acumulado == Δn_depredadas EXACTO, como el test 5); y OFF ≡ run01 (con
+     shaping=False —el default— la dinámica es bit a bit la misma y la recompensa es
+     EXACTAMENTE la rala).
 """
 
 import json
@@ -311,6 +317,108 @@ def test_equivalencia_env_controlador():
     print("  OK\n")
 
 
+def _presa_designada(w):
+    """Posición de la presa que usa Φ (la MISMA regla ternero-primero del controlador,
+    aplicada con guardar/restaurar — igual que WolfPackEnv._phi)."""
+    saved = (w.pack_prey, w.pack_prey_kind)
+    RLWolfController._write_prey(w)
+    idx, kind = w.pack_prey, w.pack_prey_kind
+    w.pack_prey, w.pack_prey_kind = saved
+    if idx < 0:
+        return None
+    return (w.calves[idx] if kind == "calf" else w.cows[idx]).copy()
+
+
+def test_shaping_potencial():
+    print("=== 8) SHAPING POR POTENCIAL: telescopia + signo + kills intactos + off ≡ run01 ===")
+    BETA, GAMMA = 1.0, 0.999
+
+    # (a) TELESCOPIA + (c) KILLS INTACTOS — política de caza (episodios con muertes, como test 5):
+    #     Σ_t γ^t·r_shape_t == γ^T·Φ(s_T) − Φ(s_0) (propiedad de Ng et al.: el término no es
+    #     cultivable — acotado por 2β sea cual sea T) y r_kills acumulado == n_depredadas EXACTO.
+    total_kills, resumen = 0, []
+    for s in range(3):
+        env = WolfPackEnv(kinds=("lobos",), seed=s, shaping=True,
+                          shaping_beta=BETA, shaping_gamma=GAMMA)
+        env.reset()
+        phi0 = env._phi_prev                              # Φ(s_0), recién calculado en reset
+        max_steps = env._world.max_episode_steps // env._frame_skip + 2
+        disc, g, T, kills, fin, info = 0.0, 1.0, 0, 0.0, False, {}
+        for _ in range(max_steps):
+            _, r, term, trunc, info = env.step(_accion_caza(env))
+            assert abs(r - (info["r_kills"] + info["r_shape"])) < 1e-12, "reward != r_kills + r_shape"
+            disc += g * info["r_shape"]
+            g *= GAMMA
+            T += 1
+            kills += info["r_kills"]
+            if term or trunc:
+                fin = True
+                break
+        assert fin, "el episodio no terminó (seed=%d)" % s
+        esperado = GAMMA ** T * env._phi_prev - phi0      # env._phi_prev == Φ(s_T)
+        assert abs(disc - esperado) < 1e-9, \
+            "telescopia rota (seed=%d): Σγ^t·r_shape=%.12f != γ^T·Φ_T−Φ_0=%.12f" % (s, disc, esperado)
+        assert abs(disc) <= 2.0 * BETA + 1e-9, "la suma descontada del shaping no está acotada por 2β"
+        assert kills == env._world.n_depredadas and kills == info["ep_kills"], \
+            "r_kills acumulado %.0f != n_depredadas %d (el shaping tocó el canal de kills)" \
+            % (kills, env._world.n_depredadas)
+        total_kills += int(kills)
+        resumen.append("seed %d: T=%d, Σγ^t·r_shape=%.4f, %d muertes" % (s, T, disc, int(kills)))
+    assert total_kills >= 1, "la política de caza no mató nada en 3 semillas con shaping ON"
+    print("  " + " | ".join(resumen))
+
+    # (b) SIGNO: empujar los lobos HACIA la presa designada acumula r_shape > 0 en los primeros
+    #     pasos; alejarlos, < 0 (mismo episodio, misma semilla; pocos pasos: antes del susto).
+    def _suma_shape(hacia: bool, n_pasos: int = 4) -> float:
+        env = WolfPackEnv(kinds=("lobos",), seed=11, shaping=True,
+                          shaping_beta=BETA, shaping_gamma=GAMMA)
+        env.reset()
+        s_total = 0.0
+        for _ in range(n_pasos):
+            w = env._world
+            prey = _presa_designada(w)
+            assert prey is not None, "el episodio de signo arrancó sin presa cazable"
+            a = np.zeros((N_WOLF_SLOTS, 2), dtype=np.float32)
+            for i in range(w.n_wolves):
+                v = prey - w.wolves[i]
+                nv = float(np.linalg.norm(v))
+                if nv > 1e-9:
+                    a[i] = (v / nv) if hacia else (-v / nv)
+            _, _r, term, trunc, info = env.step(a.ravel())
+            s_total += info["r_shape"]
+            assert not (term or trunc), "el episodio de signo terminó demasiado pronto"
+        return s_total
+    s_hacia, s_lejos = _suma_shape(True), _suma_shape(False)
+    assert s_hacia > 0.0, "acercarse a la presa debería acumular r_shape > 0 (%.6f)" % s_hacia
+    assert s_lejos < 0.0, "alejarse de la presa debería acumular r_shape < 0 (%.6f)" % s_lejos
+    print("  signo: hacia la presa Σr_shape=%.5f > 0 | lejos Σr_shape=%.5f < 0" % (s_hacia, s_lejos))
+
+    # (d) OFF ≡ run01: con shaping=False (el DEFAULT del constructor) la dinámica es bit a bit
+    #     la del env de run01 y la recompensa es EXACTAMENTE la rala (r_kills); el flag ON no
+    #     toca la física (obs idénticas paso a paso entre ambos).
+    e_on = WolfPackEnv(kinds=("lobos",), seed=23, shaping=True,
+                       shaping_beta=BETA, shaping_gamma=GAMMA)
+    e_off = WolfPackEnv(kinds=("lobos",), seed=23)            # defaults = el env de run01
+    o_on, i_on = e_on.reset()
+    o_off, i_off = e_off.reset()
+    assert i_on["world_seed"] == i_off["world_seed"] and np.array_equal(o_on, o_off)
+    rng = np.random.default_rng(5)
+    pasos = 0
+    while True:
+        a = rng.uniform(-1.0, 1.0, N_WOLF_SLOTS * 2).astype(np.float32)
+        o1, r1, t1, tr1, i1 = e_on.step(a)
+        o2, r2, t2, tr2, i2 = e_off.step(a)
+        assert np.array_equal(o1, o2), "el shaping tocó la DINÁMICA (obs divergen en el paso %d)" % pasos
+        assert r2 == i1["r_kills"], "con off la recompensa debe ser EXACTAMENTE la rala (run01)"
+        assert i2["r_shape"] == 0.0 and abs(r1 - (r2 + i1["r_shape"])) < 1e-12
+        assert (t1, tr1) == (t2, tr2), "terminales divergen entre on/off"
+        pasos += 1
+        if t1 or tr1:
+            break
+    print("  off ≡ run01: %d pasos con obs bit a bit idénticas on/off, reward_off == r_kills_on" % pasos)
+    print("  OK\n")
+
+
 if __name__ == "__main__":
     test_formas_y_mascaras()
     test_determinismo()
@@ -319,4 +427,5 @@ if __name__ == "__main__":
     test_canal_recompensa()
     test_mundo_scriptado_intacto()
     test_equivalencia_env_controlador()
+    test_shaping_potencial()
     print("rl_env_check: TODO OK.")
