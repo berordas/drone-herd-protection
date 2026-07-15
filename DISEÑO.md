@@ -5,7 +5,7 @@
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
 >
-> **Última actualización: 2026-07-15 (4ª)** · *Opción A′ ejecutada: dataset v3 con etiqueta = MEDIA de la ventana. El TECHO de la etiqueta, medido en vivo (oráculo deepcopy): **2.60** — la etiqueta queda EXONERADA. Pero el clon BC [256,256] se queda en **0.2/10** → rama ≈0 del árbol: run03 NO lanzado. La estratificación cierra el diagnóstico: la red ajusta el VIAJE (cos 0.83) y NO la MANIOBRA de flanqueo (cos 0.26, 37% opuesta — el 19% del dataset que mata). Etiqueta ✓, pipeline ✓ → lo que queda es RED/REPRESENTACIÓN sobre la obs congelada. Decisión pendiente (C run03 desde el clon-viajero es la recomendación).*
+> **Última actualización: 2026-07-15 (5ª)** · *DECISIÓN (C): run03 = fine-tune PPO DESDE el clon v3 (0.2), con **--shaping on** (β=1, como run02) — cambio razonado sobre el diseño original: la cuna real no da recompensa densa (0.2), el shaping es INVARIANTE a la política óptima (Ng et al.) y hace de RED DE SEGURIDAD en el bache del warm-start; además run02 (shaping, de cero) vs run03 (shaping, desde clon) AÍSLA el valor de la cuna como única diferencia. Aborto adaptado: a ~3M ni kills ni evals ligeras superan con claridad ~0.2 → parar (estancamiento y colapso, mismo umbral). run03 10M lanzado desacoplado tras el commit.*
 > **Hecho:** terminal (el "juez") · disparador realista por detección de dron · reescalado a 300×300 (~9 ha) con
 > escala biológica absoluta · dispersión del rebaño · movimiento de drones · detectar→acercarse→confirmar ·
 > **guiado al refugio (paso 2)** · **huida NO-HOLONÓMICA en ESCOLTA** (pin) · **DISUASIÓN del dron** (radio CORTO + bordeo, parcial) ·
@@ -38,14 +38,11 @@
 > envolvente, coasting) a una interfaz `decide(world) -> (v_target, coasting)`; el mundo impone la FÍSICA (susto,
 > inercia+integración, cap, captura). Prepara la fase RL (lobos que burlan la barrera). CERO cambio de comportamiento,
 > CERO re-congelación (fingerprint bit a bit vs v2.4; verja verde SIN adaptar).
-> **Pendiente:** **fase RL** — (1) lobos: run01 (rala) 0 señal · run02 (shaping) 0.57/0.60 (ablación desde-cero,
-> cross-arquitectura) · plan C agotado en su vía de imitación pura: aliasing arreglado (etiqueta media, TECHO 2.60)
-> pero el clon sigue ≈0 (0.2/10) — la MLP ajusta el viaje y no la maniobra de flanqueo → **DECISIÓN DEL USUARIO
-> pendiente**; recomendación: **(C) run03 desde el clon v3** (--init-from listo; el prior resuelve el viaje, la señal
-> de muerte enseña la maniobra); alternativas: seguir empujando el BC (pesos por régimen, π más ancha) o DAgger.
-> Después: entrenar lobos que batan 2.77/2.80, evaluarlos con eval_wolves y congelarlos; (2) **MARL** de drones (debe
-> batir la barrera **2.77 / 0 / 2.80** —metro DGX v2.4.1— MOVIENDO los drones con intención, gestionando la energía)
-> contra esos lobos.
+> **Pendiente:** **fase RL** — (1) lobos: **run03 CORRIENDO** (PPO desde el clon v3, shaping on, lr 1e-4, 10M;
+> aborto: a ~3M sin superar con claridad ~0.2 → parar); al terminar, tablas de 100 semillas (último + mejor) vs
+> scriptado 2.77/2.80 · cuna 0.2 · run02 0.57/0.60 · techo 2.60; si los lobos aprendidos baten al scriptado,
+> congelarlos; (2) **MARL** de drones (debe batir la barrera **2.77 / 0 / 2.80** —metro DGX v2.4.1— MOVIENDO los
+> drones con intención, gestionando la energía) contra esos lobos.
 > **Commits:** `194a3ad` base · `37910b3` terminal · `e663504` disparador por dron · `4d1e708` campo
 > 300×300 + escala biológica absoluta · `886bd45` dispersión del rebaño · `a15e2df` movimiento de
 > drones (3a) · `fd893b8` detectar→confirmar (3b) · `49e0e22` consolidar DISEÑO+CLAUDE · `144b7bd` guiado (paso 2)
@@ -75,7 +72,10 @@
 > ablación 0.57/0.60) + plan C CONSTRUIDO (collect_demos con presa del contrato + bc_pretrain enmascarado/dir +
 > train_wolves --init-from) — cuna BC ≈0, investigación completa, run03 NO lanzado (puerta pactada) · `0d1e5fb` docs:
 > tabla del mejor ckpt de run02 · `<este commit>` opción A (π [256,256]): clon SIGUE ≈0 → hallazgo del ALIASING de la
-> etiqueta (31% de flips a 0,5 s); run03 sigue sin lanzarse (rama ≈0 del árbol); candidatos A′/C/B documentados.
+> etiqueta (31% de flips a 0,5 s); run03 sigue sin lanzarse (rama ≈0 del árbol); candidatos A′/C/B documentados ·
+> `3d99c13` opción A′: --label mean (v3) + TECHO en vivo 2.60 (etiqueta exonerada); clon 0.2/10 → el cuello es la RED
+> (viaje sí, maniobra no) · `<este commit>` DECISIÓN (C): run03 desde el clon v3 CON shaping (β=1; red de seguridad +
+> run02 vs run03 aísla la cuna); aborto adaptado (~3M sin superar ~0.2); lanzado desacoplado tras el commit.
 >
 > **Patch — run02 COMPLETADO (ablación desde-cero) + plan C CONSTRUIDO pero PARADO: la cuna BC no valida (2026-07-15).**
 > **run02 (shaping, 10M completos, ~3 h a ~920 fps):** ep_kills_mean del buffer 0.00→**0.35–0.40** (a 1M: 0.02; 3M: 0.16;
@@ -114,6 +114,20 @@
 > Artefactos en /data/wolves: demos/ (dataset+manifest+bc_model.zip+config), demos_v1_inconsistentes/ (histórico del
 > diagnóstico), run02/eval_final_10M.json + eval_best_5.5M.json. Verja tras el plan C: rl_env_check 8/8 + face_check +
 > wolf_controller_check verdes (los checks 1–8 intactos; el código nuevo no toca env/mundo/obs).
+>
+> **Patch — DECISIÓN (C): run03 = PPO desde el clon v3, con shaping (2026-07-15, 5ª).** El usuario elige la vía C con un
+> cambio razonado sobre el diseño original de run03 (que era shaping off): **--shaping on (β=1, γ=0.999, como run02)**.
+> Razonamiento: (1) la cuna REAL rinde 0.2 — no da la recompensa densa que el diseño original suponía (un clon ≥1.5
+> sí la daría); (2) el shaping por potencial es INVARIANTE a la política óptima (Ng et al., ya verificado en test 8) →
+> red de seguridad gratuita en el bache del warm-start (crítico fresco); (3) comparabilidad: run02 (shaping, DESDE CERO)
+> vs run03 (shaping, DESDE EL CLON) deja el valor de la cuna como ÚNICA diferencia. Config: `--init-from
+> /data/wolves/demos/bc_model.zip --shaping on --lr 1e-4 --total-steps 10000000 --seed 0 --device cpu --outdir
+> /data/wolves/run03` (π [256,256]; resto de hiperparámetros = run02), protocolo desacoplado de siempre. **Criterio de
+> aborto adaptado a esta cuna (en la cabecera del train.log, `--abort-ref 0.2`):** si a ~3M ni ep_kills_mean ni las
+> evals ligeras superan CON CLARIDAD el nivel del clon (~0.2) → PARAR y reportar — estancamiento y colapso cubiertos
+> por el mismo umbral. Monitorización inicial: la eval ligera del arranque debe salir ~0.2 (prueba de que los pesos de
+> π cargaron; el value nace fresco). Al terminar: tablas de 100 semillas (último + mejor por evals ligeras) contra las
+> CUATRO referencias — scriptado 2.77/2.80 · cuna 0.2 · run02 0.57/0.60 · techo de la etiqueta 2.60.
 >
 > **Patch — Opción A′ ejecutada: etiqueta MEDIA (dataset v3) + TECHO medido 2.60; el clon sigue ≈0 → el cuello es la RED, no la etiqueta (2026-07-15, 4ª).**
 > Decisión del usuario: re-etiquetar con la MEDIA de los 5 v_target de la ventana (la intención NETA que el hold

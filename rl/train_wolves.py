@@ -68,11 +68,11 @@ ABORT_NOTE_SHAPING = (
     "el run y reportar. El plan C (currículo/BC) lo decide el usuario — NO implementarlo "
     "por cuenta propia.")
 ABORT_NOTE_WARMSTART = (
-    "CRITERIO DE ABORTO (pactado, warm-start/--init-from): el modo de fallo es que el crítico "
-    "IGNORANTE (value fresco) desaprenda la política clonada. Si la eval ligera cae por debajo "
-    "de la MITAD del nivel del clon (%s) y se mantiene ahí >=1.500.000 pasos sin recuperarse, "
-    "PARAR el run y reportar. Las mitigaciones (LR aún menor, congelar la política mientras el "
-    "crítico calienta) las decide el usuario — NO aplicarlas por cuenta propia.")
+    "CRITERIO DE ABORTO (pactado, warm-start/--init-from, run03): si a ~3.000.000 de pasos ni "
+    "ep_kills_mean ni las evals ligeras superan CON CLARIDAD el nivel del clon (%s), PARAR el "
+    "run y reportar — estancamiento y colapso del warm-start (el crítico fresco desaprendiendo "
+    "el prior) quedan cubiertos con el mismo umbral. Las mitigaciones las decide el usuario — "
+    "NO aplicarlas por cuenta propia.")
 ABORT_NOTE_RALA = (
     "CRITERIO DE ABORTO (pactado, rala pura): si a ~2.000.000 de pasos ep_kills_mean sigue en "
     "0.00 (ninguna muerte espontánea), parar el run y reportar.")
