@@ -13,11 +13,19 @@ CÓMO se muestrea (la sincronía es LA parte delicada — misma convención que 
   física): ANTES del `coordinator.act()`/`world.step()` del primer paso de la ventana — el
   MISMO instante en que `WolfPackEnv` construye su obs y en que `PolicyWolfController.refresh`
   muestrea (ver policy_wolf_controller.py; equivalencia de fronteras = rl_env_check test 7).
-- La ACCIÓN EXPERTA de esa frontera = el `v_target` que el scriptado emite en el PRIMER paso
-  de física de la ventana (el mundo llama a `decide()` DENTRO del paso; el scriptado no decide
-  en la frontera exacta, y llamarlo aparte DUPLICARÍA sus efectos laterales de fijación de
-  presa). Se normaliza a [-1, 1] (÷ `wolf_speed`, el inverso exacto de la desnormalización del
-  env) y los slots de lobos AUSENTES quedan a 0 (su máscara ya viaja en la obs).
+- La ACCIÓN EXPERTA de la frontera (`--label`): **`mean` (default, dataset v3)** = la MEDIA de
+  los `v_target` que el scriptado emite en los 5 pasos de física de la ventana — la intención
+  NETA que el hold del env ejecuta de verdad. **Motivo (ALIASING medido, ver DISEÑO 2026-07-15
+  3ª):** el v_target del scriptado oscila (acercar/retirar/tangente en r_face_safe + cono +
+  re-anclaje del envolvente) más rápido de lo que muestrea la frontera: el 31,4% de las
+  etiquetas de primer-paso consecutivas (0,5 s) INVIERTEN el sentido (bimodal estable-o-flip)
+  → ~⅓ de la supervisión era cuasi-ruido para una política sin memoria y el clon salía ≈0 con
+  [128,128] y con [256,256]. La media de la ventana promedia ese flip (ruido → señal).
+  `first` = el v_target del PRIMER paso de la ventana (datasets v1/v2, para reproducirlos).
+  En ambos casos se normaliza a [-1, 1] (÷ `wolf_speed`, el inverso exacto de la
+  desnormalización del env; la media de direcciones unitarias tiene norma ≤ 1 por sí sola) y
+  los slots de lobos AUSENTES quedan a 0 (su máscara ya viaja en la obs). Si el episodio
+  termina a mitad de ventana, la media es sobre los pasos que corrieron.
 - **PRESA DEL CONTRATO RL (consistencia entrenamiento/servicio — el fix del clon ≈0):** tras
   cada `decide()` del scriptado se impone `RLWolfController._write_prey` (ternero-primero), el
   MISMO pin bajo el que el clon servirá (el pin de la vaca lee `pack_prey`; en evaluación lo
@@ -87,8 +95,10 @@ class _RecordingScripted(WolfController):
         return v, coasting
 
 
-def collect_episode(seed: int, kind: str, frame_skip: int) -> tuple[np.ndarray, np.ndarray, dict]:
-    """Un episodio scriptado-vs-barrera; devuelve (obs (B,122), act (B,10), metadatos)."""
+def collect_episode(seed: int, kind: str, frame_skip: int,
+                    label: str = "mean") -> tuple[np.ndarray, np.ndarray, dict]:
+    """Un episodio scriptado-vs-barrera; devuelve (obs (B,122), act (B,10), metadatos).
+    `label`: 'mean' = media de los v_target de la ventana (v3) | 'first' = el del 1er paso."""
     rec = _RecordingScripted()
     w = build_world(seed, kind, wolf_controller=rec)
     w.reset()
@@ -97,16 +107,20 @@ def collect_episode(seed: int, kind: str, frame_skip: int) -> tuple[np.ndarray, 
     act_l: list[np.ndarray] = []
     k = 0
     pending: np.ndarray | None = None
+    window: list[np.ndarray] = []
     while True:
         if k % frame_skip == 0:
             pending = build_obs(w)                    # LA FRONTERA (mismo instante que el env)
+            window = []
         _o, _r, term, trunc, _i = w.step(coord.act(w.get_observation()))
-        if k % frame_skip == 0:
+        window.append(rec.last_v[: w.n_wolves] / w.wolf_speed)
+        k += 1
+        if k % frame_skip == 0 or term or trunc:      # ventana completa (o episodio cortado)
+            v = window[0] if label == "first" else np.mean(window, axis=0)
             a = np.zeros((N_WOLF_SLOTS, 2), dtype=np.float32)
-            a[: w.n_wolves] = np.clip(rec.last_v[: w.n_wolves] / w.wolf_speed, -1.0, 1.0)
+            a[: w.n_wolves] = np.clip(v, -1.0, 1.0)
             obs_l.append(pending)
             act_l.append(a.ravel())
-        k += 1
         if term or trunc:
             break
     meta = {"seed": seed, "kind": kind, "status": w.status, "steps": int(w.step_count),
@@ -128,6 +142,8 @@ def main() -> None:
                    help="primera semilla (disjunta de EVAL_SEEDS)")
     p.add_argument("--out", type=str, default="/data/wolves/demos", help="directorio de salida (en /data)")
     p.add_argument("--workers", type=int, default=6, help="episodios en paralelo (fork; dataset idéntico)")
+    p.add_argument("--label", choices=("mean", "first"), default="mean",
+                   help="etiqueta: mean = media de la ventana (v3, anti-aliasing) | first = 1er paso (v1/v2)")
     args = p.parse_args()
 
     assert args.seed_base > max(EVAL_SEEDS), \
@@ -143,7 +159,7 @@ def main() -> None:
     # Job list generosa en ORDEN de semilla; el corte por target_pairs se evalúa en ese orden
     # (imap preserva el orden) → dataset DETERMINISTA e idéntico al secuencial.
     from multiprocessing import get_context
-    jobs = [(args.seed_base + i, DEMO_KINDS[i % len(DEMO_KINDS)], args.frame_skip)
+    jobs = [(args.seed_base + i, DEMO_KINDS[i % len(DEMO_KINDS)], args.frame_skip, args.label)
             for i in range(args.max_episodes)]
     all_obs, all_act, episodes = [], [], []
     n_pairs = 0
@@ -176,7 +192,10 @@ def main() -> None:
         "seeds_disjuntas_de_eval": True,
         "kinds": {k: sum(1 for e in episodes if e["kind"] == k) for k in DEMO_KINDS},
         "frame_skip": args.frame_skip,
-        "accion": "v_target del scriptado en el 1er paso de la ventana, ÷ wolf_speed (=[-1,1]); slots ausentes a 0",
+        "label": args.label,
+        "accion": ("MEDIA de los v_target del scriptado en la ventana (anti-aliasing), ÷ wolf_speed; slots ausentes a 0"
+                   if args.label == "mean" else
+                   "v_target del scriptado en el 1er paso de la ventana, ÷ wolf_speed (=[-1,1]); slots ausentes a 0"),
         "presa": "contrato RL (ternero-primero) impuesto tras cada decide — el MISMO pin que verá el clon en servicio",
         "obs": "rl/obs.py build_obs en la frontera del env (misma convención que WolfPackEnv/test 7)",
         "experto_muertes_media": float(np.mean(kills)),

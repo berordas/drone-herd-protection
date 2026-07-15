@@ -5,7 +5,7 @@
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
 >
-> **Última actualización: 2026-07-15 (3ª)** · *Opción A ejecutada: BC con π [256,256] — apenas mueve la val (0.424→0.406) y el clon SIGUE en 0.0 → rama ≈0 del árbol pactado: run03 NO lanzado. HALLAZGO NUEVO (medido): ALIASING DE LA ETIQUETA — el 31% de las etiquetas expertas consecutivas (0,5 s) INVIERTEN el sentido (mediana 0.995: bimodal estable-o-flip) → ~1/3 de la supervisión es cuasi-ruido para una red sin memoria; no era capacidad. Candidatos (sin implementar): etiqueta = MEDIA de la ventana · run03 desde el clon que merodea · DAgger.*
+> **Última actualización: 2026-07-15 (4ª)** · *Opción A′ ejecutada: dataset v3 con etiqueta = MEDIA de la ventana. El TECHO de la etiqueta, medido en vivo (oráculo deepcopy): **2.60** — la etiqueta queda EXONERADA. Pero el clon BC [256,256] se queda en **0.2/10** → rama ≈0 del árbol: run03 NO lanzado. La estratificación cierra el diagnóstico: la red ajusta el VIAJE (cos 0.83) y NO la MANIOBRA de flanqueo (cos 0.26, 37% opuesta — el 19% del dataset que mata). Etiqueta ✓, pipeline ✓ → lo que queda es RED/REPRESENTACIÓN sobre la obs congelada. Decisión pendiente (C run03 desde el clon-viajero es la recomendación).*
 > **Hecho:** terminal (el "juez") · disparador realista por detección de dron · reescalado a 300×300 (~9 ha) con
 > escala biológica absoluta · dispersión del rebaño · movimiento de drones · detectar→acercarse→confirmar ·
 > **guiado al refugio (paso 2)** · **huida NO-HOLONÓMICA en ESCOLTA** (pin) · **DISUASIÓN del dron** (radio CORTO + bordeo, parcial) ·
@@ -39,11 +39,13 @@
 > inercia+integración, cap, captura). Prepara la fase RL (lobos que burlan la barrera). CERO cambio de comportamiento,
 > CERO re-congelación (fingerprint bit a bit vs v2.4; verja verde SIN adaptar).
 > **Pendiente:** **fase RL** — (1) lobos: run01 (rala) 0 señal · run02 (shaping) 0.57/0.60 (ablación desde-cero,
-> cross-arquitectura desde el plan C) · plan C con π [256,256] (opción A) TAMBIÉN ≈0 → causa raíz MEDIDA: **aliasing de
-> la etiqueta** (31% de flips a 0,5 s) → **DECISIÓN DEL USUARIO pendiente** entre (A′) re-etiquetar con la MEDIA de la
-> ventana (candidata natural), (C) run03 desde el clon que merodea (--init-from listo), (B) DAgger. Después: entrenar
-> lobos que batan 2.77/2.80, evaluarlos con eval_wolves y congelarlos; (2) **MARL** de drones (debe batir la barrera
-> **2.77 / 0 / 2.80** —metro DGX v2.4.1— MOVIENDO los drones con intención, gestionando la energía) contra esos lobos.
+> cross-arquitectura) · plan C agotado en su vía de imitación pura: aliasing arreglado (etiqueta media, TECHO 2.60)
+> pero el clon sigue ≈0 (0.2/10) — la MLP ajusta el viaje y no la maniobra de flanqueo → **DECISIÓN DEL USUARIO
+> pendiente**; recomendación: **(C) run03 desde el clon v3** (--init-from listo; el prior resuelve el viaje, la señal
+> de muerte enseña la maniobra); alternativas: seguir empujando el BC (pesos por régimen, π más ancha) o DAgger.
+> Después: entrenar lobos que batan 2.77/2.80, evaluarlos con eval_wolves y congelarlos; (2) **MARL** de drones (debe
+> batir la barrera **2.77 / 0 / 2.80** —metro DGX v2.4.1— MOVIENDO los drones con intención, gestionando la energía)
+> contra esos lobos.
 > **Commits:** `194a3ad` base · `37910b3` terminal · `e663504` disparador por dron · `4d1e708` campo
 > 300×300 + escala biológica absoluta · `886bd45` dispersión del rebaño · `a15e2df` movimiento de
 > drones (3a) · `fd893b8` detectar→confirmar (3b) · `49e0e22` consolidar DISEÑO+CLAUDE · `144b7bd` guiado (paso 2)
@@ -112,6 +114,30 @@
 > Artefactos en /data/wolves: demos/ (dataset+manifest+bc_model.zip+config), demos_v1_inconsistentes/ (histórico del
 > diagnóstico), run02/eval_final_10M.json + eval_best_5.5M.json. Verja tras el plan C: rl_env_check 8/8 + face_check +
 > wolf_controller_check verdes (los checks 1–8 intactos; el código nuevo no toca env/mundo/obs).
+>
+> **Patch — Opción A′ ejecutada: etiqueta MEDIA (dataset v3) + TECHO medido 2.60; el clon sigue ≈0 → el cuello es la RED, no la etiqueta (2026-07-15, 4ª).**
+> Decisión del usuario: re-etiquetar con la MEDIA de los 5 v_target de la ventana (la intención NETA que el hold
+> ejecuta; anti-aliasing) + medir el techo de la etiqueta nueva + árbol escalonado. **(1) `collect_demos --label
+> mean|first`** (default mean = v3; first reproduce v1/v2): mismos episodios BIT A BIT (mismas semillas 10.000+,
+> 120.214 pares/150 eps, experto 2.59) — solo cambia la etiqueta. **(2) TECHO medido — held-mean-label EN VIVO
+> (oráculo, script en /data/wolves/diag/techo_mean_label.py):** en cada frontera se hace deepcopy((mundo,
+> coordinador)), se rueda la copia 5 pasos con el experto de las demos para leer sus v_target, y su MEDIA se ejecuta
+> MANTENIDA en el mundo real vía RLWolfController (la semántica de servicio exacta del clon) = un clon PERFECTO de la
+> etiqueta mean → **2.60 en las 10 semillas** (≈ el experto 2.5–2.7): **la etiqueta queda EXONERADA**. **(3) BC
+> [256,256] sobre v3: clon 0.2/10** ([0,0,0,0,0,1,0,1,0,0]) → **rama ≈0 del árbol: run03 NO lanzado**. **(4) La
+> estratificación por régimen CIERRA el diagnóstico** (val de v3, solo slots presentes): VIAJE (|exp|>0.7, 60% del
+> dataset) cos 0.83 y módulos 0.87 vs 0.99 — por eso el clon cruza la barrera y llega a la presa; MIXTA (0.3–0.7,
+> 21%) cos 0.65; **MANIOBRA (|exp|<0.3, 19%) cos 0.26 con 37% de direcciones OPUESTAS** — la danza fina del flanqueo
+> (la que dispara el quórum) sigue sin ser representable por la MLP sobre la obs congelada (posiciones absolutas
+> relativas al establo: la maniobra depende de geometría RELATIVA lobo–presa–manada que la red debe sintetizar).
+> Secuencia completa del descarte: pipeline ✓ (scriptado por el mismo camino 2.5–2.7) → presa del contrato ✓ →
+> capacidad ([256,256]) ✗ no era → etiqueta (aliasing 31%, media de ventana, techo 2.60) ✓ arreglada → **queda la
+> RED/REPRESENTACIÓN**. **Candidatos (decisión del usuario, nada implementado):** **(C) run03 desde el clon v3** —
+> LA RECOMENDACIÓN: el prior ya resuelve el viaje (la exploración global que mató a run01) y hasta araña muertes
+> (0.2); la maniobra se aprende mejor de la señal de muerte (RL) que por imitación; todo listo (--init-from,
+> aborto por colapso) · pesos por régimen o π más ancha en el BC (seguir empujando la imitación; rendimientos
+> decrecientes a la vista) · DAgger (marginal: el fallo es de ajuste, no de drift) · tocar la obs = descartado por
+> contrato.
 >
 > **Patch — Opción A ejecutada (π [256,256]) y NUEVO diagnóstico: ALIASING de la etiqueta (2026-07-15, 3ª).** Decisión
 > del usuario: re-entrenar el BC con política [256,256] (NET_ARCH de train_wolves cambia [128,128]→[256,256] — π del BC
