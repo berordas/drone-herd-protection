@@ -5,7 +5,7 @@
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
 >
-> **Última actualización: 2026-07-15 (5ª)** · *DECISIÓN (C): run03 = fine-tune PPO DESDE el clon v3 (0.2), con **--shaping on** (β=1, como run02) — cambio razonado sobre el diseño original: la cuna real no da recompensa densa (0.2), el shaping es INVARIANTE a la política óptima (Ng et al.) y hace de RED DE SEGURIDAD en el bache del warm-start; además run02 (shaping, de cero) vs run03 (shaping, desde clon) AÍSLA el valor de la cuna como única diferencia. Aborto adaptado: a ~3M ni kills ni evals ligeras superan con claridad ~0.2 → parar (estancamiento y colapso, mismo umbral). run03 10M lanzado desacoplado tras el commit.*
+> **Última actualización: 2026-07-16** · *run03 (PPO desde el clon v3, shaping ON, lr 1e-4) COMPLETÓ los 10M: el criterio nunca saltó (a 3,25M la eval ligera iba por 0.70 ≫ 0.2). **Tablas de 100 semillas: FINAL 0.65/0.72 · mejor (4M) 0.66/0.71** — bate a run02 (0.57/0.60): **la cuna aporta (+0.08/+0.12), única diferencia entre ambos runs**; pero sigue LEJOS del scriptado (2.77/2.80) y del techo de la etiqueta (2.60). La maniobra de flanqueo sigue siendo el muro. Runs 01–03 cierran la primera campaña; siguiente movimiento = decisión del usuario.*
 > **Hecho:** terminal (el "juez") · disparador realista por detección de dron · reescalado a 300×300 (~9 ha) con
 > escala biológica absoluta · dispersión del rebaño · movimiento de drones · detectar→acercarse→confirmar ·
 > **guiado al refugio (paso 2)** · **huida NO-HOLONÓMICA en ESCOLTA** (pin) · **DISUASIÓN del dron** (radio CORTO + bordeo, parcial) ·
@@ -38,11 +38,13 @@
 > envolvente, coasting) a una interfaz `decide(world) -> (v_target, coasting)`; el mundo impone la FÍSICA (susto,
 > inercia+integración, cap, captura). Prepara la fase RL (lobos que burlan la barrera). CERO cambio de comportamiento,
 > CERO re-congelación (fingerprint bit a bit vs v2.4; verja verde SIN adaptar).
-> **Pendiente:** **fase RL** — (1) lobos: **run03 CORRIENDO** (PPO desde el clon v3, shaping on, lr 1e-4, 10M;
-> aborto: a ~3M sin superar con claridad ~0.2 → parar); al terminar, tablas de 100 semillas (último + mejor) vs
-> scriptado 2.77/2.80 · cuna 0.2 · run02 0.57/0.60 · techo 2.60; si los lobos aprendidos baten al scriptado,
-> congelarlos; (2) **MARL** de drones (debe batir la barrera **2.77 / 0 / 2.80** —metro DGX v2.4.1— MOVIENDO los
-> drones con intención, gestionando la energía) contra esos lobos.
+> **Pendiente:** **fase RL** — (1) lobos: primera campaña (runs 01–03) CERRADA con run03 = **0.65/0.72** (mejor
+> resultado aprendido; la cuna aporta vs run02 0.57/0.60, pero el scriptado 2.77/2.80 sigue lejos — la MANIOBRA de
+> flanqueo es el muro: ni la imitación la representa (techo de etiqueta 2.60 inalcanzado) ni 10M de PPO la descubren) →
+> **siguiente movimiento = decisión del usuario** (más pasos/otro lr sobre run03 · β mayor u otro Φ (p.ej. potencial de
+> FLANQUEO, con cuidado de no recompensar proxies) · DAgger sobre el clon · aceptar 0.65/0.72 como lobos aprendidos v1 y
+> pasar al MARL con el scriptado como adversario); (2) **MARL** de drones (debe batir la barrera **2.77 / 0 / 2.80**
+> —metro DGX v2.4.1— MOVIENDO los drones con intención, gestionando la energía).
 > **Commits:** `194a3ad` base · `37910b3` terminal · `e663504` disparador por dron · `4d1e708` campo
 > 300×300 + escala biológica absoluta · `886bd45` dispersión del rebaño · `a15e2df` movimiento de
 > drones (3a) · `fd893b8` detectar→confirmar (3b) · `49e0e22` consolidar DISEÑO+CLAUDE · `144b7bd` guiado (paso 2)
@@ -74,8 +76,10 @@
 > tabla del mejor ckpt de run02 · `<este commit>` opción A (π [256,256]): clon SIGUE ≈0 → hallazgo del ALIASING de la
 > etiqueta (31% de flips a 0,5 s); run03 sigue sin lanzarse (rama ≈0 del árbol); candidatos A′/C/B documentados ·
 > `3d99c13` opción A′: --label mean (v3) + TECHO en vivo 2.60 (etiqueta exonerada); clon 0.2/10 → el cuello es la RED
-> (viaje sí, maniobra no) · `<este commit>` DECISIÓN (C): run03 desde el clon v3 CON shaping (β=1; red de seguridad +
-> run02 vs run03 aísla la cuna); aborto adaptado (~3M sin superar ~0.2); lanzado desacoplado tras el commit.
+> (viaje sí, maniobra no) · `058dbfd` DECISIÓN (C): run03 desde el clon v3 CON shaping (β=1; red de seguridad +
+> run02 vs run03 aísla la cuna); aborto adaptado (~3M sin superar ~0.2); lanzado desacoplado tras el commit ·
+> `<este commit>` docs: DESENLACE run03 (10M completos; 100 semillas: FINAL 0.65/0.72, mejor 4M 0.66/0.71 — la cuna
+> aporta vs run02, el scriptado sigue lejos; la maniobra de flanqueo es el muro).
 >
 > **Patch — run02 COMPLETADO (ablación desde-cero) + plan C CONSTRUIDO pero PARADO: la cuna BC no valida (2026-07-15).**
 > **run02 (shaping, 10M completos, ~3 h a ~920 fps):** ep_kills_mean del buffer 0.00→**0.35–0.40** (a 1M: 0.02; 3M: 0.16;
@@ -114,6 +118,25 @@
 > Artefactos en /data/wolves: demos/ (dataset+manifest+bc_model.zip+config), demos_v1_inconsistentes/ (histórico del
 > diagnóstico), run02/eval_final_10M.json + eval_best_5.5M.json. Verja tras el plan C: rl_env_check 8/8 + face_check +
 > wolf_controller_check verdes (los checks 1–8 intactos; el código nuevo no toca env/mundo/obs).
+>
+> **Patch — DESENLACE run03: 10M completos, la CUNA APORTA (0.65/0.72 vs run02 0.57/0.60), el scriptado sigue lejos
+> (2026-07-16).** run03 (PPO desde el clon v3, shaping ON β=1, lr 1e-4, π [256,256], 12 envs CPU, ~4,6 h a ~615–810
+> fps) completó los 10M SIN disparar el criterio: la eval ligera arrancó en 0.10–0.20 (= el nivel del clon → prueba de
+> que los pesos de π cargaron; value fresco) y subió 0.30 (1M) → 0.70 (3,25M, ≫ el umbral ~0.2) → pico 0.80 (4M y
+> 8,5M) → 0.60 al cierre; ep_kills_mean del buffer 0.42 (1M) → 0.45–0.48 (final) — nótese que a 900k ya estaba al
+> nivel FINAL de run02 (el prior del viaje paga desde el arranque). **Tablas de 100 semillas (eval_wolves, mismas
+> semillas):** FINAL (10M) solo-lobos **0.65±0.68** / mixto **0.72±0.85** (succ 8/8, pred 54/51, timeout 38/41;
+> n_safe 5.43/5.34) · MEJOR por evals ligeras (ckpt 4M, vecindario 0.70/0.80/0.60) **0.66±0.79 / 0.71±0.85**
+> (succ 21/19) — otra vez ROBUSTO al checkpoint. **Contra las cuatro referencias: scriptado 2.77/2.80 · cuna 0.2 ·
+> run02 0.57/0.60 · techo de la etiqueta 2.60.** Lecturas: (1) **la cuna aporta** — run02 y run03 son idénticos salvo
+> el init (+0.08 lobos / +0.12 mixto, y en el buffer 0.45–0.48 vs 0.35–0.40); (2) **la maniobra sigue siendo el
+> muro** — ni la imitación la representa (el clon la falla y el techo 2.60 queda inalcanzado) ni 10M de PPO con
+> shaping de distancia la descubren (el Φ actual premia ACERCARSE, no FLANQUEAR); (3) el margen hasta 2.77 no se
+> cierra con esta receta — candidatos si se sigue por lobos: más presupuesto sobre run03 (--resume), Φ de flanqueo
+> (con el principio nº1 de §5.2 en mente: cuidado con recompensar proxies), DAgger, o aceptar 0.65/0.72 como lobos
+> aprendidos v1 y avanzar al MARL (el adversario de los drones puede ser el scriptado congelado, que ya es más duro).
+> Artefactos: /data/wolves/run03/ (train.log, checkpoints 500k–10M, eval_final_10M.json, eval_best_4M.json).
+> Contenedor abajo al cierre; decisión del siguiente movimiento = usuario.
 >
 > **Patch — DECISIÓN (C): run03 = PPO desde el clon v3, con shaping (2026-07-15, 5ª).** El usuario elige la vía C con un
 > cambio razonado sobre el diseño original de run03 (que era shaping off): **--shaping on (β=1, γ=0.999, como run02)**.
