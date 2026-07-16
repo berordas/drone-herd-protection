@@ -5,7 +5,7 @@
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
 >
-> **Última actualización: 2026-07-16 (2ª)** · *run04 = POLÍTICA RESIDUAL sobre el scriptado (RPL, Silver et al. 2018 — ver BIBLIOGRAFIA.md, NUEVO en el repo): el script vive DENTRO del controlador (su presa/histéresis/coasting intactos) y la red aprende solo una corrección δ aditiva. El SUELO es el script (~2.77/2.80); todo lo que suba es adaptación anti-dron descubierta por RL. δ=0 verificado BIT A BIT (test 9) y en el arnés (suelo 100 semillas). Dos fases (crítico-solo → PPO), recompensa RALA PURA, guardia del suelo 2.3 en el log.*
+> **Última actualización: 2026-07-17** · *run04 (RESIDUAL/RPL) COMPLETADO: 10M limpios, fase 1 clavada en el suelo (2.90×4 idénticas), guardia del suelo (2.3) jamás amenazada — el andamiaje RPL funcionó EXACTAMENTE como se diseñó. **Resultado de 100 semillas: Δ sobre el scriptado ≈ +0.0** (mejor ckpt 1,5M: 2.82/2.81 = +0.05/+0.01, dentro del ruido; final 10M: 2.61/2.66 = −0.16/−0.14, erosión leve). Los picos 3.1–3.2 de la eval ligera eran ruido de n=10. **Lectura: contra ESTA barrera, el scriptado ya está ≈ en el techo explotable por este paquete** — 10M de PPO con autoridad plena sobre δ no encontraron adaptación anti-dron que generalice. La fase de LOBOS queda cerrada con 4 runs medidos; siguiente movimiento = decisión del usuario (previsiblemente: congelar el scriptado como adversario y pasar al MARL).*
 >
 > **CIERRE de la primera campaña RL de lobos (runs 01–03) — la ablación completa, breve y factual:**
 > **run01** (rala pura, de cero) ABORTADO a 2,48M: 1 muerte espontánea en ~2.400 episodios, 0 señal · **run02**
@@ -49,11 +49,13 @@
 > envolvente, coasting) a una interfaz `decide(world) -> (v_target, coasting)`; el mundo impone la FÍSICA (susto,
 > inercia+integración, cap, captura). Prepara la fase RL (lobos que burlan la barrera). CERO cambio de comportamiento,
 > CERO re-congelación (fingerprint bit a bit vs v2.4; verja verde SIN adaptar).
-> **Pendiente:** **fase RL** — (1) lobos: **run04 (RESIDUAL/RPL) corriendo** — suelo garantizado (el script dentro),
-> guardia del suelo 2.3 en el log; al terminar, tablas de 100 semillas (último + mejor) vs scriptado 2.77/2.80 (el
-> suelo Y la vara — la cifra clave es **Δ sobre el scriptado**, lo descubierto por RL) · run03 0.65/0.72 · run02
-> 0.57/0.60 · cuna 0.2; si Δ>0, congelar los lobos residuales como `learned`; (2) **MARL** de drones (debe batir la
-> barrera **2.77 / 0 / 2.80** —metro DGX v2.4.1— MOVIENDO los drones con intención, gestionando la energía).
+> **Pendiente:** **fase RL** — (1) lobos: campaña COMPLETA con 4 runs medidos (run01 rala 0 · run02 shaping 0.57/0.60 ·
+> run03 cuna+shaping 0.65/0.72 · run04 residual **Δ ≈ +0.0 sobre el scriptado**) → la evidencia acumulada dice que el
+> scriptado ES el mejor lobo disponible contra esta barrera (aprender la caza no funcionó; corregirla tampoco añade) →
+> **decisión del usuario**: previsiblemente congelar el SCRIPTADO como adversario canónico y pasar al MARL (candidatos
+> si se insistiera en lobos: co-entrenamiento lobo-dron más adelante, residual_scale menor + más fase 1, o aceptar el
+> empate); (2) **MARL** de drones (debe batir la barrera **2.77 / 0 / 2.80** —metro DGX v2.4.1— MOVIENDO los drones
+> con intención, gestionando la energía).
 > **Commits:** `194a3ad` base · `37910b3` terminal · `e663504` disparador por dron · `4d1e708` campo
 > 300×300 + escala biológica absoluta · `886bd45` dispersión del rebaño · `a15e2df` movimiento de
 > drones (3a) · `fd893b8` detectar→confirmar (3b) · `49e0e22` consolidar DISEÑO+CLAUDE · `144b7bd` guiado (paso 2)
@@ -88,9 +90,11 @@
 > (viaje sí, maniobra no) · `058dbfd` DECISIÓN (C): run03 desde el clon v3 CON shaping (β=1; red de seguridad +
 > run02 vs run03 aísla la cuna); aborto adaptado (~3M sin superar ~0.2); lanzado desacoplado tras el commit ·
 > `ed16a81` docs: DESENLACE run03 (10M completos; 100 semillas: FINAL 0.65/0.72, mejor 4M 0.66/0.71 — la cuna
-> aporta vs run02, el scriptado sigue lejos; la maniobra de flanqueo es el muro) · `<este commit>` run04 RESIDUAL
+> aporta vs run02, el scriptado sigue lejos; la maniobra de flanqueo es el muro) · `74b3bab` run04 RESIDUAL
 > (RPL): residual_wolf_controller + env residual + train 2 fases (init a cero verificado, guardia del suelo 2.3) +
-> test 9 (δ=0 ≡ scriptado bit a bit) + eval_wolves --residual/--floor + BIBLIOGRAFIA.md; run04 lanzado tras el commit.
+> test 9 (δ=0 ≡ scriptado bit a bit) + eval_wolves --residual/--floor + BIBLIOGRAFIA.md; run04 lanzado tras el commit ·
+> `<este commit>` docs: DESENLACE run04 (Δ ≈ +0.0 sobre el scriptado en 100 semillas — mejor 2.82/2.81, final
+> 2.61/2.66; andamiaje RPL impecable, sin adaptación que generalice) + cierre de la fase de lobos aprendidos.
 >
 > **Patch — run02 COMPLETADO (ablación desde-cero) + plan C CONSTRUIDO pero PARADO: la cuna BC no valida (2026-07-15).**
 > **run02 (shaping, 10M completos, ~3 h a ~920 fps):** ep_kills_mean del buffer 0.00→**0.35–0.40** (a 1M: 0.02; 3M: 0.16;
@@ -129,6 +133,23 @@
 > Artefactos en /data/wolves: demos/ (dataset+manifest+bc_model.zip+config), demos_v1_inconsistentes/ (histórico del
 > diagnóstico), run02/eval_final_10M.json + eval_best_5.5M.json. Verja tras el plan C: rl_env_check 8/8 + face_check +
 > wolf_controller_check verdes (los checks 1–8 intactos; el código nuevo no toca env/mundo/obs).
+>
+> **Patch — DESENLACE run04: el andamiaje RPL perfecto, el Δ ≈ +0.0 — el scriptado ya está en el techo explotable
+> contra esta barrera (2026-07-17).** run04 (residual, rala pura, 2 fases, 10M, ~4,3 h a ~650 fps) completó limpio.
+> **El andamiaje funcionó exactamente como se diseñó:** init δ≡0 verificado; FASE 1 con las 4 evals ligeras CLAVADAS
+> en 2.90 con detalle por semilla IDÉNTICO (el termómetro del suelo); FASE 2 sin desplome (rango 2.60–3.20; la guardia
+> de 2.3 jamás se acercó); buffer estocástico ~2.0–2.4 todo el run (σ≈0.14 cuesta ~0.5 vs el determinista — esperado).
+> **Tablas de 100 semillas (modo residual):** MEJOR por evals ligeras (ckpt 1,5M; su 3.20 en n=10): **2.82±1.49 /
+> 2.81±1.43** → **Δ sobre el scriptado +0.05/+0.01** (≈ el suelo medido 2.78/2.81; DENTRO del ruido, SEM≈0.14) ·
+> FINAL (10M): **2.61±1.36 / 2.66±1.44** → **Δ −0.16/−0.14** (erosión LEVE de sobreentrenamiento — ~1 SEM, nunca
+> catastrófica: la guardia hizo su trabajo de no saltar). Los picos 3.10–3.20 de la eval ligera NO generalizaron a la
+> muestra oficial (ruido de n=10). **Lectura (la cifra se reporta aunque sea +0.0, como se pactó):** con autoridad
+> plena sobre δ, 10M de pasos y el suelo garantizado, PPO no encontró adaptación anti-dron que generalice → contra
+> ESTA barrera reactiva, la táctica scriptada (pin-and-flank + envolvente) ya extrae ≈ todo lo extraíble; el margen
+> del lado del lobo parece estar en co-evolución (cuando el adversario también aprenda), no en más RL unilateral.
+> **CIERRE de la fase de lobos aprendidos (4 runs medidos):** rala 0 → shaping 0.57/0.60 → cuna+shaping 0.65/0.72 →
+> residual ≈ suelo (2.82/2.81 mejor). El SCRIPTADO queda como el lobo canónico contra la barrera; los artefactos de
+> los 4 runs en /data/wolves/run01..run04 (checkpoints + evals JSON). Siguiente movimiento = decisión del usuario.
 >
 > **Patch — run04: POLÍTICA RESIDUAL sobre el scriptado (RPL) + BIBLIOGRAFIA.md (2026-07-16, 2ª).** Cambio de enfoque
 > (decisión del usuario, respaldado por Silver et al. 2018 — Residual Policy Learning, arXiv:1812.06298): la red ya no
