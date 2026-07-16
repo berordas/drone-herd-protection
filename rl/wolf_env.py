@@ -32,6 +32,13 @@ Decisiones (documentadas también en DISEÑO.md):
   propia del env (recuerda: `World.reset(seed=None)` REPITE el mismo episodio; aquí SIEMPRE
   semilla fresca). Mismo seed del env ⇒ misma secuencia de episodios (determinista,
   verificado en rl_env_check).
+- **MODO RESIDUAL (`residual=True`, run04 — RPL, ver rl/residual_wolf_controller.py):** el
+  controlador es `ResidualWolfController` (el SCRIPTADO vivo dentro, con SU presa/histéresis/
+  coasting); la acción del env es la CORRECCIÓN δ normalizada (`Box(-1,1,(10,))` ×
+  `residual_scale`, def. wolf_speed — autoridad plena) y la obs son las 132 (122 + la acción
+  del script normalizada, la pista de su estado oculto). Recompensa como siempre (para run04:
+  RALA PURA — con el script dentro ya hay ~2.8 muertes/episodio de señal; shaping off).
+  Con δ≡0 el env ES el scriptado puro (test 9).
 
 La OBSERVACIÓN (layout, normalizaciones e instante de muestreo) vive en `rl/obs.py` —
 la ÚNICA fuente de verdad, compartida con el controlador de evaluación
@@ -49,6 +56,7 @@ from world import World
 from baseline import CONFIG_V2
 
 from rl.rl_wolf_controller import RLWolfController
+from rl.residual_wolf_controller import RESIDUAL_OBS_SIZE, ResidualWolfController
 from rl.obs import (build_obs,  # noqa: F401 — re-export: el layout vive en rl/obs.py
                     CALF_FEAT, COW_FEAT, DRONE_FEAT, GLOBAL_FEAT, N_CALF_SLOTS, N_COW_SLOTS,
                     N_DRONE_SLOTS, N_WOLF_SLOTS, OBS_SIZE, OFF_CALF, OFF_COW, OFF_DRONE,
@@ -64,7 +72,8 @@ class WolfPackEnv(gym.Env):
 
     def __init__(self, kinds: tuple[str, ...] = ("lobos", "mixto"), frame_skip: int = 5,
                  seed: int | None = None, config: dict | None = None,
-                 shaping: bool = False, shaping_beta: float = 1.0, shaping_gamma: float = 0.999):
+                 shaping: bool = False, shaping_beta: float = 1.0, shaping_gamma: float = 0.999,
+                 residual: bool = False, residual_scale: float | None = None):
         super().__init__()
         kinds = tuple(kinds)
         if not kinds or any(k not in VALID_KINDS for k in kinds):
@@ -84,12 +93,19 @@ class WolfPackEnv(gym.Env):
         self._d_norm = 1.0                           # diagonal del campo (se fija en reset, con el World)
         # Secuencia PROPIA de semillas de episodio (independiente de self.np_random de gym).
         self._seed_rng = np.random.default_rng(seed)
-        self._controller = RLWolfController(N_WOLF_SLOTS)
+        self._residual = bool(residual)
+        self._residual_scale = residual_scale        # None => wolf_speed del mundo (autoridad plena)
+        if self._residual:
+            self._controller = ResidualWolfController(N_WOLF_SLOTS, residual_scale=residual_scale)
+            obs_size = RESIDUAL_OBS_SIZE             # 132 = 122 + pista del script
+        else:
+            self._controller = RLWolfController(N_WOLF_SLOTS)
+            obs_size = OBS_SIZE
         self._world: World | None = None
         self._coordinator: ReactiveCoordinator | None = None
 
         self.action_space = gym.spaces.Box(-1.0, 1.0, shape=(N_WOLF_SLOTS * 2,), dtype=np.float32)
-        self.observation_space = gym.spaces.Box(-np.inf, np.inf, shape=(OBS_SIZE,), dtype=np.float32)
+        self.observation_space = gym.spaces.Box(-np.inf, np.inf, shape=(obs_size,), dtype=np.float32)
 
     # ------------------------------------------------------------------ #
     def reset(self, *, seed: int | None = None, options: dict | None = None):
@@ -115,7 +131,11 @@ class WolfPackEnv(gym.Env):
     def step(self, action):
         w = self._world
         a = np.clip(np.asarray(action, dtype=np.float32).reshape(N_WOLF_SLOTS, 2), -1.0, 1.0)
-        self._controller.set_action(a * w.wolf_speed)   # desnormaliza; el cap por norma, en el controlador
+        if self._residual:
+            scale = self._residual_scale if self._residual_scale is not None else w.wolf_speed
+            self._controller.set_delta(a * scale)      # δ mantenida; el script recalcula cada paso
+        else:
+            self._controller.set_action(a * w.wolf_speed)   # desnormaliza; el cap por norma, en el controlador
 
         deaths0 = w.n_depredadas
         terminated = truncated = False
@@ -165,5 +185,8 @@ class WolfPackEnv(gym.Env):
 
     # ------------------------------------------------------------------ #
     def _obs(self) -> np.ndarray:
-        """Delegado al builder COMPARTIDO (rl/obs.py) — única fuente de verdad del layout."""
+        """Delegado al builder COMPARTIDO (rl/obs.py) — única fuente de verdad del layout.
+        En modo residual, el controlador añade la pista del script (132; misma frontera)."""
+        if self._residual:
+            return self._controller.residual_obs(self._world)
         return build_obs(self._world)

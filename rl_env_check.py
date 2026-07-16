@@ -27,6 +27,11 @@ comprueba (asserts, estilo de los demás checks; corre con `python rl_env_check.
      r_kills acumulado == Δn_depredadas EXACTO, como el test 5); y OFF ≡ run01 (con
      shaping=False —el default— la dinámica es bit a bit la misma y la recompensa es
      EXACTAMENTE la rala).
+  9) RESIDUAL (RPL, run04 — rl/residual_wolf_controller.py): con δ≡0 la trayectoria de un
+     episodio COMPLETO es BIT A BIT la del scriptado puro (incluida `pack_prey`: la del
+     SCRIPT con su histéresis, NO la regla del contrato RL); con δ desbocado la velocidad
+     final queda capada a wolf_speed; en coasting δ NO se aplica (pass-through); la obs
+     residual es (132) con la pista del script a 0 en la primera frontera y viva después.
 """
 
 import json
@@ -419,6 +424,77 @@ def test_shaping_potencial():
     print("  OK\n")
 
 
+def test_residual():
+    print("=== 9) RESIDUAL (RPL): δ=0 ⇒ scriptado BIT A BIT · cap con δ desbocado · presa del script · coasting ===")
+    from coordinators import ReactiveCoordinator
+    from rl.residual_wolf_controller import RESIDUAL_OBS_SIZE, ResidualWolfController
+
+    # (a) δ≡0 (model=None) ⇒ episodio COMPLETO bit a bit igual al scriptado puro contra la
+    #     barrera — incluida pack_prey: la del SCRIPT (su fijación/histéresis), NO el contrato RL.
+    def _traj(ctrl):
+        w = World(seed=21, episode_kind="lobos", wolf_controller=ctrl, **CONFIG_V2)
+        coord = ReactiveCoordinator(w)
+        traj = []
+        while True:
+            _o, _r, term, trunc, _i = w.step(coord.act(w.get_observation()))
+            traj.append((w.wolves.copy(), w.cows.copy(), int(w.n_depredadas),
+                         int(w.pack_prey), w.pack_prey_kind, int(w.step_count)))
+            if term or trunc:
+                break
+        return traj, w
+    tj_s, w_s = _traj(ScriptedWolfController())
+    tj_r, w_r = _traj(ResidualWolfController())          # sin modelo ⇒ δ≡0 (el SUELO)
+    assert len(tj_s) == len(tj_r), "longitudes distintas: el camino residual con δ=0 no es el scriptado"
+    for j, (a, b) in enumerate(zip(tj_s, tj_r)):
+        assert (np.array_equal(a[0], b[0]) and np.array_equal(a[1], b[1]) and a[2:] == b[2:]), \
+            "δ=0 diverge del scriptado en el paso %d (¿clip/presa/sincronía?)" % b[5]
+    assert w_s.status == w_r.status and w_s.n_depredadas == w_r.n_depredadas
+    print("  δ=0 ≡ scriptado: %d pasos bit a bit (lobos+vacas+muertes+presa) | terminal %s con %d muertes"
+          % (len(tj_s), w_r.status, w_r.n_depredadas))
+
+    # (b) δ DESBOCADO ⇒ ni la intención ni la velocidad efectiva superan wolf_speed.
+    ctrl = ResidualWolfController()
+    w = World(seed=5, episode_kind="lobos", wolf_controller=ctrl, **CONFIG_V2)
+    coord = ReactiveCoordinator(w)
+    ctrl.set_delta(np.full((5, 2), 1e3))
+    v, coasting = ctrl.decide(w)
+    assert not coasting and (np.linalg.norm(v, axis=1) <= w.wolf_speed + 1e-9).all(), \
+        "la intención residual supera wolf_speed"
+    vmax = 0.0
+    for _ in range(30):
+        ctrl.set_delta(np.full((5, 2), 1e3))
+        _o, _r, term, trunc, _i = w.step(coord.act(w.get_observation()))
+        vmax = max(vmax, float(np.linalg.norm(w.wolf_vel, axis=1).max()))
+        if term or trunc:
+            break
+    assert vmax <= w.wolf_speed + 1e-6, "wolf_vel superó wolf_speed con δ desbocado"
+    print("  δ desbocado: |v_final| <= %.1f (intención) y |wolf_vel| máx = %.3f <= %.1f (efectiva)"
+          % (w.wolf_speed, vmax, w.wolf_speed))
+
+    # (c) COASTING: δ no se aplica (pass-through del script — la red no impide el desenganche).
+    ctrl = ResidualWolfController()
+    w = World(seed=3, episode_kind="lobos", wolf_controller=ctrl, **CONFIG_V2)
+    w.cow_alive[:] = False
+    if w.n_calves > 0:
+        w.calf_alive[:] = False
+    ctrl.set_delta(np.full((5, 2), 100.0))
+    v, coasting = ctrl.decide(w)
+    assert coasting and not v.any(), "en coasting δ no debe aplicarse (pass-through del script)"
+
+    # (d) OBS RESIDUAL del env: (132,); pista a 0 en la PRIMERA frontera (el script no habló) y
+    #     viva después (último v_target normalizado, |·| <= 1 por componente).
+    env = WolfPackEnv(kinds=("lobos",), seed=7, residual=True)
+    obs, _info = env.reset()
+    assert obs.shape == (RESIDUAL_OBS_SIZE,) and obs.dtype == np.float32
+    assert not obs[OBS_SIZE:].any(), "la pista debe ser 0 en la primera frontera"
+    obs2, _r, term, trunc, _i = env.step(np.zeros(10, dtype=np.float32))
+    assert not (term or trunc)
+    assert obs2[OBS_SIZE:].any() and (np.abs(obs2[OBS_SIZE:]) <= 1.0 + 1e-6).all(), \
+        "la pista del script debe estar viva y normalizada tras el primer step"
+    print("  coasting pass-through OK | obs residual (132): pista 0 en t=0, viva y acotada después")
+    print("  OK\n")
+
+
 if __name__ == "__main__":
     test_formas_y_mascaras()
     test_determinismo()
@@ -428,4 +504,5 @@ if __name__ == "__main__":
     test_mundo_scriptado_intacto()
     test_equivalencia_env_controlador()
     test_shaping_potencial()
+    test_residual()
     print("rl_env_check: TODO OK.")

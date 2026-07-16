@@ -1,0 +1,89 @@
+# BIBLIOGRAFIA.md — Referencias del proyecto escolta (drones / lobos / vacas)
+
+Toda decisión "porque lo dice un paper" entra AQUÍ **antes** de implementarse, con su
+"se usa para". Las entradas provienen de este archivo o de DISEÑO.md §12 (consolidadas aquí).
+
+## Fase RL (lobos y, después, drones)
+
+- **Silver, T., Allen, K. R., Tenenbaum, J. B., & Kaelbling, L. P. (2018).** *Residual Policy
+  Learning.* arXiv:1812.06298. — **Se usa para:** la arquitectura de **run04**: el scriptado
+  (política a mano, no diferenciable) vive dentro del controlador y la red aprende solo una
+  corrección aditiva δ con RL sin modelo; explica por qué el RL desde cero fracasa en horizonte
+  largo / recompensa rala (runs 01–03) y por qué el residuo MEJORA controladores a mano en vez
+  de reaprenderlos.
+- **Grasp and Motion Planning for Dexterous Manipulation for the Real Robot Challenge (2021).**
+  arXiv:2101.02842. *(verificar autores al citar en la memoria)* — **Se usa para:** el
+  entrenamiento en dos fases de run04: **fase 1 solo-crítico** (política congelada mientras el
+  value function aprende cuánto vale el controlador base) e **inicialización a cero** de la
+  última capa de la media (δ inicial ≡ 0) con σ inicial pequeña.
+- **Uchendu, I., et al. (2023).** *Jump-Start Reinforcement Learning.* ICML 2023 (PMLR v202);
+  arXiv:2204.02372. — **Se usa para:** alternativa CONSIDERADA Y DESCARTADA para el arranque
+  desde el scriptado (guía por roll-in del experto en vez de residuo aditivo); se descartó
+  porque el residual conserva el suelo del script en TODO momento (guardia del suelo medible).
+- **Residual Policy Gradient: A Reward View of KL-regularized Objective (2025).**
+  arXiv:2503.11019. — **Se usa para:** conexión teórica del residual con la regularización KL
+  (enlace con el temario de RL del autor); lectura de por qué corregir una política base
+  equivale a un objetivo regularizado hacia ella.
+- **Ng, A. Y., Harada, D., & Russell, S. (1999).** *Policy invariance under reward
+  transformations: theory and application to reward shaping.* ICML. — **Se usa para:** el
+  shaping por potencial de run02/run03 (r_shape = γ·Φ(s′) − Φ(s) con el γ EXACTO del agente no
+  cambia la política óptima; verificado en rl_env_check test 8).
+- **Schulman, J., et al. (2017).** *Proximal Policy Optimization Algorithms.* arXiv:1707.06347.
+  — **Se usa para:** el algoritmo de TODOS los runs de lobos (y previsiblemente del MARL).
+- **Raffin, A., et al. (2021).** *Stable-Baselines3: Reliable Reinforcement Learning
+  Implementations.* JMLR 22(268). — **Se usa para:** la implementación de PPO (política, buffer,
+  VecEnv) usada en rl/.
+- **Towers, M., et al. (2024).** *Gymnasium.* arXiv:2407.17032. — **Se usa para:** el envoltorio
+  single-agent del env de lobos (`WolfPackEnv`).
+
+## Fase de mundo (consolidadas desde DISEÑO.md §12; URLs pendientes de verificación)
+
+- **Muro, C., Escobedo, R., Spector, L., Coppinger, R.P. (2011).** *Wolf-pack (Canis lupus)
+  hunting strategies emerge from simple rules in computational simulations.* Behavioural
+  Processes, 88(3), 192–197. — **Se usa para:** el modelo de caza del paquete (reglas simples:
+  acercarse + mantener distancia + flanquear) que inspira el scriptado.
+- **Janeiro-Otero, A., et al. (2020).** *Grey wolf (Canis lupus) predation on livestock in
+  relation to prey availability.* — **Se usa para:** selección de presa / depredación de ganado.
+- **Madden, J.D., Arkin, R.C., MacNulty, D.R. (2011).** *Multi-robot system based on model of
+  wolf hunting behavior.* — **Se usa para:** precedente de robótica inspirada en Muro.
+- **ICWDM (Internet Center for Wildlife Damage Management), "Wolf Damage Identification".** —
+  **Se usa para:** el ataque se concentra en grupa/flancos/cuartos traseros y hay preferencia
+  por terneros → fundamenta el ataque por flanco y el ternero como objetivo blando (selección
+  de crías).
+- **BeefResearch.ca, "Cows & Wolves"** (collares GPS en Alberta). — **Se usa para:** composición
+  de presas (~40% terneros / 40% añojos / <20% adultas) → presencia y peso de los terneros.
+- **Wolf Song of Alaska** (caza en manada de presa grande). — **Se usa para:** rara vez toda la
+  manada toca a la presa → la regla de quórum `n_min_adult` (basta un subconjunto flanqueando).
+- **Criterio DRI de Johnson** (Detect/Recognize/Identify, resolución angular). — **Se usa
+  para:** `r_detect`=100 m (~8–13 px sobre un lobo de ~1,2 m: reconocer que hay algo) y
+  `r_confirm`=40 m (~130 px: identificar la especie) de la fase detectar→confirmar.
+- **Hazing de depredadores y HABITUACIÓN a disuasores estáticos** (base conceptual del susto
+  v2.3→v2.4: lo que disuade es el disuasor ACTIVO que se echa encima; los depredadores se
+  habitúan a postes/luces fijas). — **Se usa para:** el SUSTO POR MOVIMIENTO de v2.4.
+  *(Cita formal pendiente — en DISEÑO está como razonamiento de diseño, sin fuente puntual.)*
+- **Vídeo de ataque real de lobos a ganado.** — **Se usa para:** verosimilitud del
+  comportamiento del paquete. *(Referencia/URL pendiente de recuperar — no consta en DISEÑO.md.)*
+- **Yu, C., et al. (2022).** *The surprising effectiveness of PPO in cooperative multi-agent
+  games (MAPPO).* — **Se usa para:** candidato de algoritmo para la fase MARL de drones.
+- **Terry, J., et al. (2021).** *PettingZoo: Gym for multi-agent reinforcement learning.* —
+  **Se usa para:** API multi-agente prevista para la fase de drones.
+- **Bettini, M., Prorok, A., Moens, V. (2024).** *BenchMARL: Benchmarking Multi-Agent
+  Reinforcement Learning (TorchRL).* — **Se usa para:** referencia de benchmarking MARL.
+- **Strömbom, D., et al. (2014).** Modelo matemático de *shepherding*. — **Se usa para:**
+  reserva conceptual para la escolta/guiado.
+- **Halter (Nueva Zelanda).** Collares GPS de *virtual fencing / guided herding*. — **Se usa
+  para:** verosimilitud de los collares/guiado del rebaño como infraestructura.
+
+## Pendiente — fase percepción
+
+- **Ultralytics YOLO26** (detección en tiempo real, end-to-end / sin NMS, orientada a drones y
+  robótica, asignación consciente de objetos pequeños — STAL). — **Se usará para:** el
+  clasificador real que sustituya al ORÁCULO de `r_confirm`. *(Anotar la VERSIÓN exacta al
+  usarlo.)*
+
+---
+
+**Regla:** toda decisión "porque lo dice un paper" entra aquí **ANTES** de implementarse;
+al pasar cualquier entrada a la memoria final, **verificar autores/año contra arXiv/DOI**
+(varias entradas de la fase de mundo vienen de DISEÑO.md sin URL y están marcadas como
+pendientes de verificación).

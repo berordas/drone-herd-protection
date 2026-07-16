@@ -76,14 +76,27 @@ ABORT_NOTE_WARMSTART = (
 ABORT_NOTE_RALA = (
     "CRITERIO DE ABORTO (pactado, rala pura): si a ~2.000.000 de pasos ep_kills_mean sigue en "
     "0.00 (ninguna muerte espontánea), parar el run y reportar.")
+ABORT_NOTE_RESIDUAL = (
+    "CRITERIO DE ABORTO (pactado, run04/residual — GUARDIA DEL SUELO): el suelo es el scriptado "
+    "(~2.7 en la eval ligera; en la FASE 1, con la política congelada y δ=0, las evals deben "
+    "CLAVARSE ahí). Si en la FASE 2 la eval ligera cae por debajo de 2.3 (suelo − margen) de "
+    "forma SOSTENIDA (>=1.000.000 de pasos), PARAR y reportar — PPO estaría EROSIONANDO al "
+    "script en vez de mejorarlo (palancas: bajar lr / alargar la fase 1 — decisión del usuario).")
+
+# Init del residual (RPL + truco del Real Robot Challenge, arXiv:2101.02842): última capa de la
+# media a CERO (δ inicial ≡ 0 → el lobo del paso 0 ES el script) y σ inicial pequeña para que la
+# exploración apenas perturbe al arrancar.
+RESIDUAL_LOG_STD_INIT = -2.0   # σ ≈ 0.14 (en unidades de acción normalizada)
 
 
 def make_env(seed: int, kinds: tuple[str, ...], frame_skip: int,
-             shaping: bool, shaping_beta: float, shaping_gamma: float):
+             shaping: bool, shaping_beta: float, shaping_gamma: float,
+             residual: bool = False, residual_scale: float | None = None):
     """Thunk picklable para SubprocVecEnv (cada worker importa rl.wolf_env vía PYTHONPATH)."""
     def _thunk():
         return WolfPackEnv(kinds=kinds, frame_skip=frame_skip, seed=seed,
-                           shaping=shaping, shaping_beta=shaping_beta, shaping_gamma=shaping_gamma)
+                           shaping=shaping, shaping_beta=shaping_beta, shaping_gamma=shaping_gamma,
+                           residual=residual, residual_scale=residual_scale)
     return _thunk
 
 
@@ -128,6 +141,8 @@ class TrainLog(BaseCallback):
             f.write(line + "\n")
 
     def _on_training_start(self) -> None:
+        if self._t0 is not None:
+            return                      # segunda learn() (fase 2 del residual): sin cabecera repetida
         self._t0 = time.time()
         self._write("=" * 100)
         self._write(f"[{datetime.now().isoformat(timespec='seconds')}] ARRANQUE  {self.run_config}")
@@ -166,10 +181,13 @@ class LightEval(BaseCallback):
 
     EVAL_SEEDS_LIGHT = tuple(range(10))
 
-    def __init__(self, logpath: Path, eval_every: int = 250_000):
+    def __init__(self, logpath: Path, eval_every: int = 250_000,
+                 residual: bool = False, residual_scale: float | None = None):
         super().__init__()
         self.logpath = logpath
         self.eval_every = int(eval_every)
+        self.residual = residual
+        self.residual_scale = residual_scale
         self._next_at = self.eval_every
 
     def _on_step(self) -> bool:
@@ -178,10 +196,14 @@ class LightEval(BaseCallback):
         self._next_at += self.eval_every
         from baseline import build_world
         from rl.policy_wolf_controller import PolicyWolfController, SyncedReactiveCoordinator
+        from rl.residual_wolf_controller import ResidualWolfController
         t0 = time.time()
         deaths = []
         for s in self.EVAL_SEEDS_LIGHT:
-            ctrl = PolicyWolfController(model=self.model)
+            if self.residual:               # δ determinista de la política (sin ruido) sobre el script
+                ctrl = ResidualWolfController(model=self.model, residual_scale=self.residual_scale)
+            else:
+                ctrl = PolicyWolfController(model=self.model)
             w = build_world(s, "lobos", wolf_controller=ctrl)
             w.reset()
             coord = SyncedReactiveCoordinator(w)
@@ -232,11 +254,21 @@ def main() -> None:
                    help="override de learning_rate (p.ej. 1e-4 en fine-tune para no destrozar el prior)")
     p.add_argument("--abort-ref", type=float, default=None,
                    help="nivel del clon (muertes_media de su eval ligera) para el criterio de aborto warm-start")
+    p.add_argument("--residual", action="store_true",
+                   help="política RESIDUAL sobre el scriptado (RPL, run04): acción = δ, obs = 132, dos fases")
+    p.add_argument("--residual-scale", type=float, default=None,
+                   help="escala de δ en m/s (def. wolf_speed — autoridad plena)")
+    p.add_argument("--phase1-steps", type=int, default=1_000_000,
+                   help="residual: pasos de FASE 1 (solo crítico, política congelada); 0 = sin fase 1")
     args = p.parse_args()
     shaping = args.shaping == "on"
     if args.init_from and args.resume:
         p.error("--init-from (solo pesos de política, contador a 0) y --resume (run completo) son excluyentes")
-    if args.init_from:
+    if args.residual and args.init_from:
+        p.error("--residual e --init-from son excluyentes (el residual arranca en δ≡0, no de un clon)")
+    if args.residual:
+        abort_note = ABORT_NOTE_RESIDUAL
+    elif args.init_from:
         ref = ("%.2f muertes_media en las 10 semillas de la eval ligera" % args.abort_ref
                if args.abort_ref is not None else "su eval ligera; ver --abort-ref")
         abort_note = ABORT_NOTE_WARMSTART % ref
@@ -263,6 +295,9 @@ def main() -> None:
                     if shaping else "shaping OFF (rala pura)")
     if args.init_from:
         shaping_desc += f" init-from={args.init_from} lr={hyper['learning_rate']}"
+    if args.residual:
+        shaping_desc += (f" RESIDUAL (RPL: δ sobre el scriptado; scale={args.residual_scale or 'wolf_speed'}; "
+                         f"fase1={args.phase1_steps:,} solo-crítico; lr={hyper['learning_rate']})")
     print("=== train_wolves (PPO, cerebro único del paquete, +1/muerte + %s) ===" % shaping_desc)
     print(f"  envs = {args.n_envs} (SubprocVecEnv)  |  device = {args.device}  |  seed = {args.seed}")
     print(f"  kinds = {kinds}  |  frame_skip = {args.frame_skip}  |  total_steps = {args.total_steps:,}")
@@ -282,6 +317,12 @@ def main() -> None:
                     "phi": "-beta * mean_i dist(lobo_i, presa ternero-primero) / diagonal_campo; 0 si coasting",
                     "nota": "gamma EXACTAMENTE el del PPO (inocuidad de Ng et al.); la eval NUNCA ve el shaping"},
         "init_from": args.init_from,
+        "residual": {"on": args.residual, "scale": args.residual_scale or "wolf_speed",
+                     "phase1_steps": args.phase1_steps, "log_std_init": RESIDUAL_LOG_STD_INIT,
+                     "obs": "132 = 122 + accion del script normalizada (pista del estado oculto)",
+                     "nota": "RPL (Silver et al. 2018): v_final = clip_norma(v_script + delta); "
+                             "el script entero vive dentro (su presa/histéresis/coasting)"}
+                    if args.residual else {"on": False},
         "abort": abort_note,
         "fecha": datetime.now().isoformat(timespec="seconds"),
     }
@@ -291,7 +332,8 @@ def main() -> None:
     # (forkserver) arranca un proceso limpio que re-importa el stack y moría en la imagen del
     # lab importando cv2 (opencv del lockfile) sin libGL (arreglado también en docker/Dockerfile).
     venv = SubprocVecEnv([make_env(args.seed + i, kinds, args.frame_skip,
-                                   shaping, args.shaping_beta, HYPER["gamma"])   # γ del PPO, EXACTO
+                                   shaping, args.shaping_beta, HYPER["gamma"],   # γ del PPO, EXACTO
+                                   args.residual, args.residual_scale)
                           for i in range(args.n_envs)],
                          start_method="fork")
     venv = VecMonitor(venv)
@@ -322,20 +364,59 @@ def main() -> None:
             model.policy.load_state_dict(dst_sd)
             print(f"  INIT-FROM {args.init_from}: {len(copiadas)} tensores de POLÍTICA copiados "
                   f"(value function FRESCO; lr={hyper['learning_rate']})")
+        if args.residual:
+            # INIT CRÍTICO del residual (RPL + arXiv:2101.02842): media de δ ≡ 0 EXACTO (última
+            # capa a cero) y σ pequeña. Verificación obligatoria: la media debe salir 0 exacto
+            # para CUALQUIER obs (capa final nula ⇒ salida nula independientemente del rasgo).
+            import torch as th
+            model.policy.action_net.weight.data.zero_()
+            model.policy.action_net.bias.data.zero_()
+            model.policy.log_std.data.fill_(RESIDUAL_LOG_STD_INIT)
+            probe = th.as_tensor(np.random.default_rng(0).normal(
+                size=(5, venv.observation_space.shape[0])).astype(np.float32))
+            with th.no_grad():
+                mu = model.policy.get_distribution(probe).distribution.mean
+            assert (mu == 0.0).all(), "init residual roto: la media de δ no es 0 exacto"
+            print(f"  RESIDUAL: init verificado — media de δ = 0 EXACTO (5 obs aleatorias); "
+                  f"log_std = {RESIDUAL_LOG_STD_INIT} (σ≈{np.exp(RESIDUAL_LOG_STD_INIT):.2f})")
 
     run_desc = (f"total_steps={args.total_steps:,} n_envs={args.n_envs} seed={args.seed} "
                 f"device={args.device} kinds={kinds} frame_skip={args.frame_skip} "
                 f"{shaping_desc} resume={args.resume or '-'} outdir={outdir}")
     ep_log = EpisodeLog()
     train_log = TrainLog(outdir / "train.log", run_desc, abort_note)
-    light_eval = LightEval(outdir / "train.log", eval_every=args.eval_every)
+    light_eval = LightEval(outdir / "train.log", eval_every=args.eval_every,
+                           residual=args.residual, residual_scale=args.residual_scale)
     checkpoints = CheckpointCallback(save_freq=max(500_000 // args.n_envs, 1),   # ~cada 500k pasos totales
                                      save_path=str(outdir / "checkpoints"), name_prefix="ppo_wolves")
+    callbacks = [ep_log, train_log, light_eval, checkpoints]
 
     t0 = time.time()
     try:
-        model.learn(total_timesteps=args.total_steps, callback=[ep_log, train_log, light_eval, checkpoints],
-                    reset_num_timesteps=not args.resume)
+        if args.residual and not args.resume and args.phase1_steps > 0:
+            # FASE 1 — SOLO CRÍTICO (truco del Real Robot Challenge): π y log_std CONGELADOS
+            # (δ medio = 0; solo ruido σ≈0.14); el crítico aprende cuánto vale el script antes
+            # de que nada se mueva. Las evals ligeras deben CLAVARSE en el suelo (~2.7).
+            pi_params = (list(model.policy.mlp_extractor.policy_net.parameters())
+                         + list(model.policy.action_net.parameters()) + [model.policy.log_std])
+            for p_ in pi_params:
+                p_.requires_grad_(False)
+            fase1 = min(args.phase1_steps, args.total_steps)
+            print(f"  FASE 1 (solo crítico): política CONGELADA durante {fase1:,} pasos")
+            model.learn(total_timesteps=fase1, callback=callbacks)
+            for p_ in pi_params:
+                p_.requires_grad_(True)
+            marca = (f"[{datetime.now().isoformat(timespec='seconds')}] === FASE 2 (PPO normal): "
+                     f"política DESCONGELADA en el paso {model.num_timesteps:,} ===")
+            print("  " + marca)
+            with open(outdir / "train.log", "a", encoding="utf-8") as f:
+                f.write(marca + "\n")
+            restante = args.total_steps - model.num_timesteps
+            if restante > 0:
+                model.learn(total_timesteps=restante, callback=callbacks, reset_num_timesteps=False)
+        else:
+            model.learn(total_timesteps=args.total_steps, callback=callbacks,
+                        reset_num_timesteps=not args.resume)
     finally:
         venv.close()                                   # sin workers colgados (buen vecino)
     elapsed = time.time() - t0
