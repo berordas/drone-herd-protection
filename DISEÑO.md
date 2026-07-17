@@ -5,7 +5,7 @@
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
 >
-> **Última actualización: 2026-07-17 (2ª)** · *v2.5 CONGELADA (tag `v2.5-baseline`): SPAWN DE LOBOS EN SUBGRUPOS (Nivel A) — `wolf_spawn_mode="grouped"` (1–2 grupos DESIGUALES en sectores distintos, mismo borde de spawn; sorteo íntegro en substream propio → todo lo demás bit a bit; default World = clustered ≡ v2.4.1). **HIPÓTESIS MEDIDA: el multi-frente NO sube la letalidad del scriptado** — Dummy 4.54/0/4.46 → **4.42/0/4.34** · Reactive 2.77/0/2.80 → **2.71/0/2.76** (bajada ~1 SEM, dentro del ruido): el scriptado fija UNA presa común y el 2º grupo no hace de cebo, solo llega por otro eje. La puerta multi-frente queda ABIERTA para que el RL (Nivel B) la explote; el MARL ahora debe batir 2.71/0/2.76. PARADO aquí como se pactó — sin re-correr la campaña de lobos.*
+> **Última actualización: 2026-07-17 (3ª)** · *v2.6 CONGELADA (tag `v2.6-baseline`): BARRERA REACTIVA CON PERCEPCIÓN REALISTA — hasta v2.5 el ReactiveCoordinator se orientaba a `wolves.mean()` (OMNISCIENCIA: conocía lobos que ningún dron había visto); ahora solo VE los lobos DETECTADOS (≤ r_detect de un dron ACTIVE — el MISMO criterio del disparador del mundo, en solo-lectura) y el eje se ancla al PRIMER detectado con histéresis; PENETRADO/cobertura solo sobre detectados; sin detectados → patrulla. SOLO `coordinators.py`; FÍSICA ≡ v2.5 → Dummy BIT A BIT **4.42/0/4.34**; Reactive re-medido **2.74/0/2.82** (v2.5: 2.71/0/2.76 → +0.03/+0.06, DENTRO del ruido: contra el scriptado convergente los lobos que amenazan están casi siempre detectados y la media global ≈ la percepción local). Lo que cambia DE VERDAD: el frente NO VISTO ya no influye en la colocación — el CEBO del Nivel B pasa a ser físicamente real. El MARL debe batir 2.74/0/2.82. PARADO aquí como se pactó.*
 >
 > **CIERRE de la primera campaña RL de lobos (runs 01–03) — la ablación completa, breve y factual:**
 > **run01** (rala pura, de cero) ABORTADO a 2,48M: 1 muerte espontánea en ~2.400 episodios, 0 señal · **run02**
@@ -52,7 +52,7 @@
 > **Pendiente:** **fase RL** — (1) lobos: campaña 01–04 CERRADA (rala 0 · shaping 0.57/0.60 · cuna+shaping 0.65/0.72 ·
 > residual Δ≈+0.0); el scriptado = lobo canónico. La v2.5 abre el MULTI-FRENTE (Nivel A, mundo): el scriptado no lo
 > explota (medido) — el CEBO deliberado queda para lobos RL (Nivel B) o co-evolución, si se decide; (2) **MARL** de
-> drones (debe batir la barrera **2.71 / 0 / 2.76** —metro DGX **v2.5**— MOVIENDO los drones con intención,
+> drones (debe batir la barrera **2.74 / 0 / 2.82** —metro DGX **v2.6**, barrera con percepción realista— MOVIENDO los drones con intención,
 > gestionando la energía). Siguiente paso = decisión del usuario con los números de v2.5 delante.
 > **Commits:** `194a3ad` base · `37910b3` terminal · `e663504` disparador por dron · `4d1e708` campo
 > 300×300 + escala biológica absoluta · `886bd45` dispersión del rebaño · `a15e2df` movimiento de
@@ -93,9 +93,14 @@
 > test 9 (δ=0 ≡ scriptado bit a bit) + eval_wolves --residual/--floor + BIBLIOGRAFIA.md; run04 lanzado tras el commit ·
 > `7f36144` docs: DESENLACE run04 (Δ ≈ +0.0 sobre el scriptado en 100 semillas — mejor 2.82/2.81, final
 > 2.61/2.66; andamiaje RPL impecable, sin adaptación que generalice) + cierre de la fase de lobos aprendidos ·
-> `<este commit>` v2.5: SPAWN EN SUBGRUPOS (Nivel A, tag `v2.5-baseline`) — grouped en CONFIG_V2/main (default
+> `9401b78` v2.5: SPAWN EN SUBGRUPOS (Nivel A, tag `v2.5-baseline`) — grouped en CONFIG_V2/main (default
 > clustered ≡ v2.4.1 bit a bit; substream seed+3_000_003); hipótesis multi-frente MEDIDA y NO confirmada en el
-> scriptado (Dummy 4.42/0/4.34 · Reactive 2.71/0/2.76, ~1 SEM de bajada); el MARL pasa a batir 2.71/0/2.76.
+> scriptado (Dummy 4.42/0/4.34 · Reactive 2.71/0/2.76, ~1 SEM de bajada); el MARL pasa a batir 2.71/0/2.76 ·
+> `<este commit>` v2.6: BARRERA REACTIVA CON PERCEPCIÓN REALISTA (tag `v2.6-baseline`) — la barrera se ancla al lobo
+> DETECTADO (criterio r_detect/ACTIVE del mundo, solo-lectura; ancla = primer detectado con histéresis; PENETRADO
+> solo sobre detectados; sin detectados → patrulla) en vez de a `wolves.mean()` omnisciente; SOLO coordinators.py,
+> física ≡ v2.5 → Dummy BIT A BIT 4.42/0/4.34 · Reactive 2.74/0/2.82 (+0.03/+0.06, dentro del ruido); el frente
+> NO visto ya no influye → el cebo del Nivel B es físicamente real; el MARL pasa a batir 2.74/0/2.82.
 >
 > **Patch — run02 COMPLETADO (ablación desde-cero) + plan C CONSTRUIDO pero PARADO: la cuna BC no valida (2026-07-15).**
 > **run02 (shaping, 10M completos, ~3 h a ~920 fps):** ep_kills_mean del buffer 0.00→**0.35–0.40** (a 1M: 0.02; 3M: 0.16;
@@ -134,6 +139,31 @@
 > Artefactos en /data/wolves: demos/ (dataset+manifest+bc_model.zip+config), demos_v1_inconsistentes/ (histórico del
 > diagnóstico), run02/eval_final_10M.json + eval_best_5.5M.json. Verja tras el plan C: rl_env_check 8/8 + face_check +
 > wolf_controller_check verdes (los checks 1–8 intactos; el código nuevo no toca env/mundo/obs).
+>
+> **Patch — v2.6: BARRERA REACTIVA CON PERCEPCIÓN REALISTA + RE-CONGELACIÓN y medida (2026-07-17, 3ª).** Corrección de
+> REALISMO del coordinador clásico (prompt del usuario), motivada por el reconocimiento de solo-lectura previo (¿engaña el
+> cebo a la barrera?): la barrera usaba `pack_c = wolves.mean()` — información de ORÁCULO (lobos que ningún dron había
+> visto entraban en la media; con dos frentes, el no visto orientaba la colocación). **Regla nueva (SOLO
+> `coordinators.py`; el mundo NO se toca):** DETECTADO = lobo a ≤ `r_detect` de un dron EN VUELO (ACTIVE) — el MISMO
+> criterio DRI del disparador (`_update_phase`/`_pick_investigator`), recomputado en solo-lectura cada paso; el EJE se
+> ancla al lobo ANCLA = el PRIMER detectado (memoria de primera detección en el coordinador; desempate índice menor) con
+> HISTÉRESIS (mientras siga detectado se mantiene; al perderse pasa al siguiente más antiguo); PENETRADO y la cobertura
+> lobo-a-lobo operan SOLO sobre detectados (sin esto el frente no visto seguiría atrayendo drones por la puerta de
+> atrás); en ESCOLTA sin NINGÚN detectado → PATRULLA hasta re-detectar. Fórmulas intactas (standoff / ranuras / reparto /
+> patrulla): solo cambia A QUÉ lobos mira. **Verificación:** `test_percepcion` NUEVO (nº 10 de reactive_check): con el
+> ancla visible y el resto tele-transportado fuera de detección, mover el frente NO visto deja los waypoints IDÉNTICOS
+> (antes cambiaban vía la media); eje |vs ancla|=3.7° frente a |vs media global|=61.5°; sin detectados → anillo de
+> patrulla; re-detección → barrera de nuevo. Tests 1–9 SIN cambios de aserción (con un solo frente clustered el paquete
+> entero está detectado en ESCOLTA y la barrera ≈ la de antes); verja completa 7/7 verde dentro del contenedor.
+> **RE-MEDIDO (100/tipo, contenedor, 2ª pasada bit a bit — md5 idénticos):** Dummy **4.42/0/4.34** BIT A BIT ≡ v2.5 (no
+> usa la barrera; física idéntica; REFERENCE_SEVERITY sin cambio) · Reactive **2.74±1.47 / 0 / 2.82±1.49** (v2.5
+> omnisciente: 2.71/0/2.76 → **+0.03/+0.06, DENTRO del ruido**, ~0.4 SEM). **Lectura:** quitar la omnisciencia apenas
+> cuesta contra el scriptado CONVERGENTE — todos sus lobos van a la presa común y los que amenazan están casi siempre a
+> ≤ 100 m de algún dron (detectados): la media global ≈ la percepción local. Lo que cambia DE VERDAD es el caso de DOS
+> FRENTES: el no visto ya NO influye en la colocación → el CEBO del Nivel B pasa a ser FÍSICAMENTE real (mantener un
+> frente a la vista mientras el otro entra sin ser visto), no un artefacto de la media. Artefactos regenerados
+> (frozen_tag v2.6), `FROZEN_TAG` + asserts de tag (wolf_controller_check / rl_env_check) → v2.6. **El MARL pasa a batir
+> 2.74/0/2.82.** PARADO tras congelar, como pactó el prompt (sin re-correr la campaña de lobos).
 >
 > **Patch — v2.5: SPAWN DE LOBOS EN SUBGRUPOS (Nivel A) + RE-CONGELACIÓN y medida (2026-07-17, 2ª).** Cambio de MUNDO
 > (hipótesis del usuario: el paquete apilado deja que la barrera defienda UN solo frente; con subgrupos, un grupo

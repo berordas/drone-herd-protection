@@ -119,10 +119,14 @@ EVAL_SEEDS = tuple(range(N_PER_KIND))
 KINDS = ("lobos", "corzos", "mixto")
 KIND_LABEL = {"lobos": "solo-lobos", "corzos": "solo-corzos", "mixto": "mixto"}
 TERMINALS = ("success", "predation", "timeout")
-FROZEN_TAG = "v2.5-baseline"   # tag git del commit congelado: spawn de lobos en SUBGRUPOS (Nivel A); mismo resto de física. METRO DGX.
+FROZEN_TAG = "v2.6-baseline"   # tag git del commit congelado: barrera reactiva con PERCEPCIÓN REALISTA (se ancla al lobo
+                               # DETECTADO, no al centroide global); FÍSICA idéntica a v2.5 (spawn en subgrupos). METRO DGX.
+                               # El Dummy NO usa la barrera -> su severidad es BIT A BIT la de v2.5.
 
 # Referencia CONGELADA de severidad (media de muertes/ep) por tipo, para detectar DERIVA.
 # Se rellena tras la primera medición; en re-corridas debe coincidir (mundo reproducible POR ENTORNO).
+# v2.6: SIN cambio — la v2.6 solo cambia la BARRERA del ReactiveCoordinator (percepción realista);
+# el Dummy no la usa y la física es idéntica a v2.5 -> estos números son BIT A BIT los de v2.5.
 # v2.5 (METRO DGX): spawn de lobos en SUBGRUPOS (wolf_spawn_mode="grouped": 1-2 grupos desiguales en
 # sectores distintos, substream RNG propio); el RESTO de la física = v2.4.1. Medido DENTRO del
 # contenedor canónico (docker/). Contraste v2.4.1 (clustered): Dummy 4.54/0/4.46 · Reactive 2.77/0/2.80

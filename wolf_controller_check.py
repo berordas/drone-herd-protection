@@ -121,7 +121,7 @@ def test_spotcheck_baseline():
         ref = json.load(f)
     # v2.4.1 = MISMA física que v2.4, re-medida en el contenedor canónico de la DGX (metro oficial).
     # Este spot-check solo es reproducible DENTRO de ese entorno (fuera puede salir rojo: deriva FP).
-    assert ref["frozen_tag"] == "v2.5-baseline", "baseline_v2.json no es v2.5 (spawn en subgrupos, metro DGX)"
+    assert ref["frozen_tag"] == "v2.6-baseline", "baseline_v2.json no es v2.6 (barrera con percepción; Dummy ≡ v2.5 bit a bit)"
     from baseline import build_world, run_episode_metrics
     checked = 0
     for kind in ("lobos", "corzos", "mixto"):
