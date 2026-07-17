@@ -5,7 +5,7 @@
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
 >
-> **Última actualización: 2026-07-17** · *run04 (RESIDUAL/RPL) COMPLETADO: 10M limpios, fase 1 clavada en el suelo (2.90×4 idénticas), guardia del suelo (2.3) jamás amenazada — el andamiaje RPL funcionó EXACTAMENTE como se diseñó. **Resultado de 100 semillas: Δ sobre el scriptado ≈ +0.0** (mejor ckpt 1,5M: 2.82/2.81 = +0.05/+0.01, dentro del ruido; final 10M: 2.61/2.66 = −0.16/−0.14, erosión leve). Los picos 3.1–3.2 de la eval ligera eran ruido de n=10. **Lectura: contra ESTA barrera, el scriptado ya está ≈ en el techo explotable por este paquete** — 10M de PPO con autoridad plena sobre δ no encontraron adaptación anti-dron que generalice. La fase de LOBOS queda cerrada con 4 runs medidos; siguiente movimiento = decisión del usuario (previsiblemente: congelar el scriptado como adversario y pasar al MARL).*
+> **Última actualización: 2026-07-17 (2ª)** · *v2.5 CONGELADA (tag `v2.5-baseline`): SPAWN DE LOBOS EN SUBGRUPOS (Nivel A) — `wolf_spawn_mode="grouped"` (1–2 grupos DESIGUALES en sectores distintos, mismo borde de spawn; sorteo íntegro en substream propio → todo lo demás bit a bit; default World = clustered ≡ v2.4.1). **HIPÓTESIS MEDIDA: el multi-frente NO sube la letalidad del scriptado** — Dummy 4.54/0/4.46 → **4.42/0/4.34** · Reactive 2.77/0/2.80 → **2.71/0/2.76** (bajada ~1 SEM, dentro del ruido): el scriptado fija UNA presa común y el 2º grupo no hace de cebo, solo llega por otro eje. La puerta multi-frente queda ABIERTA para que el RL (Nivel B) la explote; el MARL ahora debe batir 2.71/0/2.76. PARADO aquí como se pactó — sin re-correr la campaña de lobos.*
 >
 > **CIERRE de la primera campaña RL de lobos (runs 01–03) — la ablación completa, breve y factual:**
 > **run01** (rala pura, de cero) ABORTADO a 2,48M: 1 muerte espontánea en ~2.400 episodios, 0 señal · **run02**
@@ -49,13 +49,11 @@
 > envolvente, coasting) a una interfaz `decide(world) -> (v_target, coasting)`; el mundo impone la FÍSICA (susto,
 > inercia+integración, cap, captura). Prepara la fase RL (lobos que burlan la barrera). CERO cambio de comportamiento,
 > CERO re-congelación (fingerprint bit a bit vs v2.4; verja verde SIN adaptar).
-> **Pendiente:** **fase RL** — (1) lobos: campaña COMPLETA con 4 runs medidos (run01 rala 0 · run02 shaping 0.57/0.60 ·
-> run03 cuna+shaping 0.65/0.72 · run04 residual **Δ ≈ +0.0 sobre el scriptado**) → la evidencia acumulada dice que el
-> scriptado ES el mejor lobo disponible contra esta barrera (aprender la caza no funcionó; corregirla tampoco añade) →
-> **decisión del usuario**: previsiblemente congelar el SCRIPTADO como adversario canónico y pasar al MARL (candidatos
-> si se insistiera en lobos: co-entrenamiento lobo-dron más adelante, residual_scale menor + más fase 1, o aceptar el
-> empate); (2) **MARL** de drones (debe batir la barrera **2.77 / 0 / 2.80** —metro DGX v2.4.1— MOVIENDO los drones
-> con intención, gestionando la energía).
+> **Pendiente:** **fase RL** — (1) lobos: campaña 01–04 CERRADA (rala 0 · shaping 0.57/0.60 · cuna+shaping 0.65/0.72 ·
+> residual Δ≈+0.0); el scriptado = lobo canónico. La v2.5 abre el MULTI-FRENTE (Nivel A, mundo): el scriptado no lo
+> explota (medido) — el CEBO deliberado queda para lobos RL (Nivel B) o co-evolución, si se decide; (2) **MARL** de
+> drones (debe batir la barrera **2.71 / 0 / 2.76** —metro DGX **v2.5**— MOVIENDO los drones con intención,
+> gestionando la energía). Siguiente paso = decisión del usuario con los números de v2.5 delante.
 > **Commits:** `194a3ad` base · `37910b3` terminal · `e663504` disparador por dron · `4d1e708` campo
 > 300×300 + escala biológica absoluta · `886bd45` dispersión del rebaño · `a15e2df` movimiento de
 > drones (3a) · `fd893b8` detectar→confirmar (3b) · `49e0e22` consolidar DISEÑO+CLAUDE · `144b7bd` guiado (paso 2)
@@ -93,8 +91,11 @@
 > aporta vs run02, el scriptado sigue lejos; la maniobra de flanqueo es el muro) · `74b3bab` run04 RESIDUAL
 > (RPL): residual_wolf_controller + env residual + train 2 fases (init a cero verificado, guardia del suelo 2.3) +
 > test 9 (δ=0 ≡ scriptado bit a bit) + eval_wolves --residual/--floor + BIBLIOGRAFIA.md; run04 lanzado tras el commit ·
-> `<este commit>` docs: DESENLACE run04 (Δ ≈ +0.0 sobre el scriptado en 100 semillas — mejor 2.82/2.81, final
-> 2.61/2.66; andamiaje RPL impecable, sin adaptación que generalice) + cierre de la fase de lobos aprendidos.
+> `7f36144` docs: DESENLACE run04 (Δ ≈ +0.0 sobre el scriptado en 100 semillas — mejor 2.82/2.81, final
+> 2.61/2.66; andamiaje RPL impecable, sin adaptación que generalice) + cierre de la fase de lobos aprendidos ·
+> `<este commit>` v2.5: SPAWN EN SUBGRUPOS (Nivel A, tag `v2.5-baseline`) — grouped en CONFIG_V2/main (default
+> clustered ≡ v2.4.1 bit a bit; substream seed+3_000_003); hipótesis multi-frente MEDIDA y NO confirmada en el
+> scriptado (Dummy 4.42/0/4.34 · Reactive 2.71/0/2.76, ~1 SEM de bajada); el MARL pasa a batir 2.71/0/2.76.
 >
 > **Patch — run02 COMPLETADO (ablación desde-cero) + plan C CONSTRUIDO pero PARADO: la cuna BC no valida (2026-07-15).**
 > **run02 (shaping, 10M completos, ~3 h a ~920 fps):** ep_kills_mean del buffer 0.00→**0.35–0.40** (a 1M: 0.02; 3M: 0.16;
@@ -133,6 +134,33 @@
 > Artefactos en /data/wolves: demos/ (dataset+manifest+bc_model.zip+config), demos_v1_inconsistentes/ (histórico del
 > diagnóstico), run02/eval_final_10M.json + eval_best_5.5M.json. Verja tras el plan C: rl_env_check 8/8 + face_check +
 > wolf_controller_check verdes (los checks 1–8 intactos; el código nuevo no toca env/mundo/obs).
+>
+> **Patch — v2.5: SPAWN DE LOBOS EN SUBGRUPOS (Nivel A) + RE-CONGELACIÓN y medida (2026-07-17, 2ª).** Cambio de MUNDO
+> (hipótesis del usuario: el paquete apilado deja que la barrera defienda UN solo frente; con subgrupos, un grupo
+> puede cebar mientras otro mata por otro lado). **Nivel A = el MUNDO sortea la formación** (el RL la explotará en una
+> fase posterior). **Implementación (`world.py`, solo el spawn):** `wolf_spawn_mode="clustered"|"grouped"` (default
+> World = clustered ≡ v2.4.1 BIT A BIT — face/battery/escort/drone intactos; `CONFIG_V2` y `main.py` piden grouped);
+> en grouped, tras el spawn clustered de siempre, `_split_wolves_groups` decide con el substream `_wolf_group_rng`
+> (seed+3_000_003, como distracción/batería): n<=2 lobos → SIEMPRE 1 grupo; n>2 → 1 ó 2 al 50/50; con 1 grupo NO se
+> toca nada (posiciones clustered EXACTAS); con 2, tamaño del 2º grupo k~uniforme{1..n−1} (DESIGUAL permitido; k=1 =
+> CEBO) sobre los k últimos índices, sector 2º a >=`WOLF_GROUP_MIN_ANGLE_SEP`=60° (uniforme en el arco restante) y
+> ancla proyectada al MISMO borde que el 1º (misma distancia de spawn: cambia el eje de llegada, no cuándo), mismo
+> cúmulo gaussiano. Instrumentación: `wolf_group_sizes`/`wolf_spawn_angles`. **Verificado (diagnóstico en
+> /data/wolves/diag/v25_spawn_diag.py):** determinismo (misma seed → misma formación) · substream (20 semillas × 3
+> tipos: vacas/drones/corzos/terneros/baterías BIT A BIT vs clustered; 34 episodios con 1 grupo ≡ clustered también
+> en lobos) · geometría (58 episodios con 2 grupos: sep >=60°, ancla en el borde, cúmulos separados) · distribución
+> (200 semillas: 58/114 elegibles parten en 2 ≈ 50/50; repartos variados incl. cebo 1+4/4+1) · render
+> `v25_spawn_grouped.gif` (seed 26: cebo al este + paquete de 3 al oeste) · fidelidad `CONFIG_V2 ≡ defaults + corzos
+> + grouped` OK. **RE-MEDICIÓN (100 semillas/tipo, dentro del contenedor) — la hipótesis NO se confirma en Nivel A:**
+> Dummy solo-lobos **4.42**±2.24 / corzos 0.00 / mixto **4.34**±2.27 (v2.4.1: 4.54/0/4.46 → −0.12/−0.12) · Reactive
+> **2.71**±1.42 / 0 / **2.76**±1.52 (v2.4.1: 2.77/0/2.80 → −0.06/−0.04); n_safe Dummy 2.37/2.49, Reactive 4.18/4.11.
+> Todo ~1 SEM: **el multi-frente por sí solo NO ayuda al scriptado** — su táctica fija UNA presa común (el 2º grupo
+> no ceba: converge a la misma presa desde otro eje, a veces llega tarde al quórum). La bajada leve es coherente:
+> paquete partido = flanqueo inicial más débil. **Es medida, no objetivo** — números reportados tal cual, sin tunear.
+> La puerta queda ABIERTA para el Nivel B (lobos RL que EXPLOTEN el multi-frente: cebo deliberado). RE-CONGELADO
+> tag `v2.5-baseline`; `REFERENCE_SEVERITY`/`FROZEN_TAG` actualizados; artefactos regenerados (2ª pasada
+> REPRODUCIDA exacta); asserts de tag de wolf_controller_check/rl_env_check → v2.5. **El objetivo del MARL pasa a
+> 2.71 / 0 / 2.76.** PARADO aquí (sin re-correr la campaña de lobos), como pactó el prompt.
 >
 > **Patch — DESENLACE run04: el andamiaje RPL perfecto, el Δ ≈ +0.0 — el scriptado ya está en el techo explotable
 > contra esta barrera (2026-07-17).** run04 (residual, rala pura, 2 fases, 10M, ~4,3 h a ~650 fps) completó limpio.

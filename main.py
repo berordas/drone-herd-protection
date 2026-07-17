@@ -80,7 +80,7 @@ def main():
     episode_kind = ESCENARIOS.get(args.escenario)   # None -> sorteo sembrado
 
     world = World(seed=seed, teleport_guard=True, corzos_max=CORZOS_MAX, episode_kind=episode_kind,
-                  wolf_policy=args.lobos)
+                  wolf_policy=args.lobos, wolf_spawn_mode="grouped")   # v2.5: subgrupos (= CONFIG_V2)
     coordinator = ReactiveCoordinator(world) if args.coordinador == "reactive" else DummyCoordinator(world.n_drones)
 
     forzado = f"  (forzado: --escenario {args.escenario})" if args.escenario else "  (sorteado)"

@@ -99,6 +99,10 @@ CONFIG_V2 = dict(
     # --- lobo direccional (cono + flanqueo + envolvente + bordeo) ---
     wolf_speed=4.0, wolf_repulsion_strength=1.0, wolf_skirt_gain=1.5,
     wolf_envelop_gain=3.0, n_min_adult=2, cone_band=0.12, wolf_inertia=0.35,
+    # --- v2.5 (Nivel A): SPAWN EN SUBGRUPOS (1-2 grupos desiguales en sectores distintos; substream
+    #     RNG propio -> vacas/drones/corzos bit a bit vs clustered). El default de World sigue siendo
+    #     "clustered" (checks bit a bit); la v2.5 MIDE con "grouped". ---
+    wolf_spawn_mode="grouped",
     # --- escolta / terminal (máquina de fases + guiado al refugio + disuasión) ---
     r_detect=100.0, r_confirm=40.0, episode_time_factor=4.0, escort_enabled=True,
     # --- batería / cola de carga + RELEVO REALISTA (hand-off, sin teletransporte) ---
@@ -115,17 +119,19 @@ EVAL_SEEDS = tuple(range(N_PER_KIND))
 KINDS = ("lobos", "corzos", "mixto")
 KIND_LABEL = {"lobos": "solo-lobos", "corzos": "solo-corzos", "mixto": "mixto"}
 TERMINALS = ("success", "predation", "timeout")
-FROZEN_TAG = "v2.4.1-baseline"   # tag git del commit congelado: MISMO mundo que v2.4, METRO DGX (re-medición canónica en el contenedor)
+FROZEN_TAG = "v2.5-baseline"   # tag git del commit congelado: spawn de lobos en SUBGRUPOS (Nivel A); mismo resto de física. METRO DGX.
 
 # Referencia CONGELADA de severidad (media de muertes/ep) por tipo, para detectar DERIVA.
 # Se rellena tras la primera medición; en re-corridas debe coincidir (mundo reproducible POR ENTORNO).
-# v2.4.1 (METRO DGX): la MISMA física v2.4 re-medida DENTRO del contenedor canónico (docker/). La
-# referencia del portátil (4.41/0.00/4.34) no se reproduce entre plataformas (deriva FP amplificada
-# por el caos; spawns/RNG idénticos) -> desde 2026-07-14 el metro oficial es el contenedor de la DGX.
+# v2.5 (METRO DGX): spawn de lobos en SUBGRUPOS (wolf_spawn_mode="grouped": 1-2 grupos desiguales en
+# sectores distintos, substream RNG propio); el RESTO de la física = v2.4.1. Medido DENTRO del
+# contenedor canónico (docker/). Contraste v2.4.1 (clustered): Dummy 4.54/0/4.46 · Reactive 2.77/0/2.80
+# -> el multi-frente NO sube la letalidad del scriptado (fija UNA presa común; el 2º grupo no ceba,
+# solo llega por otro eje): ligera BAJADA dentro del ruido (~1 SEM). Es medida, no objetivo.
 REFERENCE_SEVERITY = {
-    "lobos": 4.54,   # solo-lobos (amenaza pura); succ 4 / pred 88 / timeout 8; n_safe 2.25
+    "lobos": 4.42,   # solo-lobos (amenaza pura); succ 4 / pred 88 / timeout 8; n_safe 2.37
     "corzos": 0.00,  # solo-corzos = SIN amenaza (100/100 timeout; el rebaño pasta, n_safe 0)
-    "mixto": 4.46,   # ≈ solo-lobos (los corzos solo consumen ciclos de investigación); n_safe 2.38
+    "mixto": 4.34,   # ≈ solo-lobos (los corzos solo consumen ciclos de investigación); n_safe 2.49
 }
 
 # Tolerancia de deriva (la media es exacta y reproducible bit a bit; margen mínimo por si
@@ -205,13 +211,16 @@ def evaluate(coordinator_factory=lambda w: DummyCoordinator(w.n_drones),
 
 
 def _verify_fidelity(seeds=(0, 1, 2, 3, 4)) -> bool:
-    """Cross-check: CONFIG_V2 debe ser BIT A BIT == 'defaults de World + corzos ON'. Si algún
-    valor explícito de CONFIG_V2 se desviara del default, el mundo medido no sería la v2."""
+    """Cross-check: CONFIG_V2 debe ser BIT A BIT == 'defaults de World + corzos ON + spawn grouped'
+    (v2.5: el ÚNICO extra sobre defaults es el modo de spawn — el default de World se queda en
+    clustered para los checks). Si algún otro valor explícito se desviara, el mundo medido no
+    sería la v2.5."""
     ok = True
     for kind in KINDS:
         for s in seeds:
             a = build_world(s, kind)                                      # CONFIG_V2 explícito
-            b = World(seed=s, episode_kind=kind, corzos_min=1, corzos_max=3)  # defaults + corzos
+            b = World(seed=s, episode_kind=kind, corzos_min=1, corzos_max=3,
+                      wolf_spawn_mode="grouped")                          # defaults + corzos + grouped
             a.reset(); b.reset()
             same = (a.n_wolves == b.n_wolves and a.n_corzos == b.n_corzos
                     and a.n_calves == b.n_calves

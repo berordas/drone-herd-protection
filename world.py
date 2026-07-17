@@ -103,6 +103,16 @@ W_EVITAR = 1.3            # peso de la EVITACIÓN de lobos (rodeo; falloff linea
 WOLF_ZONE_SKIRT_BAND = 20.0   # m: banda FUERA de la frontera donde actúa el bordeo (reacciona cerca del borde). TUNE
 WOLF_ZONE_SKIRT_GAIN = 3.0    # peso del bordeo tangencial (relativo al impulso de caza); domina cerca del borde. TUNE
 
+# --- SPAWN EN SUBGRUPOS (v2.5, Nivel A): con wolf_spawn_mode="grouped" la manada puede nacer PARTIDA en
+# subgrupos de tamaño DESIGUAL en sectores DISTINTOS del perímetro (misma distancia de spawn: el borde), en vez
+# de apilada en uno solo. Hipótesis a medir: multi-frente -> un subgrupo hace de CEBO mientras otro mata por
+# otro lado -> la barrera única del Reactive deja de bastar. El sorteo (nº de grupos, reparto, sector del 2º
+# grupo) va ÍNTEGRO en un substream RNG separado (_wolf_group_rng, seed+3_000_003) -> NO consume del stream
+# principal -> spawns de vacas/drones/corzos bit a bit; con 1 grupo las posiciones son EXACTAMENTE las del modo
+# "clustered" (el sorteo solo decide si se PARTE el cúmulo ya spawneado). "clustered" (default) = v2.4.1 bit a
+# bit. El modo lo fija CONFIG_V2 (v2.5 mide con "grouped"). ---
+WOLF_GROUP_MIN_ANGLE_SEP = np.pi / 3   # rad: separación angular MÍNIMA entre sectores de subgrupos (>=60°). TUNE
+
 # --- CORZOS (cuerpos NO-amenaza, 3c): cuerpos de fondo que el coordinador deberá aprender a NO investigar a
 # fondo (discriminar amenaza). DEAMBULAN (wander lento) y HUYEN de lobos y drones ACTIVE cercanos (repulsión con
 # falloff); NO cazan, NO van al rebaño, NO atacan; las vacas NO los encaran (no son amenaza -> no disparan
@@ -175,6 +185,7 @@ class World:
         wolf_repulsion_radius: float | None = None,    # reparto angular de la manada (pincer; default 2*r_face_safe)
         wolf_repulsion_strength: float = 1.0,          # peso de la repulsión entre lobos
         wolf_spawn_dispersion: float | None = None,    # m: dispersión del cúmulo de spawn (salen JUNTOS de un sector; default 0.05*min). TUNE
+        wolf_spawn_mode: str = "clustered",            # "clustered" (v2.4.1, un solo cúmulo) | "grouped" (v2.5: 1-2 subgrupos desiguales en sectores distintos; substream propio). El default se queda en clustered (checks bit a bit); CONFIG_V2 pide grouped.
         wolf_skirt_gain: float = 1.5,                  # ganancia de la componente TANGENCIAL para BORDEAR el rebaño (no atravesarlo). TUNE
         wolf_skirt_margin: float | None = None,        # m: holgura sobre la extensión del rebaño-obstáculo (default = r_face_safe). TUNE
         wolf_envelop_gain: float = 3.0,                # ATAQUE ENVOLVENTE: reparte los rumbos del paquete en ángulos equiespaciados alrededor de la presa (N→2π/N) -> no se apiñan en el cono. TUNE
@@ -306,6 +317,9 @@ class World:
         self.wolf_repulsion_strength = wolf_repulsion_strength
         # Spawn por sector (cúmulo) + rodeo del rebaño-obstáculo.
         self.wolf_spawn_dispersion = wolf_spawn_dispersion if wolf_spawn_dispersion is not None else 5.0  # m ABSOLUTOS (cúmulo apretado)
+        if wolf_spawn_mode not in ("clustered", "grouped"):
+            raise ValueError("wolf_spawn_mode debe ser 'clustered' o 'grouped'; recibido %r" % (wolf_spawn_mode,))
+        self.wolf_spawn_mode = wolf_spawn_mode         # v2.5: "grouped" = subgrupos (ver _split_wolves_groups)
         self.wolf_skirt_gain = wolf_skirt_gain
         self.wolf_envelop_gain = wolf_envelop_gain
         self.wolf_skirt_margin = wolf_skirt_margin if wolf_skirt_margin is not None else self.r_face_safe
@@ -465,6 +479,10 @@ class World:
         # Substream INDEPENDIENTE (v2.4) para las baterías iniciales aleatorias: NO consume del stream principal ->
         # los spawns quedan bit a bit iguales (face_check 12/12). Offset distinto del de distracción.
         self._battery_rng = np.random.default_rng(None if self._seed is None else self._seed + 2_000_003)
+        # Substream INDEPENDIENTE (v2.5) para el sorteo de SUBGRUPOS de lobos (nº de grupos, reparto, sector del
+        # 2º grupo): NO consume del stream principal -> vacas/drones/corzos bit a bit iguales que en "clustered"
+        # (y con 1 grupo, también los lobos). Offset propio, distinto de los otros dos.
+        self._wolf_group_rng = np.random.default_rng(None if self._seed is None else self._seed + 3_000_003)
 
         # Vacas: REPARTIDAS por el área de pasto (dispersas, no apiñadas), con separación
         # mínima al nacer y fuera de establo/central. Determinista con la seed.
@@ -530,6 +548,11 @@ class World:
         n_wolves_roll = int(self.rng.integers(self.wolves_min, self.wolves_max + 1))
         self.n_wolves = 0 if self.episode_kind == "corzos" else n_wolves_roll
         self.wolves = self._spawn_wolves_sector(self.n_wolves)
+        # Instrumentación del spawn (render/diagnóstico): tamaños y sectores de los subgrupos.
+        self.wolf_group_sizes = [self.n_wolves] if self.n_wolves > 0 else []
+        self.wolf_spawn_angles = [self.wolf_spawn_angle] if self.n_wolves > 0 else []
+        if self.wolf_spawn_mode == "grouped":
+            self.wolves = self._split_wolves_groups(self.wolves)   # v2.5: subgrupos (substream propio)
         self.wolf_vel = np.zeros((self.n_wolves, 2))
         self._wolf_scared = np.zeros(self.n_wolves, dtype=bool)   # (nw,) lobos que HUYEN de un dron este paso (susto por movimiento)
         self._drone_scaring = np.zeros(self.n_drones, dtype=bool) # (nd,) drones que 'ladran' (se acercan a un lobo a tiro) este paso
@@ -1689,6 +1712,41 @@ class World:
         anchor = center + d * t
         pts = anchor + self.rng.normal(0.0, self.wolf_spawn_dispersion, size=(n, 2))
         self._clip_to_parcel(pts)
+        return pts
+
+    def _split_wolves_groups(self, pts: np.ndarray) -> np.ndarray:
+        """v2.5 (Nivel A) — SPAWN EN SUBGRUPOS: parte (o no) el cúmulo ya spawneado en 1-2 subgrupos
+        de tamaño DESIGUAL en sectores DISTINTOS. Sorteo ÍNTEGRO en el substream `_wolf_group_rng`
+        (el stream principal NO se toca -> vacas/drones/corzos bit a bit iguales que "clustered").
+
+        Distribución (sembrada, documentada):
+        - nº de grupos: n<=2 lobos -> SIEMPRE 1 grupo; n>2 -> 1 ó 2 al 50/50. (Gancho a 3 grupos:
+          ampliar este sorteo; por ahora 1-2 basta para el patrón cebo/matador.)
+        - con 1 grupo NO se toca nada: las posiciones son EXACTAMENTE las de "clustered" (bit a bit).
+        - con 2 grupos: tamaño del 2º grupo k ~ uniforme{1..n-1} (reparto desigual permitido; k=1 =
+          CEBO posible); lo forman los k ÚLTIMOS índices (reparto por índice, determinista). El 2º
+          sector se sortea a >= WOLF_GROUP_MIN_ANGLE_SEP del primero (uniforme en el arco restante) y
+          su ancla se proyecta al borde de la parcela EXACTAMENTE como en _spawn_wolves_sector (misma
+          distancia de spawn: cambia el eje de llegada, no cuándo llegan); mismo cúmulo gaussiano
+          (wolf_spawn_dispersion) dentro del subgrupo."""
+        n = len(pts)
+        if n <= 2:
+            return pts                                   # 1 (o 0) grupo: sin sorteo, sin cambios
+        if int(self._wolf_group_rng.integers(0, 2)) == 0:
+            return pts                                   # sorteó 1 grupo: posiciones clustered intactas
+        k = int(self._wolf_group_rng.integers(1, n))     # tamaño del 2º grupo (1..n-1, desigual permitido)
+        angle2 = (self.wolf_spawn_angle
+                  + float(self._wolf_group_rng.uniform(WOLF_GROUP_MIN_ANGLE_SEP,
+                                                       2 * np.pi - WOLF_GROUP_MIN_ANGLE_SEP)))
+        center = np.array([self.W / 2.0, self.H / 2.0])
+        d = np.array([np.cos(angle2), np.sin(angle2)])
+        t = min((self.W / 2.0) / max(abs(d[0]), 1e-9), (self.H / 2.0) / max(abs(d[1]), 1e-9))
+        anchor2 = center + d * t                         # misma regla de distancia que el 1er grupo (borde)
+        pts = pts.copy()
+        pts[n - k:] = anchor2 + self._wolf_group_rng.normal(0.0, self.wolf_spawn_dispersion, size=(k, 2))
+        self._clip_to_parcel(pts[n - k:])
+        self.wolf_group_sizes = [n - k, k]
+        self.wolf_spawn_angles = [self.wolf_spawn_angle, float(angle2 % (2 * np.pi))]
         return pts
 
     def _roll_episode_kind(self) -> None:
