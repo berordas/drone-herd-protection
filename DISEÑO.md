@@ -5,7 +5,7 @@
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
 >
-> **Última actualización: 2026-07-17 (4ª)** · *run05 NIVEL B LANZADO (sobre v2.6, HEAD tras `19a97ab`): lobos RESIDUALES sobre el mundo grouped con recompensa de EQUIPO PURA (+1/muerte compartida, shaping OFF, SIN ninguna pista de cebo) — ¿EMERGE el cebo de dos frentes? Andamiaje = run04 tal cual (δ sobre el scriptado vivo, autoridad plena wolf_speed, 2 fases, init δ≡0 verificado); SUELO verificado sobre v2.6 grouped (2.74/2.83, Δ +0.00/+0.01); GUARDIAS: suelo (ligera <2.4 sostenida ≥1M, fase 2) y ESTANCAMIENTO (a ~4M sin superar con claridad ~2.8 → parar). `rl/cebo_diag.py` NUEVO mide el COMPORTAMIENTO (no solo la severidad): referencia nula del scriptado = 0.0% de muertes con killer NO detectado (cebo puro 0.0%) — cualquier emergencia será señal limpia. Objetivo: SUPERAR 2.74/2.82. (v2.6, la 3ª de hoy: barrera con PERCEPCIÓN REALISTA — se ancla al lobo DETECTADO, el frente no visto no influye; Dummy bit a bit 4.42/0/4.34, Reactive 2.74/0/2.82.)*
+> **Última actualización: 2026-07-18** · *DESENLACE run05 (Nivel B): la guardia de ESTANCAMIENTO saltó a 4.2M — **el CEBO NO EMERGE con recompensa de equipo pura**. Ligeras de fase 2 oscilando 2.50-3.10 alrededor del suelo (~2.90) sin tendencia; 100 semillas: ckpt 4M Δ −0.07/−0.11 · ckpt 3.5M Δ +0.06/−0.11 (≈ suelo 2.74/2.83). El diagnóstico de COMPORTAMIENTO (`rl/cebo_diag.py`) da el veredicto limpio: **killer-no-detectado 0.0% y cebo puro 0.0% en ambos checkpoints = LA MISMA nula del scriptado** — ni una sola muerte desde el frente no visto; δ cambió el comportamiento pero hacia ruido/erosión, no hacia cebo. Lectura estructural: el cebo es una desviación coordinada y temporalmente extendida con un VALLE de recompensa en medio (un cebo a medias quita quórum antes de dar nada) — la exploración gaussiana por-paso no lo encuentra. Siguientes pasos (decisión del usuario): pista al cebo / control de formación (Nivel B avanzado) / co-evolución / pasar al MARL contra 2.74/0/2.82.*
 >
 > **CIERRE de la primera campaña RL de lobos (runs 01–03) — la ablación completa, breve y factual:**
 > **run01** (rala pura, de cero) ABORTADO a 2,48M: 1 muerte espontánea en ~2.400 episodios, 0 señal · **run02**
@@ -51,9 +51,9 @@
 > CERO re-congelación (fingerprint bit a bit vs v2.4; verja verde SIN adaptar).
 > **Pendiente:** **fase RL** — (1) lobos: campaña 01–04 CERRADA (rala 0 · shaping 0.57/0.60 · cuna+shaping 0.65/0.72 ·
 > residual Δ≈+0.0); el scriptado = lobo canónico. La v2.5 abre el MULTI-FRENTE (Nivel A, mundo) y la v2.6 lo hace
-> EXPLOTABLE de verdad (la barrera solo ve lo detectado): **run05 (Nivel B) EN CURSO** — residual sobre v2.6 grouped
-> con recompensa de equipo PURA, a ver si el CEBO emerge (guardias: suelo 2.4 / estancamiento a 4M; diagnóstico
-> `rl/cebo_diag.py` con nula del scriptado = 0.0% cebo puro); (2) **MARL** de
+> EXPLOTABLE de verdad (la barrera solo ve lo detectado): **run05 (Nivel B) CERRADO por la guardia de estancamiento
+> (4.2M)** — con recompensa de equipo PURA el cebo NO emerge (Δ ≈ +0.0; cebo_diag 0.0% = nula del scriptado);
+> candidatos si se insiste: pista al cebo / control de formación / co-evolución; (2) **MARL** de
 > drones (debe batir la barrera **2.74 / 0 / 2.82** —metro DGX **v2.6**, barrera con percepción realista— MOVIENDO los drones con intención,
 > gestionando la energía). Siguiente paso tras run05 = decisión del usuario con los números delante.
 > **Commits:** `194a3ad` base · `37910b3` terminal · `e663504` disparador por dron · `4d1e708` campo
@@ -103,11 +103,14 @@
 > solo sobre detectados; sin detectados → patrulla) en vez de a `wolves.mean()` omnisciente; SOLO coordinators.py,
 > física ≡ v2.5 → Dummy BIT A BIT 4.42/0/4.34 · Reactive 2.74/0/2.82 (+0.03/+0.06, dentro del ruido); el frente
 > NO visto ya no influye → el cebo del Nivel B es físicamente real; el MARL pasa a batir 2.74/0/2.82 ·
-> `<este commit>` run05 NIVEL B (lanzado tras el commit): residual de run04 tal cual sobre v2.6 grouped, recompensa
+> `8f44d0e` run05 NIVEL B (lanzado tras el commit): residual de run04 tal cual sobre v2.6 grouped, recompensa
 > de EQUIPO PURA (+1/muerte compartida, shaping OFF, sin pista de cebo), δ autoridad plena, 2 fases, 12 envs, lr 1e-4,
 > 10M, /data/wolves/run05_nivelB; guardias suelo 2.4 (≥1M, fase 2) y estancamiento a ~4M (~2.8); suelo v2.6 grouped
 > verificado 2.74/2.83 (+0.00/+0.01); `rl/cebo_diag.py` NUEVO (nula del scriptado: 0.0% cebo puro / 0.0% killer no
-> detectado; no-anclado 46.1% post-fusión; 25.6% de pasos con un solo grupo visto).
+> detectado; no-anclado 46.1% post-fusión; 25.6% de pasos con un solo grupo visto) ·
+> `<este commit>` docs: DESENLACE run05 — guardia de ESTANCAMIENTO saltó a 4.2M (ligeras 2.50-3.10 ≈ suelo 2.90 sin
+> tendencia); 100 semillas: 4M Δ −0.07/−0.11 · 3.5M Δ +0.06/−0.11; cebo_diag 0.0%/0.0% en ambos = nula del scriptado
+> (ni una muerte desde el frente no visto); el cebo NO emerge con recompensa pura — siguiente movimiento = usuario.
 >
 > **Patch — run02 COMPLETADO (ablación desde-cero) + plan C CONSTRUIDO pero PARADO: la cuna BC no valida (2026-07-15).**
 > **run02 (shaping, 10M completos, ~3 h a ~920 fps):** ep_kills_mean del buffer 0.00→**0.35–0.40** (a 1M: 0.02; 3M: 0.16;
@@ -146,6 +149,29 @@
 > Artefactos en /data/wolves: demos/ (dataset+manifest+bc_model.zip+config), demos_v1_inconsistentes/ (histórico del
 > diagnóstico), run02/eval_final_10M.json + eval_best_5.5M.json. Verja tras el plan C: rl_env_check 8/8 + face_check +
 > wolf_controller_check verdes (los checks 1–8 intactos; el código nuevo no toca env/mundo/obs).
+>
+> **Patch — DESENLACE run05: la guardia de ESTANCAMIENTO saltó a 4.2M — el CEBO NO EMERGE con recompensa de equipo
+> pura, y el diagnóstico de comportamiento lo confirma con un CERO limpio (2026-07-18).** El run fue impecable
+> técnicamente (fase 1 clavada en 2.90 con detalle idéntico ×4 = termómetro del suelo; ~614 fps; shape 0.000 todo el
+> run) y la guardia pactada decidió: **12 ligeras de fase 2 entre 2.50 y 3.10 oscilando alrededor del suelo (~2.90),
+> media ≈2.92, sin tendencia** → PARADO a 4.227.072 pasos (kill -INT; checkpoints 0.5M–4M en /data/wolves/run05_nivelB).
+> **Tablas 100 semillas (arnés v2.6, mismas semillas):** ckpt 4M (último) **2.67±1.47 / 2.71±1.49** → Δ **−0.07/−0.11**
+> (erosión leve, patrón run04) · ckpt 3.5M (mejor ligera empatada) **2.80±1.60 / 2.71±1.55** → Δ **+0.06/−0.11** (ruido).
+> Suelo 2.74/2.83; scriptado 2.74/2.82. **Δ ≈ +0.0 otra vez.** **La métrica clave — cebo_diag (58 episodios de 2
+> subgrupos, ~180-190 muertes):** killer-no-detectado **0.0%** y cebo puro **0.0%** en AMBOS checkpoints — IGUAL que la
+> referencia nula del scriptado (0.0%): la política **ni una sola vez** mató desde el frente no visto; no-anclado
+> 40.4-40.8% (nula 46.1%: ruido post-fusión, sin cambio real) y la severidad en los episodios de 2 grupos BAJÓ
+> (3.33 → 3.09/3.24). δ SÍ cambió el comportamiento (los detalles por semilla difieren del suelo desde 1.25M) pero en
+> dirección de ruido/erosión, no de cebo. **Lectura estructural (por qué era esperable a posteriori):** el cebo es una
+> desviación COORDINADA y TEMPORALMENTE EXTENDIDA (partir el paquete y SUJETAR un frente cientos de pasos) que el ruido
+> gaussiano por-paso (σ≈0.14) alrededor de la trayectoria convergente del script prácticamente nunca muestrea; y el
+> paisaje de recompensa tiene un VALLE en medio — un cebo a medias QUITA lobos de la presa (menos quórum → menos
+> muertes a corto) antes de dar nada a cambio → el gradiente empuja de vuelta a converger. Recompensa de equipo pura
+> = señal correcta pero sin camino. **Siguientes pasos (candidatos, decisión del usuario, NO implementados):** pista
+> al cebo (shaping hacia mantener-frentes-separados, con el cuidado anti-proxy de §5.2) · control explícito de
+> formación (acción jerárquica: asignación de subgrupos + objetivos, Nivel B avanzado) · co-evolución · o aceptar el
+> scriptado como adversario definitivo y arrancar el MARL de drones (batir 2.74/0/2.82). Artefactos: evals y cebo_*.json
+> en /data/wolves/run05_nivelB/ y /data/wolves/; el diagnóstico quedó commiteado en `rl/cebo_diag.py` (8f44d0e).
 >
 > **Patch — run05 NIVEL B: lobos residuales que aprendan el CEBO, recompensa de equipo PURA (2026-07-17, 4ª — LANZADO).**
 > La campaña más difícil de la saga (el usuario asume el riesgo): sobre el mundo v2.6 (spawn grouped + barrera con
