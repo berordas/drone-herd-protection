@@ -1,10 +1,11 @@
 """eval_wolves.py — Evalúa una política de LOBOS entrenada con el ARNÉS DE SIEMPRE.
 
-Apples-to-apples con el metro canónico v2.4.1: `baseline.evaluate` con las MISMAS semillas
-(EVAL_SEEDS, range(100)), la MISMA CONFIG_V2 y la MISMA barrera reactiva congelada,
+Apples-to-apples con el metro canónico (contenedor DGX): `baseline.evaluate` con las MISMAS
+semillas (EVAL_SEEDS, range(100)), la MISMA CONFIG_V2 y la MISMA barrera reactiva congelada,
 cambiando SOLO el cerebro de los lobos (scriptado → política SB3). La referencia a batir
-por los lobos aprendidos son los SCRIPTADOS: severidad 2.77 (solo-lobos) / 2.80 (mixto)
-contra esa barrera (leída de baseline_v2_reactive.json — más muertes = mejores lobos).
+por los lobos aprendidos son los SCRIPTADOS contra la barrera VIGENTE, leída del artefacto
+`baseline_v2_reactive.json` (v2.6, percepción realista: 2.74 solo-lobos / 2.82 mixto — más
+muertes = mejores lobos; runs 01-04 se midieron contra v2.4.1: 2.77/2.80).
 
 Uso (dentro del contenedor):
     python rl/eval_wolves.py --model /data/wolves/run01/checkpoints/ppo_wolves_500000_steps.zip
@@ -32,7 +33,7 @@ from rl.wolf_env import VALID_KINDS
 
 
 def _scripted_reference(path: str = "baseline_v2_reactive.json") -> dict:
-    """Severidad de los lobos SCRIPTADOS contra la misma barrera (el metro v2.4.1)."""
+    """Severidad de los lobos SCRIPTADOS contra la misma barrera (el artefacto VIGENTE del repo)."""
     try:
         with open(path, encoding="utf-8") as f:
             d = json.load(f)
@@ -42,7 +43,7 @@ def _scripted_reference(path: str = "baseline_v2_reactive.json") -> dict:
 
 
 def main() -> None:
-    p = argparse.ArgumentParser(description="Evalúa lobos APRENDIDOS vs la barrera reactiva (arnés v2.4.1).")
+    p = argparse.ArgumentParser(description="Evalúa lobos APRENDIDOS vs la barrera reactiva (arnés canónico, metro DGX).")
     p.add_argument("--model", default=None, help="model.zip / checkpoint .zip de SB3 (en /data); opcional con --floor")
     p.add_argument("--kinds", type=str, default="lobos,mixto", help="tipos (coma; nunca 'corzos')")
     p.add_argument("--n-seeds", type=int, default=len(EVAL_SEEDS),
@@ -54,7 +55,7 @@ def main() -> None:
     p.add_argument("--residual-scale", type=float, default=None, help="escala de δ (def. wolf_speed; = la del run)")
     p.add_argument("--floor", action="store_true",
                    help="SUELO del residual: δ≡0 (scriptado puro por el camino residual, sin modelo) — "
-                        "verifica el cableado: debe reproducir ≈ 2.77/2.80")
+                        "verifica el cableado: debe reproducir ≈ el scriptado vigente (v2.6: 2.74/2.82)")
     args = p.parse_args()
     if args.floor:
         args.residual = True
@@ -79,7 +80,7 @@ def main() -> None:
     modo = "residual (δ del modelo sobre el scriptado)" if args.residual else "política pura"
     if args.floor:
         modo = "SUELO residual (δ≡0 = scriptado por el camino residual)"
-    print("=== eval_wolves: política SB3 vs barrera reactiva (arnés v2.4.1, mismas semillas) ===")
+    print("=== eval_wolves: política SB3 vs barrera reactiva (arnés canónico, mismas semillas) ===")
     print(f"  modelo = {model_path if model_path else '(ninguno: δ≡0)'}  |  modo = {modo}")
     print(f"  kinds = {kinds}  |  semillas = {len(seeds)} (range({len(seeds)}))  |  out = {out}")
 
@@ -114,7 +115,7 @@ def main() -> None:
         "model": str(model_path) if model_path else "FLOOR (residual δ≡0 = scriptado)",
         "modo": modo,
         "fecha": datetime.now().isoformat(timespec="seconds"),
-        "harness": "baseline.evaluate (v2.4.1, metro DGX)",
+        "harness": "baseline.evaluate (metro DGX; referencia = artefacto vigente del repo)",
         "coordinator": "ReactiveCoordinator (congelado, via SyncedReactiveCoordinator)",
         "kinds": list(kinds), "n_seeds": len(seeds),
         "scripted_reference": ref,

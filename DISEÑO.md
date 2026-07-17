@@ -5,7 +5,7 @@
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
 >
-> **Última actualización: 2026-07-17 (3ª)** · *v2.6 CONGELADA (tag `v2.6-baseline`): BARRERA REACTIVA CON PERCEPCIÓN REALISTA — hasta v2.5 el ReactiveCoordinator se orientaba a `wolves.mean()` (OMNISCIENCIA: conocía lobos que ningún dron había visto); ahora solo VE los lobos DETECTADOS (≤ r_detect de un dron ACTIVE — el MISMO criterio del disparador del mundo, en solo-lectura) y el eje se ancla al PRIMER detectado con histéresis; PENETRADO/cobertura solo sobre detectados; sin detectados → patrulla. SOLO `coordinators.py`; FÍSICA ≡ v2.5 → Dummy BIT A BIT **4.42/0/4.34**; Reactive re-medido **2.74/0/2.82** (v2.5: 2.71/0/2.76 → +0.03/+0.06, DENTRO del ruido: contra el scriptado convergente los lobos que amenazan están casi siempre detectados y la media global ≈ la percepción local). Lo que cambia DE VERDAD: el frente NO VISTO ya no influye en la colocación — el CEBO del Nivel B pasa a ser físicamente real. El MARL debe batir 2.74/0/2.82. PARADO aquí como se pactó.*
+> **Última actualización: 2026-07-17 (4ª)** · *run05 NIVEL B LANZADO (sobre v2.6, HEAD tras `19a97ab`): lobos RESIDUALES sobre el mundo grouped con recompensa de EQUIPO PURA (+1/muerte compartida, shaping OFF, SIN ninguna pista de cebo) — ¿EMERGE el cebo de dos frentes? Andamiaje = run04 tal cual (δ sobre el scriptado vivo, autoridad plena wolf_speed, 2 fases, init δ≡0 verificado); SUELO verificado sobre v2.6 grouped (2.74/2.83, Δ +0.00/+0.01); GUARDIAS: suelo (ligera <2.4 sostenida ≥1M, fase 2) y ESTANCAMIENTO (a ~4M sin superar con claridad ~2.8 → parar). `rl/cebo_diag.py` NUEVO mide el COMPORTAMIENTO (no solo la severidad): referencia nula del scriptado = 0.0% de muertes con killer NO detectado (cebo puro 0.0%) — cualquier emergencia será señal limpia. Objetivo: SUPERAR 2.74/2.82. (v2.6, la 3ª de hoy: barrera con PERCEPCIÓN REALISTA — se ancla al lobo DETECTADO, el frente no visto no influye; Dummy bit a bit 4.42/0/4.34, Reactive 2.74/0/2.82.)*
 >
 > **CIERRE de la primera campaña RL de lobos (runs 01–03) — la ablación completa, breve y factual:**
 > **run01** (rala pura, de cero) ABORTADO a 2,48M: 1 muerte espontánea en ~2.400 episodios, 0 señal · **run02**
@@ -50,10 +50,12 @@
 > inercia+integración, cap, captura). Prepara la fase RL (lobos que burlan la barrera). CERO cambio de comportamiento,
 > CERO re-congelación (fingerprint bit a bit vs v2.4; verja verde SIN adaptar).
 > **Pendiente:** **fase RL** — (1) lobos: campaña 01–04 CERRADA (rala 0 · shaping 0.57/0.60 · cuna+shaping 0.65/0.72 ·
-> residual Δ≈+0.0); el scriptado = lobo canónico. La v2.5 abre el MULTI-FRENTE (Nivel A, mundo): el scriptado no lo
-> explota (medido) — el CEBO deliberado queda para lobos RL (Nivel B) o co-evolución, si se decide; (2) **MARL** de
+> residual Δ≈+0.0); el scriptado = lobo canónico. La v2.5 abre el MULTI-FRENTE (Nivel A, mundo) y la v2.6 lo hace
+> EXPLOTABLE de verdad (la barrera solo ve lo detectado): **run05 (Nivel B) EN CURSO** — residual sobre v2.6 grouped
+> con recompensa de equipo PURA, a ver si el CEBO emerge (guardias: suelo 2.4 / estancamiento a 4M; diagnóstico
+> `rl/cebo_diag.py` con nula del scriptado = 0.0% cebo puro); (2) **MARL** de
 > drones (debe batir la barrera **2.74 / 0 / 2.82** —metro DGX **v2.6**, barrera con percepción realista— MOVIENDO los drones con intención,
-> gestionando la energía). Siguiente paso = decisión del usuario con los números de v2.5 delante.
+> gestionando la energía). Siguiente paso tras run05 = decisión del usuario con los números delante.
 > **Commits:** `194a3ad` base · `37910b3` terminal · `e663504` disparador por dron · `4d1e708` campo
 > 300×300 + escala biológica absoluta · `886bd45` dispersión del rebaño · `a15e2df` movimiento de
 > drones (3a) · `fd893b8` detectar→confirmar (3b) · `49e0e22` consolidar DISEÑO+CLAUDE · `144b7bd` guiado (paso 2)
@@ -96,11 +98,16 @@
 > `9401b78` v2.5: SPAWN EN SUBGRUPOS (Nivel A, tag `v2.5-baseline`) — grouped en CONFIG_V2/main (default
 > clustered ≡ v2.4.1 bit a bit; substream seed+3_000_003); hipótesis multi-frente MEDIDA y NO confirmada en el
 > scriptado (Dummy 4.42/0/4.34 · Reactive 2.71/0/2.76, ~1 SEM de bajada); el MARL pasa a batir 2.71/0/2.76 ·
-> `<este commit>` v2.6: BARRERA REACTIVA CON PERCEPCIÓN REALISTA (tag `v2.6-baseline`) — la barrera se ancla al lobo
+> `19a97ab` v2.6: BARRERA REACTIVA CON PERCEPCIÓN REALISTA (tag `v2.6-baseline`) — la barrera se ancla al lobo
 > DETECTADO (criterio r_detect/ACTIVE del mundo, solo-lectura; ancla = primer detectado con histéresis; PENETRADO
 > solo sobre detectados; sin detectados → patrulla) en vez de a `wolves.mean()` omnisciente; SOLO coordinators.py,
 > física ≡ v2.5 → Dummy BIT A BIT 4.42/0/4.34 · Reactive 2.74/0/2.82 (+0.03/+0.06, dentro del ruido); el frente
-> NO visto ya no influye → el cebo del Nivel B es físicamente real; el MARL pasa a batir 2.74/0/2.82.
+> NO visto ya no influye → el cebo del Nivel B es físicamente real; el MARL pasa a batir 2.74/0/2.82 ·
+> `<este commit>` run05 NIVEL B (lanzado tras el commit): residual de run04 tal cual sobre v2.6 grouped, recompensa
+> de EQUIPO PURA (+1/muerte compartida, shaping OFF, sin pista de cebo), δ autoridad plena, 2 fases, 12 envs, lr 1e-4,
+> 10M, /data/wolves/run05_nivelB; guardias suelo 2.4 (≥1M, fase 2) y estancamiento a ~4M (~2.8); suelo v2.6 grouped
+> verificado 2.74/2.83 (+0.00/+0.01); `rl/cebo_diag.py` NUEVO (nula del scriptado: 0.0% cebo puro / 0.0% killer no
+> detectado; no-anclado 46.1% post-fusión; 25.6% de pasos con un solo grupo visto).
 >
 > **Patch — run02 COMPLETADO (ablación desde-cero) + plan C CONSTRUIDO pero PARADO: la cuna BC no valida (2026-07-15).**
 > **run02 (shaping, 10M completos, ~3 h a ~920 fps):** ep_kills_mean del buffer 0.00→**0.35–0.40** (a 1M: 0.02; 3M: 0.16;
@@ -139,6 +146,32 @@
 > Artefactos en /data/wolves: demos/ (dataset+manifest+bc_model.zip+config), demos_v1_inconsistentes/ (histórico del
 > diagnóstico), run02/eval_final_10M.json + eval_best_5.5M.json. Verja tras el plan C: rl_env_check 8/8 + face_check +
 > wolf_controller_check verdes (los checks 1–8 intactos; el código nuevo no toca env/mundo/obs).
+>
+> **Patch — run05 NIVEL B: lobos residuales que aprendan el CEBO, recompensa de equipo PURA (2026-07-17, 4ª — LANZADO).**
+> La campaña más difícil de la saga (el usuario asume el riesgo): sobre el mundo v2.6 (spawn grouped + barrera con
+> percepción realista), entrenar la política RESIDUAL de run04 SIN tocarla (el ScriptedWolfController vive dentro — ya
+> caza, ya nace disperso en grouped; la red solo aprende δ, autoridad PLENA `residual_scale`=wolf_speed porque el cebo
+> exige desviaciones grandes: QUEDARSE SUJETANDO en vez de converger) con recompensa de EQUIPO PURA: +1 por muerte del
+> paquete, compartida; **shaping OFF; SIN término de cebo, SIN pista de "frente ocupado", SIN nada por-lobo** (confirmado
+> en config.json). La hipótesis: la barrera v2.6 es UNA línea anclada al lobo detectado → una política que aprenda a NO
+> converger (un subgrupo sujeta el frente visto mientras el otro entra por el invisible) supera el 2.74/2.82 del
+> scriptado; el cebo debe EMERGER de que eso sube las muertes totales. **Config:** run04 calcado — 2 fases (init δ≡0
+> EXACTO verificado; fase 1 = 1M solo-crítico), 12 envs, lr 1e-4, 10M, seed 0, cpu, `/data/wolves/run05_nivelB`.
+> **GUARDIAS (cabecera del log, ABORT_NOTE_RESIDUAL actualizado; run04 usó 2.3 sin estancamiento — histórico):**
+> (1) SUELO: ligera <2.4 sostenida ≥1M en fase 2 → parar (PPO erosionando al script); (2) ESTANCAMIENTO: a ~4M sin
+> superar CON CLARIDAD el suelo (~2.8) → parar — el cebo no emerge con recompensa pura (siguientes pasos —pista al
+> cebo / control explícito de formación— los decide el usuario). **Verificación pre-run:** suelo δ≡0 sobre v2.6 grouped
+> = **2.74/2.83** (Δ +0.00/+0.01, `/data/wolves/run05_floor_v26.json`) + test 9 (δ=0 ≡ scriptado bit a bit) verde en la
+> verja 7/7; smoke residual 2 fases (init 0 exacto, kills 2.77 en el 1er tramo = el script mata desde el paso 0).
+> **`rl/cebo_diag.py` NUEVO (diagnóstico de COMPORTAMIENTO — qué aprendió, no solo cuánto):** en los episodios del arnés
+> con 2 subgrupos (58/200), por cada muerte: grupo del killer vs grupo del lobo ANCLA de la barrera (métrica (b):
+> muertes del subgrupo NO anclado), ¿killer DETECTADO? y ¿el OTRO subgrupo detectado en ese instante? (métrica (a):
+> SUJECIÓN — frente visto ocupado mientras mata el no visto; CEBO PURO = killer no visto ∧ otro visto). **Referencia
+> NULA (scriptado, --floor): killer-no-detectado 0.0% y cebo puro 0.0%** (el scriptado JAMÁS mata sin estar detectado)
+> · no-anclado 46.1% (ruido post-fusión: sep media en muertes 20.9 m — (b) solo discrimina ANTES de fusionar) ·
+> situación explotable (un solo grupo visto) el 25.6% de los pasos de ESCOLTA · severidad en episodios de 2 grupos 3.33.
+> La firma limpia del cebo emergido = subida de killer-no-detectado/cebo-puro + severidad > suelo. Al terminar:
+> eval_wolves 100 semillas (último y mejor) vs 2.74/2.82 + suelo + runs 01–04, y cebo_diag de los checkpoints buenos.
 >
 > **Patch — v2.6: BARRERA REACTIVA CON PERCEPCIÓN REALISTA + RE-CONGELACIÓN y medida (2026-07-17, 3ª).** Corrección de
 > REALISMO del coordinador clásico (prompt del usuario), motivada por el reconocimiento de solo-lectura previo (¿engaña el

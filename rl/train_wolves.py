@@ -77,11 +77,15 @@ ABORT_NOTE_RALA = (
     "CRITERIO DE ABORTO (pactado, rala pura): si a ~2.000.000 de pasos ep_kills_mean sigue en "
     "0.00 (ninguna muerte espontánea), parar el run y reportar.")
 ABORT_NOTE_RESIDUAL = (
-    "CRITERIO DE ABORTO (pactado, run04/residual — GUARDIA DEL SUELO): el suelo es el scriptado "
-    "(~2.7 en la eval ligera; en la FASE 1, con la política congelada y δ=0, las evals deben "
-    "CLAVARSE ahí). Si en la FASE 2 la eval ligera cae por debajo de 2.3 (suelo − margen) de "
-    "forma SOSTENIDA (>=1.000.000 de pasos), PARAR y reportar — PPO estaría EROSIONANDO al "
-    "script en vez de mejorarlo (palancas: bajar lr / alargar la fase 1 — decisión del usuario).")
+    "CRITERIOS (pactados, run05/Nivel B — residual sobre v2.6 grouped, recompensa de EQUIPO PURA, "
+    "sin ninguna pista de cebo): (1) GUARDIA DEL SUELO: el suelo es el scriptado (~2.7-2.8 en la "
+    "eval ligera; en la FASE 1, política congelada y δ=0, las evals deben CLAVARSE ahí). Si en la "
+    "FASE 2 la eval ligera cae por debajo de 2.4 de forma SOSTENIDA (>=1.000.000 de pasos), PARAR "
+    "y reportar — PPO estaría EROSIONANDO al script. (2) ESTANCAMIENTO: el objetivo es SUPERAR "
+    "2.74/2.82 (scriptado v2.6); si a ~4.000.000 de pasos la eval ligera NO ha subido con CLARIDAD "
+    "por encima del suelo (~2.8), PARAR y reportar — el cebo no emerge con recompensa pura "
+    "(siguientes pasos —pista al cebo / control de formación— los decide el usuario, NO "
+    "implementarlos por cuenta propia). [Histórico: run04 usó guardia 2.3 y sin estancamiento.]")
 
 # Init del residual (RPL + truco del Real Robot Challenge, arXiv:2101.02842): última capa de la
 # media a CERO (δ inicial ≡ 0 → el lobo del paso 0 ES el script) y σ inicial pequeña para que la
