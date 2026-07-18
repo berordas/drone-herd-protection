@@ -5,7 +5,7 @@
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
 >
-> **Última actualización: 2026-07-18 (2ª)** · *INFRAESTRUCTURA del MARL de DRONES construida y verificada (SIN run serio): MAPPO/CTDE **sobre el SB3 pinneado** (sin deps nuevas) — actor compartido descentralizado (obs LOCAL por PUESTO, 131: lobos solo DETECTADOS + ego + pista del waypoint base) + crítico centralizado (obs GLOBAL privilegiada = rl.obs.build_obs, 122) enrutados por `SplitMlpExtractor`; AGENTE = PUESTO de barrera (los relevos no rompen la identidad); residual δ sobre el waypoint de la barrera v2.6 VIVA dentro, con máscara load-bearing (ACTIVE&~inv&~hold); recompensa global (−1/muerte) + local (disuasión atribuida, `deter_credit`) POR SEPARADO (anti-proxy, estilo DE-MADDPG); 3 tipos de episodio. **SUELO VERIFICADO: δ=0 → 2.74/0.00/2.82 con Δ +0.00 exacto (100 semillas)**; rl_env_check test 10 nuevo (suelo bit a bit episodio completo + máscara + canal); verja 7/7; smoke 2 fases ~880 fps-agente. El run serio = siguiente decisión.* *(1ª de hoy: DESENLACE run05 — el cebo NO emerge con recompensa de equipo pura; cebo_diag 0.0% = nula del scriptado.)* **el CEBO NO EMERGE con recompensa de equipo pura**. Ligeras de fase 2 oscilando 2.50-3.10 alrededor del suelo (~2.90) sin tendencia; 100 semillas: ckpt 4M Δ −0.07/−0.11 · ckpt 3.5M Δ +0.06/−0.11 (≈ suelo 2.74/2.83). El diagnóstico de COMPORTAMIENTO (`rl/cebo_diag.py`) da el veredicto limpio: **killer-no-detectado 0.0% y cebo puro 0.0% en ambos checkpoints = LA MISMA nula del scriptado** — ni una sola muerte desde el frente no visto; δ cambió el comportamiento pero hacia ruido/erosión, no hacia cebo. Lectura estructural: el cebo es una desviación coordinada y temporalmente extendida con un VALLE de recompensa en medio (un cebo a medias quita quórum antes de dar nada) — la exploración gaussiana por-paso no lo encuentra. Siguientes pasos (decisión del usuario): pista al cebo / control de formación (Nivel B avanzado) / co-evolución / pasar al MARL contra 2.74/0/2.82.*
+> **Última actualización: 2026-07-18 (3ª)** · ***RUN01 del MARL de DRONES COMPLETADO (20M pasos-agente, ~5,5 h): EL MARL BATE LA BARRERA — el primer coordinador que baja del suelo.** 100 semillas (arnés canónico): modelo FINAL (20M) **2.35±1.33 / 0.00 / 2.34±1.42** → Δ **−0.39/−0.48** vs barrera 2.74/0/2.82 (~2,8–3,4 SEM); mejor ckpt por ligeras (18,99M) 2.41/0/2.42 (Δ −0.33/−0.40) — ROBUSTO al checkpoint; n_safe 4.16/4.06→4.54/4.54; vs Dummy −2.01/−1.92. Guardias del pacto (`c215689`) JAMÁS disparadas: fase 1 clavada en el suelo de la ligera (2.80 EXACTO, detalle idéntico ×4), cero evals >2.9 en fase 2 (sin erosión), patrón proxy nunca presente (la disuasión osciló mientras la severidad bajaba). DIAGNÓSTICO de comportamiento (58 episodios GEMELOS de 2 frentes, suelo vs política): el Δ es **MOVERSE PARA DISUADIR** — rapidez ACTIVE 3.76→4.39 m/s (+17%), lobos huyendo/paso 1.19→1.50 (+26%), severidad 2-frentes 3.31→2.90 — y NO repartirse entre frentes (ambos atendidos 6.2%→6.5%, idéntico): la política vence la HABITUACIÓN v2.4; el agujero de la línea única queda sin explotar (coherente con run05: el scriptado no ceba → sin presión selectiva). La mejora seguía CRECIENDO al agotar el presupuesto (evals >18M: media 2.125). Siguiente = decisión del usuario: aceptar el FINAL como coordinador MARL v1 / más presupuesto (--resume) / co-evolución / YOLO.* *(2ª de hoy: INFRA MARL construida y verificada — suelo δ=0 Δ +0.00 exacto, test 10, sin deps nuevas. 1ª: DESENLACE run05 — el cebo NO emerge con recompensa de equipo pura; cebo_diag 0.0% = nula del scriptado; el cebo es una desviación coordinada temporalmente extendida con valle de recompensa en medio que la exploración por-paso no muestrea.)*
 >
 > **CIERRE de la primera campaña RL de lobos (runs 01–03) — la ablación completa, breve y factual:**
 > **run01** (rala pura, de cero) ABORTADO a 2,48M: 1 muerte espontánea en ~2.400 episodios, 0 señal · **run02**
@@ -53,9 +53,10 @@
 > residual Δ≈+0.0); el scriptado = lobo canónico. La v2.5 abre el MULTI-FRENTE (Nivel A, mundo) y la v2.6 lo hace
 > EXPLOTABLE de verdad (la barrera solo ve lo detectado): **run05 (Nivel B) CERRADO por la guardia de estancamiento
 > (4.2M)** — con recompensa de equipo PURA el cebo NO emerge (Δ ≈ +0.0; cebo_diag 0.0% = nula del scriptado);
-> candidatos si se insiste: pista al cebo / control de formación / co-evolución; (2) **MARL** de
-> drones (debe batir la barrera **2.74 / 0 / 2.82** —metro DGX **v2.6**, barrera con percepción realista— MOVIENDO los drones con intención,
-> gestionando la energía). Siguiente paso tras run05 = decisión del usuario con los números delante.
+> candidatos si se insiste: pista al cebo / control de formación / co-evolución; (2) **MARL de
+> drones: run01 COMPLETADO Y BATE LA BARRERA** — FINAL (20M) **2.35/0/2.34** (Δ **−0.39/−0.48** vs 2.74/0/2.82),
+> aprendió a MOVERSE para disuadir (+17% rapidez, +26% sustos; vence la habituación v2.4), sin repartirse entre
+> frentes. Siguiente paso = decisión del usuario (aceptar como v1 / --resume / co-evolución / YOLO).
 > **Commits:** `194a3ad` base · `37910b3` terminal · `e663504` disparador por dron · `4d1e708` campo
 > 300×300 + escala biológica absoluta · `886bd45` dispersión del rebaño · `a15e2df` movimiento de
 > drones (3a) · `fd893b8` detectar→confirmar (3b) · `49e0e22` consolidar DISEÑO+CLAUDE · `144b7bd` guiado (paso 2)
@@ -111,13 +112,23 @@
 > `f5c0d8a` docs: DESENLACE run05 — guardia de ESTANCAMIENTO saltó a 4.2M (ligeras 2.50-3.10 ≈ suelo 2.90 sin
 > tendencia); 100 semillas: 4M Δ −0.07/−0.11 · 3.5M Δ +0.06/−0.11; cebo_diag 0.0%/0.0% en ambos = nula del scriptado
 > (ni una muerte desde el frente no visto); el cebo NO emerge con recompensa pura — siguiente movimiento = usuario ·
-> `<este commit>` INFRA MARL de DRONES (sin run serio): rl/drone_obs.py (obs por PUESTO: local 131 con lobos solo
+> `aac480d` INFRA MARL de DRONES (sin run serio): rl/drone_obs.py (obs por PUESTO: local 131 con lobos solo
 > DETECTADOS + ego + pista base; global privilegiada = build_obs) + rl/residual_drone_coordinator.py (barrera v2.6
 > viva dentro, δ enmascarada ACTIVE&~inv&~hold, model=None⇒suelo) + rl/drone_env.py (DroneTeamEnv 3 kinds, recompensa
 > global+local por separado, TeamUnstackVecEnv M mundos→4M streams) + rl/train_drones.py (MAPPO sobre SB3 pinneado:
 > SplitMlpExtractor π←local/V←global, 2 fases, init δ≡0 assert) + rl/drone_eval.py (arnés 100 semillas) + test 10 de
 > rl_env_check; SUELO verificado Δ +0.00 exacto (2.74/0/2.82); verja 7/7; smoke ~880 fps-agente; BIBLIOGRAFIA
-> +DE-MADDPG/escolta/COMA/difference/VDN/QMIX; sin dependencias nuevas.
+> +DE-MADDPG/escolta/COMA/difference/VDN/QMIX; sin dependencias nuevas ·
+> `c215689` run01 MARL de drones: PACTO de guardias fijado en el entrenador ANTES del run (EROSIÓN: ligera sostenida
+> >~2.9 en fase 2 ≥1,5M · ANTI-PROXY: ep_deter sube sin bajar ep_sev ≥2M, par impreso en cada eval · SIN aborto por
+> estancamiento) + eval ligera del pacto = 10 semillas FIJAS 5 lobos+5 mixto (suelo δ=0 medido 2.80 EXACTO, detalle
+> [3,0,3,4,4|4,0,3,2,5]); verja 7/7; run01 (20M pasos-agente, 12 mundos, lr 1e-4, /data/drones/run01) lanzado tras
+> el commit ·
+> `<este commit>` docs: DESENLACE run01 MARL de drones — **EL MARL BATE LA BARRERA**: 100 semillas FINAL (20M)
+> 2.35±1.33/0/2.34±1.42 (Δ −0.39/−0.48) · mejor ckpt 18,99M 2.41/0/2.42 (Δ −0.33/−0.40) — robusto al checkpoint;
+> guardias jamás disparadas (fase 1 clavada 2.80 ×4; cero erosión; cero proxy); diagnóstico de comportamiento (58
+> gemelos de 2 frentes): +17% rapidez ACTIVE, +26% lobos huyendo/paso, sev 2-frentes 3.31→2.90, SIN reparto entre
+> frentes — la política vence la habituación v2.4; siguiente movimiento = decisión del usuario.
 >
 > **Patch — run02 COMPLETADO (ablación desde-cero) + plan C CONSTRUIDO pero PARADO: la cuna BC no valida (2026-07-15).**
 > **run02 (shaping, 10M completos, ~3 h a ~920 fps):** ep_kills_mean del buffer 0.00→**0.35–0.40** (a 1M: 0.02; 3M: 0.16;
@@ -156,6 +167,40 @@
 > Artefactos en /data/wolves: demos/ (dataset+manifest+bc_model.zip+config), demos_v1_inconsistentes/ (histórico del
 > diagnóstico), run02/eval_final_10M.json + eval_best_5.5M.json. Verja tras el plan C: rl_env_check 8/8 + face_check +
 > wolf_controller_check verdes (los checks 1–8 intactos; el código nuevo no toca env/mundo/obs).
+>
+> **Patch — DESENLACE run01 del MARL de DRONES: EL MARL BATE LA BARRERA — el primer coordinador que baja del
+> suelo, y el diagnóstico dice POR QUÉ: se mueve para disuadir (2026-07-18, 3ª).** Run limpio de 20.054.016
+> pasos-agente (~5,5 h a ~1.010 fps-agente; 12 mundos → 48 streams; lr 1e-4; δ escala 20 m; local_coef 0.01;
+> /data/drones/run01). **Pacto de guardias fijado ANTES del run (`c215689`):** eval ligera = 10 semillas FIJAS
+> 5 lobos + 5 mixto (suelo δ=0 MEDIDO antes de lanzar: 2.80 EXACTO, detalle [3,0,3,4,4|4,0,3,2,5]); guardia de
+> EROSIÓN (ligera sostenida >~2.9 en fase 2 durante ≥1,5M → parar) + ANTI-PROXY (ep_deter sube sin que ep_sev
+> baje ≥2M → parar; el par (ep_sev, ep_deter) del buffer impreso en CADA eval para leer la vigilancia eval a
+> eval) + SIN aborto por estancamiento (a diferencia de los lobos, el suelo es útil: δ≈0 = la barrera).
+> **NINGUNA guardia saltó:** fase 1 (solo-crítico, 1M) clavada en 2.80 con detalle idéntico ×4 (termómetro del
+> suelo con el crítico centralizado calentando); en fase 2 CERO evals >2.9 (sin erosión) y el patrón proxy
+> jamás apareció (deter osciló 850–2.100 sin tendencia monótona MIENTRAS la severidad bajaba — eso es el
+> mecanismo, no el proxy). **Trayectoria:** ligeras 2.5–2.9 alrededor del suelo hasta ~6M → banda 2.2–2.5 →
+> el MEJOR tramo es el FINAL (evals >18M: media 2.125, mín 1.80) — la mejora seguía creciendo al agotar el
+> presupuesto. **TABLAS 100 semillas (arnés canónico, mismas semillas, metro DGX):** modelo FINAL (20M)
+> solo-lobos **2.35±1.33** / solo-corzos 0.00 / mixto **2.34±1.42** → Δ **−0.39 / −0.48** vs barrera
+> (2.74/0/2.82), ~2,8–3,4 SEM por tipo y consistente en ambos; n_safe 4.54/4.54 (barrera: 4.16/4.06); vs
+> Dummy 4.42/0/4.34: −2.07/−2.00 · mejor ckpt por ventana de ligeras (18.998.784) **2.41±1.44 / 0 /
+> 2.42±1.37** (Δ −0.33/−0.40) — ROBUSTO al checkpoint (el final ≥ el mejor: sin sobreajuste a la ligera).
+> **DIAGNÓSTICO de comportamiento (espíritu cebo_diag, bando drones; script en /data/drones/diag/
+> run01_comportamiento.py; 58 episodios GEMELOS de 2 subgrupos, mismas semillas, suelo δ=0 vs política):**
+> el Δ es **MOVERSE PARA DISUADIR**, no repartirse — rapidez media de los ACTIVE en ESCOLTA 3.76→**4.39 m/s**
+> (+17%), lobos huyendo por paso (`_wolf_scared` del propio mundo) 1.19→**1.50** (+26%), severidad en esos
+> episodios 3.31→**2.90**; el REPARTO entre frentes NO cambia (ambos frentes atendidos a ≤40 m mientras
+> sep>60 m: 6.2%→6.5%; dist. al frente peor atendido 118.0→117.3 m). Lectura: la política aprendió EXACTAMENTE
+> lo que la habituación v2.4 exigía (el dron parado es un poste; embestir expulsa) y el agujero de la LÍNEA
+> ÚNICA queda sin explotar — coherente con run05 (el scriptado converge a la presa común y no ceba → sin
+> presión selectiva para partirse; solo el ~41% de los pasos de ESCOLTA tienen dos frentes reales).
+> CERTIFICACIÓN anti-proxy del Δ: la disuasión SUBE JUNTO A la bajada de muertes en los mismos episodios
+> (defensa real); el patrón proxy habría sido deter↑ con severidad plana. **Artefactos:** /data/drones/run01/
+> (model.zip = FINAL, 40 checkpoints, train.log con 80 evals + pacto en cabecera, config/summary,
+> eval_model.json, checkpoints/eval_mappo_drones_18998784_steps.json, comportamiento_run01.json,
+> comportamiento_stdout.log). **Siguiente (decisión del usuario):** aceptar el FINAL (20M) como coordinador
+> MARL v1 / más presupuesto (`--resume`; la curva no estaba plana) / co-evolución lobos-drones / fase YOLO.
 >
 > **Patch — MARL de DRONES: INFRAESTRUCTURA MAPPO/CTDE residual sobre la barrera, construida y con el SUELO
 > verificado (2026-07-18, 2ª — SIN run serio).** Toda la fontanería de la fase de drones, sobre el SB3 PINNEADO
