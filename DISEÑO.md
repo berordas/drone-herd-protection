@@ -5,7 +5,7 @@
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
 >
-> **Última actualización: 2026-07-18** · *DESENLACE run05 (Nivel B): la guardia de ESTANCAMIENTO saltó a 4.2M — **el CEBO NO EMERGE con recompensa de equipo pura**. Ligeras de fase 2 oscilando 2.50-3.10 alrededor del suelo (~2.90) sin tendencia; 100 semillas: ckpt 4M Δ −0.07/−0.11 · ckpt 3.5M Δ +0.06/−0.11 (≈ suelo 2.74/2.83). El diagnóstico de COMPORTAMIENTO (`rl/cebo_diag.py`) da el veredicto limpio: **killer-no-detectado 0.0% y cebo puro 0.0% en ambos checkpoints = LA MISMA nula del scriptado** — ni una sola muerte desde el frente no visto; δ cambió el comportamiento pero hacia ruido/erosión, no hacia cebo. Lectura estructural: el cebo es una desviación coordinada y temporalmente extendida con un VALLE de recompensa en medio (un cebo a medias quita quórum antes de dar nada) — la exploración gaussiana por-paso no lo encuentra. Siguientes pasos (decisión del usuario): pista al cebo / control de formación (Nivel B avanzado) / co-evolución / pasar al MARL contra 2.74/0/2.82.*
+> **Última actualización: 2026-07-18 (2ª)** · *INFRAESTRUCTURA del MARL de DRONES construida y verificada (SIN run serio): MAPPO/CTDE **sobre el SB3 pinneado** (sin deps nuevas) — actor compartido descentralizado (obs LOCAL por PUESTO, 131: lobos solo DETECTADOS + ego + pista del waypoint base) + crítico centralizado (obs GLOBAL privilegiada = rl.obs.build_obs, 122) enrutados por `SplitMlpExtractor`; AGENTE = PUESTO de barrera (los relevos no rompen la identidad); residual δ sobre el waypoint de la barrera v2.6 VIVA dentro, con máscara load-bearing (ACTIVE&~inv&~hold); recompensa global (−1/muerte) + local (disuasión atribuida, `deter_credit`) POR SEPARADO (anti-proxy, estilo DE-MADDPG); 3 tipos de episodio. **SUELO VERIFICADO: δ=0 → 2.74/0.00/2.82 con Δ +0.00 exacto (100 semillas)**; rl_env_check test 10 nuevo (suelo bit a bit episodio completo + máscara + canal); verja 7/7; smoke 2 fases ~880 fps-agente. El run serio = siguiente decisión.* *(1ª de hoy: DESENLACE run05 — el cebo NO emerge con recompensa de equipo pura; cebo_diag 0.0% = nula del scriptado.)* **el CEBO NO EMERGE con recompensa de equipo pura**. Ligeras de fase 2 oscilando 2.50-3.10 alrededor del suelo (~2.90) sin tendencia; 100 semillas: ckpt 4M Δ −0.07/−0.11 · ckpt 3.5M Δ +0.06/−0.11 (≈ suelo 2.74/2.83). El diagnóstico de COMPORTAMIENTO (`rl/cebo_diag.py`) da el veredicto limpio: **killer-no-detectado 0.0% y cebo puro 0.0% en ambos checkpoints = LA MISMA nula del scriptado** — ni una sola muerte desde el frente no visto; δ cambió el comportamiento pero hacia ruido/erosión, no hacia cebo. Lectura estructural: el cebo es una desviación coordinada y temporalmente extendida con un VALLE de recompensa en medio (un cebo a medias quita quórum antes de dar nada) — la exploración gaussiana por-paso no lo encuentra. Siguientes pasos (decisión del usuario): pista al cebo / control de formación (Nivel B avanzado) / co-evolución / pasar al MARL contra 2.74/0/2.82.*
 >
 > **CIERRE de la primera campaña RL de lobos (runs 01–03) — la ablación completa, breve y factual:**
 > **run01** (rala pura, de cero) ABORTADO a 2,48M: 1 muerte espontánea en ~2.400 episodios, 0 señal · **run02**
@@ -108,9 +108,16 @@
 > 10M, /data/wolves/run05_nivelB; guardias suelo 2.4 (≥1M, fase 2) y estancamiento a ~4M (~2.8); suelo v2.6 grouped
 > verificado 2.74/2.83 (+0.00/+0.01); `rl/cebo_diag.py` NUEVO (nula del scriptado: 0.0% cebo puro / 0.0% killer no
 > detectado; no-anclado 46.1% post-fusión; 25.6% de pasos con un solo grupo visto) ·
-> `<este commit>` docs: DESENLACE run05 — guardia de ESTANCAMIENTO saltó a 4.2M (ligeras 2.50-3.10 ≈ suelo 2.90 sin
+> `f5c0d8a` docs: DESENLACE run05 — guardia de ESTANCAMIENTO saltó a 4.2M (ligeras 2.50-3.10 ≈ suelo 2.90 sin
 > tendencia); 100 semillas: 4M Δ −0.07/−0.11 · 3.5M Δ +0.06/−0.11; cebo_diag 0.0%/0.0% en ambos = nula del scriptado
-> (ni una muerte desde el frente no visto); el cebo NO emerge con recompensa pura — siguiente movimiento = usuario.
+> (ni una muerte desde el frente no visto); el cebo NO emerge con recompensa pura — siguiente movimiento = usuario ·
+> `<este commit>` INFRA MARL de DRONES (sin run serio): rl/drone_obs.py (obs por PUESTO: local 131 con lobos solo
+> DETECTADOS + ego + pista base; global privilegiada = build_obs) + rl/residual_drone_coordinator.py (barrera v2.6
+> viva dentro, δ enmascarada ACTIVE&~inv&~hold, model=None⇒suelo) + rl/drone_env.py (DroneTeamEnv 3 kinds, recompensa
+> global+local por separado, TeamUnstackVecEnv M mundos→4M streams) + rl/train_drones.py (MAPPO sobre SB3 pinneado:
+> SplitMlpExtractor π←local/V←global, 2 fases, init δ≡0 assert) + rl/drone_eval.py (arnés 100 semillas) + test 10 de
+> rl_env_check; SUELO verificado Δ +0.00 exacto (2.74/0/2.82); verja 7/7; smoke ~880 fps-agente; BIBLIOGRAFIA
+> +DE-MADDPG/escolta/COMA/difference/VDN/QMIX; sin dependencias nuevas.
 >
 > **Patch — run02 COMPLETADO (ablación desde-cero) + plan C CONSTRUIDO pero PARADO: la cuna BC no valida (2026-07-15).**
 > **run02 (shaping, 10M completos, ~3 h a ~920 fps):** ep_kills_mean del buffer 0.00→**0.35–0.40** (a 1M: 0.02; 3M: 0.16;
@@ -149,6 +156,55 @@
 > Artefactos en /data/wolves: demos/ (dataset+manifest+bc_model.zip+config), demos_v1_inconsistentes/ (histórico del
 > diagnóstico), run02/eval_final_10M.json + eval_best_5.5M.json. Verja tras el plan C: rl_env_check 8/8 + face_check +
 > wolf_controller_check verdes (los checks 1–8 intactos; el código nuevo no toca env/mundo/obs).
+>
+> **Patch — MARL de DRONES: INFRAESTRUCTURA MAPPO/CTDE residual sobre la barrera, construida y con el SUELO
+> verificado (2026-07-18, 2ª — SIN run serio).** Toda la fontanería de la fase de drones, sobre el SB3 PINNEADO
+> (SIN dependencias nuevas — sin PettingZoo/BenchMARL: la API multi-agente se reduce al desapilador de abajo).
+> **Arquitectura (MAPPO, Yu et al. 2022, con la mecánica de SB3):** actor COMPARTIDO y DESCENTRALIZADO (una red π;
+> cada puesto la evalúa con SU obs local) + crítico CENTRALIZADO (CTDE): la obs por agente es COMPUESTA
+> [local_i (131) ‖ global privilegiada (122)] y `SplitMlpExtractor` (rl/train_drones.py) enruta — π ve solo la
+> mitad local, V la global; en ejecución solo se usa π ⇒ descentralizada de verdad. La global del crítico
+> REUTILIZA `rl.obs.build_obs` (122: lobos por verdad-terreno incl. NO detectados — privilegio legítimo del
+> entrenamiento centralizado). **AGENTE = PUESTO de barrera** (asiento k=0..3 = k-ésimo dron EN ESTACIÓN,
+> ACTIVE∪STRANDED por índice; `seats()`): el puesto persiste aunque el relevo cambie el dron físico — con política
+> compartida el intercambio es benigno; esquiva el problema del "agente que se va a cargar a mitad de episodio".
+> **Obs local por puesto (`rl/drone_obs.py`, 131, layout con índices en su docstring):** EGO (pos/vel/is_active/
+> commandable + el WAYPOINT BASE que la barrera propone — la pista de la intención de la base: la histéresis del
+> ancla v2.6 y la fase de patrulla son estado oculto, lección del plan C) · 5 slots de LOBO solo si DETECTADO
+> (criterio DRI compartido del mundo, `detected_mask` — la verdad-terreno NO viaja en la local) · vacas · terneros ·
+> roster de drones · [reses, reloj, nº detectados]. SIN batería, SIN corzos (su efecto llega vía is_active/
+> investigating de los compañeros). **Controlador (`rl/residual_drone_coordinator.py`):** la BARRERA v2.6 VIVE
+> DENTRO (ReactiveCoordinator intacto) y la red aprende δ ADITIVA al waypoint por puesto (escala def.
+> DETER_RADIUS=20 m, flag), aplicada SOLO a los drones COMANDABLES — **máscara LOAD-BEARING**
+> (ACTIVE&~investigating&~relief_hold): el reconocimiento mostró que el mundo solo protege al investigador y al
+> relevo (world._apply_drone_actions); un δ sobre un RETURNING lo desviaría y rompería el ciclo de carga. Con
+> model=None y sin δ, `act()` DELEGA sin tocar un float = SUELO por construcción. Sin SyncedReactiveCoordinator:
+> este coordinador ES a quien llama el arnés (se auto-sincroniza con countdown, frontera de 5 pasos como toda la
+> fase RL). **Env (`rl/drone_env.py`):** `DroneTeamEnv` gym.Env CONJUNTO (un mundo, obs/acción de los 4 puestos
+> apiladas → SubprocVecEnv(fork) sirve TAL CUAL) + `TeamUnstackVecEnv` (M mundos → 4M streams por-agente para el
+> PPO = parameter sharing). Episodios de los TRES tipos (lobos/mixto/corzos ~1/3 — en corzos se aprende a NO
+> malgastar), semilla fresca por reset; adversario = ScriptedWolfController v2.6 (default del World).
+> **Recompensa (estilo DE-MADDPG, Sheikh & Bölöni 2020 — arXiv:2003.10598, escolta defensiva con recompensa
+> individual+equipo; BIBLIOGRAFIA.md ampliada con COMA/difference rewards/VDN/QMIX como DESCARTADAS por
+> sobre-ingeniería):** GLOBAL compartida −1×Δ(n_depredadas) + LOCAL por puesto (+local_coef=0.01 por (lobo,paso)
+> expulsado atribuido al dron del puesto — `deter_credit`, la regla del mundo (huye del dron ACTIVE acercándose
+> más cercano) recomputada determinista del estado expuesto, medio paso después, SIN tocar el mundo). Las DOS
+> componentes van POR SEPARADO en info y en train.log (ep_sev / ep_deter) — VIGILANCIA ANTI-PROXY: la vara es la
+> severidad del arnés, nunca la recompensa. **Entrenador (`rl/train_drones.py`):** hiperparámetros y receta de la
+> fase de lobos (HYPER/NET_ARCH [256,256] importados), init δ≡0 EXACTO verificado por assert + log_std −2, DOS
+> FASES (fase 1 solo-crítico con π congelada), TrainLog/LightEval adaptados a SEVERIDAD (MENOS=mejor — ¡signo
+> contrario a los lobos!; guardia de EROSIÓN en ABORT_NOTE_DRONES; el pacto del run serio se fijará al lanzarlo).
+> Contabilidad: num_timesteps = pasos-AGENTE (mundo ≈ /4). **Evaluador (`rl/drone_eval.py`):** el arnés de siempre
+> (`evaluate(coordinator_factory=...)`, 100 semillas, CONFIG_V2) con referencias de los artefactos vigentes.
+> **VERIFICADO (contenedor):** SUELO 100 semillas δ=0 → **2.74 / 0.00 / 2.82 con Δ +0.00 EXACTO en los tres
+> tipos** (= la barrera bit a bit por el camino residual) · rl_env_check **test 10** NUEVO (a: layout/percepción
+> —un lobo NO detectado no viaja—, b: suelo bit a bit episodio completo, c: máscara —δ enorme no desvía a un
+> RETURNING ni al investigador—, d: canal de recompensa —Σr_global == −muertes exacto, componentes separadas— +
+> atribución dirigida) · verja completa 7/7 verde · smoke MAPPO (init 0 exacto, 2 fases, ~880 fps-agente, fase 1
+> clavada en el suelo en la eval ligera). **Decisión de diseño registrada:** la idea de §3.2 ("empezar con
+> acciones DISCRETAS para el MARL") queda SUPERADA por la δ continua sobre el waypoint de la barrera — el residual
+> necesita corrección fina y el suelo lo garantiza la barrera, no la discretización. PARADO en infra verificada:
+> el run serio (pacto de guardias incluido) es el siguiente paso, decisión del usuario.
 >
 > **Patch — DESENLACE run05: la guardia de ESTANCAMIENTO saltó a 4.2M — el CEBO NO EMERGE con recompensa de equipo
 > pura, y el diagnóstico de comportamiento lo confirma con un CERO limpio (2026-07-18).** El run fue impecable

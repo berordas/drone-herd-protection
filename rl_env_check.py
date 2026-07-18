@@ -32,6 +32,16 @@ comprueba (asserts, estilo de los demás checks; corre con `python rl_env_check.
      SCRIPT con su histéresis, NO la regla del contrato RL); con δ desbocado la velocidad
      final queda capada a wolf_speed; en coasting δ NO se aplica (pass-through); la obs
      residual es (132) con la pista del script a 0 en la primera frontera y viva después.
+ 10) DRONES (infra MARL, rl/drone_obs|drone_env|residual_drone_coordinator):
+     (a) build_drone_local_obs: layout/máscaras/ego correctos; un lobo NO detectado NO viaja
+         en la obs local (slot a cero); la mitad global del agente == rl.obs.build_obs exacta;
+     (b) SUELO: con δ≡0 (model=None, sin set_delta) ResidualDroneCoordinator ≡ ReactiveCoordinator
+         BIT A BIT en un episodio completo (waypoints, drones y muertes idénticos);
+     (c) MÁSCARA (load-bearing): un δ enorme NO desvía a un RETURNING (fuera de los asientos)
+         ni al investigador (mask), y SÍ mueve a los comandables;
+     (d) CANAL DE RECOMPENSA: r_global acumulada == −n_depredadas EXACTO; agent_rewards =
+         r_global + local_coef·r_local por puesto; ep_severity/ep_deter al terminal; y la
+         atribución de disuasión (deter_credit) da crédito al dron que EMBISTE (dirigido).
 """
 
 import json
@@ -495,6 +505,115 @@ def test_residual():
     print("  OK\n")
 
 
+def test_drones():
+    print("=== 10) DRONES (infra MARL): obs por puesto · SUELO δ=0 bit a bit · máscara · recompensa ===")
+    from baseline import build_world
+    from coordinators import ReactiveCoordinator
+    from world import ACTIVE, RETURNING, World
+    from rl.drone_obs import (AGENT_OBS_SIZE, LOCAL_SIZE, N_SEATS, OFF_COW, OFF_DRONE, OFF_EGO,
+                              OFF_LGLOBAL, OFF_WOLF, build_drone_agent_obs, build_drone_local_obs)
+    from rl.drone_env import DroneTeamEnv, deter_credit
+    from rl.obs import build_obs
+    from rl.residual_drone_coordinator import ResidualDroneCoordinator
+
+    # (a) LAYOUT + percepción: lobo detectado viaja; lobo NO detectado NO; ego/global correctos.
+    for s in range(1, 15):                                        # primer seed con >=3 lobos (determinista)
+        w = build_world(s, "lobos"); w.reset()
+        if w.n_wolves >= 3:
+            break
+    d0 = int(np.where(w.drone_state == ACTIVE)[0][0])
+    w.wolves[0] = w.drones[d0] + np.array([30.0, 0.0])            # DETECTADO (30 m <= r_detect)
+    far = np.array([3.0, 3.0]) if np.linalg.norm(w.drones - [3, 3], axis=1).min() > w.r_detect + 5 \
+        else np.array([297.0, 297.0])
+    for j in range(1, w.n_wolves):
+        w.wolves[j] = far + np.array([float(j), 0.0])             # NO detectados (esquina lejana)
+    base_wp = np.array([150.0, 150.0])
+    lo = build_drone_local_obs(w, d0, base_wp)
+    center, scale = w.safe_zone[:2], np.array([w.W / 2, w.H / 2])
+    assert lo.shape == (LOCAL_SIZE,) and lo.dtype == np.float32
+    assert np.allclose(lo[OFF_EGO:OFF_EGO + 2], (w.drones[d0] - center) / scale), "ego pos mal"
+    assert lo[OFF_EGO + 4] == 1.0 and lo[OFF_EGO + 5] == 1.0, "ego is_active/commandable mal"
+    assert np.allclose(lo[OFF_EGO + 6:OFF_EGO + 8], (base_wp - center) / scale), "pista base_wp mal"
+    s0 = lo[OFF_WOLF:OFF_WOLF + 6]
+    assert s0[5] == 1.0 and np.allclose(s0[0:2], (w.wolves[0] - center) / scale), "lobo detectado ausente"
+    for j in range(1, w.n_wolves):
+        assert not lo[OFF_WOLF + 6 * j:OFF_WOLF + 6 * (j + 1)].any(), \
+            "FALLO: un lobo NO detectado viaja en la obs local (omnisciencia)"
+    ag = build_drone_agent_obs(w, d0, base_wp)
+    assert ag.shape == (AGENT_OBS_SIZE,) and np.array_equal(ag[:LOCAL_SIZE], lo)
+    assert np.array_equal(ag[LOCAL_SIZE:], build_obs(w)), "la mitad global no es build_obs exacta"
+    print("  (a) layout OK: ego+pista, lobo detectado presente, %d no-detectados a cero, global == build_obs"
+          % (w.n_wolves - 1))
+
+    # (b) SUELO: δ≡0 ⇒ bit a bit la barrera, episodio COMPLETO (mundos gemelos).
+    wA = build_world(5, "mixto"); wA.reset(); cA = ReactiveCoordinator(wA)
+    wB = build_world(5, "mixto"); wB.reset(); cB = ResidualDroneCoordinator(wB, model=None)
+    steps = 0
+    while True:
+        a = cA.act(wA.get_observation()); b = cB.act(wB.get_observation())
+        assert np.array_equal(a, b), "FALLO suelo: waypoints difieren en el paso %d" % steps
+        _, _, tA, uA, _ = wA.step(a)
+        _, _, tB, uB, _ = wB.step(b)
+        assert np.array_equal(wA.drones, wB.drones) and (tA, uA) == (tB, uB)
+        steps += 1
+        if tA or uA:
+            break
+    assert wA.n_depredadas == wB.n_depredadas and wA.status == wB.status
+    print("  (b) SUELO δ=0 ≡ barrera BIT A BIT: %d pasos, status=%s, muertes=%d idénticos"
+          % (steps, wB.status, wB.n_depredadas))
+
+    # (c) MÁSCARA load-bearing: δ enorme NO toca RETURNING/investigador; SÍ mueve comandables.
+    w = build_world(2, "lobos"); w.reset()
+    ctrl = ResidualDroneCoordinator(w, model=None)
+    w.drone_state[1] = RETURNING                                   # fuera de estación (fuera de asientos)
+    w.drone_investigating[2] = True                                # ACTIVE pero el reflejo manda
+    base = ctrl.act(None).copy()                                   # sin δ: barrera pura
+    ctrl.set_delta(np.full((N_SEATS, 2), 500.0))
+    wp = ctrl.act(None)
+    assert np.array_equal(wp[1], base[1]), "FALLO máscara: δ desvió a un RETURNING (rompe la carga)"
+    assert np.array_equal(wp[2], base[2]), "FALLO máscara: δ desvió al investigador (reflejo manda)"
+    moved = [d for d in (0, 3) if not np.array_equal(wp[d], base[d])]
+    assert moved, "FALLO: δ no movió a ningún dron comandable"
+    assert (wp >= 0).all() and (wp[:, 0] <= w.W).all() and (wp[:, 1] <= w.H).all(), "δ fuera del campo"
+    print("  (c) máscara OK: RETURNING e investigador intactos; comandables movidos %s (clip al campo)" % moved)
+
+    # (d) CANAL DE RECOMPENSA: global == −Δmuertes exacto; componentes por separado; terminal.
+    env = DroneTeamEnv(kinds=("lobos",), seed=3)
+    obs, info = env.reset()
+    assert obs.shape == (N_SEATS * AGENT_OBS_SIZE,)
+    zero = np.zeros(N_SEATS * 2, dtype=np.float32)
+    tot_global = 0.0; tot_local = np.zeros(N_SEATS)
+    while True:
+        obs, r, term, trunc, info = env.step(zero)
+        tot_global += info["r_global"]; tot_local += info["r_local"]
+        ar = info["agent_rewards"]
+        assert ar.shape == (N_SEATS,)
+        assert np.allclose(ar, info["r_global"] + env._local_coef * info["r_local"]), \
+            "agent_rewards != global + local_coef·local"
+        if term or trunc:
+            break
+    wenv = env._world
+    assert tot_global == -float(wenv.n_depredadas), "FALLO: Σ r_global != -n_depredadas"
+    assert info["ep_severity"] == int(wenv.n_depredadas) and info["ep_deter"] == float(tot_local.sum())
+    print("  (d) canal OK: Σ r_global = %.0f == -muertes(%d) | ep_deter=%.0f (por separado, anti-proxy)"
+          % (tot_global, wenv.n_depredadas, info["ep_deter"]))
+
+    # (d2) atribución DIRIGIDA: un dron que EMBISTE a un lobo a tiro cobra el crédito de SU puesto.
+    w = World(seed=0, wolves_min=1, wolves_max=1); w.reset()
+    d0 = int(np.where(w.drone_state == ACTIVE)[0][0])
+    w.wolves[0] = w.drones[d0] + np.array([10.0, 0.0]); w.wolf_vel[0] = 0.0
+    w.drone_vel[d0] = np.array([15.0, 0.0])                        # embistiendo (aprox. 15 >> 1)
+    w.step(None)
+    assert w._wolf_scared[0], "el montaje no asustó al lobo"
+    ctrl = ResidualDroneCoordinator(w, model=None)
+    credit = deter_credit(w, ctrl.seats())
+    seat = int(np.where(ctrl.seats() == d0)[0][0])
+    assert credit[seat] >= 1.0 and credit.sum() == credit[seat], \
+        "FALLO: el crédito de disuasión no fue al puesto del dron que embiste"
+    print("  (d2) atribución dirigida OK: lobo expulsado -> crédito al puesto %d (dron %d)" % (seat, d0))
+    print("  OK\n")
+
+
 if __name__ == "__main__":
     test_formas_y_mascaras()
     test_determinismo()
@@ -505,4 +624,5 @@ if __name__ == "__main__":
     test_equivalencia_env_controlador()
     test_shaping_potencial()
     test_residual()
+    test_drones()
     print("rl_env_check: TODO OK.")

@@ -34,7 +34,34 @@ Toda decisión "porque lo dice un paper" entra AQUÍ **antes** de implementarse,
   Implementations.* JMLR 22(268). — **Se usa para:** la implementación de PPO (política, buffer,
   VecEnv) usada en rl/.
 - **Towers, M., et al. (2024).** *Gymnasium.* arXiv:2407.17032. — **Se usa para:** el envoltorio
-  single-agent del env de lobos (`WolfPackEnv`).
+  single-agent del env de lobos (`WolfPackEnv`) y el env conjunto de drones (`DroneTeamEnv`).
+- **Sheikh, H. U., & Bölöni, L. (2020).** *Multi-Agent Reinforcement Learning for Problems with
+  Combined Individual and Team Reward.* arXiv:2003.10598 (DE-MADDPG). — **Se usa para:** la
+  RECOMPENSA del MARL de drones: componente GLOBAL de equipo (−1/res muerta, compartida) +
+  componente LOCAL por dron (disuasión atribuida), el marco "individual + team reward"
+  demostrado precisamente en un problema de ESCOLTA DEFENSIVA. Nosotros lo SIMPLIFICAMOS:
+  un solo crítico centralizado MAPPO y la componente local sumada a la recompensa del stream
+  (sin el doble crítico global/local de DE-MADDPG — descartado por sobre-ingeniería con 4
+  agentes; las componentes se registran POR SEPARADO en el log, vigilancia anti-proxy).
+- **Sheikh, H. U., & Bölöni, L. (2020).** *Designing a Multi-Objective Reward Function for
+  Creating Teams of Robotic Bodyguards Using Deep Reinforcement Learning* / *Defensive Escort
+  Teams via Multi-Agent Deep RL.* arXiv:1910.04537. — **Se usa para:** precedente DIRECTO del
+  problema (equipo que aprende la FORMACIÓN alrededor de un bien a proteger frente a amenazas
+  móviles) — el análogo publicado de nuestra barrera aprendida. *(título exacto: verificar al
+  citar en la memoria)*
+- **Foerster, J., Farquhar, G., Afouras, T., Nardelli, N., & Whiteson, S. (2018).**
+  *Counterfactual Multi-Agent Policy Gradients (COMA).* AAAI 2018; arXiv:1705.08926. — **Se usa
+  para:** referencia de CREDIT ASSIGNMENT contrafactual — CONSIDERADA Y DESCARTADA por
+  sobre-ingeniería: con 4 puestos y la componente local de disuasión ya hay señal por-agente;
+  la ablación con/sin componente local es el sustituto barato del contrafactual.
+- **Wolpert, D. H., & Tumer, K. (2002).** *Optimal Payoff Functions for Members of Collectives.*
+  (difference rewards). — **Se usa para:** la idea madre del crédito por diferencia ("¿qué
+  cambia si este agente no actúa?"); mismo veredicto que COMA: descartada, la registra la
+  bibliografía como contexto del diseño de recompensa. *(año/venue: verificar al citar)*
+- **Sunehag, P., et al. (2018).** *Value-Decomposition Networks (VDN).* arXiv:1706.05296 ·
+  **Rashid, T., et al. (2018).** *QMIX.* arXiv:1803.11485. — **Se usa para:** familia de
+  DESCOMPOSICIÓN DE VALOR del CTDE — descartadas (son para Q-learning discreto; nuestro CTDE va
+  por crítico centralizado de política, MAPPO — ver Yu et al. 2022 abajo, ya consolidado).
 
 ## Fase de mundo (consolidadas desde DISEÑO.md §12; URLs pendientes de verificación)
 
