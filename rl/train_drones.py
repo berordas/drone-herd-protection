@@ -11,8 +11,8 @@ Es el algoritmo MAPPO (Yu et al. 2022) implementado con la mecánica de SB3 (par
 RESIDUAL (RPL, la receta de run04/run05): acción = δ ∈ [-1,1]² × residual_scale (def.
 DETER_RADIUS=20 m) SUMADA al waypoint que propone la barrera; init δ≡0 EXACTO (última capa a
 cero, verificado por assert) + log_std −2; DOS FASES (fase 1 solo-crítico con π congelada —
-las evals ligeras deben CLAVARSE en el SUELO ~2.90 (10 semillas lobos) / 2.74/2.82 (arnés) —,
-fase 2 PPO). Con δ≡0 el coordinador ES la barrera (rl_env_check test 10).
+las evals ligeras deben CLAVARSE en el SUELO 2.80 (ligera 5 lobos+5 mixto) / 2.74/2.82
+(arnés) —, fase 2 PPO). Con δ≡0 el coordinador ES la barrera (rl_env_check test 10).
 
 MÉTRICA: SEVERIDAD (muertes/episodio) — MENOS = MEJOR (¡signo contrario a los lobos!). El
 éxito es BAJAR de 2.74/2.82 (barrera v2.6) en el arnés de 100 semillas (rl/drone_eval.py).
@@ -51,12 +51,20 @@ from rl.residual_drone_coordinator import DRONE_RESIDUAL_SCALE_DEFAULT, Residual
 from rl.train_wolves import HYPER, NET_ARCH, RESIDUAL_LOG_STD_INIT   # mismos hiperparámetros base
 
 ABORT_NOTE_DRONES = (
-    "CRITERIOS (infra MARL de drones — el pacto del run serio se fijará al lanzarlo): el SUELO "
-    "es la barrera v2.6 (2.74/0/2.82 en el arnés; ~2.90 en la eval ligera de 10 semillas lobos). "
-    "En FASE 1 (solo-crítico, δ=0) las evals ligeras deben CLAVARSE en el suelo. El ÉXITO es "
-    "BAJAR la severidad con claridad (menos = mejor — ¡signo contrario a los lobos!); una ligera "
-    "SOSTENIDA por encima de ~3.2 en fase 2 = PPO EROSIONANDO la barrera (parar y reportar). "
-    "La recompensa (global+local) es el vehículo; la vara es la SEVERIDAD del arnés (anti-proxy).")
+    "PACTO run01 (guardias INVERTIDAS — MENOS severidad = MEJOR, ¡signo contrario a los lobos!): "
+    "el SUELO es la barrera v2.6 (2.74/0/2.82 en el arnés; eval ligera 10 eps 5 lobos+5 mixto "
+    "con δ=0 = 2.80 EXACTO, detalle [3,0,3,4,4 | 4,0,3,2,5]). FASE 1 (solo-crítico, δ medio 0): "
+    "las ligeras deben CLAVARSE en ese suelo. GUARDIA DE EROSIÓN: ligera SOSTENIDA por encima "
+    "de ~2.9 en fase 2 durante ≥1,5M pasos-agente → PARAR y reportar (la red estropea la "
+    "barrera; palancas —bajar lr / alargar fase 1— = decisión del usuario). GUARDIA ANTI-PROXY "
+    "(el riesgo asumido con la recompensa local): si ep_deter SUBE pero ep_sev NO baja (o "
+    "empeora) de forma sostenida ≥2M pasos-agente → PARAR y avisar (la política cultiva el "
+    "proxy: perseguir lobos rompiendo la barrera; mitigación —quitar la componente local y "
+    "seguir con recompensa global pura— = decisión del usuario); cada eval ligera imprime el "
+    "buffer (ep_sev, ep_deter) para esta vigilancia. SIN aborto por estancamiento: el suelo es "
+    "útil (δ≈0 = la barrera); no bajar de 2.74/2.82 NO es fracaso catastrófico. ÉXITO = bajar "
+    "la severidad de forma CLARA y SOSTENIDA; la vara final es el arnés de 100 semillas "
+    "(rl/drone_eval.py), no la recompensa.")
 
 
 # ------------------------------------------------------------------ #
@@ -155,17 +163,20 @@ class TrainLog(BaseCallback):
 
 
 class LightEval(BaseCallback):
-    """Eval ligera DETERMINISTA cada eval_every pasos(agente): 10 semillas kind=lobos con el
-    arnés real (build_world + run_episode_metrics) y el coordinador residual sirviendo el
-    modelo EN TRAINING. Reporta SEVERIDAD (menos = mejor; suelo ≈ 2.90 en estas 10)."""
+    """Eval ligera DETERMINISTA cada eval_every pasos(agente): 10 semillas FIJAS de lobos+mixto
+    (5+5, arnés real build_world + run_episode_metrics) con el coordinador residual sirviendo el
+    modelo EN TRAINING. Reporta SEVERIDAD (menos = mejor; suelo δ=0 = 2.80 EXACTO, detalle
+    [3,0,3,4,4 | 4,0,3,2,5]) y el buffer (ep_sev, ep_deter) del TrainLog en cada línea — la
+    vigilancia ANTI-PROXY del pacto se lee eval a eval."""
 
-    EVAL_SEEDS_LIGHT = tuple(range(10))
+    EVAL_SPECS = tuple((s, "lobos") for s in range(5)) + tuple((s, "mixto") for s in range(5))
 
-    def __init__(self, path: Path, eval_every: int, residual_scale):
+    def __init__(self, path: Path, eval_every: int, residual_scale, train_log: "TrainLog | None" = None):
         super().__init__()
         self.path = Path(path)
         self.every = int(eval_every)
         self.residual_scale = residual_scale
+        self.train_log = train_log
         self._next = self.every
 
     def _on_step(self) -> bool:
@@ -175,14 +186,20 @@ class LightEval(BaseCallback):
         from baseline import build_world, run_episode_metrics
         t0 = time.time()
         sev = []
-        for s in self.EVAL_SEEDS_LIGHT:
-            w = build_world(s, "lobos")
+        for s, kind in self.EVAL_SPECS:
+            w = build_world(s, kind)
             coord = ResidualDroneCoordinator(w, model=self.model,
                                              residual_scale=self.residual_scale)
             sev.append(run_episode_metrics(w, coord)["n_depredadas"])
+        lob, mix = sev[:5], sev[5:]
+        buf = ""
+        if self.train_log is not None and self.train_log._sev:
+            buf = (f"  buffer: ep_sev={np.mean(self.train_log._sev[-100:]):.2f} "
+                   f"ep_deter={np.mean(self.train_log._det[-100:]):.1f}")
         line = (f"[{datetime.now().isoformat(timespec='seconds')}] EVAL_LIGERA pasos={self.num_timesteps:>11,}  "
-                f"severidad_media={np.mean(sev):.2f}  (n=10 semillas lobos, determinista; MENOS=mejor; "
-                f"suelo~2.90; detalle={sev}; {time.time() - t0:.0f}s)")
+                f"severidad_media={np.mean(sev):.2f}  (lobos {np.mean(lob):.2f} | mixto {np.mean(mix):.2f}; "
+                f"n=10 determinista; MENOS=mejor; suelo=2.80; detalle={sev}; "
+                f"{time.time() - t0:.0f}s){buf}")
         print("  " + line)
         with open(self.path, "a", encoding="utf-8") as f:
             f.write(line + "\n")
@@ -282,7 +299,7 @@ def main() -> None:
                 f"MAPPO residual scale={scale} local_coef={args.local_coef} lr={hyper['learning_rate']} "
                 f"fase1={args.phase1_steps:,} outdir={outdir}")
     train_log = TrainLog(outdir / "train.log", run_desc, ABORT_NOTE_DRONES)
-    light_eval = LightEval(outdir / "train.log", args.eval_every, scale)
+    light_eval = LightEval(outdir / "train.log", args.eval_every, scale, train_log=train_log)
     checkpoints = CheckpointCallback(save_freq=max(500_000 // venv.num_envs, 1),
                                      save_path=str(outdir / "checkpoints"), name_prefix="mappo_drones")
     callbacks = [train_log, light_eval, checkpoints]
