@@ -88,6 +88,16 @@ Toda decisión "porque lo dice un paper" entra AQUÍ **antes** de implementarse,
   v2.3→v2.4: lo que disuade es el disuasor ACTIVO que se echa encima; los depredadores se
   habitúan a postes/luces fijas). — **Se usa para:** el SUSTO POR MOVIMIENTO de v2.4.
   *(Cita formal pendiente — en DISEÑO está como razonamiento de diseño, sin fuente puntual.)*
+- **Distancia de inicio de fuga (FID, Flight Initiation Distance) en cánidos ante amenazas que
+  se aproximan** (ante una amenaza que se ACERCA el lobo huye a una distancia media del orden de
+  ~100 m, rango amplio ~17–310 m; a la vez, un disuasor ESTÁTICO al que el animal se habitúa aún
+  impone una zona mínima de incomodidad que NO cruza si lo tiene encima). — **Se usa para:** el
+  SUSTO DE DOS RADIOS de v2.7: expulsión por movimiento (radio grande, la huida de v2.4) + PARED
+  BLANDA estática (radio pequeño `STATIC_DETER_RADIUS`, mínimo que no se cruza ni con el dron
+  quieto; escalado al campo 300×300 — un radio real de ~100 m haría a los drones invencibles).
+  Reconcilia habituación (poste a distancia = ignorable) con obstáculo (poste encima = no se
+  cruza). *(Cifras FID de la literatura de comportamiento; cita puntual PENDIENTE de verificar
+  al pasar a la memoria — en DISEÑO como razonamiento de diseño con el rango numérico.)*
 - **Vídeo de ataque real de lobos a ganado.** — **Se usa para:** verosimilitud del
   comportamiento del paquete. *(Referencia/URL pendiente de recuperar — no consta en DISEÑO.md.)*
 - **Yu, C., et al. (2022).** *The surprising effectiveness of PPO in cooperative multi-agent

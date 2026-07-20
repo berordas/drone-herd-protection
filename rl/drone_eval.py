@@ -3,11 +3,12 @@
 La MISMA vara que Dummy/Reactive (apples-to-apples): `baseline.evaluate` con las MISMAS 100
 semillas, la MISMA CONFIG_V2 (v2.6 grouped) y los lobos SCRIPTADOS por defecto, cambiando SOLO
 el coordinador: `coordinator_factory=lambda w: ResidualDroneCoordinator(w, model=modelo)`.
-Referencias leídas de los artefactos VIGENTES del repo: Dummy (baseline_v2.json, 4.42/0/4.34)
-y Reactive (baseline_v2_reactive.json, 2.74/0/2.82 = el SUELO del residual y la nota a batir).
-SEVERIDAD: MENOS = MEJOR (signo contrario a eval_wolves).
+Referencias leídas de los artefactos VIGENTES del repo: Dummy (baseline_v2.json, v2.7 3.97/0/3.89)
+y Reactive (baseline_v2_reactive.json, v2.7 2.30/0/2.42 = el SUELO del residual y la nota a batir).
+SEVERIDAD: MENOS = MEJOR (signo contrario a eval_wolves). (run01 se midió sobre v2.6 con suelo
+2.74/0/2.82; v2.7 —susto de dos radios— re-mide: el MARL se reentrenará sobre esta nota.)
 
---floor: modelo None ⇒ δ≡0 ⇒ el coordinador ES la barrera → debe reproducir 2.74/0/2.82
+--floor: modelo None ⇒ δ≡0 ⇒ el coordinador ES la barrera → debe reproducir la Reactive vigente (v2.7 2.30/0/2.42)
 (verificación del cableado; si sale lejos, algo está mal — máscara/asientos/sincronía).
 
 Uso (dentro del contenedor):

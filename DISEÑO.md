@@ -5,7 +5,7 @@
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
 >
-> **Última actualización: 2026-07-18 (3ª)** · ***RUN01 del MARL de DRONES COMPLETADO (20M pasos-agente, ~5,5 h): EL MARL BATE LA BARRERA — el primer coordinador que baja del suelo.** 100 semillas (arnés canónico): modelo FINAL (20M) **2.35±1.33 / 0.00 / 2.34±1.42** → Δ **−0.39/−0.48** vs barrera 2.74/0/2.82 (~2,8–3,4 SEM); mejor ckpt por ligeras (18,99M) 2.41/0/2.42 (Δ −0.33/−0.40) — ROBUSTO al checkpoint; n_safe 4.16/4.06→4.54/4.54; vs Dummy −2.01/−1.92. Guardias del pacto (`c215689`) JAMÁS disparadas: fase 1 clavada en el suelo de la ligera (2.80 EXACTO, detalle idéntico ×4), cero evals >2.9 en fase 2 (sin erosión), patrón proxy nunca presente (la disuasión osciló mientras la severidad bajaba). DIAGNÓSTICO de comportamiento (58 episodios GEMELOS de 2 frentes, suelo vs política): el Δ es **MOVERSE PARA DISUADIR** — rapidez ACTIVE 3.76→4.39 m/s (+17%), lobos huyendo/paso 1.19→1.50 (+26%), severidad 2-frentes 3.31→2.90 — y NO repartirse entre frentes (ambos atendidos 6.2%→6.5%, idéntico): la política vence la HABITUACIÓN v2.4; el agujero de la línea única queda sin explotar (coherente con run05: el scriptado no ceba → sin presión selectiva). La mejora seguía CRECIENDO al agotar el presupuesto (evals >18M: media 2.125). Siguiente = decisión del usuario: aceptar el FINAL como coordinador MARL v1 / más presupuesto (--resume) / co-evolución / YOLO.* *(2ª de hoy: INFRA MARL construida y verificada — suelo δ=0 Δ +0.00 exacto, test 10, sin deps nuevas. 1ª: DESENLACE run05 — el cebo NO emerge con recompensa de equipo pura; cebo_diag 0.0% = nula del scriptado; el cebo es una desviación coordinada temporalmente extendida con valle de recompensa en medio que la exploración por-paso no muestrea.)*
+> **Última actualización: 2026-07-19** · ***v2.7: SUSTO DE DOS RADIOS (RE-CONGELADO tag `v2.7-baseline`).** Cambio de FÍSICA del susto: se mantiene la EXPULSIÓN por movimiento de v2.4 (radio grande `DETER_RADIUS`=20) y se AÑADE una **PARED BLANDA** estática (radio pequeño `STATIC_DETER_RADIUS`=10): un dron ACTIVE **quieto** a corta ya NO se cruza (repulsión radial que frena/desvía, `_wolf_walled`) y **no deja matar a través**; un poste a distancia se sigue ignorando (habituación) y mover sigue siendo ESTRICTAMENTE mejor (radio mayor + expulsión plena). Fiel a los datos de fuga (FID ~106 m, escalado). RE-MEDIDO (metro DGX, 100/tipo): Dummy 4.42/0/4.34 → **3.97/0/3.89** (Δ −0.45/−0.45: los drones clavados repelen a corta), Reactive 2.74/0/2.82 → **2.30/0/2.42** (Δ −0.44/−0.40: la barrera se hace pared). El margen Reactive−Dummy se mantiene (−1.67/−1.47); es MEDIDA, no objetivo. face_check 12/12 bit a bit (susto gateado por escort_enabled en combate) + `test_pared_estatica` dirigido nuevo (cobertor bloquea la matanza / lejano no / embestida expulsa más). **INVALIDA la baseline del MARL de drones run01** (medido sobre v2.6, barrera atravesable): run01 = histórico; el MARL se reentrenará sobre v2.7 (nota a batir 2.30/0/2.42) en fase posterior — NO reentrenado aquí. Motivación: la barrera atravesable quitaba presión selectiva al CEBO (no había que engañar una pared que se cruza).* *(2026-07-18 3ª: RUN01 del MARL de DRONES COMPLETADO — EL MARL BATE LA BARRERA v2.6.** 100 semillas: modelo FINAL (20M) **2.35±1.33 / 0.00 / 2.34±1.42** → Δ **−0.39/−0.48** vs barrera 2.74/0/2.82; mejor ckpt (18,99M) 2.41/0/2.42 (Δ −0.33/−0.40). Guardias del pacto JAMÁS disparadas; DIAGNÓSTICO: el Δ es **MOVERSE PARA DISUADIR** (rapidez ACTIVE +17%, lobos huyendo/paso +26%) y NO repartirse entre frentes (6.2%→6.5%): vence la HABITUACIÓN v2.4. La mejora seguía creciendo (evals >18M media 2.125).* *(2ª: INFRA MARL construida y verificada. 1ª: run05 — el cebo NO emerge con recompensa de equipo pura.)* 100 semillas (arnés canónico): modelo FINAL (20M) **2.35±1.33 / 0.00 / 2.34±1.42** → Δ **−0.39/−0.48** vs barrera 2.74/0/2.82 (~2,8–3,4 SEM); mejor ckpt por ligeras (18,99M) 2.41/0/2.42 (Δ −0.33/−0.40) — ROBUSTO al checkpoint; n_safe 4.16/4.06→4.54/4.54; vs Dummy −2.01/−1.92. Guardias del pacto (`c215689`) JAMÁS disparadas: fase 1 clavada en el suelo de la ligera (2.80 EXACTO, detalle idéntico ×4), cero evals >2.9 en fase 2 (sin erosión), patrón proxy nunca presente (la disuasión osciló mientras la severidad bajaba). DIAGNÓSTICO de comportamiento (58 episodios GEMELOS de 2 frentes, suelo vs política): el Δ es **MOVERSE PARA DISUADIR** — rapidez ACTIVE 3.76→4.39 m/s (+17%), lobos huyendo/paso 1.19→1.50 (+26%), severidad 2-frentes 3.31→2.90 — y NO repartirse entre frentes (ambos atendidos 6.2%→6.5%, idéntico): la política vence la HABITUACIÓN v2.4; el agujero de la línea única queda sin explotar (coherente con run05: el scriptado no ceba → sin presión selectiva). La mejora seguía CRECIENDO al agotar el presupuesto (evals >18M: media 2.125). Siguiente = decisión del usuario: aceptar el FINAL como coordinador MARL v1 / más presupuesto (--resume) / co-evolución / YOLO.* *(2ª de hoy: INFRA MARL construida y verificada — suelo δ=0 Δ +0.00 exacto, test 10, sin deps nuevas. 1ª: DESENLACE run05 — el cebo NO emerge con recompensa de equipo pura; cebo_diag 0.0% = nula del scriptado; el cebo es una desviación coordinada temporalmente extendida con valle de recompensa en medio que la exploración por-paso no muestrea.)*
 >
 > **CIERRE de la primera campaña RL de lobos (runs 01–03) — la ablación completa, breve y factual:**
 > **run01** (rala pura, de cero) ABORTADO a 2,48M: 1 muerte espontánea en ~2.400 episodios, 0 señal · **run02**
@@ -44,6 +44,10 @@
 > estáticos: solo el dron que SE ECHA ENCIMA —aproximación > `SCARE_APPROACH_MIN`— expulsa; el QUIETO es un OBSTÁCULO que
 > se rodea. Baterías iniciales aleatorias + reserva espejo (substream separado); carga = 1.5× el vuelo pleno ≈160 s. La
 > disuasión estática se evapora → Dummy 2.36/2.24→**4.41/4.34** (≈v2.2), Reactive 0.16/0.18→**2.80/2.78** (sube, pero sigue batiendo al Dummy)).
+> **SUSTO DE DOS RADIOS (v2.7, tag `v2.7-baseline`)** (la expulsión por movimiento de v2.4 INTACTA + una PARED BLANDA
+> estática `STATIC_DETER_RADIUS`=10: un dron ACTIVE quieto a corta ya no se cruza —repulsión que frena/desvía, `_wolf_walled`—
+> y no deja matar a través; poste a distancia ignorable —habituación— y mover ESTRICTAMENTE mejor. Metro DGX: Dummy
+> 4.42/4.34→**3.97/3.89**, Reactive 2.74/2.82→**2.30/2.42**; INVALIDA la baseline del MARL run01 —histórico sobre v2.6—).
 > **Refactor — CONTROLADOR DE LOBOS ENCHUFABLE (`wolf_controllers.py`)** (scripted | learned; el scriptado es el
 > default BIT A BIT idéntico a v2.4). Extrae la POLÍTICA del lobo (táctica: fijación de presa, flanqueo, rodeo,
 > envolvente, coasting) a una interfaz `decide(world) -> (v_target, coasting)`; el mundo impone la FÍSICA (susto,
@@ -56,7 +60,10 @@
 > candidatos si se insiste: pista al cebo / control de formación / co-evolución; (2) **MARL de
 > drones: run01 COMPLETADO Y BATE LA BARRERA** — FINAL (20M) **2.35/0/2.34** (Δ **−0.39/−0.48** vs 2.74/0/2.82),
 > aprendió a MOVERSE para disuadir (+17% rapidez, +26% sustos; vence la habituación v2.4), sin repartirse entre
-> frentes. Siguiente paso = decisión del usuario (aceptar como v1 / --resume / co-evolución / YOLO).
+> frentes. **run01 medido sobre v2.6 → INVALIDADO como baseline por v2.7 (pared blanda); histórico.** (3) **v2.7 SUSTO DE
+> DOS RADIOS** (la barrera se hace pared: dron quieto repele a corta): re-medido Dummy **3.97/0/3.89** · Reactive **2.30/0/2.42**;
+> el MARL de drones se REENTRENARÁ sobre v2.7 (nota a batir 2.30/0/2.42) en fase posterior. Siguiente paso = decisión del usuario
+> (barrido 3+3 vs 4+4 drones / reentrenar el MARL sobre v2.7 / co-evolución).
 > **Commits:** `194a3ad` base · `37910b3` terminal · `e663504` disparador por dron · `4d1e708` campo
 > 300×300 + escala biológica absoluta · `886bd45` dispersión del rebaño · `a15e2df` movimiento de
 > drones (3a) · `fd893b8` detectar→confirmar (3b) · `49e0e22` consolidar DISEÑO+CLAUDE · `144b7bd` guiado (paso 2)
@@ -299,6 +306,36 @@
 > situación explotable (un solo grupo visto) el 25.6% de los pasos de ESCOLTA · severidad en episodios de 2 grupos 3.33.
 > La firma limpia del cebo emergido = subida de killer-no-detectado/cebo-puro + severidad > suelo. Al terminar:
 > eval_wolves 100 semillas (último y mejor) vs 2.74/2.82 + suelo + runs 01–04, y cebo_diag de los checkpoints buenos.
+>
+> **Patch — v2.7: SUSTO DE DOS RADIOS (el dron quieto también repele) + RE-CONGELACIÓN y medida (2026-07-19).** Cambio de
+> FÍSICA del susto (prompt del usuario), anclado en datos reales: los lobos ATRAVESABAN la barrera porque el susto era SOLO por
+> movimiento (v2.4) — un dron quieto era un poste que se bordea → el CEBO nunca tuvo presión selectiva (no hay que engañar una
+> barrera atravesable). Datos de fuga (FID): ante una amenaza que se acerca, huida media ~106 m (rango 17–310); + habituación a
+> disuasores estáticos (el susto por movimiento era realista). Modelo fiel = **DOS radios**: disuasión fuerte al acercarse
+> (grande, el actual) + zona de incomodidad mínima que no se cruza ni con el dron quieto (pequeña, escalada al campo 300×300 —
+> un radio real de ~100 m haría a los drones invencibles). **Implementación (SOLO la física del susto, `_apply_deterrence`):**
+> se MANTIENE la expulsión por movimiento (dron ACTIVE acercándose > `SCARE_APPROACH_MIN` dentro de `DETER_RADIUS`=20 → huida
+> plena) y se AÑADE `STATIC_DETER_RADIUS`=10 m (la mitad): un lobo NO expulsado a ≤ ese radio de un dron ACTIVE (aunque QUIETO o
+> alejándose) recibe una PARED BLANDA — se le quita la componente de velocidad hacia el dron (desliza) + empuje radial saliente
+> de frenado (`STATIC_DETER_GAIN`=0.6, acotado a la rapidez de caza → frena/desvía, MÁS DÉBIL que la huida) → NO cruza; marca
+> `_wolf_walled` → NO mata a través (excluido de `_process_predation`, como `_wolf_scared`). **Jerarquía:** dentro del radio
+> pequeño → pared siempre; si además se acerca (radio grande) → EXPULSIÓN domina → moverse es ESTRICTAMENTE mejor (radio mayor +
+> más fuerza), preserva el incentivo que el MARL run01 aprendió. Un poste a > `STATIC_DETER_RADIUS` no tiene efecto (habituación
+> a distancia; un poste LATERAL se rodea). Solo ACTIVE; gateado por `escort_enabled` (combate puro → `_wolf_scared`/`_wolf_walled`
+> todo False → **face_check bit a bit**, fingerprint v2.3≡v2.4≡v2.7). **NO se tocó:** caza (cono/flanqueo/envolvente/matanza
+> excedente), huida de vacas, madre-ternero, batería/relevo, detección, spawn grouped v2.5, barrera v2.6, coordinadores,
+> controladores de lobos, el nº de drones (4+4; el barrido 3+3 es prompt posterior), el andamiaje RL. **Verificación:**
+> `test_pared_estatica` dirigido NUEVO en escort_check (A: dron QUIETO cubriendo la presa a ≤10 m BLOQUEA la matanza —None— vs
+> SIN dron/LEJANO 14 m/FUERA 26 m que matan en 20 pasos = pared + habituación a distancia; B: la EMBESTIDA expulsa al lobo a
+> 44 m vs la pared que lo frena a 20 m → mover > quieto) + `test_susto` (A) adaptado (dron cubriendo → HELD FUERA, `_wolf_walled`,
+> NO scared) + `test_pin_envolvente`/`test_disuasion` (comentarios al modelo de dos radios; un poste a 14/12 m sigue fuera de la
+> pared → mata/rodea igual). **RE-MEDIDO (100/tipo, metro DGX, contenedor):** Dummy 4.42/0/4.34 → **3.97/0/3.89** (Δ −0.45/−0.45:
+> los drones CLAVADOS del Dummy ya repelen a corta —la pared no exige moverse—; n_safe 2.73/2.81) · Reactive 2.74/0/2.82 →
+> **2.30/0/2.42** (Δ −0.44/−0.40: la barrera se hace pared, defiende mejor; n_safe 4.57/4.45; el margen Reactive−Dummy se mantiene
+> −1.67/−1.47). Es MEDIDA, no objetivo. `REFERENCE_SEVERITY`/`FROZEN_TAG`/asserts de tag (wolf_controller_check/rl_env_check) → v2.7;
+> artefactos regenerados (`baseline_v2.json`/`.csv`, `baseline_v2_reactive.json`/`.csv`). **INVALIDA la baseline del MARL de drones
+> run01** (medido sobre v2.6, barrera atravesable): run01 = histórico; el MARL se reentrenará sobre v2.7 (nota a batir 2.30/0/2.42)
+> — NO reentrenado aquí. BIBLIOGRAFIA +entrada FID/dos-radios. verja 7/7 verde en el contenedor.
 >
 > **Patch — v2.6: BARRERA REACTIVA CON PERCEPCIÓN REALISTA + RE-CONGELACIÓN y medida (2026-07-17, 3ª).** Corrección de
 > REALISMO del coordinador clásico (prompt del usuario), motivada por el reconocimiento de solo-lectura previo (¿engaña el
@@ -1047,21 +1084,32 @@ parámetros actuales; spec: reportar, **no tunear** `face_cooldown`/`r_face_safe
 **Número de lobos aleatorio por episodio** (1–5): de lobo solitario (no puede) a manada (sí puede).
 **Escalera de adversarios:** ingenuo → **manada direccional (ACTUAL)** → busca-huecos → con amago
 (los dos últimos cuando los drones se muevan).
-**SUSTO POR MOVIMIENTO del dron ✅ IMPLEMENTADO (v2.4; sustituye al susto "campo de fuerza" de v2.3)** (`_apply_deterrence`,
-infraestructura gateada por `escort_enabled`): el miedo del lobo depende de **si el dron SE LE ECHA ENCIMA**, no solo de la
-distancia (los depredadores se HABITÚAN a disuasores estáticos). Para cada lobo se mira la **velocidad de APROXIMACIÓN** de
-cada dron **ACTIVE** a tiro (`≤ DETER_RADIUS`=**20** m, = componente de la velocidad del dron hacia el lobo). **(a) Dron
-ACERCÁNDOSE** (aprox. `> SCARE_APPROACH_MIN`=**1.0** m/s) → **EXPULSIÓN PLENA** (mecanismo v2.3): el lobo **HUYE** RADIAL del dron
-acercándose MÁS CERCANO (manda el más amenazante; desempate por índice), `clip(wolf_speed·(1−d/R), SCARE_SPEED_MIN=0.8, wolf_speed)`;
-la huida **SUSTITUYE** a la caza y **NO mata mientras huye** (`_wolf_scared` excluido de `_process_predation`). **(b) Dron
-ESTÁTICO/alejándose** (`≤ SCARE_STATIC_RADIUS`=**6** m) → **ESQUIVA SUAVE**: el lobo **SIGUE cazando** (v_target manda), solo añade
-una repulsión radial del poste renormalizada a la rapidez de caza (**solo redirige, no anula**) → **puede matar con un dron parado
-al lado** (un obstáculo, no una amenaza). EXPULSADO ≠ rendido: al frenar/alejarse el dron retoma la caza (sin cooldown). Marca
-`_drone_scaring` (drones que embisten) → el render dibuja 🔊 solo al embestir de verdad. Solo en escolta (combate puro
-`escort_enabled=False` NO asusta, `_wolf_scared`/`_drone_scaring` todo False → **face_check bit a bit**, fingerprint de combate
-idéntico v2.3≡v2.4). **RE-MIDE la baseline (v2.4):** la disuasión estática se evapora → Dummy 2.36/2.24 → **4.41/4.34** (≈ v2.2),
-Reactive 0.16/0.18 → **2.80/2.78** (sube —barrera clavada = poste— pero sigue batiendo al Dummy). Defender bien exige MOVER los
-drones con intención (trabajo del MARL). EKF de estimación del lobo: PENDIENTE (ver plan).
+**SUSTO DE DOS RADIOS del dron ✅ IMPLEMENTADO (v2.7; extiende el susto por movimiento de v2.4)** (`_apply_deterrence`,
+infraestructura gateada por `escort_enabled`): el miedo del lobo depende de **si el dron SE LE ECHA ENCIMA** (los depredadores se
+HABITÚAN a disuasores estáticos A DISTANCIA), pero un lobo **NO CRUZA** un obstáculo que tiene **ENCIMA**. Modelo fiel a los datos
+de fuga (FID: huida media ~106 m ante una amenaza que se acerca, rango 17–310; escalado al campo 300×300). **DOS radios anidados
+(mover > quieto, SIEMPRE):** **(a) EXPULSIÓN PLENA (radio GRANDE `DETER_RADIUS`=20 m, v2.4 INTACTA):** dron **ACERCÁNDOSE** (aprox.
+`> SCARE_APPROACH_MIN`=1.0 m/s) → el lobo **HUYE** RADIAL del dron acercándose MÁS CERCANO, `clip(wolf_speed·(1−d/R), SCARE_SPEED_MIN=0.8,
+wolf_speed)`; la huida **SUSTITUYE** a la caza y **NO mata mientras huye** (`_wolf_scared` excluido de `_process_predation`). **(b)
+PARED BLANDA (radio PEQUEÑO `STATIC_DETER_RADIUS`=10 m = la mitad, v2.7 NUEVO):** un dron **ACTIVE** (aunque esté **QUIETO** o
+alejándose) a `≤ STATIC_DETER_RADIUS` y lobo NO expulsado → el lobo **NO CRUZA** hacia el dron: se le **quita la componente de
+velocidad que apunta al dron** (se desliza/desvía) y se le suma un **empuje radial saliente de frenado** (crece al acercarse,
+`STATIC_DETER_GAIN`=0.6, acotado a la rapidez de caza) → **FRENA y DESVÍA, no lanza** (más débil que la huida plena). Marca
+`_wolf_walled` → **NO mata a través** del dron (excluido de `_process_predation`). Un dron estático a `> STATIC_DETER_RADIUS`
+**NO tiene efecto** (habituación al disuasor estático a distancia, v2.4 preservado: un poste LATERAL se rodea). **Jerarquía:** si
+además se acerca (dentro de `DETER_RADIUS`), la **EXPULSIÓN DOMINA** (radio mayor + más fuerza) → moverse hacia el lobo es
+**ESTRICTAMENTE mejor** que estar quieto (preserva el incentivo a moverse que el MARL run01 ya aprendió). EXPULSADO ≠ rendido: al
+salir de ambos radios el lobo retoma la caza (sin cooldown). Marca `_drone_scaring` (drones que embisten) → el render dibuja 🔊 solo
+al embestir de verdad. Solo en escolta (combate puro `escort_enabled=False` NO asusta ni amuralla, `_wolf_scared`/`_wolf_walled`/
+`_drone_scaring` todo False → **face_check bit a bit**, fingerprint de combate idéntico v2.3≡v2.4≡v2.7). **Efecto de diseño:** el
+dron quieto vuelve a REPELER a corta (deja de ser un poste atravesable) → la barrera se hace **PARED** y el CEBO multi-frente gana
+presión selectiva (una barrera atravesable no había que engañarla). **RE-MIDE la baseline (v2.7, metro DGX, 100/tipo):** Dummy
+4.42/0/4.34 → **3.97/0/3.89** (Δ −0.45/−0.45: sus drones CLAVADOS ya repelen a corta —la pared no exige moverse—; n_safe 2.73/2.81),
+Reactive 2.74/0/2.82 → **2.30/0/2.42** (Δ −0.44/−0.40: la barrera se hace pared, defiende mejor; n_safe 4.57/4.45); el margen
+Reactive−Dummy se mantiene (−1.67/−1.47). Es MEDIDA, no objetivo (no se tuneó `STATIC_DETER_RADIUS`/`STATIC_DETER_GAIN`). **Este
+cambio INVALIDA la baseline del MARL de drones run01** (medido sobre v2.6, barrera atravesable): run01 queda como resultado histórico
+sobre v2.6; el MARL se reentrenará sobre v2.7 (nueva nota a batir **2.30/0/2.42**) en una fase posterior. EKF de estimación del lobo:
+PENDIENTE (ver plan).
 
 ### 4.2. Vacas adultas — "DAR LA CARA" (confrontación direccional)  ✅ IMPLEMENTADO (+ guiado al refugio ✅)
 

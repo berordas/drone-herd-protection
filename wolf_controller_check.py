@@ -116,12 +116,12 @@ def test_susto_innegociable():
 
 
 def test_spotcheck_baseline():
-    print("=== 4) SPOT-CHECK vs baseline v2.4.1 CONGELADA (baseline_v2.json, metro DGX): severidades IDÉNTICAS (no re-medir) ===")
+    print("=== 4) SPOT-CHECK vs baseline v2.7 CONGELADA (baseline_v2.json, metro DGX): severidades IDÉNTICAS (no re-medir) ===")
     with open("baseline_v2.json", encoding="utf-8") as f:
         ref = json.load(f)
-    # v2.4.1 = MISMA física que v2.4, re-medida en el contenedor canónico de la DGX (metro oficial).
-    # Este spot-check solo es reproducible DENTRO de ese entorno (fuera puede salir rojo: deriva FP).
-    assert ref["frozen_tag"] == "v2.6-baseline", "baseline_v2.json no es v2.6 (barrera con percepción; Dummy ≡ v2.5 bit a bit)"
+    # v2.7 = susto de DOS RADIOS (pared blanda estática); RE-MEDIDA en el contenedor canónico de la DGX (metro
+    # oficial). Este spot-check solo es reproducible DENTRO de ese entorno (fuera puede salir rojo: deriva FP).
+    assert ref["frozen_tag"] == "v2.7-baseline", "baseline_v2.json no es v2.7 (susto de dos radios: dron quieto repele a corta)"
     from baseline import build_world, run_episode_metrics
     checked = 0
     for kind in ("lobos", "corzos", "mixto"):

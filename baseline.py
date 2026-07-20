@@ -119,23 +119,24 @@ EVAL_SEEDS = tuple(range(N_PER_KIND))
 KINDS = ("lobos", "corzos", "mixto")
 KIND_LABEL = {"lobos": "solo-lobos", "corzos": "solo-corzos", "mixto": "mixto"}
 TERMINALS = ("success", "predation", "timeout")
-FROZEN_TAG = "v2.6-baseline"   # tag git del commit congelado: barrera reactiva con PERCEPCIÓN REALISTA (se ancla al lobo
-                               # DETECTADO, no al centroide global); FÍSICA idéntica a v2.5 (spawn en subgrupos). METRO DGX.
-                               # El Dummy NO usa la barrera -> su severidad es BIT A BIT la de v2.5.
+FROZEN_TAG = "v2.7-baseline"   # tag git del commit congelado: SUSTO DE DOS RADIOS (expulsión por movimiento v2.4 INTACTA +
+                               # PARED BLANDA estática STATIC_DETER_RADIUS=10: un dron ACTIVE quieto a corta ya NO se cruza y
+                               # no deja matar a través). Cambio de FÍSICA -> RE-MEDIDO. METRO DGX. INVALIDA la baseline del
+                               # MARL de drones run01 (medido sobre v2.6, barrera atravesable): run01 = histórico sobre v2.6.
 
 # Referencia CONGELADA de severidad (media de muertes/ep) por tipo, para detectar DERIVA.
 # Se rellena tras la primera medición; en re-corridas debe coincidir (mundo reproducible POR ENTORNO).
-# v2.6: SIN cambio — la v2.6 solo cambia la BARRERA del ReactiveCoordinator (percepción realista);
-# el Dummy no la usa y la física es idéntica a v2.5 -> estos números son BIT A BIT los de v2.5.
-# v2.5 (METRO DGX): spawn de lobos en SUBGRUPOS (wolf_spawn_mode="grouped": 1-2 grupos desiguales en
-# sectores distintos, substream RNG propio); el RESTO de la física = v2.4.1. Medido DENTRO del
-# contenedor canónico (docker/). Contraste v2.4.1 (clustered): Dummy 4.54/0/4.46 · Reactive 2.77/0/2.80
-# -> el multi-frente NO sube la letalidad del scriptado (fija UNA presa común; el 2º grupo no ceba,
-# solo llega por otro eje): ligera BAJADA dentro del ruido (~1 SEM). Es medida, no objetivo.
+# v2.7 (METRO DGX): SUSTO DE DOS RADIOS (pared blanda estática STATIC_DETER_RADIUS=10: un dron ACTIVE
+# quieto a corta ya REPELE y no deja matar a través). CAMBIO de física -> RE-MEDIDO. Ahora el Dummy,
+# cuyos drones están CLAVADOS en sus puestos, recupera algo de disuasión a corta (la pared no exige
+# moverse): Dummy BAJA ~0.45 respecto a v2.6 (4.42/4.34 -> 3.97/3.89), consistente (~2 SEM). Es medida,
+# no objetivo (no se tuneó STATIC_DETER_RADIUS/GAIN para perseguir cifras). Contraste v2.6 (barrera
+# atravesable): Dummy 4.42/0/4.34 · Reactive 2.74/0/2.82. Este cambio INVALIDA la baseline del MARL de
+# drones run01 (medido sobre v2.6); run01 = histórico, el MARL se reentrenará sobre v2.7.
 REFERENCE_SEVERITY = {
-    "lobos": 4.42,   # solo-lobos (amenaza pura); succ 4 / pred 88 / timeout 8; n_safe 2.37
+    "lobos": 3.97,   # solo-lobos (amenaza pura); succ 4 / pred 87 / timeout 9; n_safe 2.73
     "corzos": 0.00,  # solo-corzos = SIN amenaza (100/100 timeout; el rebaño pasta, n_safe 0)
-    "mixto": 4.34,   # ≈ solo-lobos (los corzos solo consumen ciclos de investigación); n_safe 2.49
+    "mixto": 3.89,   # ≈ solo-lobos (los corzos solo consumen ciclos de investigación); succ 5/pred 85/to 10; n_safe 2.81
 }
 
 # Tolerancia de deriva (la media es exacta y reproducible bit a bit; margen mínimo por si
