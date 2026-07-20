@@ -73,7 +73,8 @@ class WolfPackEnv(gym.Env):
     def __init__(self, kinds: tuple[str, ...] = ("lobos", "mixto"), frame_skip: int = 5,
                  seed: int | None = None, config: dict | None = None,
                  shaping: bool = False, shaping_beta: float = 1.0, shaping_gamma: float = 0.999,
-                 residual: bool = False, residual_scale: float | None = None):
+                 residual: bool = False, residual_scale: float | None = None,
+                 curriculum_separation_deg: float | None = None, curriculum_min_mass: int = 0):
         super().__init__()
         kinds = tuple(kinds)
         if not kinds or any(k not in VALID_KINDS for k in kinds):
@@ -91,6 +92,14 @@ class WolfPackEnv(gym.Env):
         self._shaping_gamma = float(shaping_gamma)   # DEBE ser el gamma del PPO (inocuidad de Ng et al.)
         self._phi_prev = 0.0
         self._d_norm = 1.0                           # diagonal del campo (se fija en reset, con el World)
+        # CURRÍCULO DE SEPARACIÓN DE SPAWN (SOLO ENTRENAMIENTO; ver set_curriculum + _apply_curriculum):
+        # override del spawn grouped que fuerza la separación angular entre los 2 subgrupos (y, con
+        # min_mass>0, que cada frente tenga masa >= min_mass forzando wolves_min). NO toca el mundo
+        # congelado ni la EVALUACIÓN (que va por baseline.build_world, spawn grouped normal de v2.7).
+        # Usa un RNG PROPIO (no el substream congelado) -> la eval no se ve afectada.
+        self._curric_sep_deg = curriculum_separation_deg   # None => spawn grouped normal (nivel 4)
+        self._curric_min_mass = int(curriculum_min_mass)
+        self._curric_rng = np.random.default_rng(None if seed is None else seed + 7_000_003)
         # Secuencia PROPIA de semillas de episodio (independiente de self.np_random de gym).
         self._seed_rng = np.random.default_rng(seed)
         self._residual = bool(residual)
@@ -116,8 +125,16 @@ class WolfPackEnv(gym.Env):
         kind = self._kinds[int(self._seed_rng.integers(len(self._kinds)))]
 
         self._controller.reset()
+        cfg = self._config
+        if self._curric_sep_deg is not None and self._curric_min_mass > 0:
+            # Nivel con masa mínima por frente: fuerza wolves_min >= 2·min_mass (cada frente letal).
+            cfg = dict(cfg)
+            wmax = cfg.get("wolves_max", 5)
+            cfg["wolves_min"] = min(max(cfg.get("wolves_min", 1), 2 * self._curric_min_mass), wmax)
         self._world = World(seed=world_seed, episode_kind=kind,
-                            wolf_controller=self._controller, **self._config)
+                            wolf_controller=self._controller, **cfg)
+        if self._curric_sep_deg is not None:
+            self._apply_curriculum(self._world)          # override SOLO de entrenamiento (eval no lo usa)
         self._coordinator = ReactiveCoordinator(self._world)
         self._ep_kills = 0.0
         self._ep_shape = 0.0
@@ -127,6 +144,47 @@ class WolfPackEnv(gym.Env):
         info = {"episode_kind": kind, "world_seed": world_seed,
                 "n_wolves": int(self._world.n_wolves), "n_calves": int(self._world.n_calves)}
         return self._obs(), info
+
+    # ------------------------------------------------------------------ #
+    def set_curriculum(self, separation_deg: float | None, min_mass: int = 0) -> None:
+        """Cambia el nivel del currículo EN CALIENTE (lo llama el entrenador vía
+        `venv.env_method` en las fronteras de nivel). Toma efecto en el PRÓXIMO reset()
+        (episodio). separation_deg=None => spawn grouped normal de v2.7 (nivel 4, sin override)."""
+        self._curric_sep_deg = None if separation_deg is None else float(separation_deg)
+        self._curric_min_mass = int(min_mass)
+
+    def _apply_curriculum(self, w) -> None:
+        """CURRÍCULO (solo entrenamiento): re-coloca los lobos en 2 SUBGRUPOS a
+        `_curric_sep_deg` grados de separación, con reparto BALANCEADO (ambos >= 1; con
+        wolves_min forzado, >= min_mass). Anclas al BORDE como el spawn real (misma distancia);
+        grupo 1 en el ángulo de spawn PRIMARIO del mundo (`wolf_spawn_angle`, del stream
+        principal), grupo 2 a +separación. Dispersión gaussiana `wolf_spawn_dispersion` con el
+        RNG PROPIO del currículo (no el substream congelado -> eval intacta). Solo posiciones y
+        velocidad; `pack_prey` (fijado en reset por las vacas) NO se toca."""
+        n = int(w.n_wolves)
+        if n < 2:
+            return                                        # no se puede partir (raro con wolves_min forzado)
+        sep = np.radians(self._curric_sep_deg)
+        center = np.array([w.W / 2.0, w.H / 2.0])
+
+        def anchor(a):
+            d = np.array([np.cos(a), np.sin(a)])
+            t = min((w.W / 2.0) / max(abs(d[0]), 1e-9), (w.H / 2.0) / max(abs(d[1]), 1e-9))
+            return center + d * t                         # misma regla de distancia (borde) que el spawn
+
+        a1 = float(w.wolf_spawn_angle)
+        a2 = a1 + sep
+        an1, an2 = anchor(a1), anchor(a2)
+        k = n // 2                                        # grupo 2 = k ÚLTIMOS índices; grupo 1 = n-k (balanceado)
+        disp = w.wolf_spawn_dispersion
+        pts = w.wolves.copy()
+        pts[: n - k] = an1 + self._curric_rng.normal(0.0, disp, size=(n - k, 2))
+        pts[n - k:] = an2 + self._curric_rng.normal(0.0, disp, size=(k, 2))
+        w._clip_to_parcel(pts)                            # dentro de la parcela (como el spawn real)
+        w.wolves = pts
+        w.wolf_vel[:] = 0.0
+        w.wolf_group_sizes = [n - k, k]
+        w.wolf_spawn_angles = [float(a1 % (2 * np.pi)), float(a2 % (2 * np.pi))]
 
     def step(self, action):
         w = self._world

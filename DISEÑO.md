@@ -63,7 +63,19 @@
 > frentes. **run01 medido sobre v2.6 → INVALIDADO como baseline por v2.7 (pared blanda); histórico.** (3) **v2.7 SUSTO DE
 > DOS RADIOS** (la barrera se hace pared: dron quieto repele a corta): re-medido Dummy **3.97/0/3.89** · Reactive **2.30/0/2.42**;
 > el MARL de drones se REENTRENARÁ sobre v2.7 (nota a batir 2.30/0/2.42) en fase posterior. Siguiente paso = decisión del usuario
-> (barrido 3+3 vs 4+4 drones / reentrenar el MARL sobre v2.7 / co-evolución).
+> (barrido 3+3 vs 4+4 drones / reentrenar el MARL sobre v2.7 / co-evolución). (4) **CURRÍCULO del cebo (lobos, v2.7):** ataca el
+> **valle del cebo** = *relative overgeneralization* (BIBLIOGRAFIA: JIM/lenient learners) — la política óptima (cebo coordinado)
+> da mala recompensa si un solo lobo la intenta → PPO se queda en "atacar juntos". v2.7 cerró el agujero de "atravesar" (dio
+> propósito al cebo) pero NO elimina el valle. **Vía: CURRÍCULO de separación de spawn** (Bengio 2009 / Narvekar 2020) —
+> arranca al lobo AL OTRO LADO del valle (nivel 1: 2 frentes ~180° opuestos + ambos letales masa≥2 → el cebo casi ocurre solo)
+> y endurece por niveles (135°/90°/normal, 5M c/u, 20M total) hasta que debe FORMAR el cebo solo. Residual sobre el scriptado,
+> recompensa de EQUIPO PURA (shaping off, sin pista de cebo), 2 fases. **El currículo es SOLO un override del ENV de
+> ENTRENAMIENTO** (`WolfPackEnv.set_curriculum` → re-coloca los 2 subgrupos con RNG propio tras `reset()`; NO toca el mundo
+> congelado); la EVAL es SIEMPRE spawn grouped normal de v2.7 (mide el cebo REAL, no el servido). **Paso 0 (verificado):** el
+> suelo residual (δ=0) contra la pared v2.7 está SANO (los lobos RODEAN/atacan —predation, rapidez ~2.6 m/s, alcanzan la presa a
+> 0.6 m—, NO zombis contra la pared). La pregunta clave: ¿el cebo aprendido con ayuda SOBREVIVE al spawn normal (nivel 4), o cae
+> de vuelta al suelo ("se aprende con ayuda pero no se forma solo")? Vías de reserva si falla (BIBLIOGRAFIA, NO implementadas):
+> exploración intrínseca COORDINADA (curiosidad: EMC/MACE/SMMAE/JIM) y luego control JERÁRQUICO de formación.
 > **Commits:** `194a3ad` base · `37910b3` terminal · `e663504` disparador por dron · `4d1e708` campo
 > 300×300 + escala biológica absoluta · `886bd45` dispersión del rebaño · `a15e2df` movimiento de
 > drones (3a) · `fd893b8` detectar→confirmar (3b) · `49e0e22` consolidar DISEÑO+CLAUDE · `144b7bd` guiado (paso 2)

@@ -30,6 +30,34 @@ Toda decisión "porque lo dice un paper" entra AQUÍ **antes** de implementarse,
   cambia la política óptima; verificado en rl_env_check test 8).
 - **Schulman, J., et al. (2017).** *Proximal Policy Optimization Algorithms.* arXiv:1707.06347.
   — **Se usa para:** el algoritmo de TODOS los runs de lobos (y previsiblemente del MARL).
+- **Wei, E., & Luke, S. (2016)** *Lenient Learning in Independent-Learner Stochastic Cooperative
+  Games* (JMLR); **Panait, L., Tuyls, K., & Luke, S. (2008)** *Theoretical Advantages of Lenient
+  Learners* — y su nombre moderno en **Guo, J., et al. (2024)** *Joint Intrinsic Motivation (JIM)
+  for Coordinated Exploration in Multi-Agent Deep RL*, arXiv:2402.03972 (que AJUSTA y mide la
+  patología en un entorno sintético). — **Se usa para:** el DIAGNÓSTICO del "valle del cebo" =
+  **relative overgeneralization**: la política óptima (cebo coordinado de 2 frentes) da MALA
+  recompensa si un solo lobo la intenta, así que PPO se queda en el óptimo local "atacar juntos";
+  es la razón de que el cebo no emergiera en 5 campañas. *(autores/venue exactos: verificar al
+  citar; ver también arXiv:2411.11099, *Mitigating Relative Over-Generalization in MARL*.)*
+- **Bengio, Y., Louradour, J., Collobert, R., & Weston, J. (2009).** *Curriculum Learning.* ICML.
+  · **Narvekar, S., et al. (2020).** *Curriculum Learning for Reinforcement Learning Domains: A
+  Framework and Survey.* JMLR. — **Se usa para:** el CURRÍCULO de separación de spawn (v2.7): se
+  arranca al lobo AL OTRO LADO del valle (cebo casi servido por el spawn: 2 frentes opuestos, ~180°,
+  ambos letales) y se endurece por niveles hasta el spawn normal, para que la política CRUCE el valle
+  de recompensa en vez de quedarse en el óptimo local. Currículo FIJO por pasos (legible/diagnosticable)
+  frente a automático. *(Narvekar et al.: autores completos verificar al citar.)*
+- **Vías de RESERVA de EXPLORACIÓN INTRÍNSECA COORDINADA (CONSIDERADAS, NO implementadas — si el
+  currículo NO cruza el valle):** **Zheng, L., et al. (2021)** *EMC: Episodic Multi-agent RL with
+  Curiosity-Driven Exploration*, arXiv:2111.11032 (NeurIPS) · **Iqbal, S., & Sha, F. (2019)**
+  *Coordinated Exploration via Intrinsic Rewards for Multi-Agent RL* *(arXiv id verificar al citar)*
+  · **MACE — Xu, H., et al. (2024)** *Settling Decentralized Multi-Agent Coordinated Exploration by
+  Novelty Sharing*, arXiv:2402.02097 (AAAI) · **SMMAE — Zhang, S., et al. (2023)** *Self-Motivated
+  Multi-Agent Exploration*, arXiv:2301.02083 (AAMAS). — **Se usa para:** dar CURIOSIDAD COORDINADA a
+  los lobos (recompensa intrínseca por novedad CONJUNTA) para muestrear la desviación coordinada que
+  la exploración gaussiana por-paso no encuentra; sería la vía siguiente si el currículo demuestra que
+  "el cebo se aprende con ayuda pero no se forma solo". La otra reserva = control JERÁRQUICO de
+  formación (elegir el reparto de frentes como acción de alto nivel). *(autores/venue exactos:
+  verificar al citar en la memoria.)*
 - **Raffin, A., et al. (2021).** *Stable-Baselines3: Reliable Reinforcement Learning
   Implementations.* JMLR 22(268). — **Se usa para:** la implementación de PPO (política, buffer,
   VecEnv) usada en rl/.

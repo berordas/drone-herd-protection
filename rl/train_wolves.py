@@ -92,6 +92,43 @@ ABORT_NOTE_RESIDUAL = (
 # exploración apenas perturbe al arrancar.
 RESIDUAL_LOG_STD_INIT = -2.0   # σ ≈ 0.14 (en unidades de acción normalizada)
 
+# CURRÍCULO de separación de spawn (cruzar el valle del cebo — relative overgeneralization):
+# 4 niveles fijos de 5M pasos cada uno (20M total). SOLO afecta al ENTRENAMIENTO (override del env,
+# `WolfPackEnv.set_curriculum`); la EVAL es SIEMPRE spawn grouped normal de v2.7 (mide el cebo REAL,
+# no el servido). Nivel 1 = frentes casi opuestos + masa >=2 por frente (cebo casi servido -> atacar
+# juntos casi imposible); se endurece hasta el spawn normal (el lobo debe FORMAR el cebo por sí mismo).
+CURRICULUM_SCHEDULE = [
+    # (hasta_paso_agente, separación_grados | None, min_mass_por_frente)
+    (5_000_000, 180.0, 2),    # Nivel 1: opuestos, ambos frentes letales
+    (10_000_000, 135.0, 0),   # Nivel 2
+    (15_000_000, 90.0, 0),    # Nivel 3
+    (20_000_000, None, 0),    # Nivel 4: spawn grouped NORMAL de v2.7 (sin override)
+]
+
+ABORT_NOTE_CURRICULUM = (
+    "CRITERIOS (pactados, CURRÍCULO del cebo — residual sobre v2.7 grouped, recompensa de EQUIPO "
+    "PURA +1/muerte, shaping OFF, SIN pista de cebo; δ autoridad plena; 4 niveles de separación de "
+    "spawn de 5M —180°/135°/90°/normal—, override SOLO de entrenamiento, la EVAL es SIEMPRE spawn "
+    "normal). El SUELO es el scriptado v2.7 (eval ligera ~2.6-2.7; en FASE 1, δ=0, se CLAVA ahí). "
+    "GUARDIA DEL SUELO: si en fase 2 la eval ligera cae por debajo de ~2.3 de forma SOSTENIDA "
+    "(>=1.500.000 pasos), PARAR y reportar — PPO EROSIONA al script. ÉXITO PARCIAL POR NIVEL: en el "
+    "NIVEL 1 (cebo casi servido) la severidad DEBE subir con claridad sobre el suelo; si NO sube, es "
+    "mala señal temprana (ni con el cebo regalado el lobo lo aprovecha -> el problema es más profundo "
+    "que el valle) — REPORTAR (no abortar por ello). CRITERIO DE FIN (nivel 4): la pregunta es si el "
+    "cebo aprendido con ayuda SOBREVIVE al spawn normal; si en nivel 4 la severidad CAE de vuelta al "
+    "suelo, el resultado clave es 'el cebo se aprende con ayuda pero no se forma solo' -> siguiente "
+    "vía (curiosidad coordinada / control jerárquico de formación) = decisión del usuario, NO "
+    "implementarla. La vara REAL es eval_wolves 100 semillas (spawn normal) + cebo_diag "
+    "(killer-no-detectado > 0 certifica que la subida es CEBO, no casualidad).")
+
+
+def curriculum_level(num_timesteps: int):
+    """(idx 1..4, separación|None, min_mass) del nivel de currículo para un nº de pasos-agente."""
+    for i, (until, sep, mm) in enumerate(CURRICULUM_SCHEDULE):
+        if num_timesteps < until:
+            return i + 1, sep, mm
+    return len(CURRICULUM_SCHEDULE), CURRICULUM_SCHEDULE[-1][1], CURRICULUM_SCHEDULE[-1][2]
+
 
 def make_env(seed: int, kinds: tuple[str, ...], frame_skip: int,
              shaping: bool, shaping_beta: float, shaping_gamma: float,
@@ -186,12 +223,14 @@ class LightEval(BaseCallback):
     EVAL_SEEDS_LIGHT = tuple(range(10))
 
     def __init__(self, logpath: Path, eval_every: int = 250_000,
-                 residual: bool = False, residual_scale: float | None = None):
+                 residual: bool = False, residual_scale: float | None = None,
+                 curriculum: bool = False):
         super().__init__()
         self.logpath = logpath
         self.eval_every = int(eval_every)
         self.residual = residual
         self.residual_scale = residual_scale
+        self.curriculum = curriculum   # si True, prefija el nivel de currículo vigente (eval SIEMPRE spawn normal)
         self._next_at = self.eval_every
 
     def _on_step(self) -> bool:
@@ -216,8 +255,13 @@ class LightEval(BaseCallback):
                 if term or trunc:
                     break
             deaths.append(w.n_depredadas)
+        nivel_txt = ""
+        if self.curriculum:
+            lvl, sep, mm = curriculum_level(self.num_timesteps)
+            sep_txt = "normal" if sep is None else f"{sep:.0f}°"
+            nivel_txt = f"NIVEL {lvl} (entren. sep={sep_txt}, masa>={mm}; eval=spawn NORMAL)  "
         line = (f"[{datetime.now().isoformat(timespec='seconds')}] EVAL_LIGERA pasos={self.num_timesteps:>10,}  "
-                f"muertes_media={np.mean(deaths):.2f}  (n=10 semillas lobos, determinista; "
+                f"{nivel_txt}muertes_media={np.mean(deaths):.2f}  (n=10 semillas lobos, determinista; "
                 f"detalle={deaths}; {time.time() - t0:.0f}s)")
         with open(self.logpath, "a", encoding="utf-8") as f:
             f.write(line + "\n")
@@ -264,13 +308,25 @@ def main() -> None:
                    help="escala de δ en m/s (def. wolf_speed — autoridad plena)")
     p.add_argument("--phase1-steps", type=int, default=1_000_000,
                    help="residual: pasos de FASE 1 (solo crítico, política congelada); 0 = sin fase 1")
+    p.add_argument("--curriculum", action="store_true",
+                   help="CURRÍCULO del cebo: 4 niveles de separación de spawn (180/135/90/normal, 5M c/u = 20M). "
+                        "Implica --residual y fuerza shaping OFF (recompensa de equipo pura). Override SOLO de "
+                        "entrenamiento; la eval es SIEMPRE spawn normal de v2.7.")
     args = p.parse_args()
     shaping = args.shaping == "on"
     if args.init_from and args.resume:
         p.error("--init-from (solo pesos de política, contador a 0) y --resume (run completo) son excluyentes")
     if args.residual and args.init_from:
         p.error("--residual e --init-from son excluyentes (el residual arranca en δ≡0, no de un clon)")
-    if args.residual:
+    if args.curriculum:
+        if not args.residual:
+            p.error("--curriculum implica --residual (el cebo se aprende como δ sobre el scriptado)")
+        if shaping:
+            p.error("--curriculum exige recompensa de EQUIPO PURA: pasa --shaping off")
+        args.total_steps = CURRICULUM_SCHEDULE[-1][0]     # el schedule define el total (20M)
+    if args.curriculum:
+        abort_note = ABORT_NOTE_CURRICULUM
+    elif args.residual:
         abort_note = ABORT_NOTE_RESIDUAL
     elif args.init_from:
         ref = ("%.2f muertes_media en las 10 semillas de la eval ligera" % args.abort_ref
@@ -284,6 +340,12 @@ def main() -> None:
     if args.smoke:
         args.total_steps = 60_000
         args.n_envs = 4
+        if args.curriculum:
+            # Schedule ESCALADO para que el humo CRUCE los 4 niveles en 60k (demuestra las
+            # transiciones en el log). El run serio usa el schedule de 5M por nivel.
+            CURRICULUM_SCHEDULE[:] = [(15_000, 180.0, 2), (30_000, 135.0, 0),
+                                      (45_000, 90.0, 0), (60_000, None, 0)]
+            args.phase1_steps = min(args.phase1_steps, 8_000)
 
     kinds = tuple(k.strip() for k in args.kinds.split(",") if k.strip())
     if any(k not in VALID_KINDS for k in kinds):
@@ -327,6 +389,13 @@ def main() -> None:
                      "nota": "RPL (Silver et al. 2018): v_final = clip_norma(v_script + delta); "
                              "el script entero vive dentro (su presa/histéresis/coasting)"}
                     if args.residual else {"on": False},
+        "curriculum": {"on": args.curriculum,
+                       "schedule": [{"hasta_paso": u, "separacion_grados": s, "min_mass": m}
+                                    for (u, s, m) in CURRICULUM_SCHEDULE],
+                       "recompensa": "EQUIPO PURA (+1/muerte, shaping OFF, SIN pista de cebo)",
+                       "nota": "override SOLO de entrenamiento (WolfPackEnv.set_curriculum); la EVAL "
+                               "es SIEMPRE spawn grouped normal de v2.7 (mide el cebo REAL)"}
+                      if args.curriculum else {"on": False},
         "abort": abort_note,
         "fecha": datetime.now().isoformat(timespec="seconds"),
     }
@@ -390,14 +459,30 @@ def main() -> None:
     ep_log = EpisodeLog()
     train_log = TrainLog(outdir / "train.log", run_desc, abort_note)
     light_eval = LightEval(outdir / "train.log", eval_every=args.eval_every,
-                           residual=args.residual, residual_scale=args.residual_scale)
+                           residual=args.residual, residual_scale=args.residual_scale,
+                           curriculum=args.curriculum)
     checkpoints = CheckpointCallback(save_freq=max(500_000 // args.n_envs, 1),   # ~cada 500k pasos totales
                                      save_path=str(outdir / "checkpoints"), name_prefix="ppo_wolves")
     callbacks = [ep_log, train_log, light_eval, checkpoints]
 
+    def _mark(msg: str) -> None:
+        print("  " + msg)
+        with open(outdir / "train.log", "a", encoding="utf-8") as f:
+            f.write(f"[{datetime.now().isoformat(timespec='seconds')}] {msg}\n")
+
+    def _set_level(lvl: int) -> None:
+        """Aplica el nivel de currículo a TODOS los envs (env_method) y lo marca en el log."""
+        until, sep, mm = CURRICULUM_SCHEDULE[lvl - 1]
+        venv.env_method("set_curriculum", sep, mm)
+        sep_txt = "spawn NORMAL (sin override)" if sep is None else f"separación {sep:.0f}°"
+        _mark(f"=== CURRÍCULO NIVEL {lvl}/{len(CURRICULUM_SCHEDULE)}: {sep_txt}, masa>={mm} por frente "
+              f"(hasta {until:,} pasos) — override SOLO de entrenamiento; eval = spawn normal ===")
+
     t0 = time.time()
     try:
         if args.residual and not args.resume and args.phase1_steps > 0:
+            if args.curriculum:
+                _set_level(1)                          # arranca en el nivel 1 (cebo casi servido)
             # FASE 1 — SOLO CRÍTICO (truco del Real Robot Challenge): π y log_std CONGELADOS
             # (δ medio = 0; solo ruido σ≈0.14); el crítico aprende cuánto vale el script antes
             # de que nada se mueva. Las evals ligeras deben CLAVARSE en el suelo (~2.7).
@@ -410,14 +495,21 @@ def main() -> None:
             model.learn(total_timesteps=fase1, callback=callbacks)
             for p_ in pi_params:
                 p_.requires_grad_(True)
-            marca = (f"[{datetime.now().isoformat(timespec='seconds')}] === FASE 2 (PPO normal): "
-                     f"política DESCONGELADA en el paso {model.num_timesteps:,} ===")
-            print("  " + marca)
-            with open(outdir / "train.log", "a", encoding="utf-8") as f:
-                f.write(marca + "\n")
-            restante = args.total_steps - model.num_timesteps
-            if restante > 0:
-                model.learn(total_timesteps=restante, callback=callbacks, reset_num_timesteps=False)
+            _mark(f"=== FASE 2 (PPO normal): política DESCONGELADA en el paso {model.num_timesteps:,} ===")
+            if args.curriculum:
+                # FASE 2 por NIVELES: en cada frontera se re-aplica el currículo (toma efecto en el
+                # próximo reset de cada worker) y se entrena hasta el límite del nivel.
+                for lvl in range(1, len(CURRICULUM_SCHEDULE) + 1):
+                    until = CURRICULUM_SCHEDULE[lvl - 1][0]
+                    if model.num_timesteps >= until:
+                        continue
+                    _set_level(lvl)
+                    restante = until - model.num_timesteps
+                    model.learn(total_timesteps=restante, callback=callbacks, reset_num_timesteps=False)
+            else:
+                restante = args.total_steps - model.num_timesteps
+                if restante > 0:
+                    model.learn(total_timesteps=restante, callback=callbacks, reset_num_timesteps=False)
         else:
             model.learn(total_timesteps=args.total_steps, callback=callbacks,
                         reset_num_timesteps=not args.resume)
