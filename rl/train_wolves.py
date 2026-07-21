@@ -94,33 +94,41 @@ RESIDUAL_LOG_STD_INIT = -2.0   # σ ≈ 0.14 (en unidades de acción normalizada
 
 # CURRÍCULO de separación de spawn (cruzar el valle del cebo — relative overgeneralization):
 # 4 niveles fijos de 5M pasos cada uno (20M total). SOLO afecta al ENTRENAMIENTO (override del env,
-# `WolfPackEnv.set_curriculum`); la EVAL es SIEMPRE spawn grouped normal de v2.7 (mide el cebo REAL,
-# no el servido). Nivel 1 = frentes casi opuestos + masa >=2 por frente (cebo casi servido -> atacar
-# juntos casi imposible); se endurece hasta el spawn normal (el lobo debe FORMAR el cebo por sí mismo).
+# `WolfPackEnv.set_curriculum`); la EVAL es SIEMPRE spawn grouped normal VIGENTE (run07 = v2.8, la
+# barrera honesta con frente ciego real; run06 corrió sobre v2.7). Nivel 1 = frentes casi opuestos +
+# masa >=2 por frente (cebo casi servido); se endurece hasta el spawn normal (el cebo debe formarse solo).
 CURRICULUM_SCHEDULE = [
     # (hasta_paso_agente, separación_grados | None, min_mass_por_frente)
     (5_000_000, 180.0, 2),    # Nivel 1: opuestos, ambos frentes letales
     (10_000_000, 135.0, 0),   # Nivel 2
     (15_000_000, 90.0, 0),    # Nivel 3
-    (20_000_000, None, 0),    # Nivel 4: spawn grouped NORMAL de v2.7 (sin override)
+    (20_000_000, None, 0),    # Nivel 4: spawn grouped NORMAL vigente (sin override)
 ]
 
 ABORT_NOTE_CURRICULUM = (
-    "CRITERIOS (pactados, CURRÍCULO del cebo — residual sobre v2.7 grouped, recompensa de EQUIPO "
-    "PURA +1/muerte, shaping OFF, SIN pista de cebo; δ autoridad plena; 4 niveles de separación de "
-    "spawn de 5M —180°/135°/90°/normal—, override SOLO de entrenamiento, la EVAL es SIEMPRE spawn "
-    "normal). El SUELO es el scriptado v2.7 (eval ligera 10 semillas lobos = 2.20 EXACTO, MEDIDO al "
-    "arrancar; en FASE 1, δ=0, se CLAVA ahí; el arnés de 100 semillas da 2.30/2.42). GUARDIA DEL "
-    "SUELO: si en fase 2 la eval ligera cae por debajo de ~1.9 (suelo 2.20 − 0.3) de forma SOSTENIDA "
-    "(>=1.500.000 pasos = 6 evals), PARAR y reportar — PPO EROSIONA al script. ÉXITO PARCIAL POR NIVEL: en el "
-    "NIVEL 1 (cebo casi servido) la severidad DEBE subir con claridad sobre el suelo; si NO sube, es "
-    "mala señal temprana (ni con el cebo regalado el lobo lo aprovecha -> el problema es más profundo "
-    "que el valle) — REPORTAR (no abortar por ello). CRITERIO DE FIN (nivel 4): la pregunta es si el "
-    "cebo aprendido con ayuda SOBREVIVE al spawn normal; si en nivel 4 la severidad CAE de vuelta al "
-    "suelo, el resultado clave es 'el cebo se aprende con ayuda pero no se forma solo' -> siguiente "
-    "vía (curiosidad coordinada / control jerárquico de formación) = decisión del usuario, NO "
-    "implementarla. La vara REAL es eval_wolves 100 semillas (spawn normal) + cebo_diag "
-    "(killer-no-detectado > 0 certifica que la subida es CEBO, no casualidad).")
+    "CRITERIOS (pactados, run07: CURRÍCULO del cebo sobre la BARRERA HONESTA v2.8 — residual, "
+    "recompensa de EQUIPO PURA +1/muerte, shaping OFF, SIN pista de cebo; δ autoridad plena; 4 "
+    "niveles de separación de spawn de 5M —180°/135°/90°/normal—, override SOLO de entrenamiento, "
+    "la EVAL es SIEMPRE spawn normal de v2.8). Distinto de run06: la barrera v2.8 reacciona SOLO a "
+    "lobos CONFIRMADOS (<=r_confirm=40 de un ACTIVE, con memoria) -> el FRENTE CIEGO es REAL "
+    "(un-solo-grupo-CONFIRMADO el 36.4% de ESCOLTA en el suelo; en v2.7 la barrera-oráculo no "
+    "dejaba frente ciego y run06 no tenía nada real que aprender). SUELO v2.8 MEDIDO (Paso 0): "
+    "eval ligera 10 semillas lobos = 2.70 (detalle [2,0,3,3,5,2,3,4,3,2]; en FASE 1, δ=0, se CLAVA "
+    "ahí); arnés de 100 semillas = 2.56/2.26; suelo SANO en 2 frentes (sev 3.50, amurallado 15.3%, "
+    "0 timeouts, no zombi). GUARDIA DEL SUELO: si en fase 2 la eval ligera cae por debajo de ~2.4 "
+    "(suelo 2.70 − 0.3) de forma SOSTENIDA (>=1.500.000 pasos = 6 evals), PARAR y reportar — PPO "
+    "EROSIONA al script. MÉTRICA DE CEBO CORREGIDA (cebo_diag): killer-NO-CONFIRMADO leído de la "
+    "memoria de confirmación de la barrera (NO killer-no-detectado a r_detect=100, que era 0% por "
+    "construcción); NULA del scriptado sobre v2.8 MEDIDA = 0.0% (no el ~47.6% de la premisa — ese "
+    "era 'no disuadido' a 20 m; el scriptado converge a la presa común y el matador pasa a ~19-20 m "
+    "de un dron -> confirmado antes de matar) -> la señal es LÍMPIDA: cualquier "
+    "killer-no-confirmado > 0 sostenido + subida de severidad = cebo real. ÉXITO PARCIAL POR "
+    "NIVEL: en el NIVEL 1 (cebo casi servido) deben subir la severidad Y el killer-no-confirmado "
+    "sobre el suelo; si NI SERVIDO sube, el problema es más profundo que el valle — REPORTAR (no "
+    "abortar por ello). CRITERIO DE FIN (nivel 4): ¿el cebo aprendido con ayuda SOBREVIVE al spawn "
+    "normal? Si cae al suelo, el currículo no cruzó el valle -> siguiente vía (curiosidad "
+    "coordinada EMC/MACE/JIM / control jerárquico) = decisión del usuario, NO implementarla. La "
+    "vara REAL es eval_wolves 100 semillas (spawn normal, vs 2.56/2.26) + cebo_diag corregido.")
 
 
 def curriculum_level(num_timesteps: int):

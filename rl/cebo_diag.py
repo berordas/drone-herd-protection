@@ -1,9 +1,18 @@
 """cebo_diag.py — Diagnóstico de CEBO (Nivel B): ¿las muertes vienen del frente que la barrera NO atiende?
 
 Mide COMPORTAMIENTO, no solo severidad: distingue "mata más por casualidad" de "mata más PORQUE
-ceba". Corre los episodios del arnés (mismas EVAL_SEEDS, CONFIG_V2 grouped, barrera v2.6 congelada
+ceba". Corre los episodios del arnés (mismas EVAL_SEEDS, CONFIG_V2 grouped, la barrera del repo
 vía SyncedReactiveCoordinator) y SOLO computa métricas de cebo en los episodios con 2 SUBGRUPOS de
 spawn (grupos por índice, fijos todo el episodio: grupo 2 = últimos k índices, `wolf_group_sizes`).
+
+MÉTRICA CORREGIDA (v2.8, run07): la métrica VÁLIDA de cebo es `killer_NO_CONFIRMADO` — leída de la
+MEMORIA DE CONFIRMACIÓN REAL de la barrera honesta (`coordinator.inner._confirmed`, la máscara que
+decidió los waypoints de ese mismo paso): un lobo NO confirmado (nunca a <= r_confirm=40 de un dron
+ACTIVE) es invisible para la barrera aunque esté detectado como contacto. Las métricas históricas
+por r_detect=100 (killer_detectado / cebo_puro) se CONSERVAN por continuidad con run05/run06, pero
+sobre la barrera-oráculo daban 0% POR CONSTRUCCIÓN (el diagnóstico post-run06 mostró que la zona de
+matanza siempre está a <= r_detect). OJO: la nula del scriptado en killer-no-confirmado NO es 0 —
+la señal de cebo aprendido es el INCREMENTO sobre esa nula, junto a la subida de severidad.
 
 Por cada MUERTE (res depredada), con el estado de la FRONTERA anterior al paso en que cae:
   - killer = lobo más cercano a la res muerta; su grupo (1|2).
@@ -73,6 +82,7 @@ def run_episode(seed: int, kind: str, model, residual_scale) -> dict | None:
     kills = []                     # dicts por muerte (estado de la frontera PREVIA al paso letal)
     steps_escolta = 0
     steps_un_grupo_visto = 0
+    steps_un_grupo_confirmado = 0
     prev_cow = w.cow_alive.copy()
     prev_calf = w.calf_alive.copy() if w.n_calves > 0 else None
 
@@ -90,7 +100,15 @@ def run_episode(seed: int, kind: str, model, residual_scale) -> dict | None:
                 steps_un_grupo_visto += 1
 
         # --- actuar y avanzar ---
-        _o, _r, term, trunc, _i = w.step(coord.act(w.get_observation()))
+        wp = coord.act(w.get_observation())
+        # v2.8: act() acaba de actualizar la MEMORIA DE CONFIRMACIÓN de la barrera honesta; esta
+        # máscara es EXACTAMENTE la que decidió los waypoints de este paso (la percepción real).
+        conf = (coord.inner._confirmed.copy() if getattr(coord.inner, "_confirmed", None) is not None
+                else np.zeros(w.n_wolves, dtype=bool))
+        conf_g = {1: bool(conf[g1].any()), 2: bool(conf[g2].any())}
+        if w.phase == "ESCOLTA" and conf_g[1] != conf_g[2]:
+            steps_un_grupo_confirmado += 1
+        _o, _r, term, trunc, _i = w.step(wp)
 
         # --- muertes de este paso, atribuidas al lobo más cercano (posición actual) ---
         died = []
@@ -113,6 +131,10 @@ def run_episode(seed: int, kind: str, model, residual_scale) -> dict | None:
                 "no_anclado": (anchor_g is not None and kg != anchor_g),
                 "otro_grupo_detectado": det_g[og],
                 "cebo_puro": (not bool(det[killer])) and det_g[og],
+                # --- métrica CORREGIDA (v2.8): la percepción REAL de la barrera honesta ---
+                "killer_confirmado": bool(conf[killer]),
+                "otro_grupo_confirmado": conf_g[og],
+                "cebo_confirmado": (not bool(conf[killer])) and conf_g[og],
                 "sep_frentes": round(sep, 1),
             })
         if term or trunc:
@@ -122,6 +144,7 @@ def run_episode(seed: int, kind: str, model, residual_scale) -> dict | None:
         "seed": seed, "kind": kind, "sizes": [int(x) for x in w.wolf_group_sizes],
         "n_depredadas": int(w.n_depredadas), "status": w.status, "steps": int(w.step_count),
         "steps_escolta": steps_escolta, "steps_un_grupo_visto": steps_un_grupo_visto,
+        "steps_un_grupo_confirmado": steps_un_grupo_confirmado,
         "kills": kills,
     }
 
@@ -180,6 +203,11 @@ def main() -> None:
         # firma completa: killer NO detectado ∧ otro grupo detectado
         "frac_cebo_puro": round(frac([k for k in all_kills if k["cebo_puro"]], all_kills), 3),
         "frac_killer_no_detectado": round(frac([k for k in all_kills if not k["killer_detectado"]], all_kills), 3),
+        # --- MÉTRICA CORREGIDA (v2.8): percepción REAL de la barrera honesta (memoria de confirmación) ---
+        "frac_killer_no_confirmado": round(frac([k for k in all_kills if not k["killer_confirmado"]], all_kills), 3),
+        "frac_cebo_confirmado": round(frac([k for k in all_kills if k["cebo_confirmado"]], all_kills), 3),
+        "frac_pasos_un_grupo_confirmado": round(float(np.mean(
+            [e["steps_un_grupo_confirmado"] / max(e["steps_escolta"], 1) for e in episodes])), 3) if episodes else 0.0,
         "sep_frentes_media_en_muertes": round(float(np.mean([k["sep_frentes"] for k in all_kills])), 1) if all_kills else 0.0,
     }
 
@@ -191,8 +219,13 @@ def main() -> None:
           % (100 * resumen["frac_sujecion_en_no_anclado"]))
     print("  cebo PURO (killer no visto ∧ otro frente visto): %.1f%% | killer no detectado: %.1f%%"
           % (100 * resumen["frac_cebo_puro"], 100 * resumen["frac_killer_no_detectado"]))
-    print("  contexto: un-solo-grupo-visto el %.1f%% de los pasos de ESCOLTA | sep frentes media en muertes: %.1f m"
-          % (100 * resumen["frac_pasos_un_grupo_visto"], resumen["sep_frentes_media_en_muertes"]))
+    print("  >>> MÉTRICA v2.8 (percepción real de la barrera): killer NO CONFIRMADO: %.1f%% | "
+          "cebo CONFIRMADO (killer no conf. ∧ otro frente conf.): %.1f%%"
+          % (100 * resumen["frac_killer_no_confirmado"], 100 * resumen["frac_cebo_confirmado"]))
+    print("  contexto: un-solo-grupo-visto el %.1f%% de ESCOLTA | un-solo-grupo-CONFIRMADO el %.1f%% | "
+          "sep frentes media en muertes: %.1f m"
+          % (100 * resumen["frac_pasos_un_grupo_visto"], 100 * resumen["frac_pasos_un_grupo_confirmado"],
+             resumen["sep_frentes_media_en_muertes"]))
 
     payload = {
         "model": str(args.model) if args.model else "FLOOR (δ≡0 = scriptado)",
