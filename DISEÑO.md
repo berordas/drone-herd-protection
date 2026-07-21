@@ -73,9 +73,17 @@
 > ENTRENAMIENTO** (`WolfPackEnv.set_curriculum` → re-coloca los 2 subgrupos con RNG propio tras `reset()`; NO toca el mundo
 > congelado); la EVAL es SIEMPRE spawn grouped normal de v2.7 (mide el cebo REAL, no el servido). **Paso 0 (verificado):** el
 > suelo residual (δ=0) contra la pared v2.7 está SANO (los lobos RODEAN/atacan —predation, rapidez ~2.6 m/s, alcanzan la presa a
-> 0.6 m—, NO zombis contra la pared). La pregunta clave: ¿el cebo aprendido con ayuda SOBREVIVE al spawn normal (nivel 4), o cae
-> de vuelta al suelo ("se aprende con ayuda pero no se forma solo")? Vías de reserva si falla (BIBLIOGRAFIA, NO implementadas):
-> exploración intrínseca COORDINADA (curiosidad: EMC/MACE/SMMAE/JIM) y luego control JERÁRQUICO de formación.
+> 0.6 m—, NO zombis contra la pared). **run06 COMPLETADO (20M) — EL CEBO NO CRUZA EL VALLE NI CON EL SPAWN SERVIDO.** Fase 1
+> clavada en el suelo (eval ligera 10 semillas = 2.20 EXACTO; guardia recalibrada a <1.9 = suelo−0.3; el arnés de 100 da 2.30/2.42).
+> Trayectoria por nivel (eval ligera, spawn normal): L1 ~2.52 → L2 ~2.5 → L3 ~2.30 → **L4 ~2.12** (degradación MONÓTONA al estrechar
+> la separación hacia el spawn real). **100 semillas (arnés): FINAL (20M) 1.90/1.88 → Δ −0.40/−0.54 (POR DEBAJO del suelo: el
+> residual curricular EROSIONA al script) · mejor ckpt 4M 2.18/2.35 (Δ −0.12/−0.07 ≈ suelo) · 6.5M 2.14/2.37 (≈ suelo).** `cebo_diag`
+> en TODOS los checkpoints: **killer-no-detectado 0.0% / cebo PURO 0.0% = la nula EXACTA del scriptado** — ni una muerte desde el
+> frente no visto, ni siquiera a 4M con el cebo casi servido (allí la severidad en episodios de 2 grupos sube a 2.93, pero es
+> flanqueo más agresivo de los frentes VISTOS, no cebo). **Veredicto: el cebo NO se forma — ni con el spawn servido la política
+> aprende a matar desde el frente no visto; el currículo de separación no cruza el valle (relative overgeneralization) y al
+> endurecer erosiona levemente.** Confirma y profundiza run05 (recompensa pura). **Vías de reserva (BIBLIOGRAFIA, NO implementadas —
+> decisión del usuario): exploración intrínseca COORDINADA (curiosidad: EMC/MACE/SMMAE/JIM) → control JERÁRQUICO de formación.**
 > **Commits:** `194a3ad` base · `37910b3` terminal · `e663504` disparador por dron · `4d1e708` campo
 > 300×300 + escala biológica absoluta · `886bd45` dispersión del rebaño · `a15e2df` movimiento de
 > drones (3a) · `fd893b8` detectar→confirmar (3b) · `49e0e22` consolidar DISEÑO+CLAUDE · `144b7bd` guiado (paso 2)
