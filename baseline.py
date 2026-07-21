@@ -119,20 +119,21 @@ EVAL_SEEDS = tuple(range(N_PER_KIND))
 KINDS = ("lobos", "corzos", "mixto")
 KIND_LABEL = {"lobos": "solo-lobos", "corzos": "solo-corzos", "mixto": "mixto"}
 TERMINALS = ("success", "predation", "timeout")
-FROZEN_TAG = "v2.7-baseline"   # tag git del commit congelado: SUSTO DE DOS RADIOS (expulsión por movimiento v2.4 INTACTA +
-                               # PARED BLANDA estática STATIC_DETER_RADIUS=10: un dron ACTIVE quieto a corta ya NO se cruza y
-                               # no deja matar a través). Cambio de FÍSICA -> RE-MEDIDO. METRO DGX. INVALIDA la baseline del
-                               # MARL de drones run01 (medido sobre v2.6, barrera atravesable): run01 = histórico sobre v2.6.
+FROZEN_TAG = "v2.8-baseline"   # tag git del commit congelado: BARRERA HONESTA (el ReactiveCoordinator reacciona SOLO a lobos
+                               # CONFIRMADOS de equipo con memoria — alguna vez a <= r_confirm=40 de un dron ACTIVE, latch por
+                               # episodio; fin de la percepción-oráculo de v2.6 que reaccionaba a contactos a r_detect=100 con
+                               # el tipo de verdad-terreno) + STANDOFF DERIVADO (sqrt(R²−(s/2)²)=12 m: sin hueco entre barrera
+                               # y rebaño fuera de disuasión). FÍSICA INTACTA (world.py ≡ v2.7; el susto de dos radios sigue) ->
+                               # Dummy BIT A BIT ≡ v2.7; Reactive RE-MEDIDO. METRO DGX. INVALIDA la nota a batir del MARL de
+                               # drones (2.30/2.42 era contra la barrera-oráculo v2.7): el MARL se reentrenará sobre v2.8.
 
 # Referencia CONGELADA de severidad (media de muertes/ep) por tipo, para detectar DERIVA.
 # Se rellena tras la primera medición; en re-corridas debe coincidir (mundo reproducible POR ENTORNO).
-# v2.7 (METRO DGX): SUSTO DE DOS RADIOS (pared blanda estática STATIC_DETER_RADIUS=10: un dron ACTIVE
-# quieto a corta ya REPELE y no deja matar a través). CAMBIO de física -> RE-MEDIDO. Ahora el Dummy,
-# cuyos drones están CLAVADOS en sus puestos, recupera algo de disuasión a corta (la pared no exige
-# moverse): Dummy BAJA ~0.45 respecto a v2.6 (4.42/4.34 -> 3.97/3.89), consistente (~2 SEM). Es medida,
-# no objetivo (no se tuneó STATIC_DETER_RADIUS/GAIN para perseguir cifras). Contraste v2.6 (barrera
-# atravesable): Dummy 4.42/0/4.34 · Reactive 2.74/0/2.82. Este cambio INVALIDA la baseline del MARL de
-# drones run01 (medido sobre v2.6); run01 = histórico, el MARL se reentrenará sobre v2.7.
+# v2.8 (METRO DGX): BARRERA HONESTA + standoff derivado — cambio SOLO en coordinators.py (la LÓGICA DE
+# REACCIÓN de la barrera); la FÍSICA del mundo es v2.7 INTACTA (susto de dos radios). El Dummy NO usa
+# la barrera -> sus números son BIT A BIT los de v2.7 (verificado en la re-medición); el Reactive se
+# RE-MIDE (reacciona más tarde — espera a CONFIRMAR a 40 m — pero su línea derivada queda más pegada).
+# Es medida, no objetivo. Contraste v2.7 (barrera-oráculo): Dummy 3.97/0/3.89 · Reactive 2.30/0/2.42.
 REFERENCE_SEVERITY = {
     "lobos": 3.97,   # solo-lobos (amenaza pura); succ 4 / pred 87 / timeout 9; n_safe 2.73
     "corzos": 0.00,  # solo-corzos = SIN amenaza (100/100 timeout; el rebaño pasta, n_safe 0)

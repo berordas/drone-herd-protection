@@ -16,8 +16,10 @@ Diseño:
   la decide la red cada `frame_skip=5` pasos de física — la MISMA sincronía de fronteras que
   el env / PolicyWolfController (en evaluación, `SyncedReactiveCoordinator` llama a
   `refresh(world)` en la frontera; en entrenamiento, el env fija δ con `set_delta`) — y se
-  MANTIENE entre decisiones. Con δ≡0 el clip es un no-op numérico (factor 1.0 exacto) → el
-  controlador es BIT A BIT el scriptado puro (rl_env_check test 9).
+  MANTIENE entre decisiones. Con δ≡0 hay PASS-THROUGH EXACTO (sin suma ni clip) → el
+  controlador es BIT A BIT el scriptado puro (rl_env_check test 9). [El clip con δ≡0 NO era
+  un no-op numérico: si la normalización del script deja la norma 1 ulp sobre wolf_speed,
+  recortarla introduce una diferencia ~1e-16 que el caos amplifica — destapado por v2.8.]
 - **En coasting δ NO se aplica** (pass-through del script, como el susto): sin res cazable el
   paquete coastea a parada; la red no puede impedirlo (paralelo al susto, que es física).
 - **Entrada de la red (obs residual, 132)**: la obs de 122 (`build_obs`, rl/obs.py INTACTO) +
@@ -110,7 +112,15 @@ class ResidualWolfController(WolfController):
         self.last_script_v = np.asarray(v_script, dtype=float).copy()
         if coasting:
             return v_script, True                        # pass-through: δ no toca el coasting
-        v = v_script + self.delta[: world.n_wolves]
+        delta = self.delta[: world.n_wolves]
+        if not delta.any():
+            # δ≡0 ⇒ PASS-THROUGH EXACTO (el SUELO ≡ scriptado BIT A BIT, rl_env_check test 9).
+            # El clip de abajo NO es un no-op numérico cuando la normalización del propio script
+            # deja la norma 1 ulp por encima de wolf_speed (p.ej. 4.000000000000001): el mundo
+            # integra la salida del scriptado SIN recorte, así que recortarla aquí rompía la
+            # equivalencia (divergencia float amplificada por el caos — destapado por v2.8).
+            return v_script, False
+        v = v_script + delta
         norm = np.linalg.norm(v, axis=1, keepdims=True)
         v = v * np.minimum(1.0, world.wolf_speed / np.maximum(norm, 1e-9))
         return v, False

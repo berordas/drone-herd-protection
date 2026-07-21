@@ -12,12 +12,22 @@ Comprueba el COMPORTAMIENTO del primer coordinador de verdad (NO la física, con
   7) REPRODUCIBILIDAD.
   9) ARRANQUE: la patrulla reparte a los drones desde t=0 (a su ranura MÁS CERCANA), sin mandarlos
      al centro ni cruzarse (la fase de la formación se ancla a su posición angular actual).
- 10) PERCEPCIÓN (v2.6): la barrera solo ve lobos DETECTADOS (<= r_detect de un dron ACTIVE, el criterio
-     del mundo) y se ancla al PRIMER detectado con histéresis — un frente NO visto no influye en NI UN
-     waypoint (antes entraba por la media global); sin ningún detectado en ESCOLTA -> patrulla.
+ 10) PERCEPCIÓN HONESTA (v2.8): la barrera reacciona SOLO a lobos CONFIRMADOS de equipo con memoria
+     (alguna vez a <= r_confirm=40 de un dron ACTIVE; latch el resto del episodio). Dirigidos:
+     (A) un contacto DETECTADO (<= r_detect) pero NUNCA confirmado NO dispara la barrera (v2.6 sí lo
+     hacía: percepción-oráculo — sabía el tipo de un bulto a 100 m); al cruzar los 40 m de un dron
+     queda confirmado y la barrera reacciona; si luego se aleja (incluso más allá de r_detect) SIGUE
+     confirmado (memoria/tracking). (B) dos frentes, uno confirmado y otro nunca a <= 40 m: la barrera
+     se coloca SOLO respecto al confirmado — mover el frente sin confirmar no cambia NI UN waypoint
+     (el frente ciego que hace el cebo físicamente posible).
+ 11) STANDOFF derivado (v2.8): standoff = sqrt(DETER_RADIUS² − (spacing/2)²) = 12 m — el peor punto de
+     la línea de vacas frontales (a mitad lateral entre dos drones) queda a <= DETER_RADIUS del dron
+     más cercano: un lobo confirmado no puede colarse entre la barrera y el rebaño sin entrar en
+     radio de disuasión (con el standoff previo = 20 sí podía: peor punto a sqrt(20²+16²) = 25.6 m).
 Guarda dos renders: barrera en acción (solo-lobos/mixto) y patrulla (solo-corzos).
-[v2.6: los tests 1-9 pasan SIN cambios de aserción — con un solo frente (clustered, todos los tests
-previos) el paquete entero está detectado en ESCOLTA y la barrera anclada al primer lobo ≈ la de antes.]
+[v2.8: los tests 1-9 pasan SIN cambios de aserción — con un solo frente (clustered, todos los tests
+previos) el paquete entero acaba CONFIRMADO en cuanto llega a la barrera (cruza los 40 m de los drones
+del frente) y la barrera anclada al primer confirmado ≈ la de antes; solo el standoff acerca la línea.]
 
 El mundo NO se toca (world.py congelado); solo se añade y verifica el coordinador. La baseline Dummy
 sigue idéntica (mismo arnés baseline.py). face_check y la regresión siguen verdes.
@@ -91,7 +101,10 @@ def test_reactivo():
     w.wolves[:, 0] += 50.0                                 # mueve el paquete +X (solo el estado; sin step)
     center2 = c.act(w.get_observation())[idx].mean(0)
     print("  centro de la barrera: %s -> %s (paquete movido +50 en X)" % (np.round(center1, 1), np.round(center2, 1)))
-    assert center2[0] > center1[0] + 5.0, "la barrera NO siguió al paquete (no reactiva)"
+    # v2.8: el desplazamiento esperado ESCALA con el standoff (centro = front_c + u·standoff; con el
+    # standoff derivado 12 la parte u·standoff es 12/20 de la de v2.6) -> umbral recalibrado 5.0 -> 3.0.
+    # MISMA propiedad (la barrera sigue al paquete); solo cambia la magnitud por la línea más pegada.
+    assert center2[0] > center1[0] + 3.0, "la barrera NO siguió al paquete (no reactiva)"
     print("  OK\n")
 
 
@@ -128,8 +141,34 @@ def test_penetrado():
     print("  OK\n")
 
 
+def _wrap(a):
+    return abs((a + 180.0) % 360.0 - 180.0)
+
+
+def _bearing_err(p, hc, target):
+    """Diferencia angular (grados, [0,180]) entre el rumbo hc->p y el rumbo hc->target."""
+    return _wrap(np.degrees(np.arctan2(p[1] - hc[1], p[0] - hc[0])
+                            - np.arctan2(target[1] - hc[1], target[0] - hc[0])))
+
+
+def _band_points(w, lo, hi, hc):
+    """Puntos del campo (barrido DETERMINISTA de anillos alrededor del rebaño) cuya distancia MÍNIMA a
+    todo dron ACTIVE cae en (lo, hi] — contactos DETECTABLES pero fuera del radio de confirmación."""
+    flying = w.drones[w.drone_state == ACTIVE]
+    out = []
+    for r in (60.0, 80.0, 100.0, 120.0, 140.0):
+        for adeg in range(0, 360, 15):
+            p = hc + r * np.array([np.cos(np.radians(adeg)), np.sin(np.radians(adeg))])
+            if not (5.0 <= p[0] <= w.W - 5.0 and 5.0 <= p[1] <= w.H - 5.0):
+                continue
+            dmin = float(np.linalg.norm(flying - p, axis=1).min())
+            if lo < dmin <= hi:
+                out.append(p)
+    return out
+
+
 def test_percepcion():
-    print("=== 10) PERCEPCIÓN (v2.6): la barrera solo ve lobos DETECTADOS; el frente NO visto no influye ===")
+    print("=== 10) PERCEPCIÓN HONESTA (v2.8): la barrera reacciona SOLO a lobos CONFIRMADOS (equipo+memoria) ===")
     # Primer seed solo-lobos (clustered) con >=3 lobos que alcanza ESCOLTA (determinista).
     w = c = None
     for s in range(1, 15):
@@ -141,50 +180,97 @@ def test_percepcion():
     for _ in range(60):
         w.step(c.act(w.get_observation()))
     hc = _herd(w).mean(axis=0)
-    anchor = c._anchor
-    others = [j for j in range(w.n_wolves) if j != anchor]
-    # Montaje: el ANCLA visible al este del rebaño; el resto tele-transportado FUERA de r_detect de todo
-    # dron ACTIVE (candidatos de borde con holgura, rankeados por diferencia angular vs el ancla -> la
-    # media global apuntaría LEJOS del ancla, discriminante).
-    cand = np.array([[3.0, 3.0], [297.0, 3.0], [3.0, 297.0], [297.0, 297.0],
-                     [150.0, 3.0], [150.0, 297.0], [3.0, 150.0], [297.0, 150.0]])
-    flying = w.drones[w.drone_state == ACTIVE]
-    cand = cand[[float(np.linalg.norm(flying - cc, axis=1).min()) > w.r_detect + 15.0 for cc in cand]]
-
-    def _wrap(a):
-        return abs((a + 180.0) % 360.0 - 180.0)
-
-    bear = np.array([_wrap(np.degrees(np.arctan2(cc[1] - hc[1], cc[0] - hc[0]))) for cc in cand])
-    far, far2 = cand[np.argsort(-bear)[0]], cand[np.argsort(-bear)[1]]
-    w.wolves[anchor] = hc + np.array([45.0, 0.0])
-    w.wolves[others] = far + np.random.default_rng(0).normal(0, 3, size=(len(others), 2))
     idx = np.where(_free(w))[0]
-    a1 = c.act(w.get_observation()).copy()
-    w.wolves[others] = far2 + np.random.default_rng(1).normal(0, 3, size=(len(others), 2))  # mueve el frente NO visto
-    a2 = c.act(w.get_observation()).copy()
-    center = a1[idx].mean(axis=0)
-    err_anchor = _wrap(np.degrees(np.arctan2(center[1] - hc[1], center[0] - hc[0]))
-                       - np.degrees(np.arctan2(w.wolves[anchor][1] - hc[1], w.wolves[anchor][0] - hc[0])))
-    gm = w.wolves.mean(axis=0)
-    err_mean = _wrap(np.degrees(np.arctan2(center[1] - hc[1], center[0] - hc[0]))
-                     - np.degrees(np.arctan2(gm[1] - hc[1], gm[0] - hc[0])))
-    print("  frente NO visto movido -> waypoints idénticos: %s | eje: |vs ancla|=%.1f° |vs media global|=%.1f°"
-          % (np.array_equal(a1, a2), err_anchor, err_mean))
-    assert np.array_equal(a1, a2), "FALLO: el frente NO detectado influyó en la barrera (omnisciencia)"
-    assert err_anchor < 25.0, "FALLO: la barrera no apunta al lobo ancla detectado"
-    assert err_mean > err_anchor + 20.0, "FALLO: la barrera sigue la media global, no al detectado"
-    # Sin NINGÚN lobo detectado en ESCOLTA -> patrulla (anillo); al re-detectar -> barrera de nuevo.
-    w.wolves[anchor] = far2 + np.array([5.0, 0.0])
-    a3 = c.act(w.get_observation())
-    rad = np.linalg.norm(a3[idx] - hc, axis=1)
-    w.wolves[anchor] = hc + np.array([45.0, 0.0])
-    a4 = c.act(w.get_observation())
-    center4 = a4[idx].mean(axis=0)
-    err4 = _wrap(np.degrees(np.arctan2(center4[1] - hc[1], center4[0] - hc[0])))
-    print("  sin detectados -> anillo de patrulla (cv=%.2f) | re-detectado -> barrera de nuevo (err=%.1f°)"
-          % (rad.std() / max(rad.mean(), 1e-9), err4))
-    assert rad.std() / max(rad.mean(), 1e-9) < 0.35, "FALLO: sin detectados no cayó a patrulla"
-    assert err4 < 25.0, "FALLO: al re-detectar no volvió a la barrera"
+    flying = w.drones[w.drone_state == ACTIVE]
+
+    # ---- (A) contacto DETECTADO pero NUNCA confirmado -> NO dispara la barrera (v2.6 sí) ----
+    c2 = ReactiveCoordinator(w)      # coordinador FRESCO: memoria de confirmación VACÍA (fase ya en ESCOLTA)
+    band = _band_points(w, w.r_confirm + 10.0, w.r_detect - 5.0, hc)
+    assert len(band) >= 2, "montaje: sin puntos en la banda contacto-sin-confirmar de los drones"
+    rng = np.random.default_rng(0)
+    w.wolves[:] = band[0] + rng.normal(0, 1, size=w.wolves.shape)     # ruido 1 m: sigue a > r_confirm
+    dmin = float(np.linalg.norm(w.wolves[:, None, :] - flying[None, :, :], axis=2).min())
+    a1 = c2.act(w.get_observation())
+    rad = np.linalg.norm(a1[idx] - hc, axis=1)
+    cv = rad.std() / max(rad.mean(), 1e-9)
+    print("  (A) contacto a %.0f m del dron más cercano (<= r_detect=%.0f, > r_confirm=%.0f) -> patrulla (cv=%.2f), sin barrera"
+          % (dmin, w.r_detect, w.r_confirm, cv))
+    assert w.r_confirm < dmin <= w.r_detect, "montaje: el contacto debe estar en la banda (r_confirm, r_detect]"
+    assert cv < 0.35, "FALLO: la barrera reaccionó a un contacto sin confirmar (percepción-oráculo)"
+    # Cruza los 40 m de un dron ACTIVE -> CONFIRMADO -> la barrera reacciona.
+    w.wolves[0] = flying[0] + np.array([w.r_confirm - 10.0, 0.0])     # a 30 m del dron: confirmable
+    a2 = c2.act(w.get_observation())
+    err2 = _bearing_err(a2[idx].mean(axis=0), hc, w.wolves[0])
+    print("  (A) el lobo cruza los 40 m de un dron -> CONFIRMADO -> barrera (err eje=%.1f°)" % err2)
+    assert bool(c2._confirmed[0]), "FALLO: el lobo a <= r_confirm no quedó confirmado"
+    assert err2 < 25.0, "FALLO: la barrera no reaccionó al lobo recién confirmado"
+    # Se aleja MÁS ALLÁ incluso de r_detect -> SIGUE confirmado (memoria/tracking): la barrera lo rastrea.
+    cand = np.array([[3.0, 3.0], [297.0, 3.0], [3.0, 297.0], [297.0, 297.0]])
+    far = cand[np.argmax([float(np.linalg.norm(flying - cc, axis=1).min()) for cc in cand])]
+    w.wolves[0] = far
+    dfar = float(np.linalg.norm(flying - far, axis=1).min())
+    a3 = c2.act(w.get_observation())
+    err3 = _bearing_err(a3[idx].mean(axis=0), hc, w.wolves[0])
+    print("  (A) el confirmado se aleja a %.0f m (> r_detect) -> SIGUE confirmado (memoria): la barrera lo rastrea (err=%.1f°)"
+          % (dfar, err3))
+    assert dfar > w.r_detect, "montaje: el punto lejano debería quedar fuera de r_detect"
+    assert bool(c2._confirmed[0]), "FALLO: la confirmación se olvidó al alejarse (sin memoria)"
+    assert err3 < 25.0, "FALLO: la barrera no rastrea al confirmado que se aleja"
+
+    # ---- (B) dos frentes: uno CONFIRMADO y otro NUNCA a <= 40 m -> solo el confirmado coloca ----
+    w.wolves[0] = hc + np.array([45.0, 0.0])                          # el confirmado, al este del rebaño
+    others = np.arange(1, w.n_wolves)
+    # dos posiciones de banda con rumbo MUY distinto al confirmado (frente "ciego" al otro lado)
+    byang = sorted(band, key=lambda p: -_bearing_err(p, hc, w.wolves[0]))
+    far_b1, far_b2 = byang[0], byang[1]
+    assert _bearing_err(far_b1, hc, w.wolves[0]) > 60.0, "montaje: el frente ciego debe venir por otro rumbo"
+    w.wolves[others] = far_b1 + rng.normal(0, 1, size=(others.size, 2))
+    b1 = c2.act(w.get_observation()).copy()
+    w.wolves[others] = far_b2 + rng.normal(0, 1, size=(others.size, 2))   # mueve el frente sin confirmar
+    b2 = c2.act(w.get_observation()).copy()
+    center = b1[idx].mean(axis=0)
+    err_conf = _bearing_err(center, hc, w.wolves[0])
+    err_mean = _bearing_err(center, hc, w.wolves.mean(axis=0))
+    print("  (B) frente contacto-sin-confirmar movido -> waypoints idénticos: %s | eje: |vs confirmado|=%.1f° |vs media global|=%.1f°"
+          % (np.array_equal(b1, b2), err_conf, err_mean))
+    assert not c2._confirmed[others].any(), "montaje: el 2º frente no debería estar confirmado"
+    assert np.array_equal(b1, b2), "FALLO: el frente sin confirmar influyó en la barrera"
+    assert err_conf < 25.0, "FALLO: la barrera no se coloca respecto al confirmado"
+    assert err_mean > err_conf + 20.0, "FALLO: la barrera sigue la media global, no al confirmado"
+    print("  OK\n")
+
+
+def test_standoff():
+    print("=== 11) STANDOFF derivado (v2.8): no hay hueco entre la barrera y el rebaño fuera de disuasión ===")
+    w = World(seed=1, corzos_max=3, episode_kind="lobos"); w.reset()
+    c = ReactiveCoordinator(w)
+    worst = float(np.hypot(c.barrier_standoff, c.drone_spacing / 2.0))
+    print("  standoff=%.1f m (derivado sqrt(R²−(s/2)²); antes 20) | spacing=%.1f m | peor punto de la línea"
+          " de vacas frontales a %.1f m del dron más cercano (<= DETER_RADIUS=%.0f)"
+          % (c.barrier_standoff, c.drone_spacing, worst, DETER_RADIUS))
+    assert abs(c.barrier_standoff - 12.0) < 1e-9, "el standoff derivado con defaults debe ser 12 m"
+    assert worst <= DETER_RADIUS + 1e-6, "FALLO: un lobo puede colarse entre barrera y rebaño fuera de disuasión"
+    # Empírico sobre una barrera REAL: los puntos de la línea de vacas frontales detrás de cada hueco
+    # entre drones adyacentes quedan a <= DETER_RADIUS de alguna ranura.
+    assert _advance_to_escolta(w, c), "no llegó a ESCOLTA"
+    for _ in range(40):
+        w.step(c.act(w.get_observation()))
+    idx = np.where(_free(w))[0]
+    assert idx.size >= 2, "hacen falta >=2 ranuras para medir el hueco"
+    slots = c.act(w.get_observation())[idx]
+    p = slots - slots.mean(axis=0)
+    perp = p[np.argmax(np.linalg.norm(p, axis=1))]
+    perp = perp / max(float(np.linalg.norm(perp)), 1e-9)              # eje del frente
+    u = np.array([-perp[1], perp[0]])                                 # normal al frente
+    if float(np.dot(u, np.asarray(w.wolves[c._anchor], float) - slots.mean(axis=0))) < 0:
+        u = -u                                                        # apunta HACIA el paquete
+    order = np.argsort(slots @ perp)
+    gaps = []
+    for a, b in zip(order[:-1], order[1:]):
+        mid = 0.5 * (slots[a] + slots[b]) - u * c.barrier_standoff    # punto de vacas tras el hueco
+        gaps.append(float(np.linalg.norm(slots - mid, axis=1).min()))
+    print("  barrera real: %d ranuras | peor hueco medido %.1f m (<= %.0f)" % (idx.size, max(gaps), DETER_RADIUS))
+    assert max(gaps) <= DETER_RADIUS + 0.5, "FALLO: hueco real entre barrera y rebaño fuera de disuasión"
     print("  OK\n")
 
 
@@ -244,14 +330,14 @@ def test_arranque():
 
 
 def test_severidad_muestra():
-    # MEDIDA. En v2.4 (SUSTO POR MOVIMIENTO) los drones QUIETOS ya casi no disuaden -> la severidad Dummy SUBE a
-    # ~v2.2 (4.41/4.34) y la del reactivo TAMBIÉN sube (su barrera se recoloca pero pasa tiempo quieta = poste).
-    # Aun así el reactivo BATE al Dummy: su barrera se MUEVE para recolocarse -> disuade parcialmente. Medida
+    # MEDIDA. En v2.8 (barrera HONESTA) el reactivo reacciona más tarde (espera a CONFIRMAR a <= 40 m) ->
+    # puede subir vs la barrera-oráculo de v2.6/v2.7; el standoff derivado (12 m) compensa acercando la
+    # línea. Aun así debe SEGUIR batiendo al Dummy (que no usa la barrera y queda intacto). Medida
     # autoritativa (N=100, reactive_eval). BUG CORREGIDO (v2.3): sev() construía el coordinador con un world
     # DISTINTO al que corría -> el ReactiveCoordinator leía estado CONGELADO y salía artificialmente mal; ahora
     # usa el MISMO world.
     N = 30
-    print("=== 6) SEVERIDAD (muestra n=%d): Reactive vs Dummy en v2.4 (susto por movimiento) ===" % N)
+    print("=== 6) SEVERIDAD (muestra n=%d): Reactive vs Dummy en v2.8 (barrera honesta) ===" % N)
     from baseline import build_world, run_episode_metrics
     def sev(kind, n, factory):
         out = []
@@ -356,6 +442,7 @@ if __name__ == "__main__":
     test_sin_presa_fijada()
     test_penetrado()
     test_percepcion()
+    test_standoff()
     test_patrulla()
     test_arranque()
     test_severidad_muestra()

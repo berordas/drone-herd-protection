@@ -42,22 +42,37 @@ class ReactiveCoordinator:
       las vacas): degrada con gracia a cubrir a los lobos MÁS CERCANOS a las vacas (los ya enganchados).
     - Sin amenaza confirmada (VIGILANCIA/SOSPECHA, solo-corzos): PATRULLA en órbita alrededor del rebaño.
 
-    PERCEPCIÓN REALISTA (v2.6): el coordinador solo VE los lobos DETECTADOS — hasta v2.5 la barrera se
-    orientaba al centroide de TODOS los lobos (omnisciencia: conocía lobos que ningún dron había visto).
-    Regla EXACTA:
-      * DETECTADO = lobo a <= r_detect de algún dron EN VUELO (ACTIVE) — el MISMO criterio DRI del
-        disparador del mundo (_update_phase/_pick_investigator: "solo los ACTIVE detectan/confirman",
-        mismo r_detect); recomputado aquí en SOLO-LECTURA cada paso (el mundo no cambia, sin radio nuevo).
-      * El EJE de la barrera se ancla al lobo ANCLA = el PRIMER lobo detectado (memoria del COORDINADOR:
-        paso de primera detección por lobo; desempate por índice menor), con HISTÉRESIS: se mantiene sobre
-        él mientras siga detectado; si deja de serlo (sale de detección), pasa al siguiente detectado más
-        antiguo. (El "primer detectado" ≈ el que disparó la ESCOLTA.)
-      * PENETRADO y la cobertura lobo-a-lobo operan SOLO sobre los lobos detectados (sin esto el frente
-        no visto seguiría atrayendo drones por la puerta de atrás). Las FÓRMULAS no cambian: mismo
-        standoff, mismas ranuras/spacing, mismo reparto, misma patrulla; solo cambia A QUÉ lobos mira.
-      * En ESCOLTA SIN ningún lobo detectado: PATRULLA (como sin amenaza) hasta re-detectar.
-    Consecuencia buscada: con dos frentes (spawn grouped v2.5), si los drones solo han visto uno, el otro
-    entra SIN SER VISTO — el cebo pasa a ser físicamente real, no un artefacto de la media global.
+    PERCEPCIÓN HONESTA (v2.8): la barrera reacciona SOLO a lobos CONFIRMADOS de equipo con memoria —
+    fin de la percepción-oráculo. Lineage: hasta v2.5 la barrera usaba el centroide de TODOS los lobos
+    (omnisciencia de POSICIÓN); v2.6 la restringió a los DETECTADOS (<= r_detect=100 de un ACTIVE),
+    pero eso seguía siendo trampa con el marco DRI del mundo: a r_detect solo se sabe "hay un CONTACTO"
+    (bulto sin clasificar — podría ser un corzo); el TIPO solo se conoce a r_confirm=40 (oráculo,
+    stand-in de YOLO). v2.6 reaccionaba a bultos a 100 m sabiendo por verdad-terreno que eran lobos ->
+    no dejaba frente ciego. Regla EXACTA v2.8:
+      * CONFIRMADO = lobo que ALGUNA VEZ ha estado a <= r_confirm de algún dron EN VUELO (ACTIVE) —
+        el nivel IDENTIFICAR del marco DRI, el mismo r_confirm del oráculo del mundo. Confirmación de
+        EQUIPO (compartida por la flota) con MEMORIA: dura el resto del episodio (tracking), aunque el
+        lobo luego se aleje. Un contacto NUNCA confirmado NO existe para la barrera (aunque esté a
+        <= r_detect y el mundo conozca su posición real). Modelado como oráculo determinista; la fase
+        de percepción lo sustituirá por YOLO+tracking con esta MISMA interfaz de decisión.
+      * El EJE de la barrera se ancla al lobo ANCLA = el PRIMER lobo confirmado (memoria del COORDINADOR:
+        paso de primera confirmación por lobo; desempate por índice menor), con HISTÉRESIS (con la
+        memoria latcheada un confirmado ya no "se pierde": el ancla es estable todo el episodio).
+      * PENETRADO y la cobertura lobo-a-lobo operan SOLO sobre los lobos confirmados. Las FÓRMULAS no
+        cambian: mismas ranuras/spacing, mismo reparto, misma patrulla; solo cambia A QUÉ lobos mira.
+      * En ESCOLTA SIN ningún lobo confirmado: PATRULLA hasta que se confirme alguno. (La máquina de
+        fases del mundo NO cambia: ESCOLTA ya disparaba por CONFIRMACIÓN del oráculo a r_confirm —
+        world._update_phase — y los contactos sin confirmar solo mantienen SOSPECHA/investigación.)
+    Consecuencia buscada: con dos frentes (spawn grouped v2.5), el frente que nadie ha CONFIRMADO tiene
+    vía libre aunque esté detectado como contacto — el frente ciego que hace el cebo físicamente posible.
+
+    STANDOFF DERIVADO (v2.8, no mágico): la línea se coloca tan cerca del frente de vacas que el punto
+    PEOR (sobre la línea de vacas frontales, a mitad LATERAL entre dos drones adyacentes) queda a
+    <= DETER_RADIUS del dron más cercano: sqrt(standoff² + (spacing/2)²) <= DETER_RADIUS  =>
+    standoff = sqrt(DETER_RADIUS² − (spacing/2)²) = sqrt(20² − 16²) = 12 m. Con el standoff previo
+    (= DETER_RADIUS = 20) un lobo podía COLARSE entre la barrera y el rebaño quedándose a > DETER_RADIUS
+    del dron más cercano y matar "visto pero no disuadido" (medido en el diagnóstico: ~50% de las
+    muertes sin dron a tiro de disuasión).
 
     Solo comanda a los drones LIBRES (ACTIVE y no-investigando): NO toca el reflejo de investigación (el
     investigador) ni los relevos de batería (deja su waypoint actual). NO toca la física (world.py congelado);
@@ -70,8 +85,12 @@ class ReactiveCoordinator:
         self.n_drones = world.n_drones
         # Parámetros ETIQUETADOS / afinables (m; rad/paso). Defaults atados a la escala de disuasión del
         # mundo (DETER_RADIUS=20) -> el frente "teja" con solape de campos de disuasión (spacing < 2*R).
-        self.barrier_standoff = barrier_standoff if barrier_standoff is not None else DETER_RADIUS          # barrera por delante de la vaca más amenazada, HACIA el paquete
         self.drone_spacing = drone_spacing if drone_spacing is not None else 1.6 * DETER_RADIUS             # separación entre drones del frente (< 2*DETER_RADIUS => solapan)
+        # v2.8: standoff DERIVADO de la geometría de disuasión (ver docstring): el punto peor de la línea
+        # de vacas frontales (a mitad lateral entre dos drones) queda a <= DETER_RADIUS del más cercano.
+        # sqrt(R² − (s/2)²) = sqrt(20² − 16²) = 12 m con defaults (antes 20 = R: el lobo se colaba).
+        self.barrier_standoff = barrier_standoff if barrier_standoff is not None else \
+            float(np.sqrt(max(DETER_RADIUS ** 2 - (self.drone_spacing / 2.0) ** 2, 0.0)))                   # barrera por delante de la vaca más amenazada, HACIA el paquete
         self.front_cows = front_cows                                                                        # nº de vacas "del frente" para anclar la barrera (None -> tantas como drones, mín 2)
         self.engage_standoff = engage_standoff if engage_standoff is not None else 2.0 * world.r_face_safe  # penetrado: dron entre la vaca y el lobo enganchado
         self.patrol_radius = patrol_radius                                                                 # órbita de patrulla (None -> adaptativo al tamaño del rebaño)
@@ -83,9 +102,12 @@ class ReactiveCoordinator:
         self._patrol_k: int | None = None
         self._patrol_step0: int = 0
         self._patrol_last_step: int = -10
-        # Estado de PERCEPCIÓN (v2.6): memoria de primera detección por lobo + lobo ANCLA vigente.
-        # Vive en el COORDINADOR (el mundo no cambia); se reinicia solo ante un episodio nuevo
-        # (step_count retrocede o cambia n_wolves). -1 = lobo nunca visto.
+        # Estado de PERCEPCIÓN (v2.8): máscara de lobos CONFIRMADOS (latch de equipo con memoria) +
+        # memoria de primera confirmación por lobo + lobo ANCLA vigente. Vive en el COORDINADOR (el
+        # mundo no cambia); se reinicia solo ante un episodio nuevo (step_count retrocede o cambia
+        # n_wolves). -1 = lobo nunca confirmado.
+        self._confirmed: np.ndarray | None = None
+        self._conf_step: int = -1
         self._first_seen: np.ndarray | None = None
         self._anchor: int | None = None
         self._last_step: int = -1
@@ -101,10 +123,10 @@ class ReactiveCoordinator:
         if idx.size == 0:
             return wp
         herd = self._live_herd()                                  # rebaño = vacas + terneros vivos y NO a salvo
-        det = self._detected()                                    # v2.6: el coordinador solo VE lo detectado
-        anchor = self._update_anchor(det)                         # lobo ANCLA (primer detectado, histéresis)
+        conf = self._confirmed_wolves()                           # v2.8: el coordinador solo VE lo CONFIRMADO
+        anchor = self._update_anchor(conf)                        # lobo ANCLA (primer confirmado, histéresis)
         if w.phase == "ESCOLTA" and anchor is not None and herd.shape[0] > 0:
-            seen = np.asarray(w.wolves, dtype=float)[det]         # SOLO los lobos detectados
+            seen = np.asarray(w.wolves, dtype=float)[conf]        # SOLO los lobos confirmados
             tgt = self._barrier(idx, seen, np.asarray(w.wolves[anchor], dtype=float), herd)
         else:
             tgt = self._patrol(idx, herd if herd.shape[0] > 0 else np.asarray(w.cows, dtype=float))
@@ -126,25 +148,35 @@ class ReactiveCoordinator:
                 parts.append(w.calves[mc])
         return np.vstack(parts) if parts else np.zeros((0, 2))
 
-    def _detected(self) -> np.ndarray:
-        """Máscara (n_wolves,) de lobos DETECTADOS (v2.6): a <= r_detect de algún dron EN VUELO (ACTIVE).
-        Calca el criterio DRI del disparador del mundo (_update_phase: 'solo los ACTIVE detectan',
-        _pick_investigator: d <= r_detect); SOLO-LECTURA sobre estado que el mundo ya calcula."""
+    def _confirmed_wolves(self) -> np.ndarray:
+        """Máscara (n_wolves,) de lobos CONFIRMADOS (v2.8, percepción HONESTA): un lobo queda CONFIRMADO
+        en cuanto está a <= r_confirm de algún dron EN VUELO (ACTIVE) — el nivel IDENTIFICAR del marco
+        DRI, el MISMO r_confirm del oráculo del mundo (_update_phase) — y la confirmación es de EQUIPO
+        con MEMORIA (latch |=): se recuerda el resto del episodio aunque el lobo se aleje (tracking;
+        sin drones en vuelo tampoco se olvida — es conocimiento de flota, no línea de vista). Un lobo
+        NUNCA confirmado NO existe para la barrera aunque esté a <= r_detect (eso es solo un CONTACTO
+        sin clasificar — el reflejo de investigación del MUNDO ya se ocupa de él). Se reinicia ante un
+        episodio nuevo (step_count retrocede o cambia n_wolves). SOLO-LECTURA sobre el mundo."""
         w = self.world
+        step = int(w.step_count)
+        if self._confirmed is None or self._confirmed.shape[0] != w.n_wolves or step < self._conf_step:
+            self._confirmed = np.zeros(w.n_wolves, dtype=bool)
+        self._conf_step = step
         if w.n_wolves == 0:
-            return np.zeros(0, dtype=bool)
+            return self._confirmed
         flying = w.drones[w.drone_state == ACTIVE]
-        if flying.shape[0] == 0:
-            return np.zeros(w.n_wolves, dtype=bool)
-        d = np.linalg.norm(np.asarray(w.wolves, dtype=float)[:, None, :] - flying[None, :, :], axis=2)
-        return (d <= w.r_detect).any(axis=1)
+        if flying.shape[0] > 0:
+            d = np.linalg.norm(np.asarray(w.wolves, dtype=float)[:, None, :] - flying[None, :, :], axis=2)
+            self._confirmed |= (d <= w.r_confirm).any(axis=1)
+        return self._confirmed
 
     def _update_anchor(self, det: np.ndarray) -> int | None:
-        """Lobo ANCLA de la barrera (v2.6) = el PRIMER lobo detectado, con HISTÉRESIS: mientras siga
-        detectado se mantiene; al perderse, pasa al detectado con primera detección más ANTIGUA
-        (desempate: índice menor — determinista). Devuelve None si no hay ninguno detectado.
-        La memoria (paso de primera detección) se acumula cada act() en TODAS las fases (los drones ya
-        ven en VIGILANCIA/SOSPECHA) y se reinicia ante un episodio nuevo."""
+        """Lobo ANCLA de la barrera = el PRIMER lobo confirmado (v2.8; antes detectado), con HISTÉRESIS:
+        mientras siga en la máscara se mantiene; al perderse, pasa al de primera confirmación más ANTIGUA
+        (desempate: índice menor — determinista; con la memoria latcheada de v2.8 un confirmado ya no se
+        pierde -> el ancla es estable todo el episodio). Devuelve None si no hay ninguno confirmado.
+        La memoria (paso de primera confirmación) se acumula cada act() en TODAS las fases y se
+        reinicia ante un episodio nuevo."""
         w = self.world
         step = int(w.step_count)
         if self._first_seen is None or self._first_seen.shape[0] != w.n_wolves or step < self._last_step:
@@ -163,10 +195,10 @@ class ReactiveCoordinator:
         return self._anchor
 
     def _barrier(self, idx: np.ndarray, wolves: np.ndarray, anchor_pos: np.ndarray, herd: np.ndarray) -> np.ndarray:
-        """Barrera de apantallado sobre los lobos DETECTADOS (v2.6). CLEAN: frente perpendicular entre el
+        """Barrera de apantallado sobre los lobos CONFIRMADOS (v2.8). CLEAN: frente perpendicular entre el
         lobo ANCLA y las vacas más cercanas a él. PENETRADO (el ancla ya está entre las vacas): cubre a
-        los lobos detectados más cercanos a ellas. Fórmulas idénticas a v2.5; solo cambió el QUÉ mira
-        (`wolves` = subconjunto detectado, `pack_c` = posición del ancla en vez de la media global)."""
+        los lobos confirmados más cercanos a ellas. Fórmulas idénticas a v2.5; solo cambió el QUÉ mira
+        (`wolves` = subconjunto confirmado, `pack_c` = posición del ancla) y el standoff (derivado, 12 m)."""
         k = idx.size
         pack_c = anchor_pos
         herd_c = herd.mean(axis=0)
