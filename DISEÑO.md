@@ -5,8 +5,29 @@
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
 >
-> **Última actualización: 2026-07-23** · ***v3.0: EL CEBO PERFECTO (RE-CONGELADO tag `v3.0-baseline`) — VEREDICTO
-> DEFINITIVO: el cebo NO RINDE ni perfecto; la defensa arreglada lo aplasta.** Seis piezas juntas (decisión del
+> **Última actualización: 2026-07-23 (2ª)** · ***v3.1: BARRERA EN CONJUNTO + TIMING BLINDADO (RE-CONGELADO tag
+> `v3.1-baseline`) — el experimento por fin JUSTO: la defensa coherente sube a 2.18/2.21; el 1.00 de v3.0 era en
+> parte ARTEFACTO del dron-que-persigue.** Parte 0 diagnosticada ANTES de tocar: (a) el terreno NO era corto (lobos
+> nacen a 114-329 m del dron más cercano, jamás confirmables ni detectables al nacer; la "alarma nada más aparecer"
+> es el REFLEJO: el investigador a 15 m/s confirma con el lobo aún a 94-184 m del rebaño — percepción del GIF);
+> (b) el timing del cebo fallaba porque el cebo BAJABA de r_detect=100 al asentar el merodeo (nace a ~114-135 del
+> dron) → se volvía EL contacto y el investigador lo cazaba (hasta 0.3-2 m; 15 vs 4 m/s no se escapa) confirmándolo
+> con el asalto a 238-440 m de su presa (5/15 episodios). Arreglos: **la barrera avanza EN CONJUNTO** (la embestida
+> por-dron de v3.0 ELIMINADA; `adv = clip(L + STATIC_DETER_RADIUS, 12, 36.7)` = SOBRE-APUNTADO de formación — apuntar
+> AL lobo deja escolta lateral con aproximación ~0; 10 m más allá garantiza cierre y expulsión del frente entero;
+> DOS frentes → la línea ENTERA al ancla y el 2º LIBRE, defensa deliberadamente explotable = el agujero del MARL;
+> test 12: colineales, spacing exacto, nadie se descuelga, mover el 2º frente no cambia ni un waypoint, expulsión
+> sin re-subidas) + **decoy_hold_dist 100→130** (r_detect + 30 de buffer de evasión) con huida radial PURA al
+> invadir (13/15 acompasados; residual 2/15 benigno: cebo cazado al nacer dentro del sobre de patrulla — ancla la
+> barrera igual y el asalto entra libre, confirmado a 5-18 m del rebaño) + emojis 0.27 y sin círculo de presa.
+> RE-MEDIDO (100/tipo, 2ª pasada sin deriva): Dummy 3.85/0/3.69 → **3.74/0/3.69** · Reactive 1.00/0/1.14 →
+> **2.18±1.38/0/2.21±1.44** (+1.18/+1.07). **El premio PROPIO del cebo dentro de v3.1 sigue en RUIDO: episodios
+> 2-grupos 2.34/2.34 vs 1-grupo 2.11/2.15 (+0.23/+0.19 ≈ 0.9 SEM)** — la línea única ocupada en cualquier frente
+> deja huecos también sin cebo (quinta lectura consistente: el multi-frente scriptado no paga contra esta defensa).
+> GIFs versionados /data/gifs/v3.1/ (nº1 Dummy pasivo · nº2 barrera clásica · nº3 cebo con formación en conjunto).
+> **Nota a batir del MARL → 2.18/0/2.21.*** ·
+> *(1ª: v3.0: EL CEBO PERFECTO (RE-CONGELADO tag `v3.0-baseline`) — VEREDICTO
+> (con el asterisco de v3.1): el cebo NO RINDE ni perfecto; la defensa arreglada lo aplasta.** Seis piezas juntas (decisión del
 > usuario; el número no es atribuible a cada una): terreno 500×500 (solo CONFIG_V2; colchón ≥100 m, lobo naciente
 > jamás confirmable al nacer; defaults 300 → face 12/12 bit a bit) + reparto de masa FIJO (`wolf_decoy_size=1` capado
 > a n−2; medido 1-vs-2: **anclaje IDÉNTICO 0.28** — la masa no compra anclaje; con 1 el asalto mata el doble) +

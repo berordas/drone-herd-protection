@@ -25,11 +25,14 @@ Comprueba el COMPORTAMIENTO del primer coordinador de verdad (NO la física, con
      más cercano: un lobo confirmado no puede colarse entre la barrera y el rebaño sin entrar en
      radio de disuasión (con el standoff previo = 20 sí podía: peor punto a sqrt(20²+16²) = 25.6 m).
      [v2.9: es la distancia MÍNIMA — el modo replegado con los lobos encima; el empírico fuerza ese caso.]
- 12) PRESIÓN (v3.0, corrige el BUG de v2.9): la barrera va HACIA el ancla y lo espanta, no cede —
-     (a) adv = clip(L, 12, advance_max≈36.7: retaguardia confirmable; v2.9 usaba L−DETER y RETROCEDÍA
-     al acercarse el lobo, y un dron que retrocede jamás expulsa); (b) EMBESTIDA local (radio derivado
-     LUNGE = DETER+STATIC = 30): el dron con un confirmado a tiro deja su ranura y vuela AL lobo;
-     (c) dinámico: la distancia dron->cebo DISMINUYE hasta la expulsión (_wolf_scared), sin re-subidas.
+ 12) FORMACIÓN QUE PRESIONA (v3.1, corrige el "dron que se descuelga" de v3.0): (a) la línea ENTERA
+     avanza junta: adv = clip(L + STATIC_DETER_RADIUS, 12, advance_max≈36.7) — sobre-apuntado de
+     formación (apuntar AL lobo deja escolta lateral con aproximación ~0; 10 m más allá garantiza
+     cierre y expulsión; retaguardia confirmable); (b) SIN embestida por-dron: con el ancla a tiro,
+     los waypoints siguen COLINEALES con el spacing de diseño y ninguno apunta al lobo; (b2) DOS
+     frentes confirmados -> la barrera entera va al ANCLA y mover el 2º frente no cambia NI UN
+     waypoint (2º frente LIBRE: defensa deliberadamente explotable, el agujero del MARL);
+     (c) dinámico: la distancia dron->cebo DISMINUYE hasta la expulsión, sin re-subidas.
  13) CEBO PERFECTO (v3.0): reparto FIJO (cebo = wolf_decoy_size capado a n-2; asalto >= 2 = quórum) +
      TIMING programado (el cebo espera merodeando y se lanza con el asalto a <= assault_trigger_dist
      de su presa: wolf_decoy_released False->True) + el 2º sector fija la presa MÁS LIBRE y se
@@ -50,7 +53,7 @@ import subprocess
 
 import numpy as np
 
-from world import World, ACTIVE, DETER_RADIUS
+from world import World, ACTIVE, DETER_RADIUS, STATIC_DETER_RADIUS
 from coordinators import ReactiveCoordinator, DummyCoordinator
 from render import render_episode
 
@@ -298,7 +301,7 @@ def test_standoff():
 
 
 def test_avance():
-    print("=== 12) PRESIÓN (v3.0): la barrera va HACIA el ancla y lo espanta — no cede terreno ===")
+    print("=== 12) FORMACIÓN QUE PRESIONA (v3.1): la línea ENTERA avanza junta al ancla; nadie se descuelga ===")
     # Montaje como el test 10: ESCOLTA real, coordinador fresco, un lobo confirmado a voluntad.
     w = c = None
     for s in range(1, 15):
@@ -331,33 +334,52 @@ def test_avance():
         u = u / max(float(np.linalg.norm(u)), 1e-9)
         return float(np.dot(center - front_c, u)), float(np.linalg.norm(target_wolf_pos - front_c))
 
-    # (a) lobo confirmado LEJOS (fuera del anillo de embestida) -> la línea se planta en el TOPE
-    #     esperándolo (adv = clip(L, mín, tope); v2.9 usaba L−DETER y CEDÍA al acercarse el lobo).
-    #     TODOS los lobos al punto lejano: otros confirmados del episodio cerca de la línea
-    #     dispararían EMBESTIDAS (pieza 4b) y sacarían ranuras de la línea que aquí se mide.
+    # (a) lobo confirmado LEJOS -> la formación se planta en el TOPE esperándolo
+    #     (adv = clip(L + STATIC_DETER_RADIUS, mín, tope), v3.1: sobre-apuntado de formación).
     w.wolves[:] = hc + np.array([150.0, 0.0]) + 0.5 * np.arange(w.n_wolves)[:, None]
     adv_far, L_far = _line_dist(w.wolves[0])
-    esperado_far = float(np.clip(L_far, c2.barrier_standoff, c2.advance_max))
+    esperado_far = float(np.clip(L_far + STATIC_DETER_RADIUS, c2.barrier_standoff, c2.advance_max))
     print("  lobo a L=%.0f m -> línea a %.1f m del frente (esperado %.1f; mín %.0f, tope %.1f)"
           % (L_far, adv_far, esperado_far, c2.barrier_standoff, c2.advance_max))
     assert abs(adv_far - esperado_far) < 1.0, "FALLO: la presión no sigue la fórmula acotada"
     assert adv_far > c2.barrier_standoff + 5.0, "FALLO: la barrera no avanza (sigue pegada al rebaño)"
     assert adv_far <= c2.advance_max + 1e-6, "FALLO: la barrera supera el tope de avance"
-    # (b) lobo confirmado CERCA de la línea -> EMBESTIDA local (pieza 4b): algún dron libre deja su
-    #     ranura y apunta AL LOBO (waypoint = su posición exacta) para generarle aproximación.
+    # (b) FORMACIÓN EN CONJUNTO (v3.1, corrige el "dron que se descuelga" de v3.0): con el ancla
+    #     CERCA, TODOS los waypoints libres siguen en UNA línea (colineales, spacing de diseño) y
+    #     NINGUNO apunta al lobo en solitario (fuera la embestida por-dron).
     herd = _herd(w)
     hr = float(np.linalg.norm(herd - hc, axis=1).max())
     w.wolves[:] = hc + np.array([hr + 7.0, 0.0]) + 0.5 * np.arange(w.n_wolves)[:, None]
-    # la embestida dispara por PROXIMIDAD DEL DRON (<= LUNGE=30 del dron, no de su ranura): coloca
-    # los drones libres a tiro del ancla (dirigido, sin dejar correr el mundo — con pasos reales los
-    # lobos penetran y saltaría PENETRADO, otro régimen) y verifica waypoint SOBRE un lobo confirmado.
     for r, i in enumerate(idx):
-        w.drones[i] = w.wolves[0] + np.array([26.0, 3.0 * r])
+        w.drones[i] = w.wolves[0] + np.array([26.0, 3.0 * r])       # drones a tiro: en v3.0 embestían
     wp = c2.act(w.get_observation())
-    d_wp_lobo = float(np.linalg.norm(wp[idx][:, None, :] - w.wolves[None, :, :], axis=2).min())
-    print("  lobo apretando (fuera del rebaño r=%.0f), drones a 26 m: waypoint más cercano al lobo "
-          "a %.2f m (embestida = 0.00)" % (hr, d_wp_lobo))
-    assert d_wp_lobo < 1e-6, "FALLO: ningún dron embiste al confirmado a tiro (pieza 4b)"
+    pts = wp[idx]
+    cen = pts.mean(axis=0)
+    _u, _s, vt = np.linalg.svd(pts - cen)
+    resid = float(np.abs((pts - cen) @ vt[1]).max())                # desviación máx respecto a la recta
+    seps = np.sort(np.linalg.norm(np.diff(pts[np.argsort(pts @ vt[0])], axis=0), axis=1))
+    d_wp_lobo = float(np.linalg.norm(pts[:, None, :] - w.wolves[None, :, :], axis=2).min())
+    print("  lobo apretando (drones a 26 m): waypoints COLINEALES (resid %.2f m) | separaciones %s | "
+          "waypoint más cercano a un lobo %.1f m (>5 = nadie se descuelga)"
+          % (resid, np.round(seps, 1), d_wp_lobo))
+    assert resid < 1.0, "FALLO: los waypoints no forman UNA línea (formación rota)"
+    assert seps.max() <= c2.drone_spacing + 0.5, "FALLO: la línea no teje (ranuras más separadas que el diseño)"
+    assert d_wp_lobo > 5.0, "FALLO: un dron se descuelga a por el lobo (embestida por-dron, bug v3.0)"
+    # (b2) DOS FRENTES confirmados -> la barrera ENTERA va al ANCLA; el 2º frente queda LIBRE
+    #     (defensa deliberadamente explotable: mover el 2º confirmado no cambia NI UN waypoint).
+    w.wolves[0] = hc + np.array([120.0, 0.0])                        # ancla (1º confirmado)
+    if w.n_wolves >= 2:
+        w.wolves[1] = hc + np.array([0.0, 130.0])                    # 2º frente, otro rumbo, confirmado ya
+        wp1 = c2.act(w.get_observation())[idx]
+        w.wolves[1] = hc + np.array([-60.0, 140.0])                  # el 2º frente SE MUEVE (sigue fuera del rebaño)
+        wp2 = c2.act(w.get_observation())[idx]
+        b_line = np.arctan2(*(wp1.mean(axis=0) - hc)[::-1])
+        b_ancla = np.arctan2(*(w.wolves[0] - hc)[::-1])
+        err = abs(float((b_line - b_ancla + np.pi) % (2 * np.pi) - np.pi))
+        print("  2 frentes: |eje línea vs ancla| = %.1f° | mover el 2º frente cambia waypoints: %s"
+              % (np.degrees(err), not np.array_equal(wp1, wp2)))
+        assert np.array_equal(wp1, wp2), "FALLO: el 2º frente confirmado influye en la barrera (debería quedar LIBRE)"
+        assert np.degrees(err) < 30.0, "FALLO: la línea no apunta al frente ancla"
     # (c) DINÁMICO (el bug observado en v2.9): la distancia dron->cebo DISMINUYE con el tiempo hasta
     #     DISUADIR (expulsión _wolf_scared), no aumenta (la línea ya no retrocede ante el lobo).
     #     Escenario de UN SOLO lobo: el ancla es él (con más lobos el ancla puede ser otro y la línea

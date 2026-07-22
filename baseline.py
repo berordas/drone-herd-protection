@@ -137,7 +137,19 @@ EVAL_SEEDS = tuple(range(N_PER_KIND))
 KINDS = ("lobos", "corzos", "mixto")
 KIND_LABEL = {"lobos": "solo-lobos", "corzos": "solo-corzos", "mixto": "mixto"}
 TERMINALS = ("success", "predation", "timeout")
-FROZEN_TAG = "v3.0-baseline"   # tag git del commit congelado: EL CEBO PERFECTO (6 piezas juntas — el número NO es
+FROZEN_TAG = "v3.1-baseline"   # tag git del commit congelado: BARRERA EN CONJUNTO + TIMING BLINDADO + COSMÉTICA.
+                               # Diagnóstico Parte 0 (registrado en docs): (a) el terreno NO se agranda — los lobos
+                               # nacen a 114-329 m del dron más cercano (jamás confirmables NI detectables al nacer);
+                               # la "alarma al aparecer" era el REFLEJO (el investigador a 15 m/s confirma con el lobo
+                               # aún a 94-184 m del rebaño); (b) el cebo BAJABA de r_detect al asentar el merodeo (nace
+                               # a ~114-135 del dron) -> el investigador lo cazaba (0.3-2 m) y confirmaba con el asalto
+                               # a 238-440 m (5/15). v3.1: 1) la barrera avanza EN CONJUNTO (fuera la embestida por-dron
+                               # de v3.0; adv = clip(L+STATIC_DETER_RADIUS, 12, 36.7) = sobre-apuntado de formación;
+                               # 2 frentes -> la línea ENTERA al ancla, el 2º LIBRE — defensa deliberadamente explotable,
+                               # el agujero del MARL); 2) decoy_hold_dist 100->130 (r_detect+30 de buffer) + huida radial
+                               # PURA al invadir (13/15 acompasados; residual 2/15 = cebo cazado al nacer dentro del
+                               # sobre de patrulla, 4 vs 15 m/s — benigno: ancla la barrera igual); 3) emojis 0.27 y sin
+                               # círculo de presa. v3.0 (histórico): EL CEBO PERFECTO (6 piezas juntas — el número NO es
                                # atribuible a cada una; se busca el sí/no del cebo bien ejecutado): 1) TERRENO 500×500
                                # (solo CONFIG_V2; colchón >=100 m del rebaño a bordes; lobo naciente NUNCA confirmable
                                # ni detectado: margen real de aproximación) · 2) reparto de masa FIJO (cebo =
@@ -159,9 +171,9 @@ FROZEN_TAG = "v3.0-baseline"   # tag git del commit congelado: EL CEBO PERFECTO 
 # medida, no objetivo. Contraste v2.9 (300 m, reparto aleatorio, barrera que cedía): Dummy
 # 3.98/0/3.88 · Reactive 2.46/0/2.44. v2.8: Dummy 3.97/0/3.89 · Reactive 2.56/0/2.26.
 REFERENCE_SEVERITY = {
-    "lobos": 3.85,   # solo-lobos (amenaza pura); succ 9 / pred 83 / timeout 8; n_safe 2.82
+    "lobos": 3.74,   # solo-lobos (amenaza pura); succ 9 / pred 83 / timeout 8; n_safe 2.87 (v3.1: el hold 130 del cebo mueve −0.11 vs v3.0)
     "corzos": 0.00,  # solo-corzos = SIN amenaza (100/100 timeout; el rebaño pasta, n_safe 0)
-    "mixto": 3.69,   # ≈ solo-lobos (los corzos solo consumen ciclos de investigación); succ 6/pred 85/to 9; n_safe 2.87
+    "mixto": 3.69,   # ≈ solo-lobos (los corzos solo consumen ciclos de investigación); succ 6/pred 85/to 9; n_safe 2.86
 }
 
 # Tolerancia de deriva (la media es exacta y reproducible bit a bit; margen mínimo por si

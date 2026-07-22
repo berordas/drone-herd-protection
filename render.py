@@ -26,7 +26,9 @@ from world import ACTIVE, DETER_RADIUS
 EMOJI = {"cow": "🐄", "calf": "🐄", "wolf": "🐺", "corzo": "🦌", "jabali": "🐗", "drone": "🚁",
          "sound": "🔊"}   # 🔊 = el dron ACTIVE "emite ruido" (hay un lobo a <= DETER_RADIUS -> disuade)
 # Tamaño de los sprites de emoji (afinable). Más pequeño = se distinguen sin dominar la escena.
-EMOJI_SCALE = 0.45
+EMOJI_SCALE = 0.27   # v3.1: reducido (0.45 -> 0.27). El zoom efectivo escala con m/300 (línea zf):
+                     # a terreno 500 los sprites salían ×1.67 más grandes y dominaban la escena;
+                     # 0.27 ≈ 0.45·300/500 recupera el tamaño EN PANTALLA del look calibrado a 300.
 
 
 def _find_emoji_font() -> str | None:
@@ -118,8 +120,8 @@ def render_episode(world, history, interval: int = 40, save_path: str | None = N
     for p in cone_polys:
         ax.add_patch(p)
     cone_polys[0].set_label("cono de seguridad (±45°)")
-    prey_hl = ax.scatter(*empty.T, s=360, facecolors="none", edgecolors="black", linewidths=1.6,
-                         marker="o", label="presa fijada", zorder=7)
+    # v3.1: SIN círculo de presa fijada (pack_prey/pack_prey2) — decisión de cosmética del usuario
+    # (el realce ensuciaba la escena; la presa se sigue leyendo en la línea de estado del título).
     n_calves = len(history[0]["calves"])
     calf_lines = [ax.plot([], [], color="saddlebrown", lw=0.8, alpha=0.6, zorder=3)[0]
                   for _ in range(n_calves)]
@@ -222,8 +224,7 @@ def render_episode(world, history, interval: int = 40, save_path: str | None = N
         defender_hl.set_offsets(cows[cdef] if len(cdef) else empty)
         for k, ln in enumerate(calf_lines):
             ln.set_data([calves[k, 0], cows[cdef[k], 0]], [calves[k, 1], cows[cdef[k], 1]])
-        prey_pos = snap["prey_pos"]
-        prey_hl.set_offsets(prey_pos[None, :] if prey_pos is not None else empty)
+        prey_pos = snap["prey_pos"]          # (solo para la etiqueta del título; sin realce v3.1)
 
         # Entidades.
         if EMOJI_OK:
@@ -300,7 +301,7 @@ def render_episode(world, history, interval: int = 40, save_path: str | None = N
         else:
             banner.set_text("")
 
-        arts = [prey_hl, defender_hl, invest_line, cow_box, txt, banner,
+        arts = [defender_hl, invest_line, cow_box, txt, banner,
                 *cone_polys, *calf_lines, *deter_rings, *bat_bg, *bat_fill]
         if EMOJI_OK:
             arts += [ab for pool in (cow_pool, calf_pool, wolf_pool, corzo_pool, drone_pool, sound_pool) for ab, _, _ in pool]

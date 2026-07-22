@@ -1,5 +1,5 @@
 {
-  "frozen_tag": "v3.0-baseline",
+  "frozen_tag": "v3.1-baseline",
   "coordinator": "DummyCoordinator",
   "n_per_kind": 100,
   "seeds": [
@@ -180,10 +180,10 @@
     "lobos": {
       "label": "solo-lobos",
       "n": 100,
-      "severity_mean": 3.85,
-      "severity_std": 2.3680160472429237,
+      "severity_mean": 3.74,
+      "severity_std": 2.335037472932715,
       "severity_max": 8,
-      "n_safe_mean": 2.82,
+      "n_safe_mean": 2.87,
       "terminals": {
         "success": 9,
         "predation": 83,
@@ -566,9 +566,9 @@
           "n_wolves": 4,
           "n_corzos": 0,
           "n_corzos_descartados": 0,
-          "n_depredadas": 6,
-          "n_safe": 1,
-          "steps": 1937
+          "n_depredadas": 3,
+          "n_safe": 2,
+          "steps": 23570
         },
         {
           "status": "success",
@@ -598,7 +598,7 @@
           "n_corzos_descartados": 0,
           "n_depredadas": 3,
           "n_safe": 4,
-          "steps": 2124
+          "steps": 1850
         },
         {
           "status": "predation",
@@ -618,7 +618,7 @@
           "n_corzos_descartados": 0,
           "n_depredadas": 6,
           "n_safe": 0,
-          "steps": 1587
+          "steps": 1568
         },
         {
           "status": "predation",
@@ -658,7 +658,7 @@
           "n_corzos_descartados": 0,
           "n_depredadas": 5,
           "n_safe": 2,
-          "steps": 1276
+          "steps": 1283
         },
         {
           "status": "success",
@@ -838,7 +838,7 @@
           "n_corzos_descartados": 0,
           "n_depredadas": 5,
           "n_safe": 2,
-          "steps": 1244
+          "steps": 1233
         },
         {
           "status": "predation",
@@ -956,9 +956,9 @@
           "n_wolves": 4,
           "n_corzos": 0,
           "n_corzos_descartados": 0,
-          "n_depredadas": 5,
-          "n_safe": 1,
-          "steps": 1335
+          "n_depredadas": 1,
+          "n_safe": 3,
+          "steps": 23570
         },
         {
           "status": "predation",
@@ -1078,7 +1078,7 @@
           "n_corzos_descartados": 0,
           "n_depredadas": 6,
           "n_safe": 1,
-          "steps": 1563
+          "steps": 1311
         },
         {
           "status": "predation",
@@ -1136,9 +1136,9 @@
           "n_wolves": 5,
           "n_corzos": 0,
           "n_corzos_descartados": 0,
-          "n_depredadas": 8,
-          "n_safe": 0,
-          "steps": 1172
+          "n_depredadas": 4,
+          "n_safe": 2,
+          "steps": 23570
         },
         {
           "status": "predation",
@@ -1148,7 +1148,7 @@
           "n_corzos_descartados": 0,
           "n_depredadas": 4,
           "n_safe": 3,
-          "steps": 2120
+          "steps": 2188
         },
         {
           "status": "predation",
@@ -1158,7 +1158,7 @@
           "n_corzos_descartados": 0,
           "n_depredadas": 3,
           "n_safe": 3,
-          "steps": 1179
+          "steps": 1169
         },
         {
           "status": "predation",
@@ -2211,9 +2211,9 @@
       "label": "mixto",
       "n": 100,
       "severity_mean": 3.69,
-      "severity_std": 2.3396367239381415,
+      "severity_std": 2.3095237604320076,
       "severity_max": 8,
-      "n_safe_mean": 2.87,
+      "n_safe_mean": 2.86,
       "terminals": {
         "success": 6,
         "predation": 85,
@@ -2596,9 +2596,9 @@
           "n_wolves": 4,
           "n_corzos": 1,
           "n_corzos_descartados": 1,
-          "n_depredadas": 6,
+          "n_depredadas": 4,
           "n_safe": 1,
-          "steps": 2171
+          "steps": 23570
         },
         {
           "status": "timeout",
@@ -2626,9 +2626,9 @@
           "n_wolves": 3,
           "n_corzos": 2,
           "n_corzos_descartados": 2,
-          "n_depredadas": 5,
-          "n_safe": 2,
-          "steps": 1873
+          "n_depredadas": 4,
+          "n_safe": 3,
+          "steps": 2021
         },
         {
           "status": "predation",
@@ -2648,7 +2648,7 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 6,
           "n_safe": 0,
-          "steps": 1637
+          "steps": 1619
         },
         {
           "status": "predation",
@@ -2706,8 +2706,8 @@
           "n_wolves": 3,
           "n_corzos": 1,
           "n_corzos_descartados": 1,
-          "n_depredadas": 1,
-          "n_safe": 5,
+          "n_depredadas": 4,
+          "n_safe": 3,
           "steps": 23570
         },
         {
@@ -2868,7 +2868,7 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 5,
           "n_safe": 2,
-          "steps": 1256
+          "steps": 1269
         },
         {
           "status": "predation",
@@ -2988,7 +2988,7 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 2,
           "n_safe": 4,
-          "steps": 871
+          "steps": 882
         },
         {
           "status": "predation",
@@ -3108,7 +3108,7 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 6,
           "n_safe": 1,
-          "steps": 1856
+          "steps": 1805
         },
         {
           "status": "predation",
@@ -3168,7 +3168,7 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 8,
           "n_safe": 0,
-          "steps": 1332
+          "steps": 1156
         },
         {
           "status": "predation",
@@ -3178,7 +3178,7 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 4,
           "n_safe": 3,
-          "steps": 2108
+          "steps": 2230
         },
         {
           "status": "predation",
@@ -3188,7 +3188,7 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 3,
           "n_safe": 3,
-          "steps": 1215
+          "steps": 1202
         },
         {
           "status": "predation",
@@ -3225,10 +3225,10 @@
   },
   "aggregate": {
     "n": 300,
-    "severity_mean": 2.513333333333333,
-    "severity_std": 2.6184898107284833,
+    "severity_mean": 2.4766666666666666,
+    "severity_std": 2.58123785980465,
     "severity_max": 8,
-    "n_safe_mean": 1.8966666666666667,
+    "n_safe_mean": 1.91,
     "terminals": {
       "success": 15,
       "predation": 168,

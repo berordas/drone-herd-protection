@@ -319,13 +319,18 @@ class ScriptedWolfController(WolfController):
         return v_target, False
 
     def _decoy_prowl(self, w, sel: np.ndarray, desired: np.ndarray) -> None:
-        """v3.0 (pieza 3): MERODEO del sector-CEBO mientras espera el disparo — acecho LATERAL creíble,
-        NO congelado y SIN acercarse: componente TANGENCIAL alrededor del rebaño (lado determinista por
-        lobo: alterna con el índice -> el cúmulo no se estira en fila india) + repulsión RADIAL saliente
-        si el dron ACTIVE más cercano está a < decoy_hold_dist (mantenerse fuera del alcance: la banda
-        de holgura DECOY_HOLD_BAND suaviza la frontera). Determinista, SIN RNG (spawns bit a bit).
-        La normalización global de _decide_two_sectors lo lleva a wolf_speed (el lobo patrulla a su
-        rapidez de crucero, como el resto de intenciones del scriptado)."""
+        """v3.0/v3.1 (pieza 3): MERODEO del sector-CEBO mientras espera el disparo — acecho LATERAL
+        creíble, NO congelado y SIN acercarse: componente TANGENCIAL alrededor del rebaño (lado
+        determinista por lobo) + evasión del dron ACTIVE más cercano. Determinista, SIN RNG.
+
+        v3.1 (diagnóstico 0b): en v3.0 el cebo BAJABA de r_detect mientras "esperaba" (nace a ~114-135
+        del dron más cercano y el empuje mixto tardaba) -> se convertía en EL contacto, el INVESTIGADOR
+        lo cazaba (15 vs 4 m/s, hasta 0.3-2 m) y lo confirmaba con el asalto aún a 238-440 m de su
+        presa (5/15 episodios). Blindaje en dos anillos:
+          - dmin < decoy_hold_dist (=130, r_detect + 30 de buffer de evasión): HUIDA RADIAL PURA a
+            velocidad plena (nada de acecho: salir del alcance es lo único que importa);
+          - hold <= dmin < hold + DECOY_HOLD_BAND: mezcla acecho + empuje creciente (frontera suave).
+        La normalización global de _decide_two_sectors lo lleva a wolf_speed."""
         DECOY_HOLD_BAND = 20.0                        # m: banda de holgura del merodeo (empuja antes de invadir)
         wolves = w.wolves[sel]
         herd_c = w.cows[w.cow_alive].mean(axis=0) if w.cow_alive.any() else np.array([w.W / 2.0, w.H / 2.0])
@@ -340,10 +345,12 @@ class ScriptedWolfController(WolfController):
             d = np.linalg.norm(wolves[:, None, :] - act[None, :, :], axis=2)   # (k, nd)
             j = d.argmin(axis=1)
             dmin = d[np.arange(sel.size), j]
-            push = np.clip((w.decoy_hold_dist + DECOY_HOLD_BAND - dmin) / DECOY_HOLD_BAND, 0.0, 1.0)
             away = wolves - act[j]
             away = away / np.maximum(np.linalg.norm(away, axis=1, keepdims=True), 1e-9)
-            des = des + 2.0 * push[:, None] * away    # el alejarse DOMINA al acecho cuando invade la holgura
+            push = np.clip((w.decoy_hold_dist + DECOY_HOLD_BAND - dmin) / DECOY_HOLD_BAND, 0.0, 1.0)
+            des = des + 2.0 * push[:, None] * away    # banda exterior: el alejarse domina al acecho
+            inside = dmin < w.decoy_hold_dist         # anillo interior: HUIDA PURA (v3.1)
+            des = np.where(inside[:, None], away, des)
         desired[sel] = des
 
     def _sector_desired(self, w, sel: np.ndarray, prey_idx: int, prey_kind: str | None,
