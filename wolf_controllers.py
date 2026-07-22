@@ -72,6 +72,17 @@ class ScriptedWolfController(WolfController):
     (eso es física del mundo)."""
 
     def decide(self, world) -> tuple[np.ndarray, bool]:
+        # v2.9 (CEBO DISEÑADO, etapa 1/2 — diseñado, NO emergente): con 2 SUBGRUPOS de spawn cada
+        # sector caza SU presa — el 1º la común de SIEMPRE (hace de cebo: dispara/ancla la barrera),
+        # el 2º la MÁS LIBRE (máx. distancia al dron ACTIVE más cercano; rompe la convergencia a
+        # presa común que anulaba el multi-frente). Con 1 solo grupo (clustered, o sorteo de 1 en
+        # grouped) -> el camino v2.8 ÍNTEGRO E INTACTO (bit a bit; face_check 12/12).
+        if len(world.wolf_group_sizes) == 2:
+            return self._decide_two_sectors(world)
+        return self._decide_single(world)
+
+    def _decide_single(self, world) -> tuple[np.ndarray, bool]:
+        """Camino de UN solo grupo: el comportamiento v2.4→v2.8 SIN TOCAR (bit a bit)."""
         w = world
 
         d_wc = np.linalg.norm(w.cows[None, :, :] - w.wolves[:, None, :], axis=2)  # (nw, nc)
@@ -209,6 +220,154 @@ class ScriptedWolfController(WolfController):
         desired_dir = np.where(dn > 1e-9, desired / np.maximum(dn, 1e-9), 0.0)
         v_target = desired_dir * w.wolf_speed
         return v_target, False
+
+    # ------------------------------------------------------------------ #
+    # v2.9 — CEBO DISEÑADO (etapa 1/2): dos sectores, dos presas.
+    # ------------------------------------------------------------------ #
+    def _decide_two_sectors(self, world) -> tuple[np.ndarray, bool]:
+        """Camino de DOS subgrupos de spawn (v2.9): la MISMA táctica por-sector que el camino único
+        (standoff / cono-flanqueo / rodeo / envolvente — vía _sector_desired), con la presa de CADA
+        sector: sector 1 = pack_prey (maquinaria clásica: fijación t=0, recommit más-cercana), sector
+        2 = pack_prey2 (la MÁS LIBRE; recommit re-evalúa la más libre). Repulsión entre lobos y bordeo
+        de zonas siguen siendo GLOBALES (idénticos al camino único). n_refix cuenta las re-fijaciones
+        por refugio de AMBOS sectores (mismo significado: oscilación por refugio)."""
+        w = world
+
+        d_wc = np.linalg.norm(w.cows[None, :, :] - w.wolves[:, None, :], axis=2)  # (nw, nc)
+
+        # Gestión de presa POR SECTOR (misma semántica de suelta/re-fijación que el camino único).
+        reason = w._prey_lost_reason()
+        if reason is not None:
+            w.pack_prey = -1; w.pack_prey_kind = None
+            if reason == "refuge":
+                w.n_refix += 1
+            w._recommit_nearest_prey()
+        reason2 = w._prey2_lost_reason()
+        if reason2 is not None:
+            w.pack_prey2 = -1; w.pack_prey2_kind = None
+            if reason2 == "refuge":
+                w.n_refix += 1
+            w._try_commit_prey2()          # re-fija la MÁS LIBRE en ese instante (matanza excedente)
+
+        if w._targets_exhausted():
+            w._wolf_attacking = False
+            return np.zeros((w.n_wolves, 2)), True
+
+        n1 = int(w.wolf_group_sizes[0])
+        s1 = np.arange(0, n1)
+        s2 = np.arange(n1, w.n_wolves)
+        desired = np.zeros((w.n_wolves, 2))
+        atk1 = self._sector_desired(w, s1, w.pack_prey, w.pack_prey_kind, d_wc, desired)
+        atk2 = self._sector_desired(w, s2, w.pack_prey2, w.pack_prey2_kind, d_wc, desired)
+        w._wolf_attacking = bool(atk1 or atk2)
+
+        # Repulsión entre lobos cerca del rebaño (GLOBAL, idéntica al camino único).
+        engaged_w = d_wc.min(axis=1) <= w.r_notice
+        dd_w = w.wolves[:, None, :] - w.wolves[None, :, :]
+        ddn = np.linalg.norm(dd_w, axis=2)
+        near = (ddn < w.wolf_repulsion_radius) & engaged_w[None, :]
+        np.fill_diagonal(near, False)
+        rep_units = dd_w / np.maximum(ddn[:, :, None], 1e-9)
+        repulsion = (rep_units * near[:, :, None]).sum(axis=1) * engaged_w[:, None] * w.wolf_repulsion_strength
+        desired = desired + repulsion
+
+        # BORDEAR las ZONAS PROHIBIDAS (GLOBAL, idéntico al camino único).
+        if w.escort_enabled:
+            dnorm = np.linalg.norm(desired, axis=1, keepdims=True)
+            vd = desired / np.maximum(dnorm, 1e-9)
+            for circle in (w.safe_zone, w.central_station):
+                C, rz = circle[:2], circle[2]
+                to_zone = C - w.wolves
+                d = np.linalg.norm(to_zone, axis=1)
+                band = rz + _wm.WOLF_ZONE_SKIRT_BAND
+                near_z = (d < band) & (d > 1e-9)
+                if not near_z.any():
+                    continue
+                u = to_zone / np.maximum(d[:, None], 1e-9)
+                block = np.clip(np.sum(vd * u, axis=1), 0.0, 1.0)
+                fall = np.clip((band - d) / _wm.WOLF_ZONE_SKIRT_BAND, 0.0, 1.0) * near_z
+                perp = np.column_stack([-u[:, 1], u[:, 0]])
+                side = np.where(np.sum(perp * vd, axis=1) >= 0.0, 1.0, -1.0)
+                tang = perp * side[:, None]
+                desired = desired + _wm.WOLF_ZONE_SKIRT_GAIN * (fall * block * dnorm.ravel())[:, None] * tang
+
+        dn = np.linalg.norm(desired, axis=1, keepdims=True)
+        desired_dir = np.where(dn > 1e-9, desired / np.maximum(dn, 1e-9), 0.0)
+        v_target = desired_dir * w.wolf_speed
+        return v_target, False
+
+    def _sector_desired(self, w, sel: np.ndarray, prey_idx: int, prey_kind: str | None,
+                        d_wc: np.ndarray, desired: np.ndarray) -> bool:
+        """Rellena desired[sel] con la táctica del camino único aplicada al SECTOR contra SU presa:
+        sin presa -> rondar en standoff; con presa -> cono/flanqueo + rodeo del rebaño + envolvente
+        (slots equiespaciados ENTRE LOS LOBOS DEL SECTOR — cada sector envuelve a su presa).
+        Devuelve el flag 'attacking' del sector. Mismas fórmulas que _decide_single, indexadas."""
+        if sel.size == 0:
+            return False
+        wolves = w.wolves[sel]
+        if prey_idx < 0:
+            nearest = w.cows[d_wc[sel].argmin(axis=1)]
+            rel = wolves - nearest
+            dist = np.linalg.norm(rel, axis=1, keepdims=True)
+            rhat = rel / np.maximum(dist, 1e-9)
+            desired[sel] = -rhat * (dist - w.r_standoff)
+            return False
+
+        prey_pos = w._prey_pos_of(prey_idx, prey_kind)
+        cone_pos, f = w._prey_cone_of(prey_idx, prey_kind)
+        rel = wolves - cone_pos
+        dist = np.linalg.norm(rel, axis=1, keepdims=True)
+        rhat = rel / np.maximum(dist, 1e-9)
+        cosphi = rhat @ f
+        at_flank = cosphi < np.cos(w.cone_half_angle + w.cone_band)
+        close_in = prey_pos - wolves
+        cross = f[0] * rhat[:, 1] - f[1] * rhat[:, 0]
+        tang = np.where((cross >= 0.0)[:, None],
+                        np.column_stack([-rhat[:, 1], rhat[:, 0]]),
+                        np.column_stack([rhat[:, 1], -rhat[:, 0]]))
+        radial_hold = -rhat * (dist - w.r_face_safe)
+        circle = tang + radial_hold
+        des = np.where(at_flank[:, None], close_in, circle)
+        attacking = bool(np.any(at_flank & (dist.ravel() <= w.r_face_safe)))
+
+        # RODEAR el rebaño (misma fórmula; la presa adulta PROPIA no es obstáculo de sí misma —
+        # la del otro sector SÍ lo es para este sector, como cualquier otra res cazable).
+        mask = w.cow_alive & ~w.cow_safe
+        if prey_kind == "adult":
+            mask[prey_idx] = False
+        herd = w.cows[mask]
+        if herd.shape[0] >= 2:
+            C = herd.mean(axis=0)
+            R_herd = float(np.linalg.norm(herd - C, axis=1).mean()) + w.wolf_skirt_margin
+            to_prey = prey_pos[None, :] - wolves
+            L = np.linalg.norm(to_prey, axis=1, keepdims=True)
+            u = to_prey / np.maximum(L, 1e-9)
+            perp = np.column_stack([-u[:, 1], u[:, 0]])
+            to_C = C[None, :] - wolves
+            proj = np.sum(to_C * u, axis=1)
+            s = np.sum(to_C * perp, axis=1)
+            between = (proj > 0.0) & (proj < L.ravel())
+            gate = between * np.clip(1.0 - np.abs(s) / max(R_herd, 1e-9), 0.0, 1.0)
+            side = np.where(s >= 0.0, -1.0, 1.0)
+            skirt = w.wolf_skirt_gain * (gate * L.ravel())[:, None] * (side[:, None] * perp)
+            des = des + skirt
+
+        # ENVOLVENTE del SECTOR alrededor de SU presa (slots entre los comprometidos del sector).
+        if w.wolf_envelop_gain > 0.0:
+            d_prey = np.linalg.norm(wolves - prey_pos, axis=1)
+            eng_local = np.where(d_prey <= w.r_notice)[0]
+            if eng_local.size >= 2:
+                eng = sel[eng_local]
+                slot = w._envelop_slots(prey_pos, eng)
+                rel_e = w.wolves[eng] - prey_pos
+                cur = np.arctan2(rel_e[:, 1], rel_e[:, 0])
+                ang_err = ((slot - cur + np.pi) % (2 * np.pi)) - np.pi
+                rhat_e = rel_e / np.maximum(d_prey[eng_local][:, None], 1e-9)
+                tang_e = np.column_stack([-rhat_e[:, 1], rhat_e[:, 0]])
+                des[eng_local] = des[eng_local] + w.wolf_envelop_gain * ang_err[:, None] * tang_e
+
+        desired[sel] = des
+        return attacking
 
 
 def make_wolf_controller(policy: str = "scripted") -> WolfController:

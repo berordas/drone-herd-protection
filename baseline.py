@@ -119,25 +119,26 @@ EVAL_SEEDS = tuple(range(N_PER_KIND))
 KINDS = ("lobos", "corzos", "mixto")
 KIND_LABEL = {"lobos": "solo-lobos", "corzos": "solo-corzos", "mixto": "mixto"}
 TERMINALS = ("success", "predation", "timeout")
-FROZEN_TAG = "v2.8-baseline"   # tag git del commit congelado: BARRERA HONESTA (el ReactiveCoordinator reacciona SOLO a lobos
-                               # CONFIRMADOS de equipo con memoria — alguna vez a <= r_confirm=40 de un dron ACTIVE, latch por
-                               # episodio; fin de la percepción-oráculo de v2.6 que reaccionaba a contactos a r_detect=100 con
-                               # el tipo de verdad-terreno) + STANDOFF DERIVADO (sqrt(R²−(s/2)²)=12 m: sin hueco entre barrera
-                               # y rebaño fuera de disuasión). FÍSICA INTACTA (world.py ≡ v2.7; el susto de dos radios sigue) ->
-                               # Dummy BIT A BIT ≡ v2.7; Reactive RE-MEDIDO. METRO DGX. INVALIDA la nota a batir del MARL de
-                               # drones (2.30/2.42 era contra la barrera-oráculo v2.7): el MARL se reentrenará sobre v2.8.
+FROZEN_TAG = "v2.9-baseline"   # tag git del commit congelado: BARRERA QUE AVANZA (acotada: adv = clip(L−DETER_RADIUS, 12,
+                               # sqrt(r_confirm²−(s/2)²)≈36.7) — espantar LEJOS del ganado sin cegar la retaguardia) + CEBO
+                               # DISEÑADO en el 2º sector (etapa 1/2, diseñado NO emergente: con 2 subgrupos de spawn el 2º
+                               # sector fija la res MÁS LIBRE —máx. distancia al ACTIVE más cercano, pack_prey2— y el 1º
+                               # mantiene la común de siempre). El multi-frente por fin PUEDE rendir: la cifra clave de la
+                               # re-medición es si el Reactive SUBE vs v2.8 (2.56/2.26) = prueba de existencia del cebo.
+                               # Con 1 solo grupo TODO es bit a bit v2.8 (face_check intacto). METRO DGX. INVALIDA la nota
+                               # a batir del MARL de drones: la nueva es el Reactive v2.9.
 
 # Referencia CONGELADA de severidad (media de muertes/ep) por tipo, para detectar DERIVA.
 # Se rellena tras la primera medición; en re-corridas debe coincidir (mundo reproducible POR ENTORNO).
-# v2.8 (METRO DGX): BARRERA HONESTA + standoff derivado — cambio SOLO en coordinators.py (la LÓGICA DE
-# REACCIÓN de la barrera); la FÍSICA del mundo es v2.7 INTACTA (susto de dos radios). El Dummy NO usa
-# la barrera -> sus números son BIT A BIT los de v2.7 (verificado en la re-medición); el Reactive se
-# RE-MIDE (reacciona más tarde — espera a CONFIRMAR a 40 m — pero su línea derivada queda más pegada).
-# Es medida, no objetivo. Contraste v2.7 (barrera-oráculo): Dummy 3.97/0/3.89 · Reactive 2.30/0/2.42.
+# v2.9 (METRO DGX): BARRERA QUE AVANZA + CEBO DISEÑADO en el 2º sector (etapa 1/2, diseñado NO
+# emergente). El Dummy apenas se mueve (3.97/3.89 -> 3.98/3.88, ±0.01: sus drones clavados custodian
+# ≈igual a la res "más libre"); solo cambian los episodios grouped de 2 subgrupos (con 1 grupo el
+# mundo es BIT A BIT v2.8). Es medida, no objetivo. Contraste v2.8 (honesta+standoff12, sin avance ni
+# cebo): Dummy 3.97/0/3.89 · Reactive 2.56/0/2.26.
 REFERENCE_SEVERITY = {
-    "lobos": 3.97,   # solo-lobos (amenaza pura); succ 4 / pred 87 / timeout 9; n_safe 2.73
+    "lobos": 3.98,   # solo-lobos (amenaza pura); succ 4 / pred 86 / timeout 10; n_safe 2.68
     "corzos": 0.00,  # solo-corzos = SIN amenaza (100/100 timeout; el rebaño pasta, n_safe 0)
-    "mixto": 3.89,   # ≈ solo-lobos (los corzos solo consumen ciclos de investigación); succ 5/pred 85/to 10; n_safe 2.81
+    "mixto": 3.88,   # ≈ solo-lobos (los corzos solo consumen ciclos de investigación); succ 5/pred 84/to 11; n_safe 2.80
 }
 
 # Tolerancia de deriva (la media es exacta y reproducible bit a bit; margen mínimo por si

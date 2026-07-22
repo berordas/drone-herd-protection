@@ -115,13 +115,63 @@ def test_susto_innegociable():
     print("  OK\n")
 
 
+def test_presa_por_sector():
+    """v2.9 (CEBO DISEÑADO, dirigido B): en episodios grouped de 2 subgrupos, el 2º sector fija la
+    presa MÁS LIBRE (máx. distancia al dron ACTIVE más cercano; ternero-primero; excluye la presa
+    del 1º si hay alternativa del mismo tipo; capacidad del sector para adultas) y el 1º mantiene
+    la común de SIEMPRE. Con 1 solo grupo, pack_prey2 = -1 (contrato v2.8 intacto)."""
+    print("=== PRESA POR SECTOR (v2.9): el 2º sector fija la MÁS LIBRE; el 1º la común de siempre ===")
+    from baseline import build_world
+    from world import ACTIVE
+    vistos_2g = vistos_1g = verificados = 0
+    for s in range(40):
+        w = build_world(s, "lobos")
+        w.reset()
+        if len(w.wolf_group_sizes) != 2:
+            vistos_1g += 1
+            assert w.pack_prey2 == -1, "FALLO: pack_prey2 fijada con 1 solo grupo"
+            continue
+        vistos_2g += 1
+        s2 = w._sector2()
+        act = w.drones[w.drone_state == ACTIVE]
+        if w.pack_prey2 < 0:
+            # solo legítimo si el sector no puede cazar nada (sin terneros y sector < n_min_adult)
+            assert not (w.calf_alive & ~w.calf_safe).any() and s2.size < w.n_min_adult, \
+                "FALLO: pack_prey2 sin fijar habiendo objetivo cazable para el sector"
+            continue
+        # recomputa la regla y compara con lo fijado en t=0
+        kind, idx = w.pack_prey2_kind, w.pack_prey2
+        if kind == "calf":
+            cand = (w.calf_alive & ~w.calf_safe).copy()
+            if w.pack_prey_kind == "calf" and w.pack_prey >= 0 and cand.sum() > 1:
+                cand[w.pack_prey] = False
+            d = np.linalg.norm(w.calves[:, None, :] - act[None, :, :], axis=2).min(axis=1)
+            d[~cand] = -np.inf
+            assert idx == int(np.argmax(d)), "FALLO: prey2 no es el ternero MÁS LIBRE"
+        else:
+            cand = ((w.cow_alive & ~w.cow_safe) & ~w._in_forbidden(w.cows)).copy()
+            if w.pack_prey_kind == "adult" and w.pack_prey >= 0 and cand.sum() > 1:
+                cand[w.pack_prey] = False
+            d = np.linalg.norm(w.cows[:, None, :] - act[None, :, :], axis=2).min(axis=1)
+            d[~cand] = -np.inf
+            assert idx == int(np.argmax(d)), "FALLO: prey2 no es la adulta MÁS LIBRE"
+            assert s2.size >= w.n_min_adult, "FALLO: sector sin quórum fijó una adulta"
+        verificados += 1
+        if verificados >= 6:
+            break
+    print("  %d episodios de 2 grupos (verificados %d contra la regla) | %d de 1 grupo con pack_prey2=-1"
+          % (vistos_2g, verificados, vistos_1g))
+    assert verificados >= 3, "muestra insuficiente de episodios de 2 grupos"
+    print("  OK\n")
+
+
 def test_spotcheck_baseline():
     print("=== 4) SPOT-CHECK vs baseline v2.7 CONGELADA (baseline_v2.json, metro DGX): severidades IDÉNTICAS (no re-medir) ===")
     with open("baseline_v2.json", encoding="utf-8") as f:
         ref = json.load(f)
     # v2.7 = susto de DOS RADIOS (pared blanda estática); RE-MEDIDA en el contenedor canónico de la DGX (metro
     # oficial). Este spot-check solo es reproducible DENTRO de ese entorno (fuera puede salir rojo: deriva FP).
-    assert ref["frozen_tag"] == "v2.8-baseline", "baseline_v2.json no es v2.8 (barrera honesta: reacciona solo a confirmados)"
+    assert ref["frozen_tag"] == "v2.9-baseline", "baseline_v2.json no es v2.9 (barrera que avanza + cebo diseñado 2º sector)"
     from baseline import build_world, run_episode_metrics
     checked = 0
     for kind in ("lobos", "corzos", "mixto"):
@@ -141,5 +191,6 @@ if __name__ == "__main__":
     test_interfaz()
     test_frontera_politica_fisica()
     test_susto_innegociable()
+    test_presa_por_sector()
     test_spotcheck_baseline()
     print("wolf_controller_check: TODO OK.")

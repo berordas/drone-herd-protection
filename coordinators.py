@@ -66,13 +66,20 @@ class ReactiveCoordinator:
     Consecuencia buscada: con dos frentes (spawn grouped v2.5), el frente que nadie ha CONFIRMADO tiene
     vía libre aunque esté detectado como contacto — el frente ciego que hace el cebo físicamente posible.
 
-    STANDOFF DERIVADO (v2.8, no mágico): la línea se coloca tan cerca del frente de vacas que el punto
-    PEOR (sobre la línea de vacas frontales, a mitad LATERAL entre dos drones adyacentes) queda a
-    <= DETER_RADIUS del dron más cercano: sqrt(standoff² + (spacing/2)²) <= DETER_RADIUS  =>
-    standoff = sqrt(DETER_RADIUS² − (spacing/2)²) = sqrt(20² − 16²) = 12 m. Con el standoff previo
-    (= DETER_RADIUS = 20) un lobo podía COLARSE entre la barrera y el rebaño quedándose a > DETER_RADIUS
-    del dron más cercano y matar "visto pero no disuadido" (medido en el diagnóstico: ~50% de las
-    muertes sin dron a tiro de disuasión).
+    STANDOFF DERIVADO (v2.8, no mágico): la distancia MÍNIMA de la línea al frente de vacas garantiza
+    que el punto PEOR (a mitad LATERAL entre dos drones adyacentes, sobre la línea de vacas frontales)
+    queda a <= DETER_RADIUS del dron más cercano: standoff = sqrt(DETER_RADIUS² − (spacing/2)²) =
+    sqrt(20² − 16²) = 12 m (con el standoff previo = 20 el peor punto quedaba a 25.6 m FUERA:
+    ~50% de muertes "visto pero no disuadido" en el diagnóstico).
+
+    BARRERA QUE AVANZA (v2.9, acotada): la línea ya no espera pegada al rebaño — AVANZA hacia el lobo
+    ANCLA para espantar LEJOS del ganado (el susto por movimiento exige acercarse): se planta
+    DETER_RADIUS por delante del punto de encuentro, `adv = clip(dist(vacas→ancla) − DETER_RADIUS,
+    standoff_mín=12, advance_max)`. Tope DERIVADO: `advance_max = sqrt(r_confirm² − (spacing/2)²)
+    ≈ 36.7 m` — la línea nunca avanza tanto que su retaguardia deje de ser CONFIRMABLE (cualquier
+    lobo que alcance las vacas por detrás pasa a <= r_confirm de un dron → confirmado → la
+    re-planificación por paso lo cubre; y a 15 vs 4 m/s la línea repliega a tiempo). Cuando los
+    lobos aprietan (ancla a <= 32 m) la línea vuelve al mínimo v2.8 (garantía trasera plena).
 
     Solo comanda a los drones LIBRES (ACTIVE y no-investigando): NO toca el reflejo de investigación (el
     investigador) ni los relevos de batería (deja su waypoint actual). NO toca la física (world.py congelado);
@@ -90,7 +97,15 @@ class ReactiveCoordinator:
         # de vacas frontales (a mitad lateral entre dos drones) queda a <= DETER_RADIUS del más cercano.
         # sqrt(R² − (s/2)²) = sqrt(20² − 16²) = 12 m con defaults (antes 20 = R: el lobo se colaba).
         self.barrier_standoff = barrier_standoff if barrier_standoff is not None else \
-            float(np.sqrt(max(DETER_RADIUS ** 2 - (self.drone_spacing / 2.0) ** 2, 0.0)))                   # barrera por delante de la vaca más amenazada, HACIA el paquete
+            float(np.sqrt(max(DETER_RADIUS ** 2 - (self.drone_spacing / 2.0) ** 2, 0.0)))                   # distancia MÍNIMA de la línea (v2.8; garantía trasera plena)
+        # v2.9: AVANCE ACOTADO de la barrera hacia los lobos confirmados (espantarlos LEJOS del ganado
+        # con el susto por movimiento, en vez de esperarlos encima de las vacas). Tope DERIVADO, no
+        # mágico: la línea solo avanza mientras el peor punto de la línea de vacas frontales (a mitad
+        # lateral entre dos drones) siga a <= r_confirm del dron más cercano -> la barrera honesta
+        # NUNCA ciega su propia retaguardia (cualquier lobo que llegue a las vacas por detrás queda
+        # CONFIRMADO y la re-planificación por paso lo cubre; además 15 vs 4 m/s: repliega a tiempo).
+        # advance_max = sqrt(r_confirm² − (spacing/2)²) ≈ 36.7 m (r_confirm=40, spacing=32).
+        self.advance_max = float(np.sqrt(max(world.r_confirm ** 2 - (self.drone_spacing / 2.0) ** 2, 0.0)))
         self.front_cows = front_cows                                                                        # nº de vacas "del frente" para anclar la barrera (None -> tantas como drones, mín 2)
         self.engage_standoff = engage_standoff if engage_standoff is not None else 2.0 * world.r_face_safe  # penetrado: dron entre la vaca y el lobo enganchado
         self.patrol_radius = patrol_radius                                                                 # órbita de patrulla (None -> adaptativo al tamaño del rebaño)
@@ -211,8 +226,14 @@ class ReactiveCoordinator:
         order = np.argsort(np.linalg.norm(herd - pack_c, axis=1))
         front_c = herd[order[:nfront]].mean(axis=0)
         u = pack_c - front_c
-        u = u / max(float(np.linalg.norm(u)), 1e-9)                    # de las vacas HACIA el paquete
-        center = front_c + u * self.barrier_standoff                  # punto de barrera (standoff por delante)
+        L = float(np.linalg.norm(u))
+        u = u / max(L, 1e-9)                                           # de las vacas HACIA el paquete
+        # v2.9: la línea AVANZA hacia el ancla — se planta DETER_RADIUS por delante del punto de
+        # encuentro (los lobos entran en expulsión al llegar), acotada entre el mínimo v2.8
+        # (barrier_standoff=12: garantía trasera plena cuando los lobos aprietan, L<=32 -> mínimo)
+        # y advance_max (36.7: la retaguardia sigue CONFIRMABLE — ver __init__).
+        adv = float(np.clip(L - DETER_RADIUS, self.barrier_standoff, self.advance_max))
+        center = front_c + u * adv                                     # punto de barrera (línea avanzada)
         perp = np.array([-u[1], u[0]])                                # eje del frente (perpendicular al eje de amenaza)
         offs = (np.arange(k) - (k - 1) / 2.0) * self.drone_spacing    # ranuras repartidas y centradas
         slots = center[None, :] + offs[:, None] * perp[None, :]

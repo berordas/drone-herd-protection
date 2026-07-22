@@ -24,6 +24,15 @@ Comprueba el COMPORTAMIENTO del primer coordinador de verdad (NO la física, con
      la línea de vacas frontales (a mitad lateral entre dos drones) queda a <= DETER_RADIUS del dron
      más cercano: un lobo confirmado no puede colarse entre la barrera y el rebaño sin entrar en
      radio de disuasión (con el standoff previo = 20 sí podía: peor punto a sqrt(20²+16²) = 25.6 m).
+     [v2.9: es la distancia MÍNIMA — el modo replegado con los lobos encima; el empírico fuerza ese caso.]
+ 12) AVANCE (v2.9): la barrera AVANZA hacia los lobos confirmados (adv = clip(L−DETER_RADIUS, 12,
+     advance_max)) para espantarlos lejos del ganado; tope DERIVADO advance_max = sqrt(r_confirm² −
+     (spacing/2)²) ≈ 36.7 — la retaguardia sigue CONFIRMABLE (no se ciega a sí misma); con el lobo
+     encima repliega al mínimo v2.8.
+ 13) CEBO DISEÑADO (v2.9): en episodios grouped de 2 subgrupos el 2º sector fija la presa MÁS LIBRE
+     (máx. distancia al ACTIVE más cercano; excluye la del 1º si hay alternativa) y se verifica que
+     LLEGA A MATARLA (captura con is_pack_prey2 y flankers del 2º sector) — la existencia micro; el
+     veredicto estadístico es de reactive_eval (100 semillas).
 Guarda dos renders: barrera en acción (solo-lobos/mixto) y patrulla (solo-corzos).
 [v2.8: los tests 1-9 pasan SIN cambios de aserción — con un solo frente (clustered, todos los tests
 previos) el paquete entero acaba CONFIRMADO en cuanto llega a la barrera (cruza los 40 m de los drones
@@ -250,8 +259,11 @@ def test_standoff():
           % (c.barrier_standoff, c.drone_spacing, worst, DETER_RADIUS))
     assert abs(c.barrier_standoff - 12.0) < 1e-9, "el standoff derivado con defaults debe ser 12 m"
     assert worst <= DETER_RADIUS + 1e-6, "FALLO: un lobo puede colarse entre barrera y rebaño fuera de disuasión"
-    # Empírico sobre una barrera REAL: los puntos de la línea de vacas frontales detrás de cada hueco
-    # entre drones adyacentes quedan a <= DETER_RADIUS de alguna ranura.
+    # Empírico sobre una barrera REAL: la línea TEJE (separación entre ranuras adyacentes <= spacing
+    # de diseño) -> junto con la desigualdad de constantes de arriba, la garantía trasera del modo
+    # REPLEGADO (adv = mínimo, lobos apretando) queda probada: peor punto = hypot(standoff, sep/2)
+    # <= DETER_RADIUS. [v2.9: la línea puede estar AVANZADA en este instante — el avance y su tope
+    # (retaguardia confirmable) se verifican en el test 12; aquí solo el tejido de las ranuras.]
     assert _advance_to_escolta(w, c), "no llegó a ESCOLTA"
     for _ in range(40):
         w.step(c.act(w.get_observation()))
@@ -261,16 +273,109 @@ def test_standoff():
     p = slots - slots.mean(axis=0)
     perp = p[np.argmax(np.linalg.norm(p, axis=1))]
     perp = perp / max(float(np.linalg.norm(perp)), 1e-9)              # eje del frente
-    u = np.array([-perp[1], perp[0]])                                 # normal al frente
-    if float(np.dot(u, np.asarray(w.wolves[c._anchor], float) - slots.mean(axis=0))) < 0:
-        u = -u                                                        # apunta HACIA el paquete
     order = np.argsort(slots @ perp)
-    gaps = []
-    for a, b in zip(order[:-1], order[1:]):
-        mid = 0.5 * (slots[a] + slots[b]) - u * c.barrier_standoff    # punto de vacas tras el hueco
-        gaps.append(float(np.linalg.norm(slots - mid, axis=1).min()))
-    print("  barrera real: %d ranuras | peor hueco medido %.1f m (<= %.0f)" % (idx.size, max(gaps), DETER_RADIUS))
-    assert max(gaps) <= DETER_RADIUS + 0.5, "FALLO: hueco real entre barrera y rebaño fuera de disuasión"
+    seps = [float(np.linalg.norm(slots[a] - slots[b])) for a, b in zip(order[:-1], order[1:])]
+    print("  barrera real: %d ranuras | separación adyacente máx %.1f m (<= spacing %.1f) -> "
+          "peor punto trasero en replegado = hypot(%.0f, %.1f) = %.1f <= %.0f"
+          % (idx.size, max(seps), c.drone_spacing, c.barrier_standoff, max(seps) / 2.0,
+             float(np.hypot(c.barrier_standoff, max(seps) / 2.0)), DETER_RADIUS))
+    assert max(seps) <= c.drone_spacing + 0.5, "FALLO: la línea no teje (ranuras más separadas que el diseño)"
+    assert np.hypot(c.barrier_standoff, max(seps) / 2.0) <= DETER_RADIUS + 0.5, \
+        "FALLO: hueco real entre barrera y rebaño fuera de disuasión (modo replegado)"
+    print("  OK\n")
+
+
+def test_avance():
+    print("=== 12) AVANCE (v2.9): la barrera avanza hacia los confirmados, acotada (retaguardia confirmable) ===")
+    # Montaje como el test 10: ESCOLTA real, coordinador fresco, un lobo confirmado a voluntad.
+    w = c = None
+    for s in range(1, 15):
+        w = World(seed=s, corzos_max=3, episode_kind="lobos"); w.reset()
+        if w.n_wolves >= 3:
+            c = ReactiveCoordinator(w)
+            if _advance_to_escolta(w, c):
+                break
+    for _ in range(60):
+        w.step(c.act(w.get_observation()))
+    hc = _herd(w).mean(axis=0)
+    idx = np.where(_free(w))[0]
+    flying = w.drones[w.drone_state == ACTIVE]
+    c2 = ReactiveCoordinator(w)
+    # límite DERIVADO: el peor punto trasero sigue confirmable
+    assert np.hypot(c2.advance_max, c2.drone_spacing / 2.0) <= w.r_confirm + 1e-6, \
+        "FALLO: advance_max deja la retaguardia fuera de r_confirm"
+    w.wolves[0] = flying[0] + np.array([w.r_confirm - 10.0, 0.0])    # confirma al lobo 0
+    c2.act(w.get_observation())
+
+    def _line_dist(target_wolf_pos):
+        """Distancia REAL de la línea al frente de vacas (recomputa front_c como _barrier)."""
+        herd = _herd(w)
+        nfront = max(2, idx.size)
+        order = np.argsort(np.linalg.norm(herd - target_wolf_pos, axis=1))
+        front_c = herd[order[:nfront]].mean(axis=0)
+        wp = c2.act(w.get_observation())
+        center = wp[idx].mean(axis=0)                                # media de slots = centro exacto
+        u = target_wolf_pos - front_c
+        u = u / max(float(np.linalg.norm(u)), 1e-9)
+        return float(np.dot(center - front_c, u)), float(np.linalg.norm(target_wolf_pos - front_c))
+
+    # (a) lobo confirmado LEJOS -> la línea AVANZA hasta el tope (no se queda pegada al rebaño)
+    w.wolves[0] = hc + np.array([150.0, 0.0])
+    adv_far, L_far = _line_dist(w.wolves[0])
+    esperado_far = float(np.clip(L_far - DETER_RADIUS, c2.barrier_standoff, c2.advance_max))
+    print("  lobo a L=%.0f m -> línea a %.1f m del frente (esperado %.1f; mín %.0f, tope %.1f)"
+          % (L_far, adv_far, esperado_far, c2.barrier_standoff, c2.advance_max))
+    assert abs(adv_far - esperado_far) < 1.0, "FALLO: el avance no sigue la fórmula acotada"
+    assert adv_far > c2.barrier_standoff + 5.0, "FALLO: la barrera no avanza (sigue pegada al rebaño)"
+    assert adv_far <= c2.advance_max + 1e-6, "FALLO: la barrera supera el tope de avance"
+    # (b) lobo confirmado APRETANDO (justo FUERA del rebaño: dentro saltaría PENETRADO, otro régimen)
+    #     -> la línea REPLIEGA siguiendo la fórmula (lejos del tope; el clip exacto al mínimo es
+    #     propiedad de constantes, ya aseverada arriba junto al test 11).
+    herd = _herd(w)
+    hr = float(np.linalg.norm(herd - hc, axis=1).max())
+    w.wolves[0] = hc + np.array([hr + 7.0, 0.0])
+    adv_near, L_near = _line_dist(w.wolves[0])
+    esperado_near = float(np.clip(L_near - DETER_RADIUS, c2.barrier_standoff, c2.advance_max))
+    print("  lobo apretando (L=%.0f m, fuera del rebaño r=%.0f) -> línea a %.1f m (esperado %.1f; repliegue desde %.1f)"
+          % (L_near, hr, adv_near, esperado_near, adv_far))
+    assert abs(adv_near - esperado_near) < 1.0, "FALLO: el repliegue no sigue la fórmula acotada"
+    assert adv_near <= adv_far - 10.0, "FALLO: con el lobo apretando la línea no repliega desde el tope"
+    print("  OK\n")
+
+
+def test_cebo_disenado():
+    print("=== 13) CEBO DISEÑADO (v2.9): el 2º sector fija la presa MÁS LIBRE y mata a través de ella ===")
+    # Sobre episodios grouped REALES (CONFIG_V2, la del arnés): busca episodios de 2 subgrupos y
+    # verifica (a) presas DISTINTAS por sector, (b) >=1 captura de la presa del 2º sector con
+    # matadores del 2º sector (la existencia micro del cebo diseñado). El veredicto ESTADÍSTICO
+    # (¿sube la severidad?) es de reactive_eval (100 semillas), no de este test.
+    from baseline import build_world
+    from world import ACTIVE as _ACT
+    distintos = 0
+    caps2 = 0
+    eps = 0
+    for s in range(40):
+        w = build_world(s, "lobos")
+        c = ReactiveCoordinator(w); w.reset()
+        if len(w.wolf_group_sizes) != 2:
+            continue
+        eps += 1
+        n1 = int(w.wolf_group_sizes[0])
+        if w.pack_prey2 >= 0 and (w.pack_prey2, w.pack_prey2_kind) != (w.pack_prey, w.pack_prey_kind):
+            distintos += 1
+        for _ in range(4000):
+            _o, _r, term, trunc, _i = w.step(c.act(w.get_observation()))
+            if term or trunc:
+                break
+        for cap in w.captures:
+            if cap.get("is_pack_prey2") and all(f >= n1 for f in cap["flankers"]):
+                caps2 += 1
+        if distintos >= 2 and caps2 >= 1:
+            break
+    print("  %d episodios de 2 subgrupos | presas DISTINTAS por sector en %d | capturas de la presa del 2º sector"
+          " por lobos del 2º sector: %d" % (eps, distintos, caps2))
+    assert distintos >= 1, "FALLO: el 2º sector nunca fijó una presa distinta a la del 1º"
+    assert caps2 >= 1, "FALLO: el 2º sector no llegó a matar su presa (el cebo diseñado no ejecuta)"
     print("  OK\n")
 
 
@@ -443,6 +548,8 @@ if __name__ == "__main__":
     test_penetrado()
     test_percepcion()
     test_standoff()
+    test_avance()
+    test_cebo_disenado()
     test_patrulla()
     test_arranque()
     test_severidad_muestra()

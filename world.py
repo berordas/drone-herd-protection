@@ -442,6 +442,12 @@ class World:
         self._wolf_attacking: bool = False              # ¿la manada flanquea de verdad este paso? (instrumentación)
         self.pack_prey: int = -1                        # índice de la presa COMÚN fijada (-1 = ninguna)
         self.pack_prey_kind: str | None = None          # "adult" | "calf" | None (a qué array indexa pack_prey)
+        # v2.9 (CEBO DISEÑADO): presa del 2º SECTOR de spawn (solo grouped con 2 subgrupos). El sector 1
+        # (el que dispara/ancla la barrera) mantiene la presa común de SIEMPRE (pack_prey, maquinaria
+        # intacta); el 2º sector fija la res MÁS LIBRE (máxima distancia al dron ACTIVE más cercano).
+        # Con 1 solo grupo queda -1/None y TODO el contrato previo es bit a bit (face_check intacto).
+        self.pack_prey2: int = -1
+        self.pack_prey2_kind: str | None = None
         self._ever_committed: bool = False              # ¿se fijó ya alguna presa este episodio?
         self.n_refix: int = 0                           # re-fijaciones de presa (tras matar/refugiarse la presa)
         self.max_simul_targets: int = 0                 # máx nº de vacas atacadas a la vez (coordinación; ~1 ideal)
@@ -591,6 +597,8 @@ class World:
         self._wolf_attacking = False
         self.pack_prey = -1
         self.pack_prey_kind = None
+        self.pack_prey2 = -1
+        self.pack_prey2_kind = None
         self._ever_committed = False
         self.n_refix = 0
         self.max_simul_targets = 0
@@ -949,6 +957,11 @@ class World:
             if self.pack_prey >= 0:
                 idx = int(self.pack_prey) if self.pack_prey_kind == "adult" else int(self.calf_defender[self.pack_prey])
                 pinnable[idx] = True
+            if self.pack_prey2 >= 0:
+                # v2.9: la presa del 2º sector (o su defensora) TAMBIÉN encara — el paquete está
+                # comprometido con DOS presas, una por sector. Con 1 grupo pack_prey2=-1 (bit a bit).
+                idx2 = int(self.pack_prey2) if self.pack_prey2_kind == "adult" else int(self.calf_defender[self.pack_prey2])
+                pinnable[idx2] = True
             # ENCARAR: la presa/defensora reorienta al lobo (cono/face_cooldown igual); las demás NO.
             self._update_cow_headings(face_mask=pinnable)
             if self.n_wolves > 0:
@@ -1234,10 +1247,14 @@ class World:
 
     def _commit_initial_prey(self) -> None:
         """Fija la presa COMÚN de la manada en t=0 (no espera a que un lobo cruce r_notice). Delega en
-        _try_commit_prey; una vez fijada se mantiene (la suelta solo el refugio/la muerte de la presa)."""
+        _try_commit_prey; una vez fijada se mantiene (la suelta solo el refugio/la muerte de la presa).
+        v2.9: con 2 subgrupos de spawn fija TAMBIÉN la presa del 2º sector (la más libre)."""
         self.pack_prey = -1
         self.pack_prey_kind = None
         self._try_commit_prey()
+        self.pack_prey2 = -1
+        self.pack_prey2_kind = None
+        self._try_commit_prey2()
 
     def _try_commit_prey(self) -> None:
         """FIJACIÓN INICIAL (t=0): si no hay presa y hay caza, fija una entre las CAZABLES (viva y no
@@ -1313,18 +1330,110 @@ class World:
         d[~cazable] = -np.inf
         return ("adult", int(np.argmax(d)))               # la adulta cazable más expuesta (borde)
 
+    def _prey_pos_of(self, idx: int, kind: str | None) -> np.ndarray | None:
+        """Posición de UNA presa (ternero o adulta) por índice/tipo, o None. Generalización v2.9
+        (dos presas, una por sector); _prey_pos/_prey_cone delegan aquí (mismos floats)."""
+        if idx < 0:
+            return None
+        return self.calves[idx] if kind == "calf" else self.cows[idx]
+
+    def _prey_cone_of(self, idx: int, kind: str | None) -> tuple[np.ndarray, np.ndarray]:
+        """Posición y mirada (unitaria) del cono que DEFIENDE a una presa dada: el de la defensora
+        si es ternero, el de la propia adulta si es adulta."""
+        d = int(self.calf_defender[idx]) if kind == "calf" else int(idx)
+        head = self.cow_heading[d]
+        return self.cows[d], np.array([np.cos(head), np.sin(head)])
+
     def _prey_pos(self) -> np.ndarray | None:
         """Posición de la presa fijada (ternero o adulta), o None."""
-        if self.pack_prey < 0:
-            return None
-        return self.calves[self.pack_prey] if self.pack_prey_kind == "calf" else self.cows[self.pack_prey]
+        return self._prey_pos_of(self.pack_prey, self.pack_prey_kind)
 
     def _prey_cone(self) -> tuple[np.ndarray, np.ndarray]:
         """Posición y mirada (unitaria) del cono que DEFIENDE a la presa: el de la defensora si es
         ternero, el de la propia adulta si es adulta."""
-        d = int(self.calf_defender[self.pack_prey]) if self.pack_prey_kind == "calf" else int(self.pack_prey)
-        head = self.cow_heading[d]
-        return self.cows[d], np.array([np.cos(head), np.sin(head)])
+        return self._prey_cone_of(self.pack_prey, self.pack_prey_kind)
+
+    # ------------------------------------------------------------------ #
+    # v2.9 — presa del 2º SECTOR (CEBO DISEÑADO). El contrato pack_prey (sector 1) queda INTACTO;
+    # estos espejos solo se activan en episodios grouped con 2 subgrupos (si no, pack_prey2 = -1).
+    # ------------------------------------------------------------------ #
+    def _sector2(self) -> np.ndarray:
+        """Índices de lobos del 2º SECTOR de spawn: con spawn grouped de 2 subgrupos el reparto vive
+        en wolf_group_sizes = [n1, k] y el 2º grupo son los k ÚLTIMOS índices (asignación heredada
+        del spawn v2.5, fija todo el episodio). Vacío con 1 solo grupo -> prey2 apagado."""
+        if len(self.wolf_group_sizes) != 2:
+            return np.zeros(0, dtype=int)
+        return np.arange(int(self.wolf_group_sizes[0]), self.n_wolves)
+
+    def _freest_prey_for_sector2(self) -> tuple[str | None, int]:
+        """Presa del 2º sector (v2.9): la res CAZABLE **MÁS LIBRE** = con distancia MÁXIMA al dron
+        ACTIVE más cercano (la menos protegida — mientras la barrera atiende al 1er sector, el 2º
+        va a por las libres). Respeta la doctrina y la capacidad DEL SECTOR:
+          - ternero cazable -> el ternero MÁS LIBRE (objetivo blando; cazable con cualquier nº);
+          - si no, y el sector tiene >= n_min_adult lobos -> la adulta cazable MÁS LIBRE (el quórum
+            de muerte es local a la presa: un sector de 1 no puede tumbar una adulta);
+          - si no -> (None, -1) (el sector ronda en standoff).
+        Sin drones ACTIVE no hay 'más libre': cae a la MÁS CERCANA al centroide del sector (la
+        regla clásica). La 'más libre' se evalúa AL FIJAR; no hay abandono por cambios en la
+        disposición de drones (anti-oscilación, mismo principio que la presa 1)."""
+        s2 = self._sector2()
+        if s2.size == 0:
+            return (None, -1)
+        act = self.drones[self.drone_state == ACTIVE]
+        cazable_calf = self.calf_alive & ~self.calf_safe
+        if cazable_calf.any():
+            cand = cazable_calf.copy()
+            # ROMPER la convergencia (el propósito del cebo): excluye la presa del sector 1 si hay
+            # OTRA candidata del mismo tipo; si es la única, converge (no hay alternativa).
+            if self.pack_prey_kind == "calf" and self.pack_prey >= 0 and cand.sum() > 1:
+                cand[self.pack_prey] = False
+            if act.shape[0] > 0:
+                d = np.linalg.norm(self.calves[:, None, :] - act[None, :, :], axis=2).min(axis=1)
+                d[~cand] = -np.inf
+                return ("calf", int(np.argmax(d)))
+            d = np.linalg.norm(self.calves - self.wolves[s2].mean(axis=0), axis=1)
+            d[~cand] = np.inf
+            return ("calf", int(np.argmin(d)))
+        if s2.size >= self.n_min_adult:
+            cazable = (self.cow_alive & ~self.cow_safe) & ~self._in_forbidden(self.cows)
+            if cazable.any():
+                cand = cazable.copy()
+                if self.pack_prey_kind == "adult" and self.pack_prey >= 0 and cand.sum() > 1:
+                    cand[self.pack_prey] = False
+                if act.shape[0] > 0:
+                    d = np.linalg.norm(self.cows[:, None, :] - act[None, :, :], axis=2).min(axis=1)
+                    d[~cand] = -np.inf
+                    return ("adult", int(np.argmax(d)))
+                d = np.linalg.norm(self.cows - self.wolves[s2].mean(axis=0), axis=1)
+                d[~cand] = np.inf
+                return ("adult", int(np.argmin(d)))
+        return (None, -1)
+
+    def _try_commit_prey2(self) -> None:
+        """Fija (o re-fija tras muerte/refugio) la presa del 2º sector. NO toca n_refix (lo lleva
+        quien llama, como en el sector 1)."""
+        if self.pack_prey2 >= 0:
+            return
+        kind, idx = self._freest_prey_for_sector2()
+        if idx >= 0:
+            self.pack_prey2, self.pack_prey2_kind = idx, kind
+            self._ever_committed = True
+
+    def _prey2_lost_reason(self) -> str | None:
+        """Espejo de _prey_lost_reason para la presa del 2º sector: 'dead' / 'refuge' / None."""
+        if self.pack_prey2 < 0:
+            return None
+        if self.pack_prey2_kind == "calf":
+            if not self.calf_alive[self.pack_prey2]:
+                return "dead"
+            if self.calf_safe[self.pack_prey2]:
+                return "refuge"
+        else:
+            if not self.cow_alive[self.pack_prey2]:
+                return "dead"
+            if self.cow_safe[self.pack_prey2]:
+                return "refuge"
+        return None
 
     def _envelop_slots(self, prey_pos: np.ndarray, eng: np.ndarray) -> np.ndarray:
         """ATAQUE ENVOLVENTE: asigna a cada lobo de `eng` un ángulo objetivo EQUIESPACIADO alrededor de la
@@ -1570,6 +1679,7 @@ class World:
             "step": self.step_count, "kind": "adult", "prey_idx": int(ci),
             "n_flankers": int(n_flankers), "flankers": fl.tolist(),
             "is_pack_prey": bool(self.pack_prey_kind == "adult" and ci == self.pack_prey),
+            "is_pack_prey2": bool(self.pack_prey2_kind == "adult" and ci == self.pack_prey2),   # v2.9 (2º sector)
             "is_weakest": bool(ci == int(np.argmin(self.cow_speeds))),
             "min_wolf_dist": float(dist[ci].min()),
         }
@@ -1581,6 +1691,7 @@ class World:
             "defender_idx": int(self.calf_defender[j]),
             "n_flankers": int(len(flankers)), "flankers": [int(x) for x in flankers],
             "is_pack_prey": bool(self.pack_prey_kind == "calf" and self.pack_prey == j),
+            "is_pack_prey2": bool(self.pack_prey2_kind == "calf" and self.pack_prey2 == j),      # v2.9 (2º sector)
             "min_wolf_dist": float(min_dist),
         }
 
@@ -1896,6 +2007,9 @@ class World:
             cone_head = float(np.arctan2(fvec[1], fvec[0]))
         else:
             cone_pos = cone_head = None
+        prey2_pos = self._prey_pos_of(self.pack_prey2, self.pack_prey2_kind)   # v2.9: presa del 2º sector
+        if prey2_pos is not None:
+            prey2_pos = prey2_pos.copy()
         return {
             "step": self.step_count,
             "t": self.step_count * self.dt,
@@ -1922,6 +2036,8 @@ class World:
             "prey_cone_pos": cone_pos,           # centro del cono que la defiende (para colorear lobos)
             "prey_cone_head": cone_head,
             "prey_is_calf": bool(self.pack_prey_kind == "calf"),
+            "prey2_pos": prey2_pos,              # v2.9: presa del 2º sector (cebo diseñado), o None
+            "prey2_is_calf": bool(self.pack_prey2_kind == "calf"),
             "phase": self.phase,                 # VIGILANCIA / ESCOLTA
             "n_safe": int(self.cow_safe.sum() + self.calf_safe.sum()),
             "n_depredadas": int(self.n_depredadas),

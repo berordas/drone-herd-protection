@@ -5,7 +5,14 @@
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
 >
-> **Última actualización: 2026-07-22** · ***run07 CERRADO: el cebo NO emerge NI con frente ciego real.** Currículo de
+> **Última actualización: 2026-07-22 (2ª)** · ***v2.9: BARRERA QUE AVANZA + CEBO DISEÑADO (RE-CONGELADO tag
+> `v2.9-baseline`) — la prueba de existencia del cebo sale NULA en agregado.** La línea avanza al ancla (tope derivado
+> 36.7 m, retaguardia confirmable) y el 2º sector fija la presa MÁS LIBRE (`pack_prey2`; diseñado, NO emergente; timing
+> sin forzar; 1 grupo = bit a bit v2.8). Dummy 3.98/0/3.88 (±0.01) · Reactive **2.46/0/2.44** (v2.8: 2.56/2.26 →
+> −0.10/+0.18); **ablación: cebo PURO +0.02/+0.10 ≈ RUIDO** — ejecuta en micro (5 capturas del 2º sector, test 13) pero
+> no rinde: sectores con menos masa/quórum y una barrera que re-planifica a 15 m/s cubren el multi-frente casi gratis.
+> Etapa 2 (RL del timing) con poco premio tal cual. **Nota a batir del MARL → 2.46/0/2.44.*** ·
+> *(1ª: run07 CERRADO: el cebo NO emerge NI con frente ciego real.** Currículo de
 > run06 sobre v2.8 (barrera honesta) con métrica corregida (killer-NO-CONFIRMADO de la memoria de la barrera; nula del
 > scriptado 0.0% — señal límpida). Fase 1 clavada en el suelo 2.70; niveles nunca por encima del suelo; GUARDIA DE
 > EROSIÓN disparada a 14.75M (stop fallido: SIGINT ignorado en runs desacoplados → lección SIGTERM); 100 semillas FINAL
@@ -341,6 +348,43 @@
 > situación explotable (un solo grupo visto) el 25.6% de los pasos de ESCOLTA · severidad en episodios de 2 grupos 3.33.
 > La firma limpia del cebo emergido = subida de killer-no-detectado/cebo-puro + severidad > suelo. Al terminar:
 > eval_wolves 100 semillas (último y mejor) vs 2.74/2.82 + suelo + runs 01–04, y cebo_diag de los checkpoints buenos.
+>
+> **Patch — v2.9: BARRERA QUE AVANZA + CEBO DISEÑADO en el 2º sector (etapa 1/2) + RE-CONGELACIÓN y medida (2026-07-22,
+> 2ª).** Dos arreglos del mundo tras mirar episodios sobre v2.8: la barrera se plantaba PEGADA al rebaño en vez de avanzar
+> a espantar, y TODOS los lobos fijaban la misma presa (la protegida) → el 2º frente no servía de nada. **Nota de
+> honestidad: el arreglo B PROGRAMA el cebo en el scriptado (diseñado, NO emergente) — esta v2.9 es la PRUEBA DE
+> EXISTENCIA (¿rinde el cebo si se ejecuta bien?); el timing NO se fuerza (queda para el RL, etapa 2).**
+> **Arreglo A (coordinators.py):** la línea AVANZA hacia el lobo ANCLA — `adv = clip(dist(vacas→ancla) − DETER_RADIUS,
+> 12, advance_max)` (se planta DETER_RADIUS por delante del punto de encuentro); tope DERIVADO `advance_max =
+> sqrt(r_confirm² − (spacing/2)²) ≈ 36.7 m` — la retaguardia sigue CONFIRMABLE (la barrera honesta no se ciega a sí
+> misma: cualquier lobo que alcance las vacas por detrás queda confirmado y la re-planificación por paso lo cubre; a
+> 15 vs 4 m/s repliega a tiempo); con el ancla a ≤ 32 m repliega al mínimo v2.8 (12 m, garantía trasera plena).
+> **Arreglo B (world.py + wolf_controllers.py):** presa POR SECTOR con spawn grouped de 2 subgrupos (sector = índices del
+> spawn v2.5): el 1º mantiene `pack_prey` (maquinaria INTACTA), el 2º fija `pack_prey2` = la res CAZABLE **MÁS LIBRE**
+> (máx. distancia al dron ACTIVE más cercano; ternero-primero; capacidad del sector para adultas —quórum local—;
+> EXCLUYE la presa del 1º si hay alternativa del mismo tipo —romper la convergencia es el propósito—; sin ACTIVE cae a
+> la más cercana; re-fija solo por muerte/refugio, anti-oscilación). Representación LIMPIA: `pack_prey2/pack_prey2_kind`
+> nuevos en el World (contrato compartido); el PIN encara AMBAS presas/defensoras; `_process_predation` NO se toca (ya
+> era agnóstica: mata cualquier res con quórum); capturas con `is_pack_prey2`; snapshot con `prey2_pos` (el render
+> ignora claves nuevas). Controlador: despachador — con 1 grupo el camino v2.8 ÍNTEGRO (bit a bit, face_check 12/12);
+> con 2 grupos, `_sector_desired` aplica la MISMA táctica (cono/flanqueo/rodeo/envolvente POR SECTOR; repulsión y
+> bordeo de zonas globales). **Verificación:** test 12 (avance al tope 36.7 con ancla lejos; repliegue 17.4 por fórmula
+> al apretar; hypot(advance_max, s/2) ≤ r_confirm) · test 13 (existencia micro: presas DISTINTAS por sector y **5
+> capturas de la presa del 2º sector por lobos del 2º sector**) · `test_presa_por_sector` en wolf_controller_check
+> (regla verificada contra recomputación; 1 grupo → pack_prey2=-1) · test 11 adaptado (el empírico verifica el TEJIDO
+> de ranuras; la garantía trasera del modo replegado queda por constantes — la línea puede estar avanzada, test 12 la
+> cubre). Verja 7/7 verde. **RE-MEDIDO (100/tipo, metro DGX; 2ª pasada sin deriva): Dummy 3.97/0/3.89 → 3.98/0/3.88**
+> (±0.01: el cebo apenas mueve al Dummy — sus drones clavados custodian ≈igual a la "más libre"; solo cambian los
+> episodios grouped de 2 subgrupos) · **Reactive 2.56/0/2.26 → 2.46±1.36/0/2.44±1.37 (−0.10/+0.18). ABLACIÓN**
+> (/data/wolves/diag/ablacion_v29.*): **cebo SIN avance** (línea fija v2.8 vs lobos v2.9) = **2.58/0/2.36 → efecto PURO
+> del cebo diseñado +0.02/+0.10 ≈ RUIDO** (SEM ~0.14); avance a lobos constantes −0.12/+0.08 ≈ ruido. **VEREDICTO
+> (honesto, la cifra clave): la prueba de existencia sale NULA EN AGREGADO — el cebo diseñado EJECUTA (micro: el 2º
+> sector fija y mata a la presa libre) pero NO sube la severidad.** Mecanismo plausible: al partir el paquete cada
+> sector pierde masa (quórum local: una pareja pierde el quórum con UN lobo espantado) y la barrera re-planificada a
+> 15 m/s cubre frentes secuenciales casi gratis; además la "más libre" del momento de fijar deja de serlo cuando la
+> barrera se recoloca (sin re-evaluación, anti-oscilación). Implicación: la etapa 2 (RL aprendiendo el TIMING del cebo)
+> tendría poco premio TAL CUAL contra esta defensa — decisión del usuario. **Nota a batir del MARL de drones →
+> 2.46/0/2.44** (run01 sigue histórico).
 >
 > **Patch — run07: currículo del cebo sobre la BARRERA HONESTA (v2.8) — CERRADO: el cebo NO emerge ni con frente ciego
 > REAL (2026-07-22).** Reintento de run06 con el artefacto de percepción eliminado: sobre v2.8 el frente sin confirmar es
