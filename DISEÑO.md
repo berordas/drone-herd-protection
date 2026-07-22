@@ -5,7 +5,13 @@
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
 >
-> **Última actualización: 2026-07-21** · ***v2.8: BARRERA HONESTA (RE-CONGELADO tag `v2.8-baseline`).** La barrera del
+> **Última actualización: 2026-07-22** · ***run07 CERRADO: el cebo NO emerge NI con frente ciego real.** Currículo de
+> run06 sobre v2.8 (barrera honesta) con métrica corregida (killer-NO-CONFIRMADO de la memoria de la barrera; nula del
+> scriptado 0.0% — señal límpida). Fase 1 clavada en el suelo 2.70; niveles nunca por encima del suelo; GUARDIA DE
+> EROSIÓN disparada a 14.75M (stop fallido: SIGINT ignorado en runs desacoplados → lección SIGTERM); 100 semillas FINAL
+> 1.93/1.87 (Δ −0.63/−0.39) · mejor 7.5M 2.25/2.21 (≈suelo); **cebo_diag 0.0% en TODOS los checkpoints**. Tercera
+> confirmación: el cuello es la EXPLORACIÓN, no la geometría; currículo de spawn AGOTADO. Reservas: curiosidad
+> coordinada / jerárquico / co-evolución (decisión del usuario).* · *(2026-07-21: v2.8 BARRERA HONESTA (RE-CONGELADO tag `v2.8-baseline`).* La barrera del
 > ReactiveCoordinator reacciona SOLO a lobos **CONFIRMADOS de equipo con memoria** (alguna vez a ≤ `r_confirm`=40 de un
 > dron ACTIVE; latch por episodio; tracking) — fin de la **percepción-oráculo** de v2.6 (reaccionaba a contactos a
 > `r_detect`=100 sabiendo el tipo por verdad-terreno → no dejaba frente ciego → el cebo era imposible por ARTEFACTO). +
@@ -335,6 +341,41 @@
 > situación explotable (un solo grupo visto) el 25.6% de los pasos de ESCOLTA · severidad en episodios de 2 grupos 3.33.
 > La firma limpia del cebo emergido = subida de killer-no-detectado/cebo-puro + severidad > suelo. Al terminar:
 > eval_wolves 100 semillas (último y mejor) vs 2.74/2.82 + suelo + runs 01–04, y cebo_diag de los checkpoints buenos.
+>
+> **Patch — run07: currículo del cebo sobre la BARRERA HONESTA (v2.8) — CERRADO: el cebo NO emerge ni con frente ciego
+> REAL (2026-07-22).** Reintento de run06 con el artefacto de percepción eliminado: sobre v2.8 el frente sin confirmar es
+> de verdad invisible para la barrera (la hipótesis: el valle sería más somero con un agujero real que explotar). MISMO
+> currículo (4 niveles de separación de spawn ×5M = 20M; override solo de entrenamiento; eval SIEMPRE spawn normal),
+> residual + recompensa de EQUIPO PURA (shaping off, sin pista), 12 envs, lr 1e-4. **MÉTRICA CORREGIDA** (`rl/cebo_diag.py`,
+> commit `124476e` ANTES del run): killer-NO-CONFIRMADO + cebo-confirmado leídos de la MEMORIA DE CONFIRMACIÓN real de la
+> barrera (`coordinator.inner._confirmed`, la máscara que decidió los waypoints de ese paso); las métricas por r_detect
+> (0% por construcción) se conservan por continuidad. **Paso 0 (medido antes de entrenar):** suelo δ=0 SANO sobre v2.8
+> (sev 3.50 en 2 frentes, amurallado 15.3% de lobo-pasos, 0 timeouts, rapidez 2.70 m/s — no zombi); suelo de la EVAL
+> LIGERA v2.8 = 2.70 (detalle [2,0,3,3,5,2,3,4,3,2]; guardia recalibrada a <2.4 sostenida = suelo−0.3); **NULA del
+> scriptado con la métrica corregida = 0.0%** (la premisa del ~47.6% era "no disuadido" a DETER=20, otra métrica: el
+> scriptado converge a la presa común y el matador pasa a ~19-20 m de un dron → confirmado antes de matar) → señal
+> límpida; la oportunidad EXISTE (un-solo-grupo-CONFIRMADO el 36.4% de ESCOLTA). **Desenlace:** fase 1 clavada en 2.70
+> EXACTO ×3 (detalle idéntico); niveles 1-3 oscilando EN o BAJO el suelo (nunca por encima; picos aislados 2.80/2.70 ≈
+> suelo con n=10); éxito parcial del NIVEL 1 NO cumplido (checkpoint 5M: killer-no-confirmado 0.0%, sev 2-grupos 2.65 vs
+> suelo 2.86 — ni con el cebo servido a 180°+masa≥2); **GUARDIA DE EROSIÓN DISPARADA a 14.75M** (6 ligeras consecutivas
+> <2.4: 1.90/1.80/1.80/1.70/2.00/2.00 = 1.5M sostenidos). **Incidencia operativa (honestidad del registro):** la orden de
+> parada NO surtió efecto — los runs desacoplados (`docker exec -d bash -c "nohup … &"`) arrancan como job asíncrono de
+> bash no interactivo → heredan SIGINT IGNORADO → Python nunca instala KeyboardInterrupt → `pkill -INT` fue un no-op (y
+> el envoltorio bash del kill se auto-mató por contener el patrón → el ps salió vacío y pareció muerto); LECCIÓN: parar
+> guardias con **SIGTERM** directo (`docker exec <cont> pkill -TERM -f …`, sin bash -c) y verificar con pgrep + log
+> congelado. El run completó los 20M por su cuenta: el nivel 4 (spawn normal) quedó clavado en 1.6-2.3 — registro extra
+> que CONFIRMA el veredicto de la guardia. **Tablas 100 semillas (arnés v2.8, vs scriptado 2.56/2.26): FINAL (20M)
+> 1.93±1.13/1.87±1.03 → Δ −0.63/−0.39 (bajo el suelo = erosión) · mejor por ligeras (7.5M, pico 2.80) 2.25±1.34/2.21±1.34
+> → Δ −0.31/−0.05 (≈suelo). `cebo_diag` corregido en TODOS los checkpoints (5M/7.5M/10M/20M): killer-NO-CONFIRMADO 0.0%
+> y cebo-confirmado 0.0%** — ni una muerte de un lobo invisible para la barrera honesta (el final mata algo más separado
+> —sep 34.5 m vs 17.5 nula— y más del no-anclado —47.3% vs 34.3%— pero SIEMPRE confirmado: reparto/ruido, no ocultación).
+> **Veredicto: tercera confirmación (run05 recompensa pura · run06 currículo+oráculo · run07 currículo+frente ciego
+> real) — el cuello es la EXPLORACIÓN (el cebo = desviación coordinada temporalmente extendida con valle de recompensa;
+> la exploración gaussiana por-paso no la muestrea), NO la geometría del mundo. El currículo de separación de spawn queda
+> AGOTADO como vía. Reservas (BIBLIOGRAFIA, NO implementadas — decisión del usuario): curiosidad coordinada
+> (EMC/MACE/SMMAE/JIM) → control jerárquico de formación → co-evolución con el MARL sobre "confirmado pero no disuadido"
+> (el hueco real: ~50% de muertes sin dron a ≤DETER_RADIUS).** Artefactos: /data/wolves/run07_curric_v28/ (checkpoints,
+> train.log, eval_final_20M/eval_best_7p5M.json) + /data/wolves/run07_cebo_*.json + diag/run07_paso0.py.
 >
 > **Patch — v2.8: BARRERA HONESTA (reacciona SOLO a lobos confirmados con memoria) + standoff derivado + RE-CONGELACIÓN
 > y medida (2026-07-21).** Corrección de una TRAMPA de realismo detectada por el diagnóstico del cebo (solo-lectura,
