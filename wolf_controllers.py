@@ -257,7 +257,29 @@ class ScriptedWolfController(WolfController):
         s1 = np.arange(0, n1)
         s2 = np.arange(n1, w.n_wolves)
         desired = np.zeros((w.n_wolves, 2))
-        atk1 = self._sector_desired(w, s1, w.pack_prey, w.pack_prey_kind, d_wc, desired)
+
+        # --- v3.0 (CEBO PERFECTO, pieza 3): TIMING PROGRAMADO del cebo (scripted, NO emergente) ---
+        # Solo en modo cebo (wolf_decoy_size fijado). El sector-CEBO (1º) ESPERA merodeando —fuera del
+        # alcance de confirmación, SIN congelarse— hasta que el ASALTO (2º) está a <= assault_trigger_dist
+        # de su presa; ENTONCES se lanza (se deja confirmar y dispara/ancla la barrera) -> ambos frentes
+        # llegan acompasados. El latch vive en el World (wolf_decoy_released, patrón pack_prey: el
+        # controlador lo escribe, el reset del World lo reinicia; visible para instrumentación/render).
+        decoy_waiting = False
+        if w.wolf_decoy_size is not None and not w.wolf_decoy_released:
+            if w.pack_prey2 >= 0 and s2.size > 0:
+                p2 = w._prey_pos_of(w.pack_prey2, w.pack_prey2_kind)
+                if float(np.linalg.norm(w.wolves[s2].mean(axis=0) - p2)) <= w.assault_trigger_dist:
+                    w.wolf_decoy_released = True          # DISPARO: el cebo avanza desde este paso
+                else:
+                    decoy_waiting = True
+            else:
+                w.wolf_decoy_released = True              # sin presa del asalto: nada que acompasar
+
+        if decoy_waiting:
+            atk1 = False
+            self._decoy_prowl(w, s1, desired)
+        else:
+            atk1 = self._sector_desired(w, s1, w.pack_prey, w.pack_prey_kind, d_wc, desired)
         atk2 = self._sector_desired(w, s2, w.pack_prey2, w.pack_prey2_kind, d_wc, desired)
         w._wolf_attacking = bool(atk1 or atk2)
 
@@ -295,6 +317,34 @@ class ScriptedWolfController(WolfController):
         desired_dir = np.where(dn > 1e-9, desired / np.maximum(dn, 1e-9), 0.0)
         v_target = desired_dir * w.wolf_speed
         return v_target, False
+
+    def _decoy_prowl(self, w, sel: np.ndarray, desired: np.ndarray) -> None:
+        """v3.0 (pieza 3): MERODEO del sector-CEBO mientras espera el disparo — acecho LATERAL creíble,
+        NO congelado y SIN acercarse: componente TANGENCIAL alrededor del rebaño (lado determinista por
+        lobo: alterna con el índice -> el cúmulo no se estira en fila india) + repulsión RADIAL saliente
+        si el dron ACTIVE más cercano está a < decoy_hold_dist (mantenerse fuera del alcance: la banda
+        de holgura DECOY_HOLD_BAND suaviza la frontera). Determinista, SIN RNG (spawns bit a bit).
+        La normalización global de _decide_two_sectors lo lleva a wolf_speed (el lobo patrulla a su
+        rapidez de crucero, como el resto de intenciones del scriptado)."""
+        DECOY_HOLD_BAND = 20.0                        # m: banda de holgura del merodeo (empuja antes de invadir)
+        wolves = w.wolves[sel]
+        herd_c = w.cows[w.cow_alive].mean(axis=0) if w.cow_alive.any() else np.array([w.W / 2.0, w.H / 2.0])
+        rel = wolves - herd_c
+        rn = np.linalg.norm(rel, axis=1, keepdims=True)
+        rhat = rel / np.maximum(rn, 1e-9)
+        side = np.where((sel % 2 == 0)[:, None], 1.0, -1.0)          # lado determinista (sin RNG)
+        tang = side * np.column_stack([-rhat[:, 1], rhat[:, 0]])     # acecho lateral (orbita el rebaño)
+        des = tang.copy()
+        act = w.drones[w.drone_state == _wm.ACTIVE]
+        if act.shape[0] > 0:
+            d = np.linalg.norm(wolves[:, None, :] - act[None, :, :], axis=2)   # (k, nd)
+            j = d.argmin(axis=1)
+            dmin = d[np.arange(sel.size), j]
+            push = np.clip((w.decoy_hold_dist + DECOY_HOLD_BAND - dmin) / DECOY_HOLD_BAND, 0.0, 1.0)
+            away = wolves - act[j]
+            away = away / np.maximum(np.linalg.norm(away, axis=1, keepdims=True), 1e-9)
+            des = des + 2.0 * push[:, None] * away    # el alejarse DOMINA al acecho cuando invade la holgura
+        desired[sel] = des
 
     def _sector_desired(self, w, sel: np.ndarray, prey_idx: int, prey_kind: str | None,
                         d_wc: np.ndarray, desired: np.ndarray) -> bool:

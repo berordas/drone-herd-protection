@@ -268,7 +268,7 @@ def main() -> None:
         "residual": {"scale_m": scale, "phase1_steps": args.phase1_steps,
                      "log_std_init": RESIDUAL_LOG_STD_INIT,
                      "nota": "δ sobre el waypoint de la barrera v2.6 (viva dentro); máscara "
-                             "ACTIVE&~investigating&~relief_hold; δ≡0 = barrera pura (suelo 2.74/2.82)"},
+                             "ACTIVE&~investigating (v3.0); δ≡0 = barrera pura (suelo = Reactive vigente)"},
         "abort": ABORT_NOTE_DRONES,
         "fecha": datetime.now().isoformat(timespec="seconds"),
     }

@@ -27,5 +27,11 @@ RUN uv pip install --system --no-cache-dir -r  /tmp/requirements.txt
 # (p.ej. el forkserver de SubprocVecEnv re-importando el stack) muere en un servidor sin X.
 RUN apt-get update && apt-get install -y libgl1 libglib2.0-0 && rm -rf /var/lib/apt/lists/*
 
+# v3.0 (render, pieza 6): fuente de emoji A COLOR — render.py renderiza 🐄🐺🦌🐗🚁 como sprites
+# PIL (embedded_color) buscando NotoColorEmoji.ttf en /usr/share/fonts/truetype/noto/; SIN la
+# fuente cae al render de marcadores planos (la "regresión" de los GIFs del contenedor). Capa
+# separada al final -> la caché de las capas del lab no se invalida. Solo afecta al render.
+RUN apt-get update && apt-get install -y fonts-noto-color-emoji && rm -rf /var/lib/apt/lists/*
+
 USER $NB_UID
 

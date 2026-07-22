@@ -50,16 +50,36 @@ except Exception:
 _sprite_cache: dict = {}
 
 
+def _emoji_font(px: int):
+    """Fuente de emoji al tamaño pedido. Las fuentes CBDT de MAPA DE BITS (NotoColorEmoji del
+    contenedor) solo abren a su tamaño de strike FIJO -> se cargan al nativo y el sprite se
+    REESCALA después (v3.0, pieza 6; Segoe UI Emoji de Windows es escalable y abre directo).
+    Devuelve (font, native_px)."""
+    try:
+        return ImageFont.truetype(_EMOJI_FONT, px), px
+    except OSError:
+        for native in (137, 136, 128, 109, 96, 64, 32):    # strikes habituales de NotoColorEmoji
+            try:
+                return ImageFont.truetype(_EMOJI_FONT, native), native
+            except OSError:
+                continue
+        raise
+
+
 def _sprite(name: str, px: int = 96, fade: float = 1.0) -> np.ndarray:
     """Sprite RGBA (numpy [0,1]) del emoji, recortado a su contenido. `fade` atenúa el alfa
     (entidades muertas / corzos descartados). Cacheado."""
     key = (name, px, round(fade, 2))
     if key in _sprite_cache:
         return _sprite_cache[key]
-    font = ImageFont.truetype(_EMOJI_FONT, px)
-    img = Image.new("RGBA", (px + 12, px + 12), (0, 0, 0, 0))
+    font, native = _emoji_font(px)
+    img = Image.new("RGBA", (native + 12, native + 12), (0, 0, 0, 0))
     ImageDraw.Draw(img).text((6, 6), EMOJI[name], font=font, embedded_color=True)
-    img = img.crop(img.getbbox() or (0, 0, px, px))
+    img = img.crop(img.getbbox() or (0, 0, native, native))
+    if native != px:                                       # bitmap de tamaño fijo -> reescala al pedido
+        w0, h0 = img.size
+        s = px / max(native, 1)
+        img = img.resize((max(int(w0 * s), 1), max(int(h0 * s), 1)), Image.LANCZOS)
     arr = np.asarray(img).astype(float) / 255.0
     if fade < 1.0:
         arr = arr.copy()

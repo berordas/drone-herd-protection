@@ -191,6 +191,9 @@ class World:
         wolf_repulsion_strength: float = 1.0,          # peso de la repulsión entre lobos
         wolf_spawn_dispersion: float | None = None,    # m: dispersión del cúmulo de spawn (salen JUNTOS de un sector; default 0.05*min). TUNE
         wolf_spawn_mode: str = "clustered",            # "clustered" (v2.4.1, un solo cúmulo) | "grouped" (v2.5: 1-2 subgrupos desiguales en sectores distintos; substream propio). El default se queda en clustered (checks bit a bit); CONFIG_V2 pide grouped.
+        wolf_decoy_size: int | None = None,            # v3.0 (CEBO PERFECTO): tamaño FIJO del sector-CEBO (1º) en grouped de 2 grupos, capado a n-2 (el ASALTO conserva quórum >= 2). None = reparto aleatorio k~unif{1..n-1} (v2.5-v2.9). Con valor, ACTIVA además el TIMING programado del cebo (wolf_controllers). CONFIG_V2 lo fija.
+        decoy_hold_dist: float = 100.0,                # v3.0 (timing del cebo; solo con wolf_decoy_size): el CEBO merodea a > esta dist (m) del dron ACTIVE más cercano hasta el disparo (fuera de r_confirm, sin congelarse). TUNE
+        assault_trigger_dist: float = 150.0,           # v3.0 (timing del cebo): el CEBO se lanza cuando el centroide del ASALTO está a <= esta dist (m) de su presa (pack_prey2) -> ambos frentes llegan acompasados. TUNE
         wolf_skirt_gain: float = 1.5,                  # ganancia de la componente TANGENCIAL para BORDEAR el rebaño (no atravesarlo). TUNE
         wolf_skirt_margin: float | None = None,        # m: holgura sobre la extensión del rebaño-obstáculo (default = r_face_safe). TUNE
         wolf_envelop_gain: float = 3.0,                # ATAQUE ENVOLVENTE: reparte los rumbos del paquete en ángulos equiespaciados alrededor de la presa (N→2π/N) -> no se apiñan en el cono. TUNE
@@ -325,6 +328,11 @@ class World:
         if wolf_spawn_mode not in ("clustered", "grouped"):
             raise ValueError("wolf_spawn_mode debe ser 'clustered' o 'grouped'; recibido %r" % (wolf_spawn_mode,))
         self.wolf_spawn_mode = wolf_spawn_mode         # v2.5: "grouped" = subgrupos (ver _split_wolves_groups)
+        if wolf_decoy_size is not None and int(wolf_decoy_size) < 1:
+            raise ValueError("wolf_decoy_size debe ser >= 1 (o None = reparto aleatorio v2.5-v2.9)")
+        self.wolf_decoy_size = int(wolf_decoy_size) if wolf_decoy_size is not None else None  # v3.0
+        self.decoy_hold_dist = float(decoy_hold_dist)          # v3.0 (timing del cebo)
+        self.assault_trigger_dist = float(assault_trigger_dist)  # v3.0 (timing del cebo)
         self.wolf_skirt_gain = wolf_skirt_gain
         self.wolf_envelop_gain = wolf_envelop_gain
         self.wolf_skirt_margin = wolf_skirt_margin if wolf_skirt_margin is not None else self.r_face_safe
@@ -437,7 +445,7 @@ class World:
         self.drone_state: np.ndarray | None = None      # (n_drones,) ACTIVE/RETURNING/CHARGING/READY
         self.battery_activity: np.ndarray | None = None # (n_drones,) HOOK persecución (bandera #7): multiplica el drenaje
         self.drone_stranded: np.ndarray | None = None   # (n_drones,) "dron tirado": ACTIVE que llega a ~0 esperando relevo
-        self.drone_relief_hold: np.ndarray | None = None # (n_drones,) ACTIVE que se clava en su puesto esperando/recibiendo relevo (el coordinador NO lo comanda)
+        self.drone_relief_hold: np.ndarray | None = None # (n_drones,) ACTIVE que ANUNCIÓ relevo y lo espera (v3.0: SIGUE comandable y cubriendo; solo queda fuera del pool de investigación)
         self.relief_target: np.ndarray | None = None     # (n_drones,) para un INCOMING: índice del dron bajo que va a relevar (-1 si no)
         self._wolf_attacking: bool = False              # ¿la manada flanquea de verdad este paso? (instrumentación)
         self.pack_prey: int = -1                        # índice de la presa COMÚN fijada (-1 = ninguna)
@@ -448,6 +456,9 @@ class World:
         # Con 1 solo grupo queda -1/None y TODO el contrato previo es bit a bit (face_check intacto).
         self.pack_prey2: int = -1
         self.pack_prey2_kind: str | None = None
+        # v3.0 (TIMING del cebo, patrón pack_prey: el CONTROLADOR lo escribe, el World lo guarda/reinicia;
+        # visible para instrumentación/render): False = el sector-CEBO aún merodea; True = lanzado.
+        self.wolf_decoy_released: bool = False
         self._ever_committed: bool = False              # ¿se fijó ya alguna presa este episodio?
         self.n_refix: int = 0                           # re-fijaciones de presa (tras matar/refugiarse la presa)
         self.max_simul_targets: int = 0                 # máx nº de vacas atacadas a la vez (coordinación; ~1 ideal)
@@ -599,6 +610,7 @@ class World:
         self.pack_prey_kind = None
         self.pack_prey2 = -1
         self.pack_prey2_kind = None
+        self.wolf_decoy_released = False    # v3.0: el timing del cebo arranca en "merodeo" cada episodio
         self._ever_committed = False
         self.n_refix = 0
         self.max_simul_targets = 0
@@ -716,9 +728,11 @@ class World:
         afecta a los drones NO investigando; None = mantener. Fija battery_activity por el esfuerzo (#7)."""
         if actions is not None:
             wp = np.asarray(actions, dtype=float).reshape(self.n_drones, 2)
-            # PRECEDENCIA: el coordinador NO toca al INVESTIGADOR (reflejo) ni al dron CLAVADO esperando/recibiendo
-            # relevo (drone_relief_hold: mantiene su puesto para el hand-off). El resto sí.
-            free = ~self.drone_investigating & ~self.drone_relief_hold
+            # PRECEDENCIA: el coordinador NO toca al INVESTIGADOR (reflejo). v3.0 (pieza 5): el dron que
+            # ANUNCIA relevo (drone_relief_hold) SÍ sigue comandable — antes se clavaba en su puesto y
+            # dejaba un agujero en la barrera; ahora sigue cubriendo/moviéndose hasta el hand-off (el
+            # INCOMING lo persigue: su waypoint se actualiza a la posición VIVA del bajo en _step_battery).
+            free = ~self.drone_investigating
             self.drone_waypoint[free] = wp[free]
         self._update_investigation_waypoint()             # reflejo: el investigador persigue su contacto
 
@@ -754,7 +768,7 @@ class World:
         self.drone_state[:na] = ACTIVE
         self.battery_activity = np.ones(n)        # HOOK persecución (1.0 = patrulla)
         self.drone_stranded = np.zeros(n, dtype=bool)   # ACTIVE tirado (batería a ~0 esperando relevo)
-        self.drone_relief_hold = np.zeros(n, dtype=bool)  # ACTIVE clavado en su puesto esperando/recibiendo relevo
+        self.drone_relief_hold = np.zeros(n, dtype=bool)  # ACTIVE que anunció relevo y lo espera (v3.0: sigue comandable)
         self.relief_target = np.full(n, -1, dtype=int)  # INCOMING -> índice del bajo que releva (-1 si no)
         if not stagger:
             return
@@ -801,11 +815,13 @@ class World:
         de vacas/lobo y NO usa el RNG (determinista -> no perturba el stream; baseline intacto). El MOVIMIENTO
         de los drones lo hace la dinámica de vuelo (_apply_drone_actions); aquí solo se fijan waypoints/estados.
 
-        Relevo: cuando un ACTIVE baja de announce_threshold se CLAVA en su puesto (sigue cubriendo/disuadiendo,
-        el coordinador ya no lo comanda) y la central DESPACHA al READY más cargado, que VUELA hasta el puesto
-        (INCOMING). Al llegar ENCIMA (<= relay_handoff_tol) -> HAND-OFF: el relevo pasa a ACTIVE y el bajo a
-        RETURNING (vuela a la central; al entrar -> CHARGING). Sin reserva lista, el bajo sigue drenando; si
-        llega a ~0 antes del relevo -> STRANDED (en el puesto, SIN disuadir —ya no es ACTIVE—, hasta el hand-off).
+        Relevo (v3.0, pieza 5 — SIN PARÁLISIS): cuando un ACTIVE baja de announce_threshold ANUNCIA
+        (drone_relief_hold) y la central DESPACHA al READY más cargado, que VUELA hacia él (INCOMING,
+        persiguiendo su posición VIVA — el bajo SIGUE comandable y cubriendo/moviéndose con la barrera;
+        antes se clavaba en su puesto = agujero en la defensa). Al estar ENCIMA (<= relay_handoff_tol del
+        DRON bajo) -> HAND-OFF: el relevo pasa a ACTIVE y el bajo a RETURNING (vuela a la central; al
+        entrar -> CHARGING). Sin reserva lista, el bajo sigue drenando; si llega a ~0 antes del relevo ->
+        STRANDED (se congela DONDE ESTÉ, SIN disuadir —ya no es ACTIVE—, hasta el hand-off).
         Cobertura CONTINUA (el bajo no se va hasta que llega el relevo), salvo el hueco del caso STRANDED."""
         st, bat = self.drone_state, self.battery
         cc, cr = self.central_station[:2], self.central_station[2]
@@ -827,8 +843,9 @@ class World:
         st[(st == CHARGING) & (bat >= 1.0 - 1e-9)] = READY
 
         # 4) HAND-OFF: cada relevo INCOMING que ya está ENCIMA de su bajo (<= relay_handoff_tol) toma el puesto
-        #    (-> ACTIVE) y libera al bajo (-> RETURNING, a la central). Mientras vuela, el waypoint SIGUE al bajo
-        #    (que está clavado -> punto fijo). Nada salta de posición (sin teletransporte).
+        #    (-> ACTIVE) y libera al bajo (-> RETURNING, a la central). Mientras vuela, el waypoint PERSIGUE al
+        #    bajo (v3.0: posición VIVA — el bajo ya no se clava y puede estar moviéndose con la barrera; en la
+        #    práctica la línea se recoloca despacio y el INCOMING a 15 m/s lo alcanza). Sin teletransporte.
         for j in np.where(st == INCOMING)[0]:
             i = int(self.relief_target[j])
             self.drone_waypoint[j] = self.drones[i].copy()
@@ -847,14 +864,15 @@ class World:
                 self.drone_waypoint[i] = self.drones[i].copy()
                 self.drone_vel[i] = 0.0
 
-        # 6) ACTIVE que baja del umbral -> se CLAVA en su puesto (cobertura continua) y deja de obedecer al
-        #    coordinador (drone_relief_hold). Excluye al investigador: el reflejo tiene precedencia.
+        # 6) ACTIVE que baja del umbral -> ANUNCIA relevo (drone_relief_hold) pero SIGUE comandable y
+        #    cubriendo/moviéndose con la barrera hasta el hand-off (v3.0, pieza 5: antes se clavaba en su
+        #    puesto —waypoint congelado, fuera del free-mask— y dejaba un agujero en la defensa). El flag
+        #    solo marca "esperando relevo" (despacho en #7 y exclusión del pool de investigación).
+        #    Excluye al investigador: el reflejo tiene precedencia.
         newly = np.where((st == ACTIVE) & (bat <= self.announce_threshold)
                          & ~self.drone_relief_hold & ~self.drone_investigating)[0]
         for i in newly:
             self.drone_relief_hold[i] = True
-            self.drone_waypoint[i] = self.drones[i].copy()
-            self.drone_vel[i] = 0.0
 
         # 7) DESPACHO: por cada puesto esperando relevo (ACTIVE clavado o STRANDED) SIN relevo en camino, sale
         #    el READY MÁS cargado (siempre ~lleno) a volar al puesto. Sin READY, el bajo sigue (drenará/strand).
@@ -869,11 +887,16 @@ class World:
             self.relief_target[j] = int(i)
             self.drone_waypoint[j] = self.drones[i].copy()     # despega hacia el puesto
 
-        # 8) STRANDED: un ACTIVE clavado que se queda a ~0 antes del relevo -> tirado (deja de ser ACTIVE ->
-        #    ya NO disuade/detecta; se queda en el puesto, congelado, hasta que el relevo haga hand-off).
+        # 8) STRANDED: un ACTIVE anunciado que se queda a ~0 antes del relevo -> tirado (deja de ser ACTIVE ->
+        #    ya NO disuade/detecta; se CONGELA donde esté —sin batería no se vuela: waypoint = posición,
+        #    v=0— hasta que el relevo haga hand-off). v3.0: como el bajo ya no se clava al anunciar, el
+        #    congelado ocurre AQUÍ (antes ya estaba parado en su puesto).
         stuck = (st == ACTIVE) & self.drone_relief_hold & (bat <= 1e-9)
-        st[stuck] = STRANDED
-        self.drone_stranded[stuck] = True
+        if stuck.any():
+            st[stuck] = STRANDED
+            self.drone_stranded[stuck] = True
+            self.drone_waypoint[stuck] = self.drones[stuck].copy()
+            self.drone_vel[stuck] = 0.0
 
     # ------------------------------------------------------------------ #
     # Vacas adultas: pastar disperso + dar la cara (confrontación) + inercia
@@ -1864,7 +1887,16 @@ class World:
             return pts                                   # 1 (o 0) grupo: sin sorteo, sin cambios
         if int(self._wolf_group_rng.integers(0, 2)) == 0:
             return pts                                   # sorteó 1 grupo: posiciones clustered intactas
-        k = int(self._wolf_group_rng.integers(1, n))     # tamaño del 2º grupo (1..n-1, desigual permitido)
+        if self.wolf_decoy_size is not None:
+            # v3.0 (CEBO PERFECTO, pieza 2): reparto de masa FIJO — el sector-CEBO (1º) lleva
+            # wolf_decoy_size lobos (capado a n-2: el ASALTO conserva SIEMPRE quórum >= 2 = n_min_adult)
+            # y el ASALTO (2º) el grueso. Fin del k~unif{1..n-1}: el diagnóstico del reparto de masa
+            # (2026-07-22) midió que con asalto=1 el cebo fracasa POR REGLA (2/8, solo terneros) y con
+            # asalto>=2 cunde (23/27). NO consume el draw de k -> el substream se desplaza vs v2.9 en
+            # los episodios de 2 grupos (angle2 cambia; re-medido al congelar v3.0); con 1 grupo, bit a bit.
+            k = n - min(self.wolf_decoy_size, n - 2)     # tamaño del ASALTO (2º grupo)
+        else:
+            k = int(self._wolf_group_rng.integers(1, n))     # v2.5-v2.9: tamaño del 2º grupo (1..n-1, desigual permitido)
         angle2 = (self.wolf_spawn_angle
                   + float(self._wolf_group_rng.uniform(WOLF_GROUP_MIN_ANGLE_SEP,
                                                        2 * np.pi - WOLF_GROUP_MIN_ANGLE_SEP)))
@@ -2037,6 +2069,7 @@ class World:
             "prey_cone_head": cone_head,
             "prey_is_calf": bool(self.pack_prey_kind == "calf"),
             "prey2_pos": prey2_pos,              # v2.9: presa del 2º sector (cebo diseñado), o None
+            "decoy_released": bool(self.wolf_decoy_released),   # v3.0: ¿el cebo ya se lanzó? (timing)
             "prey2_is_calf": bool(self.pack_prey2_kind == "calf"),
             "phase": self.phase,                 # VIGILANCIA / ESCOLTA
             "n_safe": int(self.cow_safe.sum() + self.calf_safe.sum()),

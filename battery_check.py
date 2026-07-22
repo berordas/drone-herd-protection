@@ -7,10 +7,15 @@ cada paso = dinámica de vuelo (`_apply_drone_actions(None)`: los relevos VUELAN
 y las reservas quietas) + `_step_battery()` (batería + dispatch/hand-off/retorno/strand), SIN tocar
 vacas/lobo (quedan quietos) y sin RNG en el step -> reproducible bit a bit.
 
-Relevo REALISTA: al bajar del umbral, el ACTIVE se CLAVA en su puesto (sigue cubriendo) y la central
-despacha al READY más cargado, que VUELA al puesto; al llegar encima -> hand-off (el relevo pasa a
-ACTIVE, el bajo a RETURNING -> CHARGING). Cobertura CONTINUA (nadie se va antes de que llegue el relevo).
-Bajo estrés (drenaje alto sostenido) las reservas pueden no dar abasto -> STRANDED (fallo esperado).
+Relevo REALISTA (v3.0, SIN PARÁLISIS): al bajar del umbral, el ACTIVE ANUNCIA (drone_relief_hold) pero
+SIGUE comandable y cubriendo/moviéndose (antes se clavaba en su puesto = agujero en la defensa); la
+central despacha al READY más cargado, que VUELA PERSIGUIENDO su posición viva; al estar encima ->
+hand-off (el relevo pasa a ACTIVE, el bajo a RETURNING -> CHARGING). Cobertura CONTINUA (nadie se va
+antes de que llegue el relevo). En este arnés SIN coordinador (actions=None) el anunciado conserva su
+waypoint (su puesto) -> el régimen 4/2/2 y el escalonado se verifican igual que siempre; la pieza 5
+(anunciado que SIGUE moviéndose bajo comando + hand-off a blanco móvil) tiene test dirigido propio.
+Bajo estrés (drenaje alto sostenido) las reservas pueden no dar abasto -> STRANDED (fallo esperado;
+v3.0: el tirado se CONGELA donde esté — sin batería no se vuela).
 
 Esperado con 8 drones (4 puestos): régimen ~4 ACTIVE / ~2 CHARGING / ~2 READY (+ tránsito ocasional
 INCOMING/RETURNING), relevos escalonados, 4 puestos SIEMPRE cubiertos a carga normal, sin teletransporte.
@@ -101,6 +106,7 @@ def main():
 
     test_reset_baterias()
     test_charge_ratio()
+    test_relevo_sin_paralisis()
     print("\nbattery_check: TODO OK.")
 
 
@@ -148,6 +154,73 @@ def test_charge_ratio():
           % (flight_full, charge_rate_meas, ratio_meas, CHARGE_TO_FLIGHT_RATIO, steps * w.dt))
     assert abs(ratio_meas - CHARGE_TO_FLIGHT_RATIO) < 0.02, "FALLO: la carga no recupera 1.5x el vuelo pleno"
     assert abs(steps * w.dt - 160.0) < 1.0, "FALLO: el tiempo de carga completa no es ~160 s"
+    print("  OK")
+
+
+def test_relevo_sin_paralisis():
+    """v3.0 (pieza 5): el dron que ANUNCIA relevo NO se paraliza — sigue comandable y moviéndose
+    hasta el hand-off (el INCOMING lo persigue como blanco MÓVIL); cobertura continua; sin
+    teletransporte; al agotarse (STRANDED) se congela DONDE ESTÉ."""
+    print("\n=== Relevo SIN PARÁLISIS (v3.0, pieza 5): anunciado comandable + hand-off a blanco móvil ===")
+    w = World(seed=3)
+    w._init_battery(stagger=False)               # 4 ACTIVE a tope, reservas READY
+    na = w.n_active
+    w.battery[na:] = 1.0                         # reservas llenas -> despacho inmediato
+    w.battery[0] = w.announce_threshold - 0.01   # el dron 0 anuncia en el primer paso de batería
+
+    # Waypoint LEJANO comandado al dron 0 DESPUÉS de anunciar: debe aceptarlo y volar hacia él.
+    target = w.drones[0] + np.array([120.0, 0.0])
+    p0 = w.drones[0].copy()
+    prev = w.drones.copy()
+    handoff_step, max_jump, min_active = None, 0.0, na
+    moved_while_hold = 0.0
+    for t in range(4000):
+        # Como un coordinador REAL: parte del waypoint vigente (no pisa la persecución del INCOMING)
+        # y comanda SOLO su objetivo.
+        wp = w.drone_waypoint.copy(); wp[0] = target
+        w._apply_drone_actions(wp)               # el coordinador sigue comandando CADA paso
+        w._step_battery()
+        max_jump = max(max_jump, float(np.linalg.norm(w.drones - prev, axis=1).max()))
+        prev = w.drones.copy()
+        min_active = min(min_active, int((w.drone_state == ACTIVE).sum()))
+        if w.drone_relief_hold[0] and w.drone_state[0] == ACTIVE:
+            assert np.allclose(w.drone_waypoint[0], target), \
+                "FALLO: el mundo rechazó el waypoint del anunciado (parálisis de v2.1)"
+            moved_while_hold = max(moved_while_hold, float(np.linalg.norm(w.drones[0] - p0)))
+        if handoff_step is None and w.drone_state[0] == RETURNING:
+            handoff_step = t
+            break
+    lim = DRONE_MAX_SPEED * w.dt
+    print("  anunciado se movió %.1f m bajo comando (>=30 esperado) | hand-off en paso %s | "
+          "min ACTIVE=%d | salto máx=%.3f (tope %.3f)"
+          % (moved_while_hold, handoff_step, min_active, max_jump, lim))
+    assert moved_while_hold >= 30.0, "FALLO: el anunciado apenas se movió (sigue clavado)"
+    assert handoff_step is not None, "FALLO: el hand-off a blanco móvil no llegó (el INCOMING no lo alcanza)"
+    assert min_active == na, "FALLO: hueco de cobertura durante el relevo en movimiento"
+    assert max_jump <= lim * 1.01, "FALLO: teletransporte durante el hand-off móvil"
+
+    # STRANDED se congela donde esté: fuerza batería ~0 en pleno vuelo de otro anunciado.
+    w2 = World(seed=4)
+    w2._init_battery(stagger=False)
+    w2.drone_state[w2.n_active:] = CHARGING      # reservas VACÍAS y cargando (READY a 0 despacharía
+    w2.battery[w2.n_active:] = 0.0               # igual: el vuelo no comprueba batería) -> sin relevo a tiempo
+    w2.battery[1] = w2.announce_threshold - 0.01
+    far = w2.drones[1] + np.array([200.0, 0.0])
+    for _ in range(3000):
+        wp2 = w2.drone_waypoint.copy(); wp2[1] = far
+        w2._apply_drone_actions(wp2)
+        w2._step_battery()
+        if w2.drone_state[1] == STRANDED:
+            break
+    assert w2.drone_state[1] == STRANDED, "FALLO: no llegó a STRANDED sin reservas"
+    pos_strand = w2.drones[1].copy()
+    for _ in range(50):
+        wp2 = w2.drone_waypoint.copy(); wp2[1] = far   # el coordinador sigue pidiendo el waypoint lejano
+        w2._apply_drone_actions(wp2)
+        w2._step_battery()
+    drift = float(np.linalg.norm(w2.drones[1] - pos_strand))
+    print("  STRANDED congelado donde estaba: deriva=%.2f m (<2 esperado)" % drift)
+    assert drift < 2.0, "FALLO: un STRANDED (batería 0) sigue volando"
     print("  OK")
 
 

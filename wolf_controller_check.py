@@ -171,7 +171,7 @@ def test_spotcheck_baseline():
         ref = json.load(f)
     # v2.7 = susto de DOS RADIOS (pared blanda estática); RE-MEDIDA en el contenedor canónico de la DGX (metro
     # oficial). Este spot-check solo es reproducible DENTRO de ese entorno (fuera puede salir rojo: deriva FP).
-    assert ref["frozen_tag"] == "v2.9-baseline", "baseline_v2.json no es v2.9 (barrera que avanza + cebo diseñado 2º sector)"
+    assert ref["frozen_tag"] == "v3.0-baseline", "baseline_v2.json no es v3.0 (cebo perfecto: terreno 500 + reparto fijo + timing + presión + relevo sin parálisis)"
     from baseline import build_world, run_episode_metrics
     checked = 0
     for kind in ("lobos", "corzos", "mixto"):
@@ -187,10 +187,73 @@ def test_spotcheck_baseline():
     print("  OK\n")
 
 
+def test_timing_cebo():
+    """v3.0 (pieza 3, dirigido): el sector-CEBO ESPERA merodeando (a >~decoy_hold_dist del ACTIVE
+    más cercano, SIN congelarse) y se LANZA cuando el centroide del ASALTO cruza
+    assault_trigger_dist de su presa (wolf_decoy_released False->True); tras el disparo el cebo
+    CIERRA hacia el rebaño. Con DummyCoordinator (drones quietos) -> determinista y sin barrera."""
+    print("=== TIMING DEL CEBO (v3.0): merodea sin congelarse -> disparo con el asalto a tiro -> carga ===")
+    from baseline import build_world
+    from world import ACTIVE
+    hechos = 0
+    for s in range(60):
+        w = build_world(s, "lobos")
+        coord = DummyCoordinator(w.n_drones)
+        w.reset()
+        if len(w.wolf_group_sizes) != 2 or w.pack_prey2 < 0 or w.wolf_decoy_released:
+            continue
+        n1 = int(w.wolf_group_sizes[0])
+        s2 = np.arange(n1, w.n_wolves)
+        herd_c0 = w.cows[w.cow_alive].mean(axis=0)
+        release_step, d2_pre_release = None, None
+        min_hold_settled = np.inf
+        path_len = 0.0
+        prev_decoy = w.wolves[:n1].copy()
+        d_herd_release = None
+        for t in range(w.max_episode_steps):
+            p2 = w._prey_pos_of(w.pack_prey2, w.pack_prey2_kind) if w.pack_prey2 >= 0 else None
+            d2 = float(np.linalg.norm(w.wolves[s2].mean(axis=0) - p2)) if p2 is not None else None
+            was = w.wolf_decoy_released
+            w.step(coord.act(w.get_observation()))
+            if not was:
+                path_len += float(np.linalg.norm(w.wolves[:n1] - prev_decoy, axis=1).sum())
+                act = w.drones[w.drone_state == ACTIVE]
+                if t > 80 and act.shape[0] > 0:      # tras asentarse el merodeo
+                    dmin = float(np.linalg.norm(w.wolves[:n1][:, None, :] - act[None, :, :], axis=2).min())
+                    min_hold_settled = min(min_hold_settled, dmin)
+            prev_decoy = w.wolves[:n1].copy()
+            if w.wolf_decoy_released and release_step is None:
+                release_step, d2_pre_release = t, d2
+                d_herd_release = float(np.linalg.norm(w.wolves[:n1].mean(axis=0) - herd_c0))
+            if release_step is not None and t >= release_step + 150:
+                break
+            if w.status != "running":
+                break
+        if release_step is None or release_step < 10:
+            continue                                  # busca un episodio con ESPERA real
+        d_herd_late = float(np.linalg.norm(w.wolves[:n1].mean(axis=0) - herd_c0))
+        print("  seed=%d: espera %d pasos (merodeo: camino=%.0f m, dist mín al ACTIVE=%.0f) | disparo con "
+              "asalto a %.0f m de su presa (umbral %.0f) | cebo->rebaño %.0f -> %.0f m tras el disparo"
+              % (s, release_step, path_len, min_hold_settled, d2_pre_release or -1,
+                 w.assault_trigger_dist, d_herd_release, d_herd_late))
+        assert path_len > 20.0, "FALLO: el cebo esperó CONGELADO (merodeo sin movimiento)"
+        assert min_hold_settled > w.decoy_hold_dist - 25.0, \
+            "FALLO: el cebo invadió el radio de espera (no se mantiene fuera del alcance)"
+        assert d2_pre_release is not None and d2_pre_release <= w.assault_trigger_dist + 10.0, \
+            "FALLO: el disparo no coincide con el asalto cruzando el umbral"
+        assert d_herd_late < d_herd_release - 10.0, "FALLO: tras el disparo el cebo no carga hacia el rebaño"
+        hechos += 1
+        if hechos >= 2:
+            break
+    assert hechos >= 1, "FALLO: ningún episodio con espera+disparo verificable en 60 semillas"
+    print("  OK\n")
+
+
 if __name__ == "__main__":
     test_interfaz()
     test_frontera_politica_fisica()
     test_susto_innegociable()
     test_presa_por_sector()
+    test_timing_cebo()
     test_spotcheck_baseline()
     print("wolf_controller_check: TODO OK.")

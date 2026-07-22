@@ -65,15 +65,27 @@ from coordinators import DummyCoordinator
 # Config del MUNDO v2 con CORZOS ACTIVOS (los 3 tipos de episodio). Es el mundo al que se
 # enfrentan los coordinadores. Los valores EXPLÍCITOS espejan los defaults de World en el
 # momento del congelado, para no depender de futuros cambios en esos defaults; el arnés
-# verifica (cross-check de fidelidad, abajo) que este bloque == "defaults + corzos ON" bit
-# a bit. Los parámetros con default DERIVADO (None -> fórmula) se dejan al constructor y se
-# documentan aquí con su valor RESUELTO a 300×300 m:
-#   safe_radius=36.0 (0.12·min)  station_radius=15.0  station_gap=3.0  cow_spawn=(75,225)
-#   cow_spread=40.0  r_separation=22.0  cow_spawn_min_sep=10.0  r_notice=20.0  r_face_safe=6.0
-#   capture_radius=3.0  r_standoff=12.0  wolf_repulsion_radius=12.0  wolf_skirt_margin=6.0
-#   wolf_spawn_dispersion=5.0  calf_personal_space=1.5  refuge_margin=3.6
-#   max_episode_steps=14142 (=int(4·√(300²+300²)/1.2/0.1))  charge_capacity=4 (=n_reserve)
-#   charge_full≈160 (DERIVADO de CHARGE_TO_FLIGHT_RATIO=1.5, v2.4; param charge_full DEPRECATED, no se pasa)
+# verifica (cross-check de fidelidad, abajo) que este bloque == "defaults + corzos ON +
+# extras v3.0 DOCUMENTADOS" bit a bit.
+#
+# v3.0 — TERRENO 500×500 (pieza 1 del CEBO PERFECTO; SOLO en CONFIG_V2: los DEFAULTS de World
+# siguen en 300×300 -> face/battery/escort/drone/reactive checks y su física quedan BIT A BIT):
+#   · parcel_size 300->500: los radios FÍSICOS (r_detect=100, r_confirm=40, DETER 20/10,
+#     velocidades) son ABSOLUTOS y NO cambian — su efecto RELATIVO sí (más campo = margen real
+#     de aproximación), que es lo buscado.
+#   · cow_spawn EXPLÍCITO (150,350) (antes el derivado 0.25W,0.75H=(125,375)): COLCHÓN >=100 m
+#     del área de pasto a TODOS los bordes (150−spread 40=110) — un lobo naciente en el borde
+#     queda a >r_detect de toda vaca (no nace ya confirmable; margen de aproximación).
+#   · el spawn de lobos NO se toca: ya nace en el PERÍMETRO (ancla proyectada al borde) — a 500
+#     eso queda a >=110 m del rebaño por el colchón anterior.
+#   · LAYOUT que escala con min(W,H) POR DISEÑO (re-escala coherente, sin tocar código):
+#     safe_radius=60.0 (0.12·min)  station_radius=25.0  station_gap=5.0  refuge_margin=6.0
+#   · max_episode_steps DERIVADO escala solo: int(4·√(500²+500²)/1.2/0.1)=23570 (antes 14142)
+#     — el refugio sigue alcanzable con la misma holgura relativa (factor 4.0 intacto).
+# Valores RESUELTOS que NO cambian (escala biológica ABSOLUTA): cow_spread=40.0
+#   r_separation=22.0  cow_spawn_min_sep=10.0  r_notice=20.0  r_face_safe=6.0  capture_radius=3.0
+#   r_standoff=12.0  wolf_repulsion_radius=12.0  wolf_skirt_margin=6.0  wolf_spawn_dispersion=5.0
+#   calf_personal_space=1.5  charge_capacity=4 (=n_reserve)  charge_full≈160 (DERIVADO v2.4)
 # Las CONSTANTES FÍSICAS de módulo (escala biológica absoluta HERD_*, dron DRONE_*,
 # disuasión DETER_*, bordeo de zona WOLF_ZONE_SKIRT_*, evitación COW_AVOID_*/W_*, corzos
 # CORZO_*) viven en la cabecera de world.py y quedan congeladas por el tag (no son params
@@ -86,8 +98,8 @@ CONFIG_V2 = dict(
     #     la distracción es corzo o JABALÍ ~50/50 (mismo comportamiento; substream RNG separado) ---
     corzos_min=1, corzos_max=3, corzo_speed=4.0,
     corzo_episode_probs=(1 / 3, 1 / 3, 1 / 3), distraction_species_prob=0.5,
-    # --- campo y layout ---
-    parcel_size=(300.0, 300.0), station_dir=(0.0, 1.0),
+    # --- campo y layout (v3.0: TERRENO 500 + colchón del rebaño; ver bloque de cabecera) ---
+    parcel_size=(500.0, 500.0), cow_spawn=(150.0, 350.0), station_dir=(0.0, 1.0),
     dt=0.1, max_steps=600,
     # --- vaca adulta (pastar disperso + dar la cara + inercia) ---
     cow_speed=1.2, cow_speed_jitter=0.4, k_separation=3.0,
@@ -103,6 +115,12 @@ CONFIG_V2 = dict(
     #     RNG propio -> vacas/drones/corzos bit a bit vs clustered). El default de World sigue siendo
     #     "clustered" (checks bit a bit); la v2.5 MIDE con "grouped". ---
     wolf_spawn_mode="grouped",
+    # --- v3.0 (CEBO PERFECTO, piezas 2+3): reparto de masa FIJO (sector-CEBO = wolf_decoy_size lobos,
+    #     capado a n-2 -> el ASALTO conserva quórum >= 2; fin del k~unif del diagnóstico 2026-07-22) y
+    #     TIMING PROGRAMADO del cebo (merodea a >decoy_hold_dist del ACTIVE más cercano hasta que el
+    #     asalto está a <=assault_trigger_dist de su presa; entonces se lanza). Cebo DISEÑADO, NO
+    #     emergente (etapa 1/2). decoy_size elegido MIDIENDO 1 vs 2 (¿ancla el cebo de 1?). ---
+    wolf_decoy_size=1,
     # --- escolta / terminal (máquina de fases + guiado al refugio + disuasión) ---
     r_detect=100.0, r_confirm=40.0, episode_time_factor=4.0, escort_enabled=True,
     # --- batería / cola de carga + RELEVO REALISTA (hand-off, sin teletransporte) ---
@@ -119,26 +137,31 @@ EVAL_SEEDS = tuple(range(N_PER_KIND))
 KINDS = ("lobos", "corzos", "mixto")
 KIND_LABEL = {"lobos": "solo-lobos", "corzos": "solo-corzos", "mixto": "mixto"}
 TERMINALS = ("success", "predation", "timeout")
-FROZEN_TAG = "v2.9-baseline"   # tag git del commit congelado: BARRERA QUE AVANZA (acotada: adv = clip(L−DETER_RADIUS, 12,
-                               # sqrt(r_confirm²−(s/2)²)≈36.7) — espantar LEJOS del ganado sin cegar la retaguardia) + CEBO
-                               # DISEÑADO en el 2º sector (etapa 1/2, diseñado NO emergente: con 2 subgrupos de spawn el 2º
-                               # sector fija la res MÁS LIBRE —máx. distancia al ACTIVE más cercano, pack_prey2— y el 1º
-                               # mantiene la común de siempre). El multi-frente por fin PUEDE rendir: la cifra clave de la
-                               # re-medición es si el Reactive SUBE vs v2.8 (2.56/2.26) = prueba de existencia del cebo.
-                               # Con 1 solo grupo TODO es bit a bit v2.8 (face_check intacto). METRO DGX. INVALIDA la nota
-                               # a batir del MARL de drones: la nueva es el Reactive v2.9.
+FROZEN_TAG = "v3.0-baseline"   # tag git del commit congelado: EL CEBO PERFECTO (6 piezas juntas — el número NO es
+                               # atribuible a cada una; se busca el sí/no del cebo bien ejecutado): 1) TERRENO 500×500
+                               # (solo CONFIG_V2; colchón >=100 m del rebaño a bordes; lobo naciente NUNCA confirmable
+                               # ni detectado: margen real de aproximación) · 2) reparto de masa FIJO (cebo =
+                               # wolf_decoy_size=1 capado a n-2; asalto = grueso con quórum; elegido MIDIENDO 1 vs 2:
+                               # anclaje IDÉNTICO 0.28, con 1 el asalto mata el doble) · 3) TIMING programado del cebo
+                               # (merodea fuera de r_confirm y se lanza con el asalto a 150 m de su presa) · 4) BUG:
+                               # la barrera PRESIONA (adv=clip(L,12,36.7) + EMBESTIDA local 30 m; v2.9 retrocedía y
+                               # jamás espantaba) · 5) BUG: relevo SIN PARÁLISIS (el anunciado sigue comandable hasta
+                               # el hand-off a blanco móvil) · 6) render: emojis a color restaurados (fuente en la
+                               # imagen). Cebo DISEÑADO, NO emergente (etapa 1/2). CIFRA CLAVE: ¿sube el Reactive vs
+                               # v2.9 (2.46/2.44) y v2.8 (2.56/2.26)? METRO DGX. Defaults de World en 300 intactos
+                               # (face_check bit a bit). INVALIDA la nota a batir del MARL: la nueva es Reactive v3.0.
 
 # Referencia CONGELADA de severidad (media de muertes/ep) por tipo, para detectar DERIVA.
 # Se rellena tras la primera medición; en re-corridas debe coincidir (mundo reproducible POR ENTORNO).
-# v2.9 (METRO DGX): BARRERA QUE AVANZA + CEBO DISEÑADO en el 2º sector (etapa 1/2, diseñado NO
-# emergente). El Dummy apenas se mueve (3.97/3.89 -> 3.98/3.88, ±0.01: sus drones clavados custodian
-# ≈igual a la res "más libre"); solo cambian los episodios grouped de 2 subgrupos (con 1 grupo el
-# mundo es BIT A BIT v2.8). Es medida, no objetivo. Contraste v2.8 (honesta+standoff12, sin avance ni
-# cebo): Dummy 3.97/0/3.89 · Reactive 2.56/0/2.26.
+# v3.0 (METRO DGX): EL CEBO PERFECTO (terreno 500 + reparto fijo + timing + presión + relevo sin
+# parálisis; ver FROZEN_TAG). El Dummy baja poco (3.98/3.88 -> 3.85/3.69): sus drones clavados no
+# presionan ni relevan mejor — le afectan el terreno (llegadas más largas) y el reparto fijo. Es
+# medida, no objetivo. Contraste v2.9 (300 m, reparto aleatorio, barrera que cedía): Dummy
+# 3.98/0/3.88 · Reactive 2.46/0/2.44. v2.8: Dummy 3.97/0/3.89 · Reactive 2.56/0/2.26.
 REFERENCE_SEVERITY = {
-    "lobos": 3.98,   # solo-lobos (amenaza pura); succ 4 / pred 86 / timeout 10; n_safe 2.68
+    "lobos": 3.85,   # solo-lobos (amenaza pura); succ 9 / pred 83 / timeout 8; n_safe 2.82
     "corzos": 0.00,  # solo-corzos = SIN amenaza (100/100 timeout; el rebaño pasta, n_safe 0)
-    "mixto": 3.88,   # ≈ solo-lobos (los corzos solo consumen ciclos de investigación); succ 5/pred 84/to 11; n_safe 2.80
+    "mixto": 3.69,   # ≈ solo-lobos (los corzos solo consumen ciclos de investigación); succ 6/pred 85/to 9; n_safe 2.87
 }
 
 # Tolerancia de deriva (la media es exacta y reproducible bit a bit; margen mínimo por si
@@ -218,16 +241,20 @@ def evaluate(coordinator_factory=lambda w: DummyCoordinator(w.n_drones),
 
 
 def _verify_fidelity(seeds=(0, 1, 2, 3, 4)) -> bool:
-    """Cross-check: CONFIG_V2 debe ser BIT A BIT == 'defaults de World + corzos ON + spawn grouped'
-    (v2.5: el ÚNICO extra sobre defaults es el modo de spawn — el default de World se queda en
-    clustered para los checks). Si algún otro valor explícito se desviara, el mundo medido no
-    sería la v2.5."""
+    """Cross-check: CONFIG_V2 debe ser BIT A BIT == 'defaults de World + corzos ON + los extras
+    DOCUMENTADOS de la versión congelada'. Extras v3.0 (los ÚNICOS sobre defaults; todo lo demás
+    espeja defaults): wolf_spawn_mode=grouped (v2.5) + TERRENO 500 con colchón (parcel_size,
+    cow_spawn — pieza 1) + CEBO PERFECTO (wolf_decoy_size — piezas 2+3). El default de World se
+    queda en 300/clustered/None para los checks (face_check bit a bit). Si algún OTRO valor
+    explícito se desviara, el mundo medido no sería el congelado."""
     ok = True
     for kind in KINDS:
         for s in seeds:
             a = build_world(s, kind)                                      # CONFIG_V2 explícito
             b = World(seed=s, episode_kind=kind, corzos_min=1, corzos_max=3,
-                      wolf_spawn_mode="grouped")                          # defaults + corzos + grouped
+                      wolf_spawn_mode="grouped",                          # defaults + corzos + grouped
+                      parcel_size=(500.0, 500.0), cow_spawn=(150.0, 350.0),   # + terreno v3.0
+                      wolf_decoy_size=CONFIG_V2["wolf_decoy_size"])           # + cebo v3.0
             a.reset(); b.reset()
             same = (a.n_wolves == b.n_wolves and a.n_corzos == b.n_corzos
                     and a.n_calves == b.n_calves

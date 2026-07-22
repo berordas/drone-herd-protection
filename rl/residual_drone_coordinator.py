@@ -12,7 +12,7 @@ Diseño:
   cambian QUÉ dron ocupa el asiento (hand-off), pero el puesto persiste — la política es
   COMPARTIDA (una red, cada puesto la evalúa con SU obs local), así que el intercambio es benigno.
 - **La corrección**: `wp_final[d] = clip_campo(wp_base[d] + δ_k)` SOLO para los drones
-  COMANDABLES: `ACTIVE & ~investigating & ~relief_hold` — LA MÁSCARA ES LOAD-BEARING: el mundo
+  COMANDABLES: `ACTIVE & ~investigating` (v3.0: el que anunció relevo sigue comandable) — LA MÁSCARA ES LOAD-BEARING: el mundo
   solo protege al investigador y al relevo (world._apply_drone_actions); un δ sobre un
   RETURNING/CHARGING lo desviaría y rompería el ciclo de carga. δ (metros, por puesto) la decide
   la red cada `frame_skip=5` pasos de física y se MANTIENE entre fronteras (countdown), la misma
@@ -115,7 +115,9 @@ class ResidualDroneCoordinator:
         self.last_base = base.copy()
         if not self._delta_active:
             return base                               # SUELO: delegación pura (bit a bit la barrera)
-        mask = ((w.drone_state == ACTIVE) & ~w.drone_investigating & ~w.drone_relief_hold)
+        # v3.0 (pieza 5): el dron que anunció relevo SIGUE comandable (el mundo ya no lo clava) ->
+        # sale de la exclusión; la máscara queda ACTIVE & ~investigating (== free-mask del mundo).
+        mask = ((w.drone_state == ACTIVE) & ~w.drone_investigating)
         st = self.seats()
         for k in range(N_SEATS):
             d = int(st[k])

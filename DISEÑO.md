@@ -5,8 +5,23 @@
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
 >
-> **Última actualización: 2026-07-22 (2ª)** · ***v2.9: BARRERA QUE AVANZA + CEBO DISEÑADO (RE-CONGELADO tag
-> `v2.9-baseline`) — la prueba de existencia del cebo sale NULA en agregado.** La línea avanza al ancla (tope derivado
+> **Última actualización: 2026-07-23** · ***v3.0: EL CEBO PERFECTO (RE-CONGELADO tag `v3.0-baseline`) — VEREDICTO
+> DEFINITIVO: el cebo NO RINDE ni perfecto; la defensa arreglada lo aplasta.** Seis piezas juntas (decisión del
+> usuario; el número no es atribuible a cada una): terreno 500×500 (solo CONFIG_V2; colchón ≥100 m, lobo naciente
+> jamás confirmable al nacer; defaults 300 → face 12/12 bit a bit) + reparto de masa FIJO (`wolf_decoy_size=1` capado
+> a n−2; medido 1-vs-2: **anclaje IDÉNTICO 0.28** — la masa no compra anclaje; con 1 el asalto mata el doble) +
+> TIMING programado del cebo (merodeo `_decoy_prowl` fuera de r_confirm + disparo con el asalto a 150 m; latch
+> `wolf_decoy_released` en el World) + FIX barrera que PRESIONA (`adv=clip(L,12,36.7)` + EMBESTIDA local 30 m; v2.9
+> retrocedía y un dron que retrocede jamás expulsa) + FIX relevo SIN PARÁLISIS (el anunciado sigue comandable hasta
+> el hand-off a blanco móvil; STRANDED se congela in situ) + render con emojis a color (fuente Noto en la imagen +
+> fix del strike CBDT). RE-MEDIDO (100/tipo, 2ª pasada sin deriva): Dummy 3.98/0/3.88 → **3.85/0/3.69** · Reactive
+> 2.46/0/2.44 → **1.00±1.66/0/1.14±1.81** (success 53%/50%, n_safe 5.79/5.58) — la severidad se HUNDE: presión +
+> relevo continuo + margen de confirmación del terreno dominan al cebo perfecto, que sigue EJECUTANDO en micro
+> (test 13; kills-del-asalto 1.16/ep en 2-frentes). Cuarta y definitiva confirmación (run05/06/07 + v3.0): **cebo
+> scriptado DESCARTADO con prueba**. GIFs versionados en /data/gifs/v3.0/. **Nota a batir del MARL → 1.00/0/1.14**
+> (margen absoluto pequeño; si el MARL sigue teniendo recorrido = decisión del usuario).* ·
+> *(2026-07-22 (2ª): v2.9: BARRERA QUE AVANZA + CEBO DISEÑADO (RE-CONGELADO tag
+> `v2.9-baseline`) — la prueba de existencia del cebo sale NULA en agregado.* La línea avanza al ancla (tope derivado
 > 36.7 m, retaguardia confirmable) y el 2º sector fija la presa MÁS LIBRE (`pack_prey2`; diseñado, NO emergente; timing
 > sin forzar; 1 grupo = bit a bit v2.8). Dummy 3.98/0/3.88 (±0.01) · Reactive **2.46/0/2.44** (v2.8: 2.56/2.26 →
 > −0.10/+0.18); **ablación: cebo PURO +0.02/+0.10 ≈ RUIDO** — ejecuta en micro (5 capturas del 2º sector, test 13) pero

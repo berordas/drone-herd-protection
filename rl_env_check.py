@@ -262,7 +262,7 @@ def test_mundo_scriptado_intacto():
     # Spot-check: el andamiaje no puede haber movido la física (severidades IDÉNTICAS a v2.4).
     with open("baseline_v2.json", encoding="utf-8") as f:
         ref = json.load(f)
-    assert ref["frozen_tag"] == "v2.9-baseline"   # barrera que avanza + cebo diseñado (2º sector, presa más libre); metro DGX (reproducible solo dentro del contenedor)
+    assert ref["frozen_tag"] == "v3.0-baseline"   # cebo perfecto (terreno 500 + reparto fijo + timing + presión + relevo sin parálisis); metro DGX (reproducible solo dentro del contenedor)
     checked = 0
     for kind in ("lobos", "corzos", "mixto"):
         eps = ref["by_kind"][kind]["episodes"]
@@ -291,7 +291,10 @@ def test_equivalencia_env_controlador():
     env = WolfPackEnv(kinds=("lobos",), seed=17)
     obs, info = env.reset()
     traj_env, fin = [], False
-    for _ in range(3500):
+    # cap DERIVADO del horizonte real del mundo (v3.0: terreno 500 -> max_episode_steps 23570 =
+    # ~4714 pasos de env con frame-skip 5; el cap fijo 3500 se quedaba corto) + margen.
+    cap = env._world.max_episode_steps // 5 + 100
+    for _ in range(cap):
         action, _ = model.predict(obs, deterministic=True)
         obs, _r, term, trunc, _ = env.step(action)
         w = env._world
@@ -299,7 +302,7 @@ def test_equivalencia_env_controlador():
         if term or trunc:
             fin = True
             break
-    assert fin, "el episodio del env no terminó (cap 3500 pasos de env)"
+    assert fin, "el episodio del env no terminó (cap = horizonte del mundo + margen)"
     status_env = env._world.status
 
     # LADO EVALUADOR: mismo mundo (world_seed del env), PolicyWolfController + coordinador
@@ -318,7 +321,8 @@ def test_equivalencia_env_controlador():
             traj_ctl.append((w.wolves.copy(), w.cows.copy(), int(w.n_depredadas), int(w.step_count)))
         if term or trunc:
             break
-        assert k < 20000, "el episodio del evaluador no termina (desincronizado)"
+        # cap DERIVADO (v3.0: terreno 500 -> max_episode_steps 23570 > el fijo 20000 de antes)
+        assert k < w.max_episode_steps + 500, "el episodio del evaluador no termina (desincronizado)"
 
     assert len(traj_env) == len(traj_ctl), \
         "nº de fronteras distinto: env=%d vs controlador=%d" % (len(traj_env), len(traj_ctl))

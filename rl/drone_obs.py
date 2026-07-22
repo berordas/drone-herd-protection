@@ -22,7 +22,7 @@ Marco RELATIVO al centro del establo; posiciones /(W/2, H/2); velocidades /v_max
 
   [  0:  8) EGO del dron del puesto: [pos_x, pos_y, vel_x, vel_y, is_active, commandable,
             base_wp_x, base_wp_y]
-            (commandable = ACTIVE & ~investigating & ~relief_hold — si 0, la δ de este puesto
+            (commandable = ACTIVE & ~investigating — v3.0: el anunciado sigue comandable; si 0, la δ de este puesto
              NO se aplica este tramo; base_wp = waypoint que la BARRERA propone para este dron
              en el último paso de física — la pista de la intención de la base (la histéresis
              del ancla v2.6 y la fase de patrulla son estado oculto; lección del plan C);
@@ -98,8 +98,7 @@ def build_drone_local_obs(world, i: int, base_wp=None) -> np.ndarray:
     ego[0:2] = (w.drones[i] - center) / scale
     ego[2:4] = w.drone_vel[i] / DRONE_MAX_SPEED
     ego[4] = 1.0 if w.drone_state[i] == ACTIVE else 0.0
-    ego[5] = 1.0 if (w.drone_state[i] == ACTIVE and not w.drone_investigating[i]
-                     and not w.drone_relief_hold[i]) else 0.0
+    ego[5] = 1.0 if (w.drone_state[i] == ACTIVE and not w.drone_investigating[i]) else 0.0  # v3.0: el anunciado sigue comandable
     if base_wp is not None:
         ego[6:8] = (np.asarray(base_wp, dtype=float) - center) / scale
 

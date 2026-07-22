@@ -13,7 +13,7 @@ Solo se compara el COORDINADOR; la física del mundo está congelada (v2, tag v2
 from __future__ import annotations
 import numpy as np
 
-from world import ACTIVE, DETER_RADIUS
+from world import ACTIVE, DETER_RADIUS, STATIC_DETER_RADIUS
 
 
 class DummyCoordinator:
@@ -72,18 +72,25 @@ class ReactiveCoordinator:
     sqrt(20² − 16²) = 12 m (con el standoff previo = 20 el peor punto quedaba a 25.6 m FUERA:
     ~50% de muertes "visto pero no disuadido" en el diagnóstico).
 
-    BARRERA QUE AVANZA (v2.9, acotada): la línea ya no espera pegada al rebaño — AVANZA hacia el lobo
-    ANCLA para espantar LEJOS del ganado (el susto por movimiento exige acercarse): se planta
-    DETER_RADIUS por delante del punto de encuentro, `adv = clip(dist(vacas→ancla) − DETER_RADIUS,
-    standoff_mín=12, advance_max)`. Tope DERIVADO: `advance_max = sqrt(r_confirm² − (spacing/2)²)
-    ≈ 36.7 m` — la línea nunca avanza tanto que su retaguardia deje de ser CONFIRMABLE (cualquier
-    lobo que alcance las vacas por detrás pasa a <= r_confirm de un dron → confirmado → la
-    re-planificación por paso lo cubre; y a 15 vs 4 m/s la línea repliega a tiempo). Cuando los
-    lobos aprietan (ancla a <= 32 m) la línea vuelve al mínimo v2.8 (garantía trasera plena).
+    BARRERA QUE PRESIONA (v3.0, corrige el BUG de v2.9): la línea va HACIA el lobo ancla y lo espanta,
+    no cede terreno. v2.9 usaba `adv = clip(L − DETER_RADIUS, 12, 36.7)` (plantarse "por delante del
+    punto de encuentro"): al acercarse el lobo la línea RETROCEDÍA paso a paso, y un dron que retrocede
+    JAMÁS expulsa (el susto por movimiento exige aproximación > SCARE_APPROACH_MIN). Ahora:
+      (a) `adv = clip(L, standoff_mín=12, advance_max≈36.7)` — la línea se planta SOBRE el ancla
+          mientras el tope lo permite (drones volando AL lobo = aproximación = expulsión). Tope
+          DERIVADO intacto: `advance_max = sqrt(r_confirm² − (spacing/2)²)` — la retaguardia sigue
+          CONFIRMABLE; mínimo v2.8 al apretar (garantía trasera).
+      (b) EMBESTIDA local (radio derivado LUNGE = DETER_RADIUS + STATIC_DETER_RADIUS = 30 m): un lobo
+          confirmado podía APARCAR pegado a la pared blanda de un dron QUIETO (a ~10 m) sin que nada lo
+          espantara — a CUALQUIER adv existe ese anillo de aparcamiento. Cada dron libre con un lobo
+          confirmado a <= 30 m deja su ranura y VUELA AL LOBO (aproximación sostenida -> expulsión);
+          cuando el lobo huye más allá del anillo, el dron vuelve a su ranura. La distancia dron->lobo
+          DISMINUYE hasta disuadir (test dirigido en reactive_check).
 
     Solo comanda a los drones LIBRES (ACTIVE y no-investigando): NO toca el reflejo de investigación (el
-    investigador) ni los relevos de batería (deja su waypoint actual). NO toca la física (world.py congelado);
-    construye un array de waypoints y deja que la disuasión del mundo haga el trabajo. Parámetros afinables."""
+    investigador). v3.0 (pieza 5): el dron que ANUNCIÓ relevo sigue siendo comandable (ya no se clava
+    esperando; el INCOMING lo persigue). NO toca la física (world.py congelado); construye un array de
+    waypoints y deja que la disuasión del mundo haga el trabajo. Parámetros afinables."""
 
     def __init__(self, world, *, barrier_standoff: float | None = None, drone_spacing: float | None = None,
                  front_cows: int | None = None, engage_standoff: float | None = None,
@@ -228,16 +235,33 @@ class ReactiveCoordinator:
         u = pack_c - front_c
         L = float(np.linalg.norm(u))
         u = u / max(L, 1e-9)                                           # de las vacas HACIA el paquete
-        # v2.9: la línea AVANZA hacia el ancla — se planta DETER_RADIUS por delante del punto de
-        # encuentro (los lobos entran en expulsión al llegar), acotada entre el mínimo v2.8
-        # (barrier_standoff=12: garantía trasera plena cuando los lobos aprietan, L<=32 -> mínimo)
-        # y advance_max (36.7: la retaguardia sigue CONFIRMABLE — ver __init__).
-        adv = float(np.clip(L - DETER_RADIUS, self.barrier_standoff, self.advance_max))
-        center = front_c + u * adv                                     # punto de barrera (línea avanzada)
+        # v3.0 (pieza 4a — BUG de v2.9 corregido): la línea PRESIONA hacia el ancla, NO retrocede.
+        # v2.9 usaba adv = clip(L - DETER_RADIUS, 12, 36.7): al acercarse el lobo, L caía y la línea
+        # CEDÍA terreno paso a paso (y un dron que retrocede JAMÁS expulsa: el susto exige acercarse
+        # a > SCARE_APPROACH_MIN). Ahora adv = clip(L, 12, 36.7): la línea se planta SOBRE el ancla
+        # mientras el tope lo permite (los drones vuelan HACIA el lobo -> aproximación -> expulsión),
+        # acotada entre el mínimo v2.8 (barrier_standoff=12, garantía trasera al apretar) y advance_max
+        # (36.7: la retaguardia sigue CONFIRMABLE — ver __init__). La presión SOSTENIDA a cualquier
+        # distancia la completa la EMBESTIDA local (pieza 4b, abajo).
+        adv = float(np.clip(L, self.barrier_standoff, self.advance_max))
+        center = front_c + u * adv                                     # punto de barrera (línea que presiona)
         perp = np.array([-u[1], u[0]])                                # eje del frente (perpendicular al eje de amenaza)
         offs = (np.arange(k) - (k - 1) / 2.0) * self.drone_spacing    # ranuras repartidas y centradas
         slots = center[None, :] + offs[:, None] * perp[None, :]
-        return self._assign(idx, slots, perp)
+        tgt = self._assign(idx, slots, perp)
+        # v3.0 (pieza 4b — EMBESTIDA local): un lobo confirmado puede APARCAR junto a un dron QUIETO sin
+        # que nada lo espante (la pared blanda solo desliza; la expulsión exige que el dron SE ACERQUE).
+        # Radio derivado LUNGE = DETER_RADIUS + STATIC_DETER_RADIUS (=30): el anillo donde un lobo puede
+        # plantarse pegado a la pared (a ~STATIC del dron) y seguir dentro del alcance de expulsión si el
+        # dron embiste. Cada dron libre con un confirmado a <= LUNGE deja su ranura y VUELA AL LOBO
+        # (aproximación sostenida -> expulsión); al huir el lobo más allá del anillo, vuelve a su ranura.
+        lunge = DETER_RADIUS + STATIC_DETER_RADIUS
+        dpos = self.world.drones[idx]
+        dw = np.linalg.norm(dpos[:, None, :] - wolves[None, :, :], axis=2)    # (k, n_conf)
+        nearest = dw.argmin(axis=1)
+        for r in np.where(dw.min(axis=1) <= lunge)[0]:
+            tgt[r] = wolves[nearest[r]]
+        return tgt
 
     def _cover_engaged(self, idx: np.ndarray, wolves: np.ndarray, herd: np.ndarray) -> np.ndarray:
         """PENETRADO: para cada dron, un lobo de los MÁS enganchados (más cerca de una vaca); lo cubre
