@@ -171,7 +171,7 @@ def test_spotcheck_baseline():
         ref = json.load(f)
     # v2.7 = susto de DOS RADIOS (pared blanda estática); RE-MEDIDA en el contenedor canónico de la DGX (metro
     # oficial). Este spot-check solo es reproducible DENTRO de ese entorno (fuera puede salir rojo: deriva FP).
-    assert ref["frozen_tag"] == "v3.1-baseline", "baseline_v2.json no es v3.1 (barrera en conjunto + timing blindado)"
+    assert ref["frozen_tag"] == "v3.2-baseline", "baseline_v2.json no es v3.2 (barrera sin huecos + avance real + timing medido)"
     from baseline import build_world, run_episode_metrics
     checked = 0
     for kind in ("lobos", "corzos", "mixto"):

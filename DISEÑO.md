@@ -5,9 +5,37 @@
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
 >
-> **Última actualización: 2026-07-23 (2ª)** · ***v3.1: BARRERA EN CONJUNTO + TIMING BLINDADO (RE-CONGELADO tag
+> **Última actualización: 2026-07-23 (3ª)** · ***v3.2: BARRERA SIN HUECOS + AVANCE REAL + TIMING MEDIDO
+> (RE-CONGELADO tag `v3.2-baseline`) — la defensa compacta que persigue baja a 1.91/1.96; el criterio de
+> aceptación fue el COMPORTAMIENTO EN GIF, no el test.** Patrón corregido: los tests de v3.1 daban verde con la
+> barrera QUIETA (pegada al rebaño: centro ≤37 m del centroide, solo perseguía con el ancla a <27 = la banda de su
+> propio test 12), AGUJEREADA (spacing 32 > 2·STATIC=20 → franjas de 12 m sin pared: ~4.6 cruces de línea/ep y
+> 75.4% de encuentros cercanos SILENCIOSOS —lobo a ≤DETER sin susto ni pared—) y con el timing MAL MEDIDO (el
+> "13/15 acompasado" de v3.1 media el estado al asentarse el merodeo, no el instante del disparo: con LA MÉTRICA
+> CORRECTA —dist del asalto a su presa en el paso exacto en que salta ESCOLTA— daba 58% ≤150, mediana 144).
+> Diagnósticos con datos ANTES de tocar (v32_parte0/v32_race.py): anatomía de la carrera del timing — la
+> investigación se lanza el MISMO paso de la detección (78/78) y confirma ~15 m más adentro → pasa ⟺ el barrido
+> de patrulla detecta al asalto a ≤~165 de su presa. Arreglos: **(1) spacing = 2·STATIC_DETER_RADIUS = 20** (las
+> paredes blandas ADYACENTES se tocan → 0 cruces limpios medidos; la línea estrecha ~60 m se RODEA por los
+> flancos — limitación ACEPTADA, agujero deliberado; standoff derivado 17.3); **(2) persecución acotada — regla
+> del usuario:** `aim = clip(d_ancla+10, suelo, MAX_ADVANCE_FROM_HERD=50)` desde el CENTROIDE de collares (la
+> formación SALE al anillo de 50 y persigue dentro de él: 45% de pasos de ESCOLTA con algún dron cerrando >1 m/s
+> sobre un confirmado; silenciosos 75.4→62.5%; centro ≤ anillo con 0 violaciones); **(3) ARCO OSCURO + PICADO del
+> asalto** pre-disparo (`_assault_approach`: orbita a >r_detect+30 de todo ACTIVE —invisible: el reloj de la
+> métrica no corre— hasta alinearse ±20° con el rumbo de SU presa y pica; detectado o investigador cerrando >8 m/s
+> → carga pura) → timing **63% ≤150, mediana 143**; el resto es ESTRUCTURAL (13% cebo cazado al NACER a 4 vs
+> 15 m/s — cola 300+ irreducible—; ~9% asalto barrido en su tránsito de nacimiento; detección lejana con el rebaño
+> disperso). **4 vías refutadas CON MEDIDA** (esquive radial 58→51 · falda tangencial+sprint 58→47 · disparo
+> adelantado gateado 56 · evasión anticipatoria neutra) documentadas en wolf_controllers.py; **(4)** emojis 0.20.
+> Tests 11/12 rehechos (paredes que tocan; fórmula del anillo; dinámico con centro ≤ anillo); verja 7/7.
+> RE-MEDIDO (100/tipo, 2ª pasada sin deriva): Dummy 3.74/0/3.69 → **3.77/0/3.74** (+0.03/+0.05 ≈ ruido: al Dummy
+> solo le mueve el arco) · Reactive 2.18/0/2.21 → **1.91±1.35/0/1.96±1.56** (−0.27/−0.25: compacta + perseguidora
+> defiende MEJOR, como anticipaba el prompt; n_safe 4.90/4.95). GIFs versionados /data/gifs/v3.2/ (nº1 asedio sin
+> huecos sev=0 · nº2 barrera que avanza, 97% persecución · nº3 timing con el asalto a 142 m) + v32_frame_emojis.png.
+> **Nota a batir del MARL → 1.91/0/1.96** (agujeros deliberados: 2º frente libre + flancos + espalda del anillo).*** ·
+> *(2ª: v3.1: BARRERA EN CONJUNTO + TIMING BLINDADO (RE-CONGELADO tag
 > `v3.1-baseline`) — el experimento por fin JUSTO: la defensa coherente sube a 2.18/2.21; el 1.00 de v3.0 era en
-> parte ARTEFACTO del dron-que-persigue.** Parte 0 diagnosticada ANTES de tocar: (a) el terreno NO era corto (lobos
+> parte ARTEFACTO del dron-que-persigue.* Parte 0 diagnosticada ANTES de tocar: (a) el terreno NO era corto (lobos
 > nacen a 114-329 m del dron más cercano, jamás confirmables ni detectables al nacer; la "alarma nada más aparecer"
 > es el REFLEJO: el investigador a 15 m/s confirma con el lobo aún a 94-184 m del rebaño — percepción del GIF);
 > (b) el timing del cebo fallaba porque el cebo BAJABA de r_detect=100 al asentar el merodeo (nace a ~114-135 del
@@ -25,7 +53,7 @@
 > 2-grupos 2.34/2.34 vs 1-grupo 2.11/2.15 (+0.23/+0.19 ≈ 0.9 SEM)** — la línea única ocupada en cualquier frente
 > deja huecos también sin cebo (quinta lectura consistente: el multi-frente scriptado no paga contra esta defensa).
 > GIFs versionados /data/gifs/v3.1/ (nº1 Dummy pasivo · nº2 barrera clásica · nº3 cebo con formación en conjunto).
-> **Nota a batir del MARL → 2.18/0/2.21.*** ·
+> Nota a batir del MARL en v3.1 → 2.18/0/2.21.)* ·
 > *(1ª: v3.0: EL CEBO PERFECTO (RE-CONGELADO tag `v3.0-baseline`) — VEREDICTO
 > (con el asterisco de v3.1): el cebo NO RINDE ni perfecto; la defensa arreglada lo aplasta.** Seis piezas juntas (decisión del
 > usuario; el número no es atribuible a cada una): terreno 500×500 (solo CONFIG_V2; colchón ≥100 m, lobo naciente

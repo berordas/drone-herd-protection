@@ -8,6 +8,7 @@ venv/
 # Salidas de render (si se guardan animaciones)
 *.mp4
 *.gif
+v*_frame_emojis.png
 
 # SO / editor
 .DS_Store

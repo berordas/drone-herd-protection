@@ -26,9 +26,9 @@ from world import ACTIVE, DETER_RADIUS
 EMOJI = {"cow": "🐄", "calf": "🐄", "wolf": "🐺", "corzo": "🦌", "jabali": "🐗", "drone": "🚁",
          "sound": "🔊"}   # 🔊 = el dron ACTIVE "emite ruido" (hay un lobo a <= DETER_RADIUS -> disuade)
 # Tamaño de los sprites de emoji (afinable). Más pequeño = se distinguen sin dominar la escena.
-EMOJI_SCALE = 0.27   # v3.1: reducido (0.45 -> 0.27). El zoom efectivo escala con m/300 (línea zf):
-                     # a terreno 500 los sprites salían ×1.67 más grandes y dominaban la escena;
-                     # 0.27 ≈ 0.45·300/500 recupera el tamaño EN PANTALLA del look calibrado a 300.
+EMOJI_SCALE = 0.20   # v3.2: otro escalón (0.27 -> 0.20; el usuario los seguía viendo grandes).
+                     # Historia: 0.45 (v2.2, terreno 300) -> 0.27 (v3.1: el zoom efectivo escala con
+                     # m/300 y a terreno 500 dominaban la escena) -> 0.20 (v3.2, solo estética).
 
 
 def _find_emoji_font() -> str | None:

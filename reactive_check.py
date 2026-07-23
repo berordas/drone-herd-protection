@@ -20,19 +20,21 @@ Comprueba el COMPORTAMIENTO del primer coordinador de verdad (NO la física, con
      confirmado (memoria/tracking). (B) dos frentes, uno confirmado y otro nunca a <= 40 m: la barrera
      se coloca SOLO respecto al confirmado — mover el frente sin confirmar no cambia NI UN waypoint
      (el frente ciego que hace el cebo físicamente posible).
- 11) STANDOFF derivado (v2.8): standoff = sqrt(DETER_RADIUS² − (spacing/2)²) = 12 m — el peor punto de
-     la línea de vacas frontales (a mitad lateral entre dos drones) queda a <= DETER_RADIUS del dron
-     más cercano: un lobo confirmado no puede colarse entre la barrera y el rebaño sin entrar en
-     radio de disuasión (con el standoff previo = 20 sí podía: peor punto a sqrt(20²+16²) = 25.6 m).
+ 11) BARRERA SIN HUECOS (v3.2) + standoff derivado (v2.8): spacing = 2·STATIC_DETER_RADIUS = 20 m (las
+     paredes blandas de drones ADYACENTES se tocan: cruzar la línea siempre mete al lobo en radio de
+     pared) y standoff = sqrt(DETER_RADIUS² − (spacing/2)²) ≈ 17.3 m — el peor punto de la línea de
+     vacas frontales (a mitad lateral entre dos drones) queda a <= DETER_RADIUS del dron más cercano.
+     La línea estrecha se RODEA por los flancos: limitación ACEPTADA de la baseline (documentada).
      [v2.9: es la distancia MÍNIMA — el modo replegado con los lobos encima; el empírico fuerza ese caso.]
- 12) FORMACIÓN QUE PRESIONA (v3.1, corrige el "dron que se descuelga" de v3.0): (a) la línea ENTERA
-     avanza junta: adv = clip(L + STATIC_DETER_RADIUS, 12, advance_max≈36.7) — sobre-apuntado de
-     formación (apuntar AL lobo deja escolta lateral con aproximación ~0; 10 m más allá garantiza
-     cierre y expulsión; retaguardia confirmable); (b) SIN embestida por-dron: con el ancla a tiro,
-     los waypoints siguen COLINEALES con el spacing de diseño y ninguno apunta al lobo; (b2) DOS
-     frentes confirmados -> la barrera entera va al ANCLA y mover el 2º frente no cambia NI UN
-     waypoint (2º frente LIBRE: defensa deliberadamente explotable, el agujero del MARL);
-     (c) dinámico: la distancia dron->cebo DISMINUYE hasta la expulsión, sin re-subidas.
+ 12) BARRERA QUE AVANZA DE VERDAD (v3.2 — regla del usuario): (a) la formación PERSIGUE al ancla
+     (aim = d_ancla + STATIC_DETER_RADIUS de sobre-apuntado) con el CENTRO acotado al anillo de
+     max_advance_from_herd = 50 m del CENTROIDE de collares (lejos -> se planta en el anillo; dentro
+     -> lo persigue); suelo = borde delantero del rebaño + standoff; (b) SIN embestida por-dron: con
+     el ancla a tiro, los waypoints siguen COLINEALES con el spacing de diseño y ninguno apunta al
+     lobo; (b2) DOS frentes confirmados -> la barrera entera va al ANCLA y mover el 2º frente no
+     cambia NI UN waypoint (2º frente LIBRE: defensa deliberadamente explotable, el agujero del MARL);
+     (c) dinámico: la distancia dron->cebo DISMINUYE hasta la expulsión, sin re-subidas, con el
+     centro de la barrera siempre a <= anillo (+ holgura de tránsito) del centroide de las vacas.
  13) CEBO PERFECTO (v3.0): reparto FIJO (cebo = wolf_decoy_size capado a n-2; asalto >= 2 = quórum) +
      TIMING programado (el cebo espera merodeando y se lanza con el asalto a <= assault_trigger_dist
      de su presa: wolf_decoy_released False->True) + el 2º sector fija la presa MÁS LIBRE y se
@@ -259,10 +261,17 @@ def test_standoff():
     w = World(seed=1, corzos_max=3, episode_kind="lobos"); w.reset()
     c = ReactiveCoordinator(w)
     worst = float(np.hypot(c.barrier_standoff, c.drone_spacing / 2.0))
-    print("  standoff=%.1f m (derivado sqrt(R²−(s/2)²); antes 20) | spacing=%.1f m | peor punto de la línea"
-          " de vacas frontales a %.1f m del dron más cercano (<= DETER_RADIUS=%.0f)"
-          % (c.barrier_standoff, c.drone_spacing, worst, DETER_RADIUS))
-    assert abs(c.barrier_standoff - 12.0) < 1e-9, "el standoff derivado con defaults debe ser 12 m"
+    print("  standoff=%.1f m (derivado sqrt(R²−(s/2)²)) | spacing=%.1f m (v3.2: 2·STATIC=%.0f, paredes"
+          " blandas ADYACENTES se tocan) | peor punto de la línea de vacas frontales a %.1f m del dron"
+          " más cercano (<= DETER_RADIUS=%.0f)"
+          % (c.barrier_standoff, c.drone_spacing, 2.0 * STATIC_DETER_RADIUS, worst, DETER_RADIUS))
+    # v3.2 (arreglo 1 — BARRERA SIN HUECOS): spacing <= 2·STATIC_DETER_RADIUS -> un lobo NO puede cruzar
+    # la línea sin entrar en el radio de PARED de algún dron (las paredes se tocan); el standoff sigue
+    # DERIVADO de la misma fórmula (con s=20 -> sqrt(400−100) ≈ 17.32).
+    assert c.drone_spacing <= 2.0 * STATIC_DETER_RADIUS + 1e-9, \
+        "FALLO: spacing > 2·STATIC_DETER_RADIUS (quedan franjas sin pared blanda entre drones)"
+    assert abs(c.barrier_standoff - float(np.sqrt(DETER_RADIUS ** 2 - (c.drone_spacing / 2.0) ** 2))) < 1e-9, \
+        "el standoff debe seguir la fórmula derivada sqrt(R²−(s/2)²)"
     assert worst <= DETER_RADIUS + 1e-6, "FALLO: un lobo puede colarse entre barrera y rebaño fuera de disuasión"
     # Empírico sobre una barrera REAL: la línea TEJE (separación entre ranuras adyacentes <= spacing
     # de diseño) -> junto con la desigualdad de constantes de arriba, la garantía trasera del modo
@@ -301,7 +310,7 @@ def test_standoff():
 
 
 def test_avance():
-    print("=== 12) FORMACIÓN QUE PRESIONA (v3.1): la línea ENTERA avanza junta al ancla; nadie se descuelga ===")
+    print("=== 12) BARRERA QUE AVANZA DE VERDAD (v3.2): persigue al ancla, acotada al anillo del rebaño ===")
     # Montaje como el test 10: ESCOLTA real, coordinador fresco, un lobo confirmado a voluntad.
     w = c = None
     for s in range(1, 15):
@@ -316,34 +325,42 @@ def test_avance():
     idx = np.where(_free(w))[0]
     flying = w.drones[w.drone_state == ACTIVE]
     c2 = ReactiveCoordinator(w)
-    # límite DERIVADO intacto: el peor punto trasero sigue confirmable
-    assert np.hypot(c2.advance_max, c2.drone_spacing / 2.0) <= w.r_confirm + 1e-6, \
-        "FALLO: advance_max deja la retaguardia fuera de r_confirm"
     w.wolves[0] = flying[0] + np.array([w.r_confirm - 10.0, 0.0])    # confirma al lobo 0
     c2.act(w.get_observation())
 
-    def _line_dist(target_wolf_pos):
-        """Distancia REAL de la línea al frente de vacas (recomputa front_c como _barrier)."""
+    def _line_aim(target_wolf_pos):
+        """Distancia REAL del centro de la línea al CENTROIDE del rebaño + la esperada por la regla
+        v3.2: aim = max(min(d_ancla + STATIC, max_advance_from_herd), borde_delantero + standoff)."""
         herd = _herd(w)
-        nfront = max(2, idx.size)
-        order = np.argsort(np.linalg.norm(herd - target_wolf_pos, axis=1))
-        front_c = herd[order[:nfront]].mean(axis=0)
+        hc2 = herd.mean(axis=0)
+        u = target_wolf_pos - hc2
+        d_anchor = float(np.linalg.norm(u))
+        u = u / max(d_anchor, 1e-9)
+        proj_front = float(((herd - hc2) @ u).max())
+        esperado = max(min(d_anchor + STATIC_DETER_RADIUS, c2.max_advance_from_herd),
+                       proj_front + c2.barrier_standoff)
         wp = c2.act(w.get_observation())
         center = wp[idx].mean(axis=0)                                # media de slots = centro exacto
-        u = target_wolf_pos - front_c
-        u = u / max(float(np.linalg.norm(u)), 1e-9)
-        return float(np.dot(center - front_c, u)), float(np.linalg.norm(target_wolf_pos - front_c))
+        return float(np.dot(center - hc2, u)), esperado, d_anchor
 
-    # (a) lobo confirmado LEJOS -> la formación se planta en el TOPE esperándolo
-    #     (adv = clip(L + STATIC_DETER_RADIUS, mín, tope), v3.1: sobre-apuntado de formación).
+    # (a) lobo confirmado LEJOS -> la formación sale al BORDE del anillo (regla del usuario: empuja
+    #     hacia la amenaza mientras dist(centro, centroide de collares) <= max_advance_from_herd).
     w.wolves[:] = hc + np.array([150.0, 0.0]) + 0.5 * np.arange(w.n_wolves)[:, None]
-    adv_far, L_far = _line_dist(w.wolves[0])
-    esperado_far = float(np.clip(L_far + STATIC_DETER_RADIUS, c2.barrier_standoff, c2.advance_max))
-    print("  lobo a L=%.0f m -> línea a %.1f m del frente (esperado %.1f; mín %.0f, tope %.1f)"
-          % (L_far, adv_far, esperado_far, c2.barrier_standoff, c2.advance_max))
-    assert abs(adv_far - esperado_far) < 1.0, "FALLO: la presión no sigue la fórmula acotada"
-    assert adv_far > c2.barrier_standoff + 5.0, "FALLO: la barrera no avanza (sigue pegada al rebaño)"
-    assert adv_far <= c2.advance_max + 1e-6, "FALLO: la barrera supera el tope de avance"
+    aim_far, esp_far, d_far = _line_aim(w.wolves[0])
+    print("  ancla a %.0f m del centroide -> centro de línea a %.1f m (esperado %.1f = anillo %.0f)"
+          % (d_far, aim_far, esp_far, c2.max_advance_from_herd))
+    assert abs(aim_far - esp_far) < 1.0, "FALLO: el avance no sigue la regla acotada"
+    assert abs(aim_far - c2.max_advance_from_herd) < 1.0, "FALLO: con el ancla lejos debe plantarse en el anillo"
+    # (a2) ancla DENTRO del anillo -> la línea la PERSIGUE (aim = d + STATIC, sobre-apuntado: cierra
+    #      con velocidad de aproximación y expulsa) sin bajar del suelo (delante de las vacas).
+    herd = _herd(w)
+    hr = float(np.linalg.norm(herd - herd.mean(axis=0), axis=1).max())
+    w.wolves[:] = hc + np.array([hr + 12.0, 0.0]) + 0.5 * np.arange(w.n_wolves)[:, None]
+    aim_near, esp_near, d_near = _line_aim(w.wolves[0])
+    print("  ancla DENTRO del anillo (d=%.0f) -> centro a %.1f m (esperado %.1f: persigue con sobre-apuntado +%.0f)"
+          % (d_near, aim_near, esp_near, STATIC_DETER_RADIUS))
+    assert abs(aim_near - esp_near) < 1.0, "FALLO: la línea no persigue al ancla dentro del anillo"
+    assert aim_near <= c2.max_advance_from_herd + 1e-6, "FALLO: el centro supera el anillo del rebaño"
     # (b) FORMACIÓN EN CONJUNTO (v3.1, corrige el "dron que se descuelga" de v3.0): con el ancla
     #     CERCA, TODOS los waypoints libres siguen en UNA línea (colineales, spacing de diseño) y
     #     NINGUNO apunta al lobo en solitario (fuera la embestida por-dron).
@@ -394,13 +411,17 @@ def test_avance():
     assert w2 is not None and w2.n_wolves == 1 and w2.phase == "ESCOLTA", "no hubo episodio de 1 lobo en ESCOLTA"
     fly2 = w2.drones[w2.drone_state == ACTIVE]
     w2.wolves[0] = fly2[0] + np.array([w2.r_confirm - 5.0, 0.0])     # confirmado, fuera del anillo aún
-    dists, scared_at = [], None
+    dists, centers, scared_at = [], [], None
     for t in range(400):
         w2.step(c3.act(w2.get_observation()))
         act = w2.drones[w2.drone_state == ACTIVE]
         if act.shape[0] == 0 or not w2.cow_alive.any():
             break
         dists.append(float(np.linalg.norm(act - w2.wolves[0], axis=1).min()))
+        free2 = np.where(_free(w2))[0]
+        if free2.size > 0:                                           # regla del usuario: centro <= anillo
+            centers.append(float(np.linalg.norm(w2.drones[free2].mean(axis=0)
+                                                - w2.cows[w2.cow_alive].mean(axis=0))))
         if w2._wolf_scared[0]:
             scared_at = t
             break
@@ -413,10 +434,14 @@ def test_avance():
     mins = [float(arr[i:i + win].min()) for i in range(0, max(len(arr) - win + 1, 1), win)]
     subida_tendencia = max((mins[k + 1] - mins[k] for k in range(len(mins) - 1)), default=0.0)
     print("  dinámica: dist dron->lobo %.1f -> %.1f m | EXPULSADO en el paso %s | mínimos por ventana "
-          "%s (tendencia nunca sube >3)" % (dists[0], dists[-1], scared_at, [round(m, 1) for m in mins]))
+          "%s (tendencia nunca sube >3) | centro de barrera máx %.1f m del centroide (anillo %.0f + holgura)"
+          % (dists[0], dists[-1], scared_at, [round(m, 1) for m in mins],
+             max(centers) if centers else float("nan"), c3.max_advance_from_herd))
     assert scared_at is not None, "FALLO: la barrera nunca espantó al confirmado (sin presión real)"
     assert dists[-1] < dists[0], "FALLO: la distancia dron->cebo no disminuyó (la línea cede)"
     assert subida_tendencia <= 3.0, "FALLO: la línea retrocede ante el lobo antes de disuadir (bug v2.9)"
+    assert max(centers) <= c3.max_advance_from_herd + c3.drone_spacing + 5.0, \
+        "FALLO: el centro de la barrera se aleja del rebaño más que el anillo (regla del usuario)"
     print("  OK\n")
 
 
