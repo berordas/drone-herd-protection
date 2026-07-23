@@ -5,7 +5,55 @@
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
 >
-> **Última actualización: 2026-07-23 (3ª)** · ***v3.2: BARRERA SIN HUECOS + AVANCE REAL + TIMING MEDIDO
+> **Última actualización: 2026-07-24** · ***v3.4: LA BARRERA COMO LÍNEA RÍGIDA + (v3.3, aceptada por el usuario
+> EN GIF) TRINQUETE DEL AVANCE Y ROLES INVERTIDOS DEL CEBO (RE-CONGELADO tag `v3.4-baseline`) — EL MULTI-FRENTE
+> POR FIN RINDE: Reactive 1.91/1.96 → 2.68±1.66/2.77±1.71 (+0.77/+0.81); el mundo cambió bastante y la nota a
+> batir del MARL cambia con él — los 1.91/1.96 quedan OBSOLETOS.** Tres piezas congeladas juntas (v3.3 quedó sin
+> congelar a la espera del juicio en GIF; este tag la incluye): **(1) TRINQUETE del avance (v3.3,
+> coordinators.py):** el aim de la barrera es MONÓTONO hacia fuera dentro del episodio — métrica del usuario
+> (dist centro→vaca no-a-salvo más próxima CRECE mientras los lobos se acercan): 58% por ventanas de 3 s, series
+> 13→50-60 sostenidas (el aim v3.2 perseguía al ancla TAMBIÉN hacia dentro = paseo aleatorio 44.6%). **(2) ROLES
+> INVERTIDOS del cebo (v3.3, wolf_controllers.py — causa raíz del ancla robada: ancla = PRIMER confirmado y el
+> reflejo confirmaba al grueso):** el CEBO se deja confirmar PRIMERO (tras el disparo SE MUESTRA cargando y hace
+> el ALA ROTA — retrocede arrastrando al investigador) y el ASALTO espera OSCURO por anillos (STAGE r_detect+50 →
+> CREEP r_detect+25 → DEEP r_confirm+25, protegidos por la investigación-ÚNICA del reflejo) hasta ESTACIONARSE
+> (pegado al sobre Y a ≤ trigger + DECOY_SHOW_LEAD=60 de su presa); ataca al saltar ESCOLTA o si le cazan
+> (cierre >8 m/s alineado, ≤200). Medido (78 eps de 2 frentes): ancla = sector-cebo 13% → 60% (techo ~73%: en el
+> 27% restante el asalto NACE a 108-130 m de un dron y el barrido lo caza — spawn, irreducible del lado del
+> lobo); asalto ≤150 de su presa al saltar ESCOLTA 42-45% (frontera ancla↔profundidad ~1:1 medida en 8 configs;
+> vías refutadas CON MEDIDA documentadas en wolf_controllers.py: show-al-dron-más-cercano = carrusel ·
+> estacionamiento-con-alineación = interbloqueo 77/78 · CREEP+5/DEEP+10 = primer-contacto/roba-ancla · detector
+> solo-cierre = falsos positivos de la patrulla). **(3) LÍNEA RÍGIDA (v3.4, regla del usuario: si un dron
+> avanza, avanzan TODOS — la línea no se puede deformar):** la barrera es UN cuerpo con UNA pose (centro C +
+> eje u) y offsets FIJOS — waypoint_i = C + off_i·perp SIEMPRE, ningún objetivo individual; el CIERRE LOCAL v3.3
+> queda ELIMINADO (deformación por definición) y el avance lo GOBIERNA el MÁS REZAGADO: paso_pose = max(0,
+> DRONE_MAX_SPEED·dt − err_max), desplazamiento (traslación+rotación) ≤ λ·(|Δc| + |Δφ|·r_max), λ = min(1,
+> paso_pose/desplaz) — lazo realimentado (equilibrio analítico ~3.1 m/s con err ~1.2 m = el retraso del perfil
+> de frenada v²/(2·ACCEL)); pose idempotente por paso; en la (re)formación NACE en el objetivo y espera QUIETA a
+> que los drones lleguen (la línea se forma en el sitio y solo entonces avanza, rígida). RIGIDEZ MEDIDA (28 eps,
+> estado FORMADA = 85% de los pasos CLEAN): error de estación p50 0.77 / p95 1.66 / máx 4.71 m (umbral aceptado
+> 6 ≈ 4× el presupuesto por paso de 1.5 m); espaciado real p5-p95 19.7-20.3 m (nominal 20); colinealidad p95
+> 0.20 m; velocidad de pose p50 1.74 / máx 13.2 m/s (moverse rápido es legal si TODOS siguen — el err queda
+> acotado). COSTE del cierre eliminado, MEDIDO y reportado sin parches por-dron (mismas 28 eps): cruces de
+> segmento 56 → 149 (hacia dentro con la línea en pie 33 → 92 ≈ 3.3/ep; mediana del hueco cruzado 20.0 = el
+> corredor central; 104/149 amurallados — la pared blanda congelada solo quita la componente hacia el dron y
+> CANALIZA: es muro frontal, no valla) y PENETRADO 4159 → 13593 pasos; la M1 del usuario sigue intacta (57.9%).
+> **AGUJEROS CONOCIDOS Y DELIBERADOS de la baseline rígida (los que el MARL de drones deberá aprender a
+> cubrir): rodeo por los FLANCOS de la línea estrecha (~60 m) · CRUCES residuales por los corredores entre
+> paredes (4 drones vs enjambre de 5) · espalda del anillo de 50 · 2º frente libre — ahora EXPLOTADO de verdad
+> por el cebo invertido.** Tests adaptados SIN bajar el listón (reactive_check 2 = reposición EN EL TIEMPO,
+> mismo umbral 3 m · 10 = clones deepcopy que difieren SOLO en el frente ciego + convergencia gobernada 200
+> pasos · 12 REHECHO = regla+trinquete en el objetivo, cuerpo rígido EXACTO con lobo apretando —resid<1e-6,
+> spacing exacto, nadie se descuelga NI cierra—, 2 frentes bit a bit, gobernador acotado ≤1.5+ε y no-vacuo,
+> err formada ≤6 · wolf_controller timing = gate de estacionamiento + show ≤ r_detect); verja 7/7. RE-MEDIDO
+> (metro DGX, 100/tipo, 2ª pasada sin deriva): Dummy 3.77/0/3.74 → **3.82±2.41/0/3.84±2.43** (+0.05/+0.10: el
+> lado lobo apenas mueve al Dummy clavado) · Reactive 1.91/0/1.96 → **2.68±1.66/0/2.77±1.71** (n_safe 4.16/4.10,
+> success 5/7): la inversión ancla la línea única al cebo y el asalto entra por el frente libre — POR FIN el
+> multi-frente scriptado paga contra la defensa (sexta lectura del cebo, la primera positiva). GIFs
+> /data/gifs/v3.4/ + copias en la raíz (nº1 seed95: ancla=cebo, la línea rígida sale de 2 a 50 m FORMADA el 88%
+> de los pasos · nº2 seed76: asalto a 146 m al saltar ESCOLTA, 6 muertes del asalto con la línea comprometida
+> al cebo — candidato al GIF nº3 de la narrativa). **Nota a batir del MARL → 2.68/0/2.77.*** ·
+> *(2026-07-23 (3ª): v3.2: BARRERA SIN HUECOS + AVANCE REAL + TIMING MEDIDO
 > (RE-CONGELADO tag `v3.2-baseline`) — la defensa compacta que persigue baja a 1.91/1.96; el criterio de
 > aceptación fue el COMPORTAMIENTO EN GIF, no el test.** Patrón corregido: los tests de v3.1 daban verde con la
 > barrera QUIETA (pegada al rebaño: centro ≤37 m del centroide, solo perseguía con el ancla a <27 = la banda de su
@@ -32,7 +80,7 @@
 > solo le mueve el arco) · Reactive 2.18/0/2.21 → **1.91±1.35/0/1.96±1.56** (−0.27/−0.25: compacta + perseguidora
 > defiende MEJOR, como anticipaba el prompt; n_safe 4.90/4.95). GIFs versionados /data/gifs/v3.2/ (nº1 asedio sin
 > huecos sev=0 · nº2 barrera que avanza, 97% persecución · nº3 timing con el asalto a 142 m) + v32_frame_emojis.png.
-> **Nota a batir del MARL → 1.91/0/1.96** (agujeros deliberados: 2º frente libre + flancos + espalda del anillo).*** ·
+> Nota a batir del MARL en v3.2 → 1.91/0/1.96 (agujeros deliberados: 2º frente libre + flancos + espalda del anillo).)* ·
 > *(2ª: v3.1: BARRERA EN CONJUNTO + TIMING BLINDADO (RE-CONGELADO tag
 > `v3.1-baseline`) — el experimento por fin JUSTO: la defensa coherente sube a 2.18/2.21; el 1.00 de v3.0 era en
 > parte ARTEFACTO del dron-que-persigue.* Parte 0 diagnosticada ANTES de tocar: (a) el terreno NO era corto (lobos

@@ -55,7 +55,7 @@ import subprocess
 
 import numpy as np
 
-from world import World, ACTIVE, DETER_RADIUS, STATIC_DETER_RADIUS
+from world import World, ACTIVE, DETER_RADIUS, DRONE_MAX_SPEED, STATIC_DETER_RADIUS
 from coordinators import ReactiveCoordinator, DummyCoordinator
 from render import render_episode
 
@@ -112,14 +112,27 @@ def test_reactivo():
     w = World(seed=1, corzos_max=3, episode_kind="lobos"); w.reset()
     c = ReactiveCoordinator(w)
     assert _advance_to_escolta(w, c)
+    # v3.4 (LÍNEA RÍGIDA): la pose está GOBERNADA por el más rezagado -> al saltar ESCOLTA espera
+    # QUIETA a que los drones lleguen a sus ranuras (formación) y act() repetido en el mismo paso es
+    # IDEMPOTENTE. MISMA propiedad exigida (la barrera sigue al paquete, umbral 3 m intacto), pero
+    # medida EN EL TIEMPO: (1) deja FORMARSE la línea (150 pasos con los lobos CLAVADOS — el montaje
+    # mide solo la reacción de la línea, no la caza), (2) mueve el paquete +50 en X, (3) deja
+    # reposicionarse 60 pasos (la pose gobernada avanza <= ~1.5 m/paso).
+    hold = w.wolves.copy()
+    for _ in range(150):
+        w.step(c.act(w.get_observation()))
+        w.wolves[:] = hold
     idx = np.where(_free(w))[0]
     center1 = c.act(w.get_observation())[idx].mean(0)
-    w.wolves[:, 0] += 50.0                                 # mueve el paquete +X (solo el estado; sin step)
-    center2 = c.act(w.get_observation())[idx].mean(0)
-    print("  centro de la barrera: %s -> %s (paquete movido +50 en X)" % (np.round(center1, 1), np.round(center2, 1)))
-    # v2.8: el desplazamiento esperado ESCALA con el standoff (centro = front_c + u·standoff; con el
-    # standoff derivado 12 la parte u·standoff es 12/20 de la de v2.6) -> umbral recalibrado 5.0 -> 3.0.
-    # MISMA propiedad (la barrera sigue al paquete); solo cambia la magnitud por la línea más pegada.
+    w.wolves[:, 0] += 50.0                                 # mueve el paquete +X
+    hold2 = w.wolves.copy()
+    for _ in range(60):
+        w.step(c.act(w.get_observation()))
+        w.wolves[:] = hold2
+    idx2 = np.where(_free(w))[0]
+    center2 = c.act(w.get_observation())[idx2].mean(0)
+    print("  centro de la barrera: %s -> %s (paquete movido +50 en X, 60 pasos después)"
+          % (np.round(center1, 1), np.round(center2, 1)))
     assert center2[0] > center1[0] + 3.0, "la barrera NO siguió al paquete (no reactiva)"
     print("  OK\n")
 
@@ -234,23 +247,47 @@ def test_percepcion():
     assert err3 < 25.0, "FALLO: la barrera no rastrea al confirmado que se aleja"
 
     # ---- (B) dos frentes: uno CONFIRMADO y otro NUNCA a <= 40 m -> solo el confirmado coloca ----
+    # v3.4 (LÍNEA RÍGIDA): la pose tiene ESTADO (idempotente por paso, giro gobernado) -> las dos
+    # propiedades se verifican con la mecánica nueva SIN bajar el listón:
+    #  (B1) INFLUENCIA NULA del frente ciego, con CLONES deepcopy que difieren SOLO en el frente
+    #       sin confirmar (contactos REALES en banda): mismo estado + misma pose -> si el frente
+    #       ciego entrara en el cálculo (eje/trinquete/gobernador), los waypoints diferirían.
+    #  (B2) COLOCACIÓN respecto al confirmado, dejando CONVERGER la pose gobernada (200 pasos con
+    #       los lobos CLAVADOS, como el test 2; el frente ciego aparcado LEJOS de todo dron para
+    #       que el montaje no lo confirme por accidente durante el giro de la línea).
+    import copy
     w.wolves[0] = hc + np.array([45.0, 0.0])                          # el confirmado, al este del rebaño
     others = np.arange(1, w.n_wolves)
-    # dos posiciones de banda con rumbo MUY distinto al confirmado (frente "ciego" al otro lado)
     byang = sorted(band, key=lambda p: -_bearing_err(p, hc, w.wolves[0]))
     far_b1, far_b2 = byang[0], byang[1]
     assert _bearing_err(far_b1, hc, w.wolves[0]) > 60.0, "montaje: el frente ciego debe venir por otro rumbo"
     w.wolves[others] = far_b1 + rng.normal(0, 1, size=(others.size, 2))
-    b1 = c2.act(w.get_observation()).copy()
-    w.wolves[others] = far_b2 + rng.normal(0, 1, size=(others.size, 2))   # mueve el frente sin confirmar
-    b2 = c2.act(w.get_observation()).copy()
-    center = b1[idx].mean(axis=0)
-    err_conf = _bearing_err(center, hc, w.wolves[0])
-    err_mean = _bearing_err(center, hc, w.wolves.mean(axis=0))
-    print("  (B) frente contacto-sin-confirmar movido -> waypoints idénticos: %s | eje: |vs confirmado|=%.1f° |vs media global|=%.1f°"
-          % (np.array_equal(b1, b2), err_conf, err_mean))
+    wA, cA = copy.deepcopy((w, c2))
+    wB, cB = copy.deepcopy((w, c2))
+    wB.wolves[others] = far_b2 + rng.normal(0, 1, size=(others.size, 2))  # SOLO difiere el frente ciego
+    b1 = cA.act(wA.get_observation()).copy()
+    b2 = cB.act(wB.get_observation()).copy()
+    print("  (B1) clones que difieren SOLO en el frente contacto-sin-confirmar -> waypoints idénticos: %s"
+          % np.array_equal(b1, b2))
     assert not c2._confirmed[others].any(), "montaje: el 2º frente no debería estar confirmado"
     assert np.array_equal(b1, b2), "FALLO: el frente sin confirmar influyó en la barrera"
+    # (B2) converger: frente ciego aparcado en la esquina más lejana a los drones (sigue sin confirmar).
+    cand = np.array([[3.0, 3.0], [297.0, 3.0], [3.0, 297.0], [297.0, 297.0]])
+    park = cand[np.argmax([float(np.linalg.norm(w.drones[w.drone_state == ACTIVE] - cc, axis=1).min())
+                           for cc in cand])]
+    w.wolves[others] = park + rng.normal(0, 1, size=(others.size, 2))
+    hold = w.wolves.copy()
+    for _ in range(200):
+        w.step(c2.act(w.get_observation()))
+        w.wolves[:] = hold
+    hc2 = _herd(w).mean(axis=0)
+    idx_f = np.where(_free(w))[0]
+    center = c2.act(w.get_observation())[idx_f].mean(axis=0)
+    err_conf = _bearing_err(center, hc2, w.wolves[0])
+    err_mean = _bearing_err(center, hc2, w.wolves.mean(axis=0))
+    print("  (B2) pose convergida (200 pasos, lobos clavados) | eje: |vs confirmado|=%.1f° |vs media global|=%.1f°"
+          % (err_conf, err_mean))
+    assert not c2._confirmed[others].any(), "montaje: el frente aparcado no debería estar confirmado"
     assert err_conf < 25.0, "FALLO: la barrera no se coloca respecto al confirmado"
     assert err_mean > err_conf + 20.0, "FALLO: la barrera sigue la media global, no al confirmado"
     print("  OK\n")
@@ -310,7 +347,7 @@ def test_standoff():
 
 
 def test_avance():
-    print("=== 12) BARRERA QUE AVANZA DE VERDAD (v3.2): persigue al ancla, acotada al anillo del rebaño ===")
+    print("=== 12) LÍNEA RÍGIDA QUE AVANZA (v3.4): una pose, gobernador del rezagado, regla del anillo ===")
     # Montaje como el test 10: ESCOLTA real, coordinador fresco, un lobo confirmado a voluntad.
     w = c = None
     for s in range(1, 15):
@@ -323,52 +360,53 @@ def test_avance():
         w.step(c.act(w.get_observation()))
     hc = _herd(w).mean(axis=0)
     idx = np.where(_free(w))[0]
-    flying = w.drones[w.drone_state == ACTIVE]
-    c2 = ReactiveCoordinator(w)
-    w.wolves[0] = flying[0] + np.array([w.r_confirm - 10.0, 0.0])    # confirma al lobo 0
-    c2.act(w.get_observation())
 
-    def _line_aim(target_wolf_pos):
-        """Distancia REAL del centro de la línea al CENTROIDE del rebaño + la esperada por la regla
-        v3.2: aim = max(min(d_ancla + STATIC, max_advance_from_herd), borde_delantero + standoff)."""
+    def _expected_aim(target_wolf_pos):
+        """aim de la REGLA v3.2 (persigue acotado al anillo, nunca detrás del frente):
+        max(min(d_ancla + STATIC, max_advance_from_herd), borde_delantero + standoff)."""
         herd = _herd(w)
         hc2 = herd.mean(axis=0)
         u = target_wolf_pos - hc2
         d_anchor = float(np.linalg.norm(u))
         u = u / max(d_anchor, 1e-9)
         proj_front = float(((herd - hc2) @ u).max())
-        esperado = max(min(d_anchor + STATIC_DETER_RADIUS, c2.max_advance_from_herd),
-                       proj_front + c2.barrier_standoff)
-        wp = c2.act(w.get_observation())
-        center = wp[idx].mean(axis=0)                                # media de slots = centro exacto
-        return float(np.dot(center - hc2, u)), esperado, d_anchor
+        return max(min(d_anchor + STATIC_DETER_RADIUS, c2.max_advance_from_herd),
+                   proj_front + c2.barrier_standoff), d_anchor
 
-    # (a) lobo confirmado LEJOS -> la formación sale al BORDE del anillo (regla del usuario: empuja
-    #     hacia la amenaza mientras dist(centro, centroide de collares) <= max_advance_from_herd).
-    w.wolves[:] = hc + np.array([150.0, 0.0]) + 0.5 * np.arange(w.n_wolves)[:, None]
-    aim_far, esp_far, d_far = _line_aim(w.wolves[0])
-    print("  ancla a %.0f m del centroide -> centro de línea a %.1f m (esperado %.1f = anillo %.0f)"
-          % (d_far, aim_far, esp_far, c2.max_advance_from_herd))
-    assert abs(aim_far - esp_far) < 1.0, "FALLO: el avance no sigue la regla acotada"
-    assert abs(aim_far - c2.max_advance_from_herd) < 1.0, "FALLO: con el ancla lejos debe plantarse en el anillo"
-    # (a2) ancla DENTRO del anillo -> la línea la PERSIGUE (aim = d + STATIC, sobre-apuntado: cierra
-    #      con velocidad de aproximación y expulsa) sin bajar del suelo (delante de las vacas).
+    # (a) REGLA DEL OBJETIVO + TRINQUETE (v3.4: la pose ya no salta — la regla del anillo se verifica
+    #     en el OBJETIVO ratcheteado `_aim_out`; la convergencia FÍSICA de la pose, en (c)).
+    #     Coordinador FRESCO con el ancla DENTRO del anillo (trinquete desde cero: aim = d+STATIC,
+    #     persigue), luego LEJOS (se planta en el anillo) y de VUELTA cerca (el trinquete es MONÓTONO
+    #     hacia fuera — v3.3, la propiedad que valida la métrica M1 del usuario).
     herd = _herd(w)
     hr = float(np.linalg.norm(herd - herd.mean(axis=0), axis=1).max())
     w.wolves[:] = hc + np.array([hr + 12.0, 0.0]) + 0.5 * np.arange(w.n_wolves)[:, None]
-    aim_near, esp_near, d_near = _line_aim(w.wolves[0])
-    print("  ancla DENTRO del anillo (d=%.0f) -> centro a %.1f m (esperado %.1f: persigue con sobre-apuntado +%.0f)"
-          % (d_near, aim_near, esp_near, STATIC_DETER_RADIUS))
-    assert abs(aim_near - esp_near) < 1.0, "FALLO: la línea no persigue al ancla dentro del anillo"
-    assert aim_near <= c2.max_advance_from_herd + 1e-6, "FALLO: el centro supera el anillo del rebaño"
-    # (b) FORMACIÓN EN CONJUNTO (v3.1, corrige el "dron que se descuelga" de v3.0): con el ancla
-    #     CERCA, TODOS los waypoints libres siguen en UNA línea (colineales, spacing de diseño) y
-    #     NINGUNO apunta al lobo en solitario (fuera la embestida por-dron).
+    w.drones[idx[0]] = w.wolves[0] + np.array([25.0, 0.0])           # a tiro de confirmar (<= r_confirm)
+    c2 = ReactiveCoordinator(w)
+    esp_near, d_near = _expected_aim(w.wolves[0])
+    c2.act(w.get_observation())
+    print("  ancla DENTRO del anillo (d=%.0f) -> aim objetivo %.1f m (esperado regla %.1f; persigue +%.0f)"
+          % (d_near, max(c2._aim_out, esp_near), esp_near, STATIC_DETER_RADIUS))
+    assert abs(c2._aim_out - min(d_near + STATIC_DETER_RADIUS, c2.max_advance_from_herd)) < 1.0, \
+        "FALLO: el objetivo no sigue la regla (persecución con sobre-apuntado dentro del anillo)"
+    w.wolves[:] = hc + np.array([150.0, 0.0]) + 0.5 * np.arange(w.n_wolves)[:, None]
+    esp_far, d_far = _expected_aim(w.wolves[0])
+    c2.act(w.get_observation())
+    print("  ancla a %.0f m -> aim objetivo (trinquete) %.1f m (esperado %.1f = anillo %.0f)"
+          % (d_far, c2._aim_out, esp_far, c2.max_advance_from_herd))
+    assert abs(c2._aim_out - c2.max_advance_from_herd) < 1.0, "FALLO: con el ancla lejos debe plantarse en el anillo"
+    w.wolves[:] = hc + np.array([hr + 12.0, 0.0]) + 0.5 * np.arange(w.n_wolves)[:, None]
+    c2.act(w.get_observation())
+    assert abs(c2._aim_out - c2.max_advance_from_herd) < 1.0, \
+        "FALLO: el trinquete bajó al acercarse el ancla (el aim debe ser monótono hacia fuera)"
+    # (b) CUERPO RÍGIDO POR CONSTRUCCIÓN (v3.4): con el ancla CERCA y drones A TIRO del lobo (donde
+    #     v3.0 embestía y v3.3 CERRABA el corredor con waypoint=lobo), TODOS los waypoints libres son
+    #     ranuras de UNA pose: colineales EXACTOS, spacing EXACTO de diseño y ninguno sobre el lobo.
     herd = _herd(w)
     hr = float(np.linalg.norm(herd - hc, axis=1).max())
     w.wolves[:] = hc + np.array([hr + 7.0, 0.0]) + 0.5 * np.arange(w.n_wolves)[:, None]
     for r, i in enumerate(idx):
-        w.drones[i] = w.wolves[0] + np.array([26.0, 3.0 * r])       # drones a tiro: en v3.0 embestían
+        w.drones[i] = w.wolves[0] + np.array([26.0, 3.0 * r])       # drones a tiro: v3.0 embestía, v3.3 cerraba
     wp = c2.act(w.get_observation())
     pts = wp[idx]
     cen = pts.mean(axis=0)
@@ -376,12 +414,13 @@ def test_avance():
     resid = float(np.abs((pts - cen) @ vt[1]).max())                # desviación máx respecto a la recta
     seps = np.sort(np.linalg.norm(np.diff(pts[np.argsort(pts @ vt[0])], axis=0), axis=1))
     d_wp_lobo = float(np.linalg.norm(pts[:, None, :] - w.wolves[None, :, :], axis=2).min())
-    print("  lobo apretando (drones a 26 m): waypoints COLINEALES (resid %.2f m) | separaciones %s | "
-          "waypoint más cercano a un lobo %.1f m (>5 = nadie se descuelga)"
+    print("  lobo apretando (drones a 26 m): waypoints = UNA pose (resid %.2e m, exacto) | separaciones %s "
+          "(spacing exacto) | waypoint más cercano a un lobo %.1f m (>5 = nadie se descuelga NI cierra)"
           % (resid, np.round(seps, 1), d_wp_lobo))
-    assert resid < 1.0, "FALLO: los waypoints no forman UNA línea (formación rota)"
-    assert seps.max() <= c2.drone_spacing + 0.5, "FALLO: la línea no teje (ranuras más separadas que el diseño)"
-    assert d_wp_lobo > 5.0, "FALLO: un dron se descuelga a por el lobo (embestida por-dron, bug v3.0)"
+    assert resid < 1e-6, "FALLO: los waypoints no son ranuras de UNA pose (cuerpo rígido roto)"
+    assert np.allclose(seps, c2.drone_spacing, atol=1e-6), \
+        "FALLO: el spacing de los waypoints no es EXACTO (la línea rígida no admite estiramientos)"
+    assert d_wp_lobo > 5.0, "FALLO: un waypoint apunta al lobo (deformación por-dron: embestida v3.0 / cierre v3.3)"
     # (b2) DOS FRENTES confirmados -> la barrera ENTERA va al ANCLA; el 2º frente queda LIBRE
     #     (defensa deliberadamente explotable: mover el 2º confirmado no cambia NI UN waypoint).
     w.wolves[0] = hc + np.array([120.0, 0.0])                        # ancla (1º confirmado)
@@ -412,11 +451,32 @@ def test_avance():
     fly2 = w2.drones[w2.drone_state == ACTIVE]
     w2.wolves[0] = fly2[0] + np.array([w2.r_confirm - 5.0, 0.0])     # confirmado, fuera del anillo aún
     dists, centers, scared_at = [], [], None
+    # v3.4: métricas de RIGIDEZ del episodio dinámico — gobernador (la pose nunca se desplaza más
+    # que el presupuesto del rezagado) + error de estación ACOTADO una vez la línea está FORMADA.
+    pose_step_max, err_formed_max = 0.0, 0.0
+    prev_pose, was_formed = None, False
     for t in range(400):
-        w2.step(c3.act(w2.get_observation()))
+        a = c3.act(w2.get_observation())
+        clean_now = (c3._pose_last_step == w2.step_count)
+        free_pre = np.where(_free(w2))[0]
+        wp_pre = a[free_pre].copy()
+        w2.step(a)
         act = w2.drones[w2.drone_state == ACTIVE]
         if act.shape[0] == 0 or not w2.cow_alive.any():
             break
+        if clean_now and c3._pose_c is not None:
+            if prev_pose is not None:                                # desplazamiento de la POSE por paso
+                pose_step_max = max(pose_step_max, float(np.linalg.norm(c3._pose_c - prev_pose)))
+            prev_pose = c3._pose_c.copy()
+            free_post = np.where(_free(w2))[0]
+            if free_post.size == free_pre.size and np.array_equal(free_pre, free_post):
+                emax = float(np.linalg.norm(w2.drones[free_pre] - wp_pre, axis=1).max())
+                if emax <= 2.0:
+                    was_formed = True
+                if was_formed:                                       # una vez FORMADA, el err queda acotado
+                    err_formed_max = max(err_formed_max, emax)
+        else:
+            prev_pose, was_formed = None, False
         dists.append(float(np.linalg.norm(act - w2.wolves[0], axis=1).min()))
         free2 = np.where(_free(w2))[0]
         if free2.size > 0:                                           # regla del usuario: centro <= anillo
@@ -425,6 +485,33 @@ def test_avance():
         if w2._wolf_scared[0]:
             scared_at = t
             break
+    # v3.4 fase 2: la expulsión llega ANTES de que la línea termine de formarse (la pose aún no se
+    # ha movido y las cotas del gobernador serían VACUAS) -> se sigue 250 pasos más (el ancla huye,
+    # el rebaño migra, la pose SÍ se desplaza) para ejercitar el gobernador de verdad.
+    pose_total = 0.0
+    for _ in range(250):
+        a = c3.act(w2.get_observation())
+        clean_now = (c3._pose_last_step == w2.step_count)
+        free_pre = np.where(_free(w2))[0]
+        wp_pre = a[free_pre].copy()
+        w2.step(a)
+        if w2.drones[w2.drone_state == ACTIVE].shape[0] == 0 or not w2.cow_alive.any():
+            break
+        if clean_now and c3._pose_c is not None:
+            if prev_pose is not None:
+                d_pose = float(np.linalg.norm(c3._pose_c - prev_pose))
+                pose_step_max = max(pose_step_max, d_pose)
+                pose_total += d_pose
+            prev_pose = c3._pose_c.copy()
+            free_post = np.where(_free(w2))[0]
+            if free_post.size == free_pre.size and np.array_equal(free_pre, free_post):
+                emax = float(np.linalg.norm(w2.drones[free_pre] - wp_pre, axis=1).max())
+                if emax <= 2.0:
+                    was_formed = True
+                if was_formed:
+                    err_formed_max = max(err_formed_max, emax)
+        else:
+            prev_pose, was_formed = None, False
     # Anti-retroceso a la escala que importa: mínimos por VENTANA de 30 pasos (3 s). La distancia
     # instantánea al dron MÁS CERCANO rebota ~spacing/2 cuando el eje gira y la ranura más cercana
     # cambia de dron (la línea sigue plantada SOBRE el ancla; no es ceder terreno). El bug v2.9 era
@@ -437,11 +524,21 @@ def test_avance():
           "%s (tendencia nunca sube >3) | centro de barrera máx %.1f m del centroide (anillo %.0f + holgura)"
           % (dists[0], dists[-1], scared_at, [round(m, 1) for m in mins],
              max(centers) if centers else float("nan"), c3.max_advance_from_herd))
+    print("  gobernador: |Δpose| máx por paso %.2f m (<= %.2f = DRONE_MAX_SPEED·dt + holgura; recorrido "
+          "total %.1f m > 1 = ejercitado) | err de estación máx FORMADA %.2f m (<= 6)"
+          % (pose_step_max, DRONE_MAX_SPEED * w2.dt + 0.11, pose_total, err_formed_max))
     assert scared_at is not None, "FALLO: la barrera nunca espantó al confirmado (sin presión real)"
     assert dists[-1] < dists[0], "FALLO: la distancia dron->cebo no disminuyó (la línea cede)"
     assert subida_tendencia <= 3.0, "FALLO: la línea retrocede ante el lobo antes de disuadir (bug v2.9)"
     assert max(centers) <= c3.max_advance_from_herd + c3.drone_spacing + 5.0, \
         "FALLO: el centro de la barrera se aleja del rebaño más que el anillo (regla del usuario)"
+    # v3.4 (LÍNEA RÍGIDA): el gobernador NUNCA mueve la pose más de lo que el rezagado puede seguir
+    # (DRONE_MAX_SPEED·dt por paso; holgura numérica), y una vez FORMADA (err<=2 alcanzado) el error
+    # de estación queda ACOTADO (medido en 28 eps reales: p95 1.66, máx 4.71 -> umbral 6 con margen).
+    assert pose_step_max <= DRONE_MAX_SPEED * w2.dt + 0.11, \
+        "FALLO: la pose se desplaza más que el presupuesto del rezagado"
+    assert pose_total > 1.0, "montaje: la pose no llegó a moverse (las cotas del gobernador serían vacuas)"
+    assert err_formed_max <= 6.0, "FALLO: el error de estación de la línea FORMADA no queda acotado"
     print("  OK\n")
 
 

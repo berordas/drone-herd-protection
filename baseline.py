@@ -137,42 +137,44 @@ EVAL_SEEDS = tuple(range(N_PER_KIND))
 KINDS = ("lobos", "corzos", "mixto")
 KIND_LABEL = {"lobos": "solo-lobos", "corzos": "solo-corzos", "mixto": "mixto"}
 TERMINALS = ("success", "predation", "timeout")
-FROZEN_TAG = "v3.2-baseline"   # tag git del commit congelado: BARRERA SIN HUECOS + AVANCE REAL + TIMING MEDIDO.
-                               # Principio del prompt v3.2: el criterio de aceptación es el COMPORTAMIENTO EN GIF, no
-                               # "el test pasa" (los tests de v3.1 daban verde con la barrera quieta y agujereada).
-                               # Diagnóstico v3.2 (con datos, ANTES de tocar): la línea v3.1 vivía pegada al rebaño
-                               # (front_c ≈ centroide a 0.8 m; adv <= 36.7 -> solo "perseguía" con el ancla a <27 m,
-                               # la banda de su test) — 17.9% de pasos de ESCOLTA con la formación a <1 m/s (incapaz
-                               # de expulsar), 75.4% de encuentros cercanos SILENCIOSOS y ~4.6 cruces de línea/ep por
-                               # las franjas sin pared (spacing 32 > 2·STATIC=20). Arreglos: 1) BARRERA SIN HUECOS —
-                               # spacing = 2·STATIC_DETER_RADIUS = 20 (las paredes blandas se tocan: 0 cruces limpios
-                               # medidos; los flancos se RODEAN — limitación aceptada y documentada); 2) AVANCE REAL
-                               # (regla del usuario) — la formación PERSIGUE al ancla (aim = d + 10 de sobre-apuntado)
-                               # con el centro acotado a MAX_ADVANCE_FROM_HERD = 50 m del CENTROIDE de collares (45%
-                               # de pasos de ESCOLTA con persecución real >1 m/s; centro <= anillo verificado);
-                               # 3) TIMING con LA MÉTRICA CORRECTA (dist del asalto a su presa al saltar ESCOLTA):
-                               # v3.1 medía 58% <=150 (mediana 144); el asalto ahora hace ARCO OSCURO + PICADO
-                               # (orbita fuera del alcance del barrido hasta alinearse con SU presa y pica) -> 63%
-                               # <=150, mediana 143; el resto es ESTRUCTURAL de la defensa honesta (13% cebo cazado
-                               # al NACER a 4 vs 15 m/s; ~9% asalto barrido en su tránsito de nacimiento; detección
-                               # lejana con el rebaño disperso) — 4 vías alternativas refutadas CON MEDIDA en
-                               # wolf_controllers.py; 4) emojis 0.27 -> 0.20. El resto del mundo v3.0/v3.1 intacto
-                               # (terreno 500 en CONFIG_V2, decoy fijo=1, hold 130, trigger 150, relevo sin
-                               # parálisis). Defaults de World en 300 intactos (face_check bit a bit). METRO DGX.
-                               # Nota a batir del MARL -> Reactive v3.2 (la defensa compacta que avanza).
+FROZEN_TAG = "v3.4-baseline"   # tag git del commit congelado: LÍNEA RÍGIDA + ROLES INVERTIDOS DEL CEBO.
+                               # v3.3 (aceptada por el usuario EN GIF, congelada aquí): 1) TRINQUETE del avance —
+                               # el aim de la barrera es MONÓTONO hacia fuera (la línea sale hacia los lobos y SE
+                               # QUEDA fuera; métrica del usuario: dist centro->vaca más próxima CRECE mientras los
+                               # lobos se acercan — 58% por ventanas, series 13->50-60 sostenidas); 2) INVERSIÓN DE
+                               # ROLES del cebo (wolf_controllers.py) — el CEBO se deja confirmar PRIMERO (se muestra
+                               # + ALA ROTA arrastrando al investigador) y el ASALTO espera OSCURO por anillos
+                               # (STAGE r_detect+50 -> CREEP r_detect+25 -> DEEP r_confirm+25) hasta que la barrera
+                               # está comprometida: ancla = sector-cebo en ~60% de episodios de 2 frentes (techo
+                               # medido ~73%: el 27% restante el asalto NACE a 108-130 m de un dron y es cazado por
+                               # el barrido — geometría de spawn, irreducible del lado del lobo) con el asalto a
+                               # <=150 de su presa al saltar ESCOLTA en 42-45% (frontera ancla<->profundidad ~1:1
+                               # medida en 8 configuraciones; vías refutadas documentadas en wolf_controllers.py).
+                               # v3.4 (regla del usuario: si un dron avanza, avanzan TODOS): la barrera es una LÍNEA
+                               # RÍGIDA — UNA pose (centro C + eje u) con offsets FIJOS y GOBERNADOR DEL MÁS REZAGADO
+                               # (paso_pose = max(0, DRONE_MAX_SPEED·dt − err_max); la formación avanza al ritmo del
+                               # más rezagado y espera QUIETA mientras se forma). Rigidez MEDIDA (28 eps): error de
+                               # estación FORMADA p95 1.66 / máx 4.71 m; espaciado p5-p95 19.7-20.3 (nominal 20);
+                               # colinealidad p95 0.20 m. El CIERRE LOCAL v3.3 queda ELIMINADO (deformaba la línea
+                               # por definición); su coste MEDIDO: cruces de segmento 56 -> 149/28 eps (hacia dentro
+                               # con la línea en pie 33 -> 92) y PENETRADO 4159 -> 13593 pasos — agujeros DELIBERADOS
+                               # de la baseline rígida (junto a flancos + espalda del anillo + 2º frente lastrado por
+                               # la inversión). Defaults de World en 300 intactos (face_check bit a bit). METRO DGX.
+                               # Nota a batir del MARL -> Reactive v3.4 (la línea rígida con el cebo invertido).
 
 # Referencia CONGELADA de severidad (media de muertes/ep) por tipo, para detectar DERIVA.
 # Se rellena tras la primera medición; en re-corridas debe coincidir (mundo reproducible POR ENTORNO).
-# v3.2 (METRO DGX): BARRERA SIN HUECOS + AVANCE REAL + TIMING MEDIDO (ver FROZEN_TAG). Al Dummy solo
-# le mueve el ARCO OSCURO del asalto (+0.03/+0.05 vs v3.1 = ruido: sus drones clavados casi no cambian
-# la carrera); el que cambia es el Reactive (2.18/2.21 -> 1.91/1.96: la línea compacta que persigue
-# defiende MEJOR, como anticipaba el prompt del usuario). Es medida, no objetivo. Contraste v3.1:
-# Dummy 3.74/0/3.69 · Reactive 2.18/0/2.21. v3.0: Dummy 3.85/0/3.69 · Reactive 1.00/0/1.14 (artefacto
-# del perseguidor). v2.9: Dummy 3.98/0/3.88 · Reactive 2.46/0/2.44.
+# v3.4 (METRO DGX): LÍNEA RÍGIDA + ROLES INVERTIDOS DEL CEBO (ver FROZEN_TAG). Al Dummy lo mueve poco
+# el lado lobo (+0.05/+0.10 vs v3.2: el asalto que espera oscuro apenas cambia contra drones clavados);
+# el que cambia es el Reactive (1.91/1.96 -> 2.68/2.77, +0.77/+0.81): el cebo INVERTIDO ancla la línea
+# única en ~60% de los 2 frentes (el asalto entra por el frente libre) y la línea rígida sin cierres
+# paga sus corredores — POR FIN el multi-frente scriptado rinde contra la defensa. Es medida, no
+# objetivo. Contraste v3.2: Dummy 3.77/0/3.74 · Reactive 1.91/0/1.96. v3.1: 3.74/0/3.69 · 2.18/0/2.21.
+# v3.0: 3.85/0/3.69 · 1.00/0/1.14 (artefacto del perseguidor). v2.9: 3.98/0/3.88 · 2.46/0/2.44.
 REFERENCE_SEVERITY = {
-    "lobos": 3.77,   # solo-lobos (amenaza pura); succ 9 / pred 81 / timeout 10; n_safe 2.73
+    "lobos": 3.82,   # solo-lobos (amenaza pura); succ 9 / pred 83 / timeout 8; n_safe 2.75
     "corzos": 0.00,  # solo-corzos = SIN amenaza (100/100 timeout; el rebaño pasta, n_safe 0)
-    "mixto": 3.74,   # ≈ solo-lobos (los corzos solo consumen ciclos de investigación); succ 6/pred 84/to 10; n_safe 2.70
+    "mixto": 3.84,   # ≈ solo-lobos (los corzos solo consumen ciclos de investigación); succ 6/pred 85/to 9; n_safe 2.74
 }
 
 # Tolerancia de deriva (la media es exacta y reproducible bit a bit; margen mínimo por si

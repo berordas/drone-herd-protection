@@ -22,7 +22,8 @@ import numpy as np
 
 from world import World, ACTIVE, READY
 from coordinators import DummyCoordinator
-from wolf_controllers import WolfController, ScriptedWolfController, make_wolf_controller
+from wolf_controllers import (WolfController, ScriptedWolfController, make_wolf_controller,
+                              ASSAULT_DARK_HOLD, ASSAULT_DARK_BAND, DECOY_SHOW_LEAD)
 
 NO_CALVES = (1.0, 0.0, 0.0)
 
@@ -171,7 +172,7 @@ def test_spotcheck_baseline():
         ref = json.load(f)
     # v2.7 = susto de DOS RADIOS (pared blanda estática); RE-MEDIDA en el contenedor canónico de la DGX (metro
     # oficial). Este spot-check solo es reproducible DENTRO de ese entorno (fuera puede salir rojo: deriva FP).
-    assert ref["frozen_tag"] == "v3.2-baseline", "baseline_v2.json no es v3.2 (barrera sin huecos + avance real + timing medido)"
+    assert ref["frozen_tag"] == "v3.4-baseline", "baseline_v2.json no es v3.4 (línea rígida + roles invertidos del cebo)"
     from baseline import build_world, run_episode_metrics
     checked = 0
     for kind in ("lobos", "corzos", "mixto"):
@@ -205,43 +206,62 @@ def test_timing_cebo():
         n1 = int(w.wolf_group_sizes[0])
         s2 = np.arange(n1, w.n_wolves)
         herd_c0 = w.cows[w.cow_alive].mean(axis=0)
-        release_step, d2_pre_release = None, None
+        release_step, d2_pre_release, dmin2_pre_release = None, None, None
         min_hold_settled = np.inf
+        min_show = np.inf                             # v3.3: dmin cebo->ACTIVE TRAS el disparo (se muestra)
         path_len = 0.0
         prev_decoy = w.wolves[:n1].copy()
-        d_herd_release = None
         for t in range(w.max_episode_steps):
             p2 = w._prey_pos_of(w.pack_prey2, w.pack_prey2_kind) if w.pack_prey2 >= 0 else None
             d2 = float(np.linalg.norm(w.wolves[s2].mean(axis=0) - p2)) if p2 is not None else None
+            act_pre = w.drones[w.drone_state == ACTIVE]
+            dmin2 = (float(np.linalg.norm(w.wolves[s2][:, None, :] - act_pre[None, :, :], axis=2).min())
+                     if act_pre.shape[0] > 0 else np.inf)
             was = w.wolf_decoy_released
             w.step(coord.act(w.get_observation()))
+            act = w.drones[w.drone_state == ACTIVE]
             if not was:
                 path_len += float(np.linalg.norm(w.wolves[:n1] - prev_decoy, axis=1).sum())
-                act = w.drones[w.drone_state == ACTIVE]
                 if t > 80 and act.shape[0] > 0:      # tras asentarse el merodeo
                     dmin = float(np.linalg.norm(w.wolves[:n1][:, None, :] - act[None, :, :], axis=2).min())
                     min_hold_settled = min(min_hold_settled, dmin)
+            elif act.shape[0] > 0:
+                min_show = min(min_show, float(np.linalg.norm(
+                    w.wolves[:n1][:, None, :] - act[None, :, :], axis=2).min()))
             prev_decoy = w.wolves[:n1].copy()
             if w.wolf_decoy_released and release_step is None:
-                release_step, d2_pre_release = t, d2
-                d_herd_release = float(np.linalg.norm(w.wolves[:n1].mean(axis=0) - herd_c0))
-            if release_step is not None and t >= release_step + 150:
+                release_step, d2_pre_release, dmin2_pre_release = t, d2, dmin2
+            # ventana de show: con el DUMMY los drones están CLAVADOS (nadie barre) y el cebo puede
+            # arrancar a ~300 m -> a 4 m/s tarda cientos de pasos en dejarse ver; se observa hasta
+            # que ENTRA en r_detect, salta ESCOLTA o acaba el episodio (tope 2000 de seguridad).
+            if release_step is not None and (t >= release_step + 2000 or min_show <= w.r_detect
+                                             or w.phase == "ESCOLTA"):
                 break
             if w.status != "running":
                 break
         if release_step is None or release_step < 10:
             continue                                  # busca un episodio con ESPERA real
-        d_herd_late = float(np.linalg.norm(w.wolves[:n1].mean(axis=0) - herd_c0))
-        print("  seed=%d: espera %d pasos (merodeo: camino=%.0f m, dist mín al ACTIVE=%.0f) | disparo con "
-              "asalto a %.0f m de su presa (umbral %.0f) | cebo->rebaño %.0f -> %.0f m tras el disparo"
-              % (s, release_step, path_len, min_hold_settled, d2_pre_release or -1,
-                 w.assault_trigger_dist, d_herd_release, d_herd_late))
+        print("  seed=%d: espera %d pasos (merodeo: camino=%.0f m, dist mín al ACTIVE=%.0f) | disparo con el "
+              "asalto ESTACIONADO (dmin al ACTIVE %.0f <= sobre %.0f) y a %.0f m de su presa (<= %.0f = "
+              "trigger+LEAD) | cebo SE MUESTRA tras el disparo: dmin %.0f (<= r_detect %.0f)"
+              % (s, release_step, path_len, min_hold_settled, dmin2_pre_release or -1,
+                 w.r_detect + ASSAULT_DARK_HOLD + ASSAULT_DARK_BAND, d2_pre_release or -1,
+                 w.assault_trigger_dist + DECOY_SHOW_LEAD, min_show, w.r_detect))
         assert path_len > 20.0, "FALLO: el cebo esperó CONGELADO (merodeo sin movimiento)"
         assert min_hold_settled > w.decoy_hold_dist - 25.0, \
             "FALLO: el cebo invadió el radio de espera (no se mantiene fuera del alcance)"
-        assert d2_pre_release is not None and d2_pre_release <= w.assault_trigger_dist + 10.0, \
-            "FALLO: el disparo no coincide con el asalto cruzando el umbral"
-        assert d_herd_late < d_herd_release - 10.0, "FALLO: tras el disparo el cebo no carga hacia el rebaño"
+        # v3.3 (ROLES INVERTIDOS): el disparo ya no es "asalto cruzando 150" (v3.0) sino el GATE de
+        # estacionamiento de _assault_staged — asalto PEGADO al sobre oscuro Y a <= trigger +
+        # DECOY_SHOW_LEAD de su presa (el cebo se muestra con ADELANTO: lo que el asalto avanza en
+        # CREEP durante el show ≈ 60 m). Tras el disparo el cebo SE DEJA VER (entra en r_detect de
+        # un ACTIVE — la inversión: el cebo busca ser el PRIMER confirmado y anclar la barrera).
+        assert d2_pre_release is not None and \
+            d2_pre_release <= w.assault_trigger_dist + DECOY_SHOW_LEAD + 10.0, \
+            "FALLO: el disparo no respeta el gate de distancia (trigger + DECOY_SHOW_LEAD)"
+        assert dmin2_pre_release is not None and \
+            dmin2_pre_release <= w.r_detect + ASSAULT_DARK_HOLD + ASSAULT_DARK_BAND + 10.0, \
+            "FALLO: el disparo con el asalto sin ESTACIONAR (lejos del sobre oscuro)"
+        assert min_show <= w.r_detect, "FALLO: tras el disparo el cebo no se MUESTRA (no entra en r_detect)"
         hechos += 1
         if hechos >= 2:
             break

@@ -53,39 +53,43 @@ import numpy as np
 
 import world as _wm   # solo para las constantes de módulo del bordeo de zona (valor VIVO; import perezoso -> sin ciclo)
 
-# --- v3.2 (arreglo 3 — timing del cebo, MEDIDO con la métrica correcta): diagnóstico + arreglo ---
-# La vara del usuario: al saltar ESCOLTA, el asalto a <=150 m de su presa. Medido en v3.1 (78 episodios
-# de 2 frentes): 58%, mediana 144. Anatomía de la carrera (v32_race.py): la investigación se LANZA el
-# MISMO paso de la detección (inv@==det@ en 78/78) y confirma ~15 m más adentro -> pasa <=150 EXACTAMENTE
-# cuando el barrido de la patrulla detecta al asalto a <=~165 de su presa. Mecanismos de fallo: (a) banda
-# 151-183 (asalto detectado a 170-198: entraba al anillo barrido por un rumbo desfavorable — lejos de SU
-# presa —, y la suerte del barrido a ~12 m/s tangencial hacía el resto); (b) cola 311-440 (10/78 = 13%):
-# CEBO cazado al NACER (nace a ~108-123 del dron; 4 vs 15 m/s con ~15 m de margen ante r_detect=100 ->
-# geométricamente condenado; residual aceptado). VÍAS PROBADAS Y REFUTADAS CON MEDIDA (no re-intentar):
-# esquive radial del asalto pre-disparo (58->51%), falda tangencial + sprint-al-ser-notado (58->47%) —
-# cualquier desvío DENTRO del anillo barrido pierde la carrera—, disparo adelantado +50 m gateado a
-# asalto no-detectado (56%: +7 picados que ganan, −8 sobregiros = lavado), evasión anticipatoria del
-# cebo (huir de pos+tau·vel: NEUTRA). ARREGLO VIGENTE (ataca la causa raíz — el rumbo de entrada):
-# APROXIMACIÓN EN ARCO OSCURO + PICADO del asalto pre-disparo (_assault_approach): fuera del alcance
-# del barrido (> r_detect + margen de TODO ACTIVE) el asalto es INVISIBLE indefinidamente y el reloj
-# de la métrica no corre -> orbita ahí (evasión tipo cebo + ceñida radial con holgura) hasta ALINEARSE
-# con el rumbo de SU presa y entonces PICA en recta: la detección cae a ~150 de la presa por geometría
-# (no por suerte) y la confirmación ~15 m más adentro. Si ya está detectado o un investigador le
-# cierra, carga PURA (la carrera está lanzada; esquivar regala metros — lección medida de arriba).
-# RESULTADO (78 episodios de 2 frentes, mismas semillas): 58% -> 63% <=150, mediana 143; el resto es
-# ESTRUCTURAL de la defensa honesta: 10/78 cebo cazado al nacer (la cola 300+), ~7/78 asalto barrido
-# en su propio tránsito de nacimiento (nace pegado al anillo; fallos por 2-13 m) y ~5/78 detección
-# lejana con el anillo de patrulla ensanchado (la patrulla escala con la dispersión del rebaño).
-ASSAULT_DARK_HOLD = 30.0      # m sobre r_detect: radio de EVASIÓN del arco (=130, el MISMO buffer que el
-                              # cebo — con 10 el barrido de patrulla a ~12 m/s atravesaba el hold y cazaba
-                              # al asalto en pleno arco a 172-189 de su presa, medido)
-ASSAULT_DARK_BAND = 20.0      # m: banda de empuje suave del arco (empuja antes de invadir el sobre)
-ASSAULT_SEEN_MARGIN = 2.0     # m sobre r_detect: a <= esto YA está detectado de facto -> carga pura
-ASSAULT_DIVE_CONE = 0.35      # rad (~20°): desalineación máxima con el rumbo de la presa para PICAR
-                              # (apretarlo a 7° salió NEUTRO medido: la entrada más centrada se come
-                              # con arcos más largos = más exposición al barrido; se queda el simple)
-ASSAULT_SHRINK_GAIN = 0.6     # ceñida radial hacia el rebaño cuando hay holgura (acorta el arco)
-ASSAULT_CHASED_APPROACH = 8.0 # m/s: dron cerrando así de rápido = investigador encima -> carga pura
+# --- v3.3 (arreglo 3 — INVERSIÓN DE ROLES, la causa raíz señalada por el usuario) ---
+# Lo observado en el GIF de v3.2: el ASALTO (el grueso) hacía saltar la alarma y el cebo de 1 quedaba
+# "libre"... sin quórum — el diseño ejecutaba AL REVÉS. Medido (v3.2, 78 episodios de 2 frentes): el
+# ancla de la barrera era el sector-ASALTO en 68/78 (87%) — el ancla es el PRIMER CONFIRMADO y quién
+# se confirma primero lo decidía la geometría del reflejo (el grupo grande cruza antes el anillo
+# barrido), no el rol. v3.3 INVIERTE EL HOLD (antes esperaba el cebo; ahora espera el asalto):
+#   1. El ASALTO permanece OSCURO (fuera del alcance del barrido: > r_detect+30 de todo ACTIVE) y se
+#      ESTACIONA con la maquinaria del arco (tangencial hacia el rumbo de SU presa + evasión + ceñida)
+#      pegado al borde oscuro y alineado — SIN picar (el picado de v3.2 queda sustituido por el gate).
+#   2. El CEBO (1 lobo) merodea (hold 130, v3.1) hasta que el asalto está ESTACIONADO (pegado al
+#      sobre oscuro, dmin <= hold+banda);
+#      entonces CARGA deliberadamente (se muestra: cruza r_detect, el investigador sale a por él y lo
+#      confirma -> ESCOLTA latcheada POR EL CEBO -> el cebo ancla la barrera). Latch wolf_decoy_released
+#      = "el cebo se ha mostrado" (mismo latch del World de v3.0; solo cambia el significado del gate).
+#   3. El ASALTO suelta el hold y ataca cuando la caza del cebo está lanzada: fase ESCOLTA (latch del
+#      mundo) O un dron cerrando sobre el CEBO a > ASSAULT_CHASED_APPROACH (el investigador en vuelo,
+#      observable) -> esprinta los ~20-40 m finales DURANTE la confirmación del cebo (una investigación
+#      cada vez: mientras el investigador caza al cebo, nadie investiga al asalto; solo debe seguir a
+#      > r_confirm de los drones de patrulla para no robar el ancla del coordinador).
+#   Si el propio ASALTO es cazado (dron cerrando sobre ÉL a > umbral): carga PURA — la carrera está
+#   perdida, esquivar solo regala metros (lección medida en v3.2: esquive 51%, falda 47%).
+# HISTORIA v3.2 (métrica dist-asalto->presa al saltar ESCOLTA): base 58% <=150 -> arco oscuro+picado
+# 63%; vías refutadas CON MEDIDA (esquive radial 51 / falda tangencial+sprint 47 / lead gateado 56 /
+# anticipación neutra). La inversión ataca a la vez las DOS métricas del usuario: (i) el ancla debe
+# ser el sector-cebo (~100%); (ii) asalto <=150 de su presa al saltar ESCOLTA.
+ASSAULT_DARK_HOLD = 50.0      # m sobre r_detect: hold del ESTACIONAMIENTO (=150). Con 30 (=130, el
+                              # buffer del cebo) el ASALTO —2-4 lobos aparcados contra el sobre— sumaba
+                              # inmersiones del barrido (dips de 30-40 m a 12-14 m/s vs huida a 4) por
+                              # DEBAJO de r_detect y se convertía en EL contacto (det_s2 pre-ESCOLTA
+                              # frecuente, medido); a 150 los dips quedan a >=110 y el déficit de
+                              # profundidad lo recupera el CREEP durante el show del cebo
+ASSAULT_DARK_BAND = 20.0      # m: banda de empuje suave (empuja antes de invadir el sobre)
+ASSAULT_CHASED_APPROACH = 8.0 # m/s: dron cerrando así de rápido = investigador en vuelo (señal de caza)
+DECOY_SHOW_LEAD = 60.0        # m: margen del gate de estacionamiento sobre assault_trigger_dist =
+                              # lo que AVANZA el asalto entre el show y ESCOLTA (show ~8-15 s: el cebo
+                              # cruza el anillo de frente + caza del investigador ~3-4 s; el asalto
+                              # gana ese tiempo en CREEP; ≈ 15 s × 4 m/s = 60)
 
 
 class WolfController:
@@ -292,35 +296,93 @@ class ScriptedWolfController(WolfController):
         s2 = np.arange(n1, w.n_wolves)
         desired = np.zeros((w.n_wolves, 2))
 
-        # --- v3.0 (CEBO PERFECTO, pieza 3): TIMING PROGRAMADO del cebo (scripted, NO emergente) ---
-        # Solo en modo cebo (wolf_decoy_size fijado). El sector-CEBO (1º) ESPERA merodeando —fuera del
-        # alcance de confirmación, SIN congelarse— hasta que el ASALTO (2º) está a <= assault_trigger_dist
-        # de su presa; ENTONCES se lanza (se deja confirmar y dispara/ancla la barrera) -> ambos frentes
-        # llegan acompasados. El latch vive en el World (wolf_decoy_released, patrón pack_prey: el
-        # controlador lo escribe, el reset del World lo reinicia; visible para instrumentación/render).
-        decoy_waiting = False
-        if w.wolf_decoy_size is not None and not w.wolf_decoy_released:
-            if w.pack_prey2 >= 0 and s2.size > 0:
+        # --- v3.3 (arreglo 3): TIMING con ROLES INVERTIDOS — quien espera es EL ASALTO ---
+        # (ver el bloque de cabecera del módulo). Latch wolf_decoy_released = "el cebo se ha MOSTRADO"
+        # (carga para dejarse confirmar y anclar la barrera); vive en el World (patrón pack_prey).
+        # El ASALTO avanza por ANILLOS DE OSCURIDAD gateados por hitos OBSERVABLES del propio cebo
+        # (posición de un compañero de manada) y de los drones — el reflejo del mundo investiga UNO
+        # cada vez, así que mientras el investigador caza al cebo el asalto puede acercarse sin ser
+        # investigado; solo debe no robar el ancla del coordinador (mantenerse a > r_confirm de todo
+        # ACTIVE hasta que ESCOLTA latchee por el cebo):
+        #   STAGE  (hold r_detect+30): oscuro y alineándose, hasta que el cebo se muestra;
+        #   CREEP  (hold r_detect+5):  el cebo ya cargó pero aún no ha cruzado el anillo de detección
+        #          — el asalto se arrima al borde oscuro (si él cruzara primero, el investigador iría
+        #          a por ÉL: sigue sin poder entrar);
+        #   DEEP   (hold r_confirm+10): el cebo está DENTRO del anillo (dist cebo->ACTIVE más cercano
+        #          <= r_detect): la investigación está lanzada sobre el cebo -> el asalto avanza a
+        #          fondo sin poder ser confirmado (nadie más investiga; los drones de patrulla solo
+        #          confirmarían a <= r_confirm y el hold lo impide);
+        #   ATAQUE al latchear ESCOLTA (por el cebo) con la barrera COMPROMETIDA hacia él (condición
+        #          (b) del usuario; a la confirmación el investigador está ENCIMA del cebo y la línea
+        #          vuela a su anillo — se comprueba con un ACTIVE a <= DETER_RADIUS+30 del cebo).
+        # Fallback: si un dron viene DERECHO a por el asalto (cierre > umbral Y rumbo alineado — el
+        # test de solo-cierre daba falso 'cazado' con la patrulla orbitando a ~12-14 m/s tangencial,
+        # medido chased_frac 0.54 pre-ESCOLTA) -> carga PURA (la carrera está perdida; esquivar
+        # regala metros, lección v3.2).
+        decoy_prowling = False
+        assault_hold = None
+        if w.wolf_decoy_size is not None:
+            if w.pack_prey2 >= 0 and s2.size > 0 and s1.size > 0:
                 p2 = w._prey_pos_of(w.pack_prey2, w.pack_prey2_kind)
-                # v3.2: regla BASE confirmada como óptimo wolf-side (ver el bloque de veredicto en la
-                # cabecera del módulo: adelantos/gates/sigilos probados y refutados con medida).
-                if float(np.linalg.norm(w.wolves[s2].mean(axis=0) - p2)) <= w.assault_trigger_dist:
-                    w.wolf_decoy_released = True          # DISPARO: el cebo avanza desde este paso
-                else:
-                    decoy_waiting = True
-            else:
+                if not w.wolf_decoy_released:
+                    if self._assault_staged(w, s2, p2):
+                        w.wolf_decoy_released = True      # asalto ESTACIONADO -> el cebo se muestra
+                    else:
+                        decoy_prowling = True             # el cebo sigue merodeando (hold v3.1)
+                if w.phase != "ESCOLTA" and not self._group_hunted(w, s2):
+                    # (la condición (b) del usuario — barrera COMPROMETIDA hacia el cebo — se cumple
+                    # por construcción en el instante de ESCOLTA: el investigador, un ACTIVE, está a
+                    # <= r_confirm=40 DEL CEBO al confirmarlo, y la línea vuela a su anillo a 15 m/s
+                    # mientras el asalto necesita >20 s para llegar; gatearlo aparte solo añadiría un
+                    # interbloqueo si ESCOLTA la disparase el propio asalto por accidente.)
+                    if not w.wolf_decoy_released:
+                        assault_hold = w.r_detect + ASSAULT_DARK_HOLD          # STAGE (oscuro, alineándose)
+                    else:
+                        decoy_c = w.wolves[s1].mean(axis=0)
+                        act = w.drones[w.drone_state == _wm.ACTIVE]
+                        d_decoy = float(np.linalg.norm(act - decoy_c, axis=1).min()) if act.shape[0] else 1e9
+                        # CREEP a r_detect+25 (con +5 las inmersiones del barrido cruzaban r_detect
+                        # DURANTE el tránsito del cebo y el asalto se volvía el primer contacto —
+                        # det_s2 20-40 pasos antes de ESCOLTA, medido); DEEP con el cebo DENTRO
+                        # (+10 de holgura: con el ala rota el cebo baila en el borde ~95-110).
+                        # DEEP a r_confirm+25: con +10 (=50) las inmersiones del barrido bajaban de
+                        # 40 y el ASALTO quedaba confirmado para el COORDINADOR antes que el cebo (el
+                        # ancla es del PRIMER confirmado del equipo, no de quien dispara ESCOLTA).
+                        assault_hold = (w.r_detect + 25.0) if d_decoy > w.r_detect + 10.0 \
+                            else (w.r_confirm + 25.0)                          # CREEP / DEEP
+            elif not w.wolf_decoy_released:
                 w.wolf_decoy_released = True              # sin presa del asalto: nada que acompasar
 
-        if decoy_waiting:
-            atk1 = False
+        atk1 = atk2 = False
+        if decoy_prowling:
             self._decoy_prowl(w, s1, desired)
-            # v3.2 (arreglo 3): pre-disparo el ASALTO tampoco carga a ciegas — ARCO OSCURO + PICADO
-            # (se alinea con el rumbo de su presa fuera del alcance del barrido y pica en recta; ver
-            # el bloque de constantes en cabecera). decoy_waiting garantiza pack_prey2 >= 0.
-            atk2 = False
-            self._assault_approach(w, s2, w._prey_pos_of(w.pack_prey2, w.pack_prey2_kind), desired)
         else:
+            # SHOW del cebo (v3.3) = su táctica NORMAL hacia su presa: cruza el anillo de detección
+            # de frente en ~7-8 s (objetivo FIJO). [Se probó cargar 'al dron ACTIVE más cercano' para
+            # acortar el show y salió una persecución de CARRUSEL: la patrulla orbita a 12-14 m/s y el
+            # cebo a 4 la seguía en círculo sin cruzar nunca r_detect — shows de 30+ s, medido.]
             atk1 = self._sector_desired(w, s1, w.pack_prey, w.pack_prey_kind, d_wc, desired)
+            if (w.wolf_decoy_size is not None and w.wolf_decoy_released and w.phase != "ESCOLTA"
+                    and s1.size > 0 and s2.size > 0):
+                # ALA ROTA (v3.3): ya DETECTADO (su dmin <= r_detect), el cebo RETROCEDE arrastrando
+                # al investigador — a 4 vs 15 lo confirman igual, pero ~8 s más tarde y más LEJOS del
+                # rebaño (el DEEP del asalto se alarga de ~3 a ~8-10 s = +20-30 m de profundidad, y el
+                # ancla de la barrera queda más fuera). Biológicamente plausible (display de distracción).
+                act = w.drones[w.drone_state == _wm.ACTIVE]
+                if act.shape[0] > 0:
+                    wolves1 = w.wolves[s1]
+                    dmat = np.linalg.norm(wolves1[:, None, :] - act[None, :, :], axis=2)
+                    jn = dmat.argmin(axis=1)
+                    dmin1 = dmat[np.arange(s1.size), jn]
+                    away1 = wolves1 - act[jn]
+                    away1 = away1 / np.maximum(np.linalg.norm(away1, axis=1, keepdims=True), 1e-9)
+                    seen1 = (dmin1 <= w.r_detect)[:, None]
+                    desired[s1] = np.where(seen1, away1, desired[s1])
+                    atk1 = False
+        if assault_hold is not None:
+            self._assault_stage(w, s2, w._prey_pos_of(w.pack_prey2, w.pack_prey2_kind), desired,
+                                hold=assault_hold)
+        else:
             atk2 = self._sector_desired(w, s2, w.pack_prey2, w.pack_prey2_kind, d_wc, desired)
         w._wolf_attacking = bool(atk1 or atk2)
 
@@ -359,58 +421,78 @@ class ScriptedWolfController(WolfController):
         v_target = desired_dir * w.wolf_speed
         return v_target, False
 
-    def _assault_approach(self, w, sel: np.ndarray, p2: np.ndarray, desired: np.ndarray) -> None:
-        """v3.2 (arreglo 3): APROXIMACIÓN del ASALTO pre-disparo — ARCO OSCURO + PICADO.
-        Mientras el cebo espera, el asalto NO carga a ciegas por su rumbo de nacimiento (entrar al
-        anillo barrido lejos de la presa = confirmado a >150 de ella, la banda de fallo medida):
-          - CARGA PURA si la carrera ya está lanzada: algún lobo del asalto a <= r_detect +
-            ASSAULT_DARK_HOLD (detectado o a punto), o un dron CERRANDO sobre el centroide a
-            > ASSAULT_CHASED_APPROACH (el investigador viene a 15 m/s; esquivar regala metros);
-          - PICADO si está alineado con el rumbo de SU presa (vista desde el centroide del rebaño)
-            a <= ASSAULT_DIVE_CONE: recta a la presa (la detección caerá cerca de ella);
-          - ARCO OSCURO si no: componente tangencial alrededor del rebaño HACIA el rumbo de la presa
-            + evasión del ACTIVE más cercano (empuje en banda, como el cebo) + ceñida radial suave
-            cuando hay holgura. Fuera del sobre del barrido el reloj de la métrica no corre.
-        Determinista, SIN RNG; observables honestos (posición/velocidad de drones, como el susto)."""
+    def _group_hunted(self, w, sel: np.ndarray) -> bool:
+        """v3.3: ¿hay un dron ACTIVE viniendo DERECHO a por el grupo `sel`? = cierre >
+        ASSAULT_CHASED_APPROACH Y rumbo ALINEADO con el grupo (cos > 0.95) dentro de 200 m — el
+        investigador vuela recto a 15 m/s hacia su contacto. El test de SOLO-cierre daba falso
+        'cazado' con la patrulla orbitando (~12-14 m/s tangencial apuntan al grupo dos veces por
+        vuelta; medido: chased_frac 0.54 del tiempo pre-ESCOLTA -> el asalto no aguantaba el hold);
+        exigir la alineación del RUMBO deja solo pasadas transitorias de ~1-2 pasos (inofensivas).
+        Observable honesto (posición y velocidad de drones, lo mismo que ve el susto v2.4)."""
+        act_mask = w.drone_state == _wm.ACTIVE
+        act = w.drones[act_mask]
+        if act.shape[0] == 0 or sel.size == 0:
+            return False
+        vel = w.drone_vel[act_mask]
+        c = w.wolves[sel].mean(axis=0)
+        rel = c[None, :] - act
+        dd = np.linalg.norm(rel, axis=1)
+        closing = (rel * vel).sum(axis=1) / np.maximum(dd, 1e-9)
+        speed = np.linalg.norm(vel, axis=1)
+        aligned = closing > 0.95 * np.maximum(speed, 1e-9)
+        return bool(((closing > ASSAULT_CHASED_APPROACH) & aligned & (dd <= 200.0)).any())
+
+    def _assault_staged(self, w, sel: np.ndarray, p2: np.ndarray) -> bool:
+        """v3.3: ¿el ASALTO está ESTACIONADO? = PEGADO al borde del sobre oscuro (dmin al ACTIVE más
+        cercano <= hold + banda: tan adentro como la oscuridad permite) — readiness POSICIONAL, sin
+        deadlock (la presión hacia la presa lo lleva ahí en línea recta). [Se probó exigir además
+        ALINEACIÓN angular con el rumbo de la presa (el arco de v3.2): el arco a 4 m/s sobre radio
+        ~200 tardaba cientos de pasos o no cerraba -> el cebo no llegaba a mostrarse y una detección
+        accidental decidía el ancla (77/78 asalto). En v3.3 la profundidad de entrada NO la compra la
+        alineación sino los anillos CREEP/DEEP protegidos por la investigación-única del reflejo.]
+        Sin drones en vuelo: estacionado (nada de qué esconderse)."""
+        act = w.drones[w.drone_state == _wm.ACTIVE]
+        if act.shape[0] == 0:
+            return True
+        # (a) PEGADO al sobre oscuro y (b) a tiro de su presa: <= trigger + lo que avanzará durante
+        # el show del cebo (sin (b), un dron pasando cerca del asalto LEJANO disparaba el show con el
+        # asalto a 250-300 de su presa -> llegaba a ESCOLTA a 150-180, medido). El deslizamiento del
+        # hold (la carga capada resbala tangencialmente por el borde) garantiza que (b) se alcanza en
+        # cualquier rumbo (el anillo oscuro pasa a ~135-165 de la presa) -> sin interbloqueo.
+        wolves = w.wolves[sel]
+        dmin = float(np.linalg.norm(wolves[:, None, :] - act[None, :, :], axis=2).min())
+        d_prey = float(np.linalg.norm(wolves.mean(axis=0) - p2))
+        return (dmin <= w.r_detect + ASSAULT_DARK_HOLD + ASSAULT_DARK_BAND
+                and d_prey <= w.assault_trigger_dist + DECOY_SHOW_LEAD)
+
+    def _assault_stage(self, w, sel: np.ndarray, p2: np.ndarray, desired: np.ndarray,
+                       hold: float) -> None:
+        """v3.3 (arreglo 3): AVANCE ACOTADO POR OSCURIDAD del ASALTO — una sola maniobra con el radio
+        de hold que dicta el despachador (STAGE r_detect+30 / CREEP r_detect+5 / DEEP r_confirm+10):
+          - fuera del hold: EMPUJA recto hacia SU presa — el empuje del hold lo frena y lo deja
+            MERODEANDO pegado al borde del anillo permitido, deslizando hacia el lado de la presa
+            (presión constante, sin congelarse: el equilibrio empuje/carga oscila);
+          - dentro del hold: HUIDA PURA del ACTIVE más cercano (como el cebo v3.1: salir es lo único
+            que importa — un barrido de patrulla no debe confirmarlo ni robarle el ancla al cebo).
+        [El arco con alineación angular de v3.2 quedó ELIMINADO: a 4 m/s tardaba cientos de pasos y
+        el cebo no llegaba a mostrarse; la profundidad la compran los anillos, no el rumbo.]
+        Determinista, SIN RNG; observables honestos (posición/velocidad de drones)."""
         wolves = w.wolves[sel]
         aim = p2[None, :] - wolves
         charge = aim / np.maximum(np.linalg.norm(aim, axis=1, keepdims=True), 1e-9)
-        act_mask = w.drone_state == _wm.ACTIVE
-        act = w.drones[act_mask]
+        act = w.drones[w.drone_state == _wm.ACTIVE]
         if act.shape[0] == 0:
             desired[sel] = charge
             return
         d = np.linalg.norm(wolves[:, None, :] - act[None, :, :], axis=2)      # (k, nd)
-        vel = w.drone_vel[act_mask]
-        c_ass = wolves.mean(axis=0)
-        rel = c_ass[None, :] - act
-        dd = np.linalg.norm(rel, axis=1)
-        closing = (rel * vel).sum(axis=1) / np.maximum(dd, 1e-9)              # + = dron hacia el asalto
-        chased = bool(((closing > ASSAULT_CHASED_APPROACH) & (dd <= 250.0)).any())
-        if chased or float(d.min()) <= w.r_detect + ASSAULT_SEEN_MARGIN:
-            desired[sel] = charge                                             # carrera lanzada: a por ella
-            return
-        hc = w.cows[w.cow_alive].mean(axis=0) if w.cow_alive.any() else np.array([w.W / 2.0, w.H / 2.0])
-        b_w = np.arctan2(c_ass[1] - hc[1], c_ass[0] - hc[0])
-        b_p = np.arctan2(p2[1] - hc[1], p2[0] - hc[0])
-        dang = (b_w - b_p + np.pi) % (2.0 * np.pi) - np.pi                    # desalineación en (-pi, pi]
-        if abs(dang) <= ASSAULT_DIVE_CONE:
-            desired[sel] = charge                                             # alineado: PICADO
-            return
-        # ARCO OSCURO: tangencial hacia el rumbo de la presa (el grupo entero al mismo lado).
-        rel_c = wolves - hc
-        rhat = rel_c / np.maximum(np.linalg.norm(rel_c, axis=1, keepdims=True), 1e-9)
-        tang = -np.sign(dang) * np.column_stack([-rhat[:, 1], rhat[:, 0]])
-        des = tang.copy()
         j = d.argmin(axis=1)
         dmin = d[np.arange(sel.size), j]
         away = wolves - act[j]
         away = away / np.maximum(np.linalg.norm(away, axis=1, keepdims=True), 1e-9)
-        hold = w.r_detect + ASSAULT_DARK_HOLD
         push = np.clip((hold + ASSAULT_DARK_BAND - dmin) / ASSAULT_DARK_BAND, 0.0, 1.0)
-        des = des + 2.0 * push[:, None] * away                                # no invadas el sobre
-        slack = np.clip((dmin - (hold + 2.0 * ASSAULT_DARK_BAND)) / 50.0, 0.0, 1.0)
-        des = des - ASSAULT_SHRINK_GAIN * slack[:, None] * rhat               # ciñe el arco con holgura
+        des = charge + 2.0 * push[:, None] * away                             # presión capada por el hold
+        inside = dmin < hold                                                  # dentro: HUIDA PURA
+        des = np.where(inside[:, None], away, des)
         desired[sel] = des
 
     def _decoy_prowl(self, w, sel: np.ndarray, desired: np.ndarray) -> None:
