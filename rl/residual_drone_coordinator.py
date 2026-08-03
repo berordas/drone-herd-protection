@@ -1,10 +1,13 @@
 """residual_drone_coordinator.py — Coordinador de drones RESIDUAL sobre la barrera (MARL, fase drones).
 
 El mismo patrón RPL que funcionó en la fase de lobos (rl/residual_wolf_controller.py), aplicado
-al COORDINADOR: la BARRERA REACTIVA v2.6 VIVE DENTRO (una instancia real de ReactiveCoordinator,
-intacta — percepción realista, ancla con histéresis, patrulla) y la red aprende solo una
-CORRECCIÓN aditiva δ al waypoint de cada PUESTO. El suelo de rendimiento es la barrera completa
-(2.74/0/2.82 contra el scriptado v2.6); todo lo que BAJE la severidad es coordinación descubierta.
+al COORDINADOR. run02 (sobre el mundo terminado v3.4): dentro vive la barrera v3.4 SIN el
+gobernador de cuerpo rígido (`NonRigidBarrier`, abajo — cambio de diseño 1; percepción honesta
+v2.8, ancla con histéresis, trinquete v3.3, anillo de 50 y patrulla INTACTOS) y la red aprende
+solo una CORRECCIÓN aditiva δ al waypoint de cada PUESTO, con autoridad PLENA por dron (sin
+gobernador que congele la pose al sacar un dron de su ranura). El suelo de rendimiento es esa
+barrera sin rigidez con δ≡0 — RE-MEDIDO con el arnés (no tiene por qué ser el 2.68/0/2.77 de la
+rígida); todo lo que BAJE la severidad respecto a ese suelo es coordinación descubierta.
 
 Diseño:
 - **AGENTE = PUESTO (asiento k = 0..3), no el dron físico**: el asiento k lo ocupa el k-ésimo
@@ -38,15 +41,71 @@ from __future__ import annotations
 import numpy as np
 
 from coordinators import ReactiveCoordinator
-from world import ACTIVE, DETER_RADIUS, STRANDED
+from world import ACTIVE, DETER_RADIUS, STATIC_DETER_RADIUS, STRANDED
 
 from rl.drone_obs import AGENT_OBS_SIZE, N_SEATS, build_drone_agent_obs
 
 DRONE_RESIDUAL_SCALE_DEFAULT = DETER_RADIUS   # m: autoridad de δ (afinable por flag; queda en config.json)
 
 
+class NonRigidBarrier(ReactiveCoordinator):
+    """Barrera v3.4 SIN el gobernador de cuerpo rígido — CAMBIO DE DISEÑO 1 de run02 (decisión
+    del usuario). SOLO para el residual: `coordinators.py` (la barrera clásica congelada) NO se
+    toca; esta subclase vive en rl/ y redefine únicamente la colocación de la pose en la rama
+    CLEAN de `_barrier`.
+
+    QUÉ QUITA: el lazo del gobernador v3.4 (paso_pose = max(0, DRONE_MAX_SPEED·dt − err_max) con
+    la pose interpolada al ritmo del MÁS REZAGADO). Aquí la pose SALTA al objetivo cada paso:
+    ranuras = c_des + off_i·perp(u), como v3.2/v3.3 pero sin cierres locales (waypoint SIEMPRE
+    de ranura). El vuelo físico (DRONE_MAX_SPEED/ACCEL) sigue limitando a cada dron — lo que
+    desaparece es el ACOPLE entre drones, no la física.
+
+    POR QUÉ (documentado para la memoria): con el gobernador, la δ de la red LUCHA contra la
+    base — si la red saca un dron de su ranura (repartirse a otro frente, cerrar la gotera
+    central), su error de estación err_max crece y la POSE ENTERA SE CONGELA (paso_pose→0): mover
+    UN dron paraliza el avance de TODOS. La rigidez era para que la barrera CLÁSICA no se
+    deformara feo (v3.4); al MARL le estorba — necesita autoridad plena POR DRON para romper la
+    formación. QUÉ CONSERVA (el suelo sigue siendo la barrera de verdad): percepción honesta
+    v2.8 (solo confirmados, ancla con histéresis), TRINQUETE del avance v3.3 (aim monótono),
+    suelo del standoff (línea siempre delante de las vacas), anillo de max_advance_from_herd=50,
+    sobre-apuntado +STATIC_DETER_RADIUS, offsets fijos de ranura, PENETRADO y patrulla: INTACTOS
+    (heredados). Con δ≡0 este es el SUELO de run02 — se RE-MIDE con el arnés (NO es el 2.68/2.77
+    de la rígida; la rigidez afectaba al comportamiento) y ese número es el termómetro del run."""
+
+    def _barrier(self, idx: np.ndarray, wolves: np.ndarray, anchor_pos: np.ndarray,
+                 herd: np.ndarray) -> np.ndarray:
+        k = idx.size
+        pack_c = anchor_pos
+        herd_c = herd.mean(axis=0)
+        herd_r = float(np.linalg.norm(herd - herd_c, axis=1).max()) if herd.shape[0] > 1 else 0.0
+        if float(np.linalg.norm(pack_c - herd_c)) <= herd_r:      # PENETRADO: igual que la v3.4
+            return self._cover_engaged(idx, wolves, herd)
+        # Rama CLEAN de v3.4 (eje al ancla + trinquete + suelo + anillo), SIN el gobernador.
+        u = pack_c - herd_c
+        d_anchor = float(np.linalg.norm(u))
+        u = u / max(d_anchor, 1e-9)
+        proj_front = float(((herd - herd_c) @ u).max())
+        floor = proj_front + self.barrier_standoff
+        self._aim_out = max(self._aim_out, min(d_anchor + STATIC_DETER_RADIUS,
+                                               self.max_advance_from_herd))
+        aim = max(self._aim_out, floor)
+        c_des = herd_c + u * aim
+        # Pose = el OBJETIVO, directamente (sin interpolar al más rezagado). Se escribe el estado
+        # de pose para que la instrumentación externa (diagnósticos que detectan la rama CLEAN
+        # por _pose_last_step) siga funcionando sobre esta variante.
+        self._pose_c = c_des.copy()
+        self._pose_u = u.copy()
+        self._pose_last_step = int(self.world.step_count)
+        perp = np.array([-u[1], u[0]])
+        k_off = (np.arange(k) - (k - 1) / 2.0) * self.drone_spacing   # offsets FIJOS (v3.2)
+        slots = c_des[None, :] + k_off[:, None] * perp[None, :]
+        return self._assign(idx, slots, perp)
+
+
 class ResidualDroneCoordinator:
-    """Barrera reactiva + corrección aditiva δ por puesto (RPL). Ver cabecera del módulo."""
+    """Barrera SIN rigidez (NonRigidBarrier) + corrección aditiva δ por puesto (RPL). Ver
+    cabecera del módulo; run02 = cambios de diseño 1 (sin gobernador) y 2 (obs con contactos y
+    confirmados)."""
 
     def __init__(self, world, model=None, model_path: str | None = None, frame_skip: int = 5,
                  deterministic: bool = True, device: str = "cpu",
@@ -55,7 +114,7 @@ class ResidualDroneCoordinator:
             from stable_baselines3 import PPO   # import perezoso (torch tarda)
             model = PPO.load(model_path, device=device)
         self.world = world
-        self.inner = ReactiveCoordinator(world)      # LA barrera v2.6, viva y entera
+        self.inner = NonRigidBarrier(world)          # la barrera v3.4 SIN rigidez (run02, cambio 1)
         self.model = model                           # None => δ≡0 (controlador del SUELO)
         self.frame_skip = int(frame_skip)
         self.deterministic = deterministic
@@ -87,15 +146,19 @@ class ResidualDroneCoordinator:
     def agent_obs(self, world) -> np.ndarray:
         """(N_SEATS, AGENT_OBS_SIZE) float32: obs compuesta por puesto en la FRONTERA. La pista
         base_wp es el waypoint base del último paso de física (`last_base`; ceros en la primera
-        frontera — mismo convenio que la pista del script en los lobos). Asiento vacío → fila 0."""
+        frontera — mismo convenio que la pista del script en los lobos). Asiento vacío → fila 0.
+        run02 (cambio 2): pasa la máscara de CONFIRMADOS de la barrera interior (equipo con
+        memoria, UNA fuente de verdad — el mismo latch v2.8 que usa la base; None al arrancar el
+        episodio = nada confirmado) para que la obs separe contactos y confirmados."""
         out = np.zeros((N_SEATS, AGENT_OBS_SIZE), dtype=np.float32)
         st = self.seats()
+        conf = self.inner._confirmed                 # latch de equipo de la barrera (o None)
         for k in range(N_SEATS):
             d = int(st[k])
             if d < 0:
                 continue
             base_wp = self.last_base[d] if self.last_base is not None else None
-            out[k] = build_drone_agent_obs(world, d, base_wp)
+            out[k] = build_drone_agent_obs(world, d, base_wp, confirmed=conf)
         return out
 
     # ------------------------------------------------------------------ #

@@ -8,14 +8,19 @@ MAPPO SOBRE EL SB3 PINNEADO (sin dependencias nuevas): PPO con
   V ← obs[LOCAL_SIZE:]); en ejecución solo se usa π ⇒ ejecución 100% descentralizada.
 Es el algoritmo MAPPO (Yu et al. 2022) implementado con la mecánica de SB3 (parameter sharing).
 
-RESIDUAL (RPL, la receta de run04/run05): acción = δ ∈ [-1,1]² × residual_scale (def.
-DETER_RADIUS=20 m) SUMADA al waypoint que propone la barrera; init δ≡0 EXACTO (última capa a
-cero, verificado por assert) + log_std −2; DOS FASES (fase 1 solo-crítico con π congelada —
-las evals ligeras deben CLAVARSE en el SUELO 2.80 (ligera 5 lobos+5 mixto) / 2.74/2.82
-(arnés) —, fase 2 PPO). Con δ≡0 el coordinador ES la barrera (rl_env_check test 10).
+RESIDUAL run02 (RPL, la receta de siempre, sobre el mundo terminado v3.4): acción = δ ∈ [-1,1]²
+× residual_scale (def. DETER_RADIUS=20 m) SUMADA al waypoint que propone la barrera v3.4 SIN
+RIGIDEZ (NonRigidBarrier — cambio de diseño 1: sin gobernador del más rezagado, δ con autoridad
+plena por dron para poder ROMPER la formación: repartirse entre frentes y cerrar la gotera
+central); obs con CONTACTOS y CONFIRMADOS etiquetados (cambio 2, rl/drone_obs.py). Init δ≡0
+EXACTO (última capa a cero, verificado por assert) + log_std −2; DOS FASES (fase 1 solo-crítico
+con π congelada — las evals ligeras deben CLAVARSE en el SUELO RE-MEDIDO de esta variante:
+FLOOR_LIGHT_MEAN (ligera) / ver ABORT_NOTE (arnés) —, fase 2 PPO). Con δ≡0 el coordinador ES la
+barrera sin rigidez (rl_env_check test 10b).
 
-MÉTRICA: SEVERIDAD (muertes/episodio) — MENOS = MEJOR (¡signo contrario a los lobos!). El
-éxito es BAJAR de 2.74/2.82 (barrera v2.6) en el arnés de 100 semillas (rl/drone_eval.py).
+MÉTRICA: SEVERIDAD (muertes/episodio) — MENOS = MEJOR (¡signo contrario a los lobos!). La
+cifra estrella es BAJAR de 2.68/0/2.77 (Reactive v3.4, la nota a batir) en el arnés de 100
+semillas (rl/drone_eval.py); el termómetro del run es el suelo re-medido (δ=0 sin rigidez).
 La recompensa (global −1/muerte + local de disuasión) es el VEHÍCULO, no la vara: el log
 registra ep_sev y ep_deter POR SEPARADO (vigilancia anti-proxy).
 
@@ -50,21 +55,30 @@ from rl.drone_obs import AGENT_OBS_SIZE, LOCAL_SIZE, N_SEATS
 from rl.residual_drone_coordinator import DRONE_RESIDUAL_SCALE_DEFAULT, ResidualDroneCoordinator
 from rl.train_wolves import HYPER, NET_ARCH, RESIDUAL_LOG_STD_INIT   # mismos hiperparámetros base
 
+FLOOR_LIGHT_MEAN = 3.00                       # suelo de la EVAL LIGERA re-medido (run02, δ=0 SIN rigidez)
+FLOOR_LIGHT_DETAIL = "[3,0,5,4,5 | 2,0,2,4,5]"  # 10 eps deterministas (5 lobos + 5 mixto, seeds 0-4)
+EROSION_LIGHT = 3.2                           # umbral de la guardia de erosión (suelo ligera + margen)
+
 ABORT_NOTE_DRONES = (
-    "PACTO run01 (guardias INVERTIDAS — MENOS severidad = MEJOR, ¡signo contrario a los lobos!): "
-    "el SUELO es la barrera v2.6 (2.74/0/2.82 en el arnés; eval ligera 10 eps 5 lobos+5 mixto "
-    "con δ=0 = 2.80 EXACTO, detalle [3,0,3,4,4 | 4,0,3,2,5]). FASE 1 (solo-crítico, δ medio 0): "
-    "las ligeras deben CLAVARSE en ese suelo. GUARDIA DE EROSIÓN: ligera SOSTENIDA por encima "
-    "de ~2.9 en fase 2 durante ≥1,5M pasos-agente → PARAR y reportar (la red estropea la "
-    "barrera; palancas —bajar lr / alargar fase 1— = decisión del usuario). GUARDIA ANTI-PROXY "
-    "(el riesgo asumido con la recompensa local): si ep_deter SUBE pero ep_sev NO baja (o "
-    "empeora) de forma sostenida ≥2M pasos-agente → PARAR y avisar (la política cultiva el "
-    "proxy: perseguir lobos rompiendo la barrera; mitigación —quitar la componente local y "
-    "seguir con recompensa global pura— = decisión del usuario); cada eval ligera imprime el "
-    "buffer (ep_sev, ep_deter) para esta vigilancia. SIN aborto por estancamiento: el suelo es "
-    "útil (δ≈0 = la barrera); no bajar de 2.74/2.82 NO es fracaso catastrófico. ÉXITO = bajar "
-    "la severidad de forma CLARA y SOSTENIDA; la vara final es el arnés de 100 semillas "
-    "(rl/drone_eval.py), no la recompensa.")
+    "PACTO run02 sobre v3.4 (guardias INVERTIDAS — MENOS severidad = MEJOR, ¡signo contrario a "
+    "los lobos!): el SUELO es la barrera v3.4 SIN RIGIDEZ (NonRigidBarrier, δ=0) RE-MEDIDO — "
+    "arnés 100 semillas 2.74±1.68/0/2.63±1.67 (vs Reactive RÍGIDA 2.68/0/2.77, la nota a "
+    "batir: Δ +0.06/−0.14, dentro del ruido — quitar el gobernador ni ayuda ni estropea a la "
+    "barrera scriptada; la rigidez afectaba al comportamiento, por eso se re-midió); eval "
+    "ligera 10 eps 5 lobos+5 "
+    "mixto con δ=0 = %.2f EXACTO, detalle %s. FASE 1 (solo-crítico, δ medio 0): las ligeras "
+    "deben CLAVARSE en ese suelo. GUARDIA DE EROSIÓN: ligera SOSTENIDA por encima de ~%.1f en "
+    "fase 2 durante ≥1,5M pasos-agente → PARAR y reportar (la red estropea la barrera; palancas "
+    "—bajar lr / alargar fase 1— = decisión del usuario). GUARDIA ANTI-PROXY (el riesgo asumido "
+    "con la recompensa local): si ep_deter SUBE pero ep_sev NO baja (o empeora) de forma "
+    "sostenida ≥2M pasos-agente → PARAR y avisar (la política cultiva el proxy: perseguir lobos "
+    "rompiendo la barrera; mitigación —quitar la componente local y seguir con recompensa "
+    "global pura— = decisión del usuario); cada eval ligera imprime el buffer (ep_sev, "
+    "ep_deter) para esta vigilancia. SIN aborto por estancamiento: el suelo es útil (δ≈0 = la "
+    "barrera sin rigidez); no bajar del suelo NO es fracaso catastrófico. ÉXITO = bajar la "
+    "severidad de forma CLARA y SOSTENIDA — la cifra estrella es vs Reactive 2.68/0/2.77; la "
+    "vara final es el arnés de 100 semillas (rl/drone_eval.py), no la recompensa."
+    % (FLOOR_LIGHT_MEAN, FLOOR_LIGHT_DETAIL, EROSION_LIGHT))
 
 
 # ------------------------------------------------------------------ #
@@ -165,9 +179,9 @@ class TrainLog(BaseCallback):
 class LightEval(BaseCallback):
     """Eval ligera DETERMINISTA cada eval_every pasos(agente): 10 semillas FIJAS de lobos+mixto
     (5+5, arnés real build_world + run_episode_metrics) con el coordinador residual sirviendo el
-    modelo EN TRAINING. Reporta SEVERIDAD (menos = mejor; suelo δ=0 = 2.80 EXACTO, detalle
-    [3,0,3,4,4 | 4,0,3,2,5]) y el buffer (ep_sev, ep_deter) del TrainLog en cada línea — la
-    vigilancia ANTI-PROXY del pacto se lee eval a eval."""
+    modelo EN TRAINING. Reporta SEVERIDAD (menos = mejor; suelo run02 δ=0 SIN rigidez =
+    FLOOR_LIGHT_MEAN EXACTO, detalle FLOOR_LIGHT_DETAIL) y el buffer (ep_sev, ep_deter) del
+    TrainLog en cada línea — la vigilancia ANTI-PROXY del pacto se lee eval a eval."""
 
     EVAL_SPECS = tuple((s, "lobos") for s in range(5)) + tuple((s, "mixto") for s in range(5))
 
@@ -198,7 +212,7 @@ class LightEval(BaseCallback):
                    f"ep_deter={np.mean(self.train_log._det[-100:]):.1f}")
         line = (f"[{datetime.now().isoformat(timespec='seconds')}] EVAL_LIGERA pasos={self.num_timesteps:>11,}  "
                 f"severidad_media={np.mean(sev):.2f}  (lobos {np.mean(lob):.2f} | mixto {np.mean(mix):.2f}; "
-                f"n=10 determinista; MENOS=mejor; suelo=2.80; detalle={sev}; "
+                f"n=10 determinista; MENOS=mejor; suelo={FLOOR_LIGHT_MEAN:.2f}; detalle={sev}; "
                 f"{time.time() - t0:.0f}s){buf}")
         print("  " + line)
         with open(self.path, "a", encoding="utf-8") as f:
@@ -244,7 +258,7 @@ def main() -> None:
         hyper["learning_rate"] = args.lr
     scale = args.residual_scale if args.residual_scale is not None else DRONE_RESIDUAL_SCALE_DEFAULT
 
-    print("=== train_drones (MAPPO/CTDE residual sobre la barrera v2.6; SB3 pinneado) ===")
+    print("=== train_drones run02 (MAPPO/CTDE residual sobre la barrera v3.4 SIN RIGIDEZ; SB3 pinneado) ===")
     print(f"  mundos = {args.n_envs} (SubprocVecEnv fork) -> streams = {args.n_envs * N_SEATS}  |  device = {args.device}")
     print(f"  kinds = {kinds}  |  frame_skip = {args.frame_skip}  |  total_steps(agente) = {args.total_steps:,}")
     print(f"  residual_scale = {scale} m  |  local_coef = {args.local_coef}  |  outdir = {outdir}")
@@ -267,8 +281,10 @@ def main() -> None:
                    "anti_proxy": "ep_sev y ep_deter POR SEPARADO en el log; la vara = severidad del arnés"},
         "residual": {"scale_m": scale, "phase1_steps": args.phase1_steps,
                      "log_std_init": RESIDUAL_LOG_STD_INIT,
-                     "nota": "δ sobre el waypoint de la barrera v2.6 (viva dentro); máscara "
-                             "ACTIVE&~investigating (v3.0); δ≡0 = barrera pura (suelo = Reactive vigente)"},
+                     "nota": "run02: δ sobre el waypoint de la barrera v3.4 SIN RIGIDEZ "
+                             "(NonRigidBarrier viva dentro; autoridad plena por dron); obs con "
+                             "contactos+confirmados; máscara ACTIVE&~investigating (v3.0); "
+                             "δ≡0 = suelo re-medido de esta variante (NO la Reactive rígida)"},
         "abort": ABORT_NOTE_DRONES,
         "fecha": datetime.now().isoformat(timespec="seconds"),
     }
@@ -300,7 +316,9 @@ def main() -> None:
                 f"fase1={args.phase1_steps:,} outdir={outdir}")
     train_log = TrainLog(outdir / "train.log", run_desc, ABORT_NOTE_DRONES)
     light_eval = LightEval(outdir / "train.log", args.eval_every, scale, train_log=train_log)
-    checkpoints = CheckpointCallback(save_freq=max(500_000 // venv.num_envs, 1),
+    # run02: checkpoints FRECUENTES (~250k pasos-agente) — el nuevo sistema de reservas de GPU
+    # del servidor puede cortar el acceso a mitad de run; que el último checkpoint nunca quede lejos.
+    checkpoints = CheckpointCallback(save_freq=max(250_000 // venv.num_envs, 1),
                                      save_path=str(outdir / "checkpoints"), name_prefix="mappo_drones")
     callbacks = [train_log, light_eval, checkpoints]
 

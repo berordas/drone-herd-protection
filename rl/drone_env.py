@@ -28,7 +28,8 @@ RECOMPENSA (dos componentes, SIEMPRE registradas por separado — vigilancia ant
 EPISODIOS: los TRES tipos (lobos / mixto / corzos) ~1/3 — en solo-corzos la severidad es 0 pero
 se aprende a NO dispersarse/malgastar (patrulla; el reflejo de investigación roba drones).
 Semilla FRESCA por reset de una secuencia propia (como wolf_env: `World.reset(None)` repite).
-Adversario: ScriptedWolfController v2.6 (el default del World — no se inyecta nada).
+Adversario: ScriptedWolfController v3.4 (el default del World — no se inyecta nada): cebo con
+roles invertidos + asalto oscuro por anillos = presión selectiva REAL para repartirse (run02).
 El frame-skip (5) y la δ mantenida entre fronteras van por `ResidualDroneCoordinator` en modo
 entrenamiento (set_delta + act cada paso de física) — MISMO camino de código que la evaluación.
 """

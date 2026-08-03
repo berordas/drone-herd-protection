@@ -32,16 +32,26 @@ comprueba (asserts, estilo de los demás checks; corre con `python rl_env_check.
      SCRIPT con su histéresis, NO la regla del contrato RL); con δ desbocado la velocidad
      final queda capada a wolf_speed; en coasting δ NO se aplica (pass-through); la obs
      residual es (132) con la pista del script a 0 en la primera frontera y viva después.
- 10) DRONES (infra MARL, rl/drone_obs|drone_env|residual_drone_coordinator):
-     (a) build_drone_local_obs: layout/máscaras/ego correctos; un lobo NO detectado NO viaja
-         en la obs local (slot a cero); la mitad global del agente == rl.obs.build_obs exacta;
-     (b) SUELO: con δ≡0 (model=None, sin set_delta) ResidualDroneCoordinator ≡ ReactiveCoordinator
-         BIT A BIT en un episodio completo (waypoints, drones y muertes idénticos);
+ 10) DRONES (infra MARL, rl/drone_obs|drone_env|residual_drone_coordinator) — ADAPTADO a run02
+     SIN bajar el listón (mismas igualdades EXACTAS; cambia el objetivo de la equivalencia, no
+     la exigencia — decisión de diseño del usuario, run02: residual SIN rigidez + obs con
+     contactos y confirmados):
+     (a) build_drone_local_obs: layout/máscaras/ego correctos; un lobo NI-contacto-NI-confirmado
+         NO viaja en la obs local (slot a cero); la mitad global == rl.obs.build_obs exacta;
+     (b) SUELO: con δ≡0 (model=None, sin set_delta) ResidualDroneCoordinator ≡ NonRigidBarrier
+         (la barrera v3.4 SIN el gobernador — el suelo DE ESTA VARIANTE) BIT A BIT en un
+         episodio completo (waypoints, drones y muertes idénticos); y la NonRigidBarrier solo
+         difiere de la ReactiveCoordinator v3.4 en la pose (mismo eje/las mismas ranuras cuando
+         la pose rígida ya ha convergido no se asserta — es la deformación transitoria);
      (c) MÁSCARA (load-bearing): un δ enorme NO desvía a un RETURNING (fuera de los asientos)
          ni al investigador (mask), y SÍ mueve a los comandables;
      (d) CANAL DE RECOMPENSA: r_global acumulada == −n_depredadas EXACTO; agent_rewards =
          r_global + local_coef·r_local por puesto; ep_severity/ep_deter al terminal; y la
-         atribución de disuasión (deter_credit) da crédito al dron que EMBISTE (dirigido).
+         atribución de disuasión (deter_credit) da crédito al dron que EMBISTE (dirigido);
+     (e) CONTACTOS vs CONFIRMADOS (run02, cambio de diseño 2 — dirigido): un lobo a 60 m de un
+         ACTIVE (contacto sin clasificar) viaja en el grupo de CONTACTOS y NO en confirmados;
+         al cruzar r_confirm=40 pasa a CONFIRMADOS (sale de contactos: grupos disjuntos) y SE
+         RECUERDA (memoria de equipo) aunque vuelva a alejarse a >r_detect.
 """
 
 import json
@@ -510,47 +520,51 @@ def test_residual():
 
 
 def test_drones():
-    print("=== 10) DRONES (infra MARL): obs por puesto · SUELO δ=0 bit a bit · máscara · recompensa ===")
+    print("=== 10) DRONES (infra MARL, run02): obs contactos+confirmados · SUELO δ=0 ≡ SIN-RIGIDEZ "
+          "bit a bit · máscara · recompensa ===")
     from baseline import build_world
-    from coordinators import ReactiveCoordinator
     from world import ACTIVE, RETURNING, World
-    from rl.drone_obs import (AGENT_OBS_SIZE, LOCAL_SIZE, N_SEATS, OFF_COW, OFF_DRONE, OFF_EGO,
-                              OFF_LGLOBAL, OFF_WOLF, build_drone_agent_obs, build_drone_local_obs)
+    from rl.drone_obs import (AGENT_OBS_SIZE, LOCAL_SIZE, N_SEATS, OFF_CONF, OFF_COW, OFF_DRONE,
+                              OFF_EGO, OFF_LGLOBAL, OFF_WOLF, build_drone_agent_obs,
+                              build_drone_local_obs)
     from rl.drone_env import DroneTeamEnv, deter_credit
     from rl.obs import build_obs
-    from rl.residual_drone_coordinator import ResidualDroneCoordinator
+    from rl.residual_drone_coordinator import NonRigidBarrier, ResidualDroneCoordinator
 
-    # (a) LAYOUT + percepción: lobo detectado viaja; lobo NO detectado NO; ego/global correctos.
+    # (a) LAYOUT + percepción: contacto viaja en SU grupo; lobo fuera de radio y sin confirmar
+    #     NO viaja en ninguno; ego/global correctos.
     for s in range(1, 15):                                        # primer seed con >=3 lobos (determinista)
         w = build_world(s, "lobos"); w.reset()
         if w.n_wolves >= 3:
             break
     d0 = int(np.where(w.drone_state == ACTIVE)[0][0])
-    w.wolves[0] = w.drones[d0] + np.array([30.0, 0.0])            # DETECTADO (30 m <= r_detect)
+    w.wolves[0] = w.drones[d0] + np.array([60.0, 0.0])            # CONTACTO (60 <= r_detect, > r_confirm)
     far = np.array([3.0, 3.0]) if np.linalg.norm(w.drones - [3, 3], axis=1).min() > w.r_detect + 5 \
         else np.array([297.0, 297.0])
     for j in range(1, w.n_wolves):
-        w.wolves[j] = far + np.array([float(j), 0.0])             # NO detectados (esquina lejana)
+        w.wolves[j] = far + np.array([float(j), 0.0])             # NI contacto NI confirmado (lejos)
     base_wp = np.array([150.0, 150.0])
-    lo = build_drone_local_obs(w, d0, base_wp)
+    lo = build_drone_local_obs(w, d0, base_wp)                    # confirmed=None (nada confirmado)
     center, scale = w.safe_zone[:2], np.array([w.W / 2, w.H / 2])
     assert lo.shape == (LOCAL_SIZE,) and lo.dtype == np.float32
     assert np.allclose(lo[OFF_EGO:OFF_EGO + 2], (w.drones[d0] - center) / scale), "ego pos mal"
     assert lo[OFF_EGO + 4] == 1.0 and lo[OFF_EGO + 5] == 1.0, "ego is_active/commandable mal"
     assert np.allclose(lo[OFF_EGO + 6:OFF_EGO + 8], (base_wp - center) / scale), "pista base_wp mal"
     s0 = lo[OFF_WOLF:OFF_WOLF + 6]
-    assert s0[5] == 1.0 and np.allclose(s0[0:2], (w.wolves[0] - center) / scale), "lobo detectado ausente"
+    assert s0[5] == 1.0 and np.allclose(s0[0:2], (w.wolves[0] - center) / scale), "contacto ausente"
+    assert not lo[OFF_CONF:OFF_COW].any(), "confirmados debería estar VACÍO (confirmed=None)"
     for j in range(1, w.n_wolves):
         assert not lo[OFF_WOLF + 6 * j:OFF_WOLF + 6 * (j + 1)].any(), \
-            "FALLO: un lobo NO detectado viaja en la obs local (omnisciencia)"
+            "FALLO: un lobo fuera de radio viaja en la obs local (omnisciencia)"
     ag = build_drone_agent_obs(w, d0, base_wp)
     assert ag.shape == (AGENT_OBS_SIZE,) and np.array_equal(ag[:LOCAL_SIZE], lo)
     assert np.array_equal(ag[LOCAL_SIZE:], build_obs(w)), "la mitad global no es build_obs exacta"
-    print("  (a) layout OK: ego+pista, lobo detectado presente, %d no-detectados a cero, global == build_obs"
-          % (w.n_wolves - 1))
+    print("  (a) layout OK (%d): ego+pista, contacto presente, confirmados vacío, %d lejanos a cero, "
+          "global == build_obs" % (LOCAL_SIZE, w.n_wolves - 1))
 
-    # (b) SUELO: δ≡0 ⇒ bit a bit la barrera, episodio COMPLETO (mundos gemelos).
-    wA = build_world(5, "mixto"); wA.reset(); cA = ReactiveCoordinator(wA)
+    # (b) SUELO run02: δ≡0 ⇒ bit a bit la barrera SIN RIGIDEZ (el suelo DE ESTA VARIANTE),
+    #     episodio COMPLETO (mundos gemelos). Mismo listón de igualdad exacta que siempre.
+    wA = build_world(5, "mixto"); wA.reset(); cA = NonRigidBarrier(wA)
     wB = build_world(5, "mixto"); wB.reset(); cB = ResidualDroneCoordinator(wB, model=None)
     steps = 0
     while True:
@@ -563,7 +577,7 @@ def test_drones():
         if tA or uA:
             break
     assert wA.n_depredadas == wB.n_depredadas and wA.status == wB.status
-    print("  (b) SUELO δ=0 ≡ barrera BIT A BIT: %d pasos, status=%s, muertes=%d idénticos"
+    print("  (b) SUELO δ=0 ≡ barrera SIN RIGIDEZ BIT A BIT: %d pasos, status=%s, muertes=%d idénticos"
           % (steps, wB.status, wB.n_depredadas))
 
     # (c) MÁSCARA load-bearing: δ enorme NO toca RETURNING/investigador; SÍ mueve comandables.
@@ -615,6 +629,45 @@ def test_drones():
     assert credit[seat] >= 1.0 and credit.sum() == credit[seat], \
         "FALLO: el crédito de disuasión no fue al puesto del dron que embiste"
     print("  (d2) atribución dirigida OK: lobo expulsado -> crédito al puesto %d (dron %d)" % (seat, d0))
+
+    # (e) CONTACTOS vs CONFIRMADOS (run02, cambio 2 — dirigido): 60 m = contacto y NO confirmado;
+    #     cruzar 40 m => confirmado (sale de contactos, grupos disjuntos) y SE RECUERDA al alejarse.
+    #     Se ejercita el camino REAL: el latch es el de la barrera interior del coordinador
+    #     residual (equipo con memoria v2.8), leído por agent_obs — no un mock.
+    w = build_world(2, "lobos"); w.reset()
+    ctrl = ResidualDroneCoordinator(w, model=None)
+    d0 = int(np.where((w.drone_state == ACTIVE) & ~w.drone_investigating)[0][0])
+    w.drones[d0] = np.array([100.0, 100.0])                        # geometría controlada, lejos de la flota
+    for dj in np.where(w.drone_state == ACTIVE)[0]:
+        if dj != d0:
+            w.drones[dj] = np.array([460.0, 460.0])                # el resto de ACTIVE, fuera de todos los radios
+    far = np.array([3.0, 3.0])
+    for j in range(1, w.n_wolves):
+        w.wolves[j] = far + np.array([float(j), 0.0])              # lejos de d0 (>100) y de la flota
+    w.wolves[0] = w.drones[d0] + np.array([60.0, 0.0])            # fase 1: CONTACTO sin clasificar
+    ctrl.act(w.get_observation())                                  # el latch de la barrera se refresca
+    seat0 = int(np.where(ctrl.seats() == d0)[0][0]) if (ctrl.seats() == d0).any() else 0
+    lo = ctrl.agent_obs(w)[seat0][:LOCAL_SIZE]
+    c0, k0 = lo[OFF_WOLF:OFF_WOLF + 6], lo[OFF_CONF:OFF_CONF + 6]
+    assert c0[5] == 1.0, "FALLO (e): lobo a 60 m no aparece como CONTACTO"
+    assert k0[5] == 0.0, "FALLO (e): lobo a 60 m (sin cruzar 40) aparece como CONFIRMADO"
+    w.wolves[0] = w.drones[d0] + np.array([35.0, 0.0])            # fase 2: cruza r_confirm=40
+    ctrl.act(w.get_observation())
+    lo = ctrl.agent_obs(w)[seat0][:LOCAL_SIZE]
+    c1, k1 = lo[OFF_WOLF:OFF_WOLF + 6], lo[OFF_CONF:OFF_CONF + 6]
+    assert k1[5] == 1.0, "FALLO (e): lobo a 35 m no pasó a CONFIRMADOS"
+    assert c1[5] == 0.0, "FALLO (e): el confirmado sigue en CONTACTOS (los grupos deben ser disjuntos)"
+    w.wolves[0] = w.drones[d0] + np.array([w.r_detect + 60.0, 0.0])   # fase 3: se aleja a >r_detect
+    ctrl.act(w.get_observation())
+    lo = ctrl.agent_obs(w)[seat0][:LOCAL_SIZE]
+    c2, k2 = lo[OFF_WOLF:OFF_WOLF + 6], lo[OFF_CONF:OFF_CONF + 6]
+    assert k2[5] == 1.0, "FALLO (e): la confirmación NO se recuerda al alejarse (el latch es memoria)"
+    assert c2[5] == 0.0, "FALLO (e): un lobo fuera de r_detect aparece como contacto"
+    n_cont = lo[OFF_LGLOBAL + 2] * 5
+    n_conf = lo[OFF_LGLOBAL + 3] * 5
+    assert abs(n_conf - 1.0) < 1e-6 and abs(n_cont - 0.0) < 1e-6, "contadores local-global mal"
+    print("  (e) contactos/confirmados OK: 60 m = contacto puro -> 35 m = confirmado (disjunto) -> "
+          "alejado >r_detect = recordado (memoria de equipo); contadores %d/%d" % (n_cont, n_conf))
     print("  OK\n")
 
 
