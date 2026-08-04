@@ -131,6 +131,30 @@ ABORT_NOTE_CURRICULUM = (
     "vara REAL es eval_wolves 100 semillas (spawn normal, vs 2.56/2.26) + cebo_diag corregido.")
 
 
+ABORT_NOTE_DIETA = (
+    "CRITERIOS (pactados, run08: DIETA 50% DE DOS FRENTES sobre v3.4 — residual, recompensa de "
+    "EQUIPO PURA +1/muerte, shaping OFF, SIN pista de cebo; δ autoridad plena; el ÚNICO cambio vs "
+    "run05/07 es la dieta: 50% de episodios de ENTRENAMIENTO forzados a 2 subgrupos por muestreo "
+    "por RECHAZO del spawn real v3.4 —nada sintético—; la EVAL sigue al ~29% real). PREGUNTA QUE "
+    "RESPONDE: ¿el cebo no emergió por FALTA DE DIETA (escenario infrecuente) o por ARQUITECTURA "
+    "(política plana)? SUELO v3.4 MEDIDO (paso 0): eval ligera 10 semillas lobos δ=0 = 3.20 "
+    "(detalle [1,0,5,4,5,3,3,5,3,3]; en FASE 1, política congelada, las ligeras deben CLAVARSE "
+    "ahí); arnés = 2.68/0/2.77 (el scriptado v3.4 congelado, bit a bit por test 9). REFERENCIA DE "
+    "CEBO DEL SCRIPTADO v3.4 (cebo_diag --floor, 58 eps de 2 subgrupos, 203 muertes; ¡NO nula — "
+    "el scriptado v3.4 YA ceba a mano, en v2.8 era 0.0%!): killer-NO-CONFIRMADO 26.6%, "
+    "cebo-confirmado 26.6%, muertes-del-NO-anclado 79.3%, sev 2-frentes 3.50. GUARDIA DEL SUELO: "
+    "si en fase 2 la "
+    "eval ligera cae por debajo de ~2.9 (suelo − 0.3) de forma SOSTENIDA (>=1.500.000 pasos "
+    "= 6 evals), PARAR y reportar (PPO erosiona al script). MÉTRICA QUE DECIDE (al final, "
+    "checkpoints con cebo_diag sobre la eval real al ~29%): ¿la política iguala/supera el "
+    "killer-no-confirmado del scriptado y sube la severidad, o se queda igual? DESENLACES: (1) el "
+    "cebo ASOMA con dieta 50% -> era FALTA DE DIETA; (2) se mueve pero no llega -> la dieta ayuda "
+    "pero no basta (jerárquico justificado con matiz); (3) sigue clavado en el scriptado -> "
+    "ESTRUCTURAL (arquitectura), jerárquico justificado con evidencia. La vara REAL es "
+    "eval_wolves 100 semillas (spawn normal, vs 2.68/2.77) + cebo_diag vs la referencia del "
+    "scriptado.")
+
+
 def curriculum_level(num_timesteps: int):
     """(idx 1..4, separación|None, min_mass) del nivel de currículo para un nº de pasos-agente."""
     for i, (until, sep, mm) in enumerate(CURRICULUM_SCHEDULE):
@@ -141,12 +165,14 @@ def curriculum_level(num_timesteps: int):
 
 def make_env(seed: int, kinds: tuple[str, ...], frame_skip: int,
              shaping: bool, shaping_beta: float, shaping_gamma: float,
-             residual: bool = False, residual_scale: float | None = None):
+             residual: bool = False, residual_scale: float | None = None,
+             train_two_front_rate: float | None = None):
     """Thunk picklable para SubprocVecEnv (cada worker importa rl.wolf_env vía PYTHONPATH)."""
     def _thunk():
         return WolfPackEnv(kinds=kinds, frame_skip=frame_skip, seed=seed,
                            shaping=shaping, shaping_beta=shaping_beta, shaping_gamma=shaping_gamma,
-                           residual=residual, residual_scale=residual_scale)
+                           residual=residual, residual_scale=residual_scale,
+                           train_two_front_rate=train_two_front_rate)
     return _thunk
 
 
@@ -317,6 +343,10 @@ def main() -> None:
                    help="escala de δ en m/s (def. wolf_speed — autoridad plena)")
     p.add_argument("--phase1-steps", type=int, default=1_000_000,
                    help="residual: pasos de FASE 1 (solo crítico, política congelada); 0 = sin fase 1")
+    p.add_argument("--train-two-front-rate", type=float, default=None,
+                   help="DIETA run08: fracción de episodios de ENTRENAMIENTO forzados a 2 subgrupos "
+                        "(muestreo por rechazo del spawn real v3.4; natural ~29%%). SOLO entrenamiento: "
+                        "la eval sigue al ~29%% real. Requiere --residual.")
     p.add_argument("--curriculum", action="store_true",
                    help="CURRÍCULO del cebo: 4 niveles de separación de spawn (180/135/90/normal, 5M c/u = 20M). "
                         "Implica --residual y fuerza shaping OFF (recompensa de equipo pura). Override SOLO de "
@@ -333,7 +363,16 @@ def main() -> None:
         if shaping:
             p.error("--curriculum exige recompensa de EQUIPO PURA: pasa --shaping off")
         args.total_steps = CURRICULUM_SCHEDULE[-1][0]     # el schedule define el total (20M)
-    if args.curriculum:
+    if args.train_two_front_rate is not None:
+        if not args.residual:
+            p.error("--train-two-front-rate requiere --residual (run08: dieta sobre el residual)")
+        if shaping:
+            p.error("--train-two-front-rate exige recompensa de EQUIPO PURA: pasa --shaping off")
+        if args.curriculum:
+            p.error("--train-two-front-rate y --curriculum son excluyentes (aíslan hipótesis distintas)")
+    if args.train_two_front_rate is not None:
+        abort_note = ABORT_NOTE_DIETA
+    elif args.curriculum:
         abort_note = ABORT_NOTE_CURRICULUM
     elif args.residual:
         abort_note = ABORT_NOTE_RESIDUAL
@@ -373,6 +412,9 @@ def main() -> None:
     if args.residual:
         shaping_desc += (f" RESIDUAL (RPL: δ sobre el scriptado; scale={args.residual_scale or 'wolf_speed'}; "
                          f"fase1={args.phase1_steps:,} solo-crítico; lr={hyper['learning_rate']})")
+    if args.train_two_front_rate is not None:
+        shaping_desc += (f" DIETA 2-FRENTES {args.train_two_front_rate:.0%} en entrenamiento "
+                         f"(rechazo del spawn real; eval al ~29% natural)")
     print("=== train_wolves (PPO, cerebro único del paquete, +1/muerte + %s) ===" % shaping_desc)
     print(f"  envs = {args.n_envs} (SubprocVecEnv)  |  device = {args.device}  |  seed = {args.seed}")
     print(f"  kinds = {kinds}  |  frame_skip = {args.frame_skip}  |  total_steps = {args.total_steps:,}")
@@ -398,6 +440,14 @@ def main() -> None:
                      "nota": "RPL (Silver et al. 2018): v_final = clip_norma(v_script + delta); "
                              "el script entero vive dentro (su presa/histéresis/coasting)"}
                     if args.residual else {"on": False},
+        "diet": {"on": args.train_two_front_rate is not None,
+                 "train_two_front_rate": args.train_two_front_rate,
+                 "mecanismo": "muestreo por RECHAZO del spawn real v3.4 (semillas re-sorteadas; "
+                              "nada sintético; cebo 1 / asalto n-1 como los produce el mundo)",
+                 "recompensa": "EQUIPO PURA (+1/muerte, shaping OFF, SIN pista de cebo)",
+                 "nota": "override SOLO de entrenamiento (WolfPackEnv train_two_front_rate); la "
+                         "EVAL es SIEMPRE spawn grouped normal v3.4 (~29% de 2 frentes)"}
+                if args.train_two_front_rate is not None else {"on": False},
         "curriculum": {"on": args.curriculum,
                        "schedule": [{"hasta_paso": u, "separacion_grados": s, "min_mass": m}
                                     for (u, s, m) in CURRICULUM_SCHEDULE],
@@ -415,7 +465,8 @@ def main() -> None:
     # lab importando cv2 (opencv del lockfile) sin libGL (arreglado también en docker/Dockerfile).
     venv = SubprocVecEnv([make_env(args.seed + i, kinds, args.frame_skip,
                                    shaping, args.shaping_beta, HYPER["gamma"],   # γ del PPO, EXACTO
-                                   args.residual, args.residual_scale)
+                                   args.residual, args.residual_scale,
+                                   args.train_two_front_rate)
                           for i in range(args.n_envs)],
                          start_method="fork")
     venv = VecMonitor(venv)

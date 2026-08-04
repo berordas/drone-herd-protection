@@ -26,6 +26,11 @@ Decisiones (documentadas también en DISEÑO.md):
   (`ep_kills`, `ep_shape`). La EVALUACIÓN (eval_wolves / eval ligera) va por el World directo
   y puntúa muertes: NUNCA ve el shaping. Con `shaping=False` el env es BIT A BIT el de run01
   (verificado en rl_env_check test 8).
+- **DIETA DE DOS FRENTES (run08, `train_two_front_rate` — SOLO entrenamiento)**: fracción de
+  episodios FORZADA a 2 subgrupos por muestreo por RECHAZO del spawn real v3.4 (semillas
+  re-sorteadas hasta que el spawn natural da el nº de grupos pedido; nada sintético — ni
+  posiciones ni masas; el cebo scriptado queda exactamente como lo produce el mundo). La EVAL
+  no pasa por aquí: sigue midiendo el mundo real (~29% de 2 frentes).
 - **terminated/truncated**: los del mundo (success/predation ↔ resolución; timeout ↔ tiempo).
 - **Episodios**: kinds ~uniforme entre `kinds` (def. lobos/mixto ~50/50). NUNCA 'corzos'
   (sin lobos no hay nada que aprender). Cada `reset()` toma semilla NUEVA de una secuencia
@@ -74,7 +79,8 @@ class WolfPackEnv(gym.Env):
                  seed: int | None = None, config: dict | None = None,
                  shaping: bool = False, shaping_beta: float = 1.0, shaping_gamma: float = 0.999,
                  residual: bool = False, residual_scale: float | None = None,
-                 curriculum_separation_deg: float | None = None, curriculum_min_mass: int = 0):
+                 curriculum_separation_deg: float | None = None, curriculum_min_mass: int = 0,
+                 train_two_front_rate: float | None = None):
         super().__init__()
         kinds = tuple(kinds)
         if not kinds or any(k not in VALID_KINDS for k in kinds):
@@ -100,6 +106,19 @@ class WolfPackEnv(gym.Env):
         self._curric_sep_deg = curriculum_separation_deg   # None => spawn grouped normal (nivel 4)
         self._curric_min_mass = int(curriculum_min_mass)
         self._curric_rng = np.random.default_rng(None if seed is None else seed + 7_000_003)
+        # DIETA DE DOS FRENTES (run08, SOLO ENTRENAMIENTO): fuerza que una fracción
+        # `train_two_front_rate` de los episodios tenga 2 SUBGRUPOS de spawn, por MUESTREO POR
+        # RECHAZO del spawn REAL v3.4 (se sortean semillas de mundo hasta que el spawn natural
+        # produce el nº de grupos pedido) — NO se sintetizan posiciones (a diferencia del
+        # currículo de separación): ángulos, masas (cebo 1 / asalto n−1, wolf_decoy_size=1) y
+        # toda la maquinaria del cebo v3.4 quedan EXACTAMENTE como los produce el mundo; solo
+        # cambia la FRECUENCIA con que el entrenamiento los ve (~29% natural → rate). La EVAL
+        # (eval_wolves/cebo_diag/eval ligera, vía baseline.build_world) NO usa este env: mide
+        # siempre el mundo real al ~29%. RNG PROPIO (seed+11_000_003) → determinista por env.
+        if train_two_front_rate is not None and not (0.0 < train_two_front_rate < 1.0):
+            raise ValueError("train_two_front_rate debe estar en (0,1) o ser None")
+        self._diet_rate = train_two_front_rate
+        self._diet_rng = np.random.default_rng(None if seed is None else seed + 11_000_003)
         # Secuencia PROPIA de semillas de episodio (independiente de self.np_random de gym).
         self._seed_rng = np.random.default_rng(seed)
         self._residual = bool(residual)
@@ -131,6 +150,16 @@ class WolfPackEnv(gym.Env):
             cfg = dict(cfg)
             wmax = cfg.get("wolves_max", 5)
             cfg["wolves_min"] = min(max(cfg.get("wolves_min", 1), 2 * self._curric_min_mass), wmax)
+        if self._diet_rate is not None:
+            # DIETA (run08): decide si este episodio debe ser de 2 frentes y RE-SORTEA la semilla
+            # de mundo (spawn real, rechazo) hasta conseguirlo. Sondas SIN controlador (el spawn
+            # solo depende de la semilla); el mundo definitivo se construye una vez, abajo.
+            want_two = bool(self._diet_rng.random() < self._diet_rate)
+            for _ in range(80):                       # P(fallar 80 sorteos) < 1e-11 con p>=0.29
+                probe = World(seed=world_seed, episode_kind=kind, **cfg)
+                if (len(probe.wolf_group_sizes) == 2) == want_two:
+                    break
+                world_seed = int(self._seed_rng.integers(0, 2**31 - 1))
         self._world = World(seed=world_seed, episode_kind=kind,
                             wolf_controller=self._controller, **cfg)
         if self._curric_sep_deg is not None:
@@ -142,7 +171,8 @@ class WolfPackEnv(gym.Env):
             self._d_norm = float(np.hypot(self._world.W, self._world.H))   # diagonal (≈424 m)
             self._phi_prev = self._phi()                                   # Φ(s_0)
         info = {"episode_kind": kind, "world_seed": world_seed,
-                "n_wolves": int(self._world.n_wolves), "n_calves": int(self._world.n_calves)}
+                "n_wolves": int(self._world.n_wolves), "n_calves": int(self._world.n_calves),
+                "two_front": bool(len(self._world.wolf_group_sizes) == 2)}
         return self._obs(), info
 
     # ------------------------------------------------------------------ #
