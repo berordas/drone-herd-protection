@@ -5,7 +5,36 @@
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
 >
-> **Última actualización: 2026-07-24** · ***v3.4: LA BARRERA COMO LÍNEA RÍGIDA + (v3.3, aceptada por el usuario
+> **Última actualización: 2026-08-04** · ***run02 del MARL de DRONES COMPLETADO (sobre el mundo terminado v3.4;
+> infra `573e679`) — EL MARL BATE LA BARRERA v3.4: Reactive 2.68/0/2.77 → FINAL (20M) 2.40±1.78/0/2.27±1.54
+> (Δ −0.28/−0.50, ~1.6/3.2 SEM), SIN tocar mundo ni barrera congelada.** Dos cambios de diseño sobre la infra run01
+> (decisión del usuario): **(1) residual SIN RIGIDEZ** — `NonRigidBarrier` (rl/, la v3.4 sin el gobernador del más
+> rezagado; percepción v2.8/ancla/trinquete/anillo/PENETRADO/patrulla intactos): con el gobernador la δ LUCHA contra
+> la base (sacar un dron de su ranura congela la pose entera); autoridad PLENA por dron. SUELO RE-MEDIDO (δ≡0, 100
+> semillas): **2.74±1.68/0/2.63±1.67** (Δ vs rígida +0.06/−0.14 = ruido; quitar el gobernador ni ayuda ni estropea a
+> la scriptada). **(2) obs con CONTACTOS y CONFIRMADOS etiquetados** (LOCAL 131→162, AGENT 253→284): contactos =
+> ahora a ≤r_detect y nunca confirmado (bulto sin clasificar, sin memoria); confirmados = latch v2.8 de equipo de la
+> barrera interior (UNA fuente de verdad, tracking) — la barrera solo reacciona a confirmados (baseline tonta); los
+> contactos dan al MARL ANTICIPACIÓN (asimetría de información a favor del aprendido, realista pre-YOLO). Verja 7/7
+> (test 10 ADAPTADO sin bajar el listón: suelo δ=0 ≡ NonRigidBarrier bit a bit + test (e) dirigido
+> contacto→confirmado→memoria) + smoke; commit ANTES del run. RUN: 20M pasos-agente, 12 mundos, cpu
+> (CUDA_VISIBLE_DEVICES="" — sin reserva de GPU), 6h03, 920 fps, checkpoints ~250k (el nuevo sistema de reservas
+> puede cortar); fase 1 CLAVADA en la ligera re-medida (3.00 EXACTO ×4, detalle idéntico); GUARDIAS invertidas +
+> anti-proxy JAMÁS disparadas (0/76 evals >3.2; ep_deter osciló mientras ep_sev bajaba). 100 semillas: FINAL (20M)
+> **2.40/0/2.27** (vs suelo −0.34/−0.36; n_safe 4.09/4.14→4.45/4.62) · mejor por ligeras (17,99M) 2.41/0/2.39 —
+> ROBUSTO al checkpoint. **DIAGNÓSTICO de comportamiento (58 gemelos de 2 frentes, suelo vs política): el Δ NO es
+> repartirse** (ambos frentes atendidos 5.7%→5.3%; severidad del subconjunto 2-frentes PLANA 3.33≡3.33) — **es
+> MOVERSE PARA DISUADIR** (vel ACTIVE 3.47→3.82 m/s +10%; sustos/paso 0.642→0.737 +15%) **más un cierre PARCIAL de
+> la GOTERA** (cruces de segmento entre drones contiguos, contador v3.4: 3.47→2.36/ep, −32%). Lección de esta
+> ablación: con la RIGIDEZ eliminada y los CONTACTOS en la obs (las dos sospechas de run01), el reparto entre
+> frentes SIGUE sin emerger → nueva confirmación de que el cuello es la EXPLORACIÓN/estructura de la política (no la
+> información ni la autoridad); el cebo v3.4 sigue ganando su duelo al aprendido (agujeros deliberados: flancos,
+> espalda, 2º frente y gotera residual siguen ahí para la siguiente iteración). **GIF nº4 de la narrativa** (gemelos
+> seed 37 lobos, cebo 1 + asalto 3: suelo 6 muertas → MARL 2) en /data/gifs/run02_v34/; artefactos completos en
+> /data/drones/run02_v34/ (evals FINAL/mejor/suelo, comportamiento ×3, 80 checkpoints, train.log con el pacto).
+> **Nota del MARL de drones vigente → 2.40/0/2.27**; siguiente paso = decisión del usuario (aceptar como coordinador
+> MARL v2 / más presupuesto --resume / atacar el reparto: curiosidad coordinada · jerárquico · co-evolución).* ·
+> *(2026-07-24: **v3.4: LA BARRERA COMO LÍNEA RÍGIDA + (v3.3, aceptada por el usuario
 > EN GIF) TRINQUETE DEL AVANCE Y ROLES INVERTIDOS DEL CEBO (RE-CONGELADO tag `v3.4-baseline`) — EL MULTI-FRENTE
 > POR FIN RINDE: Reactive 1.91/1.96 → 2.68±1.66/2.77±1.71 (+0.77/+0.81); el mundo cambió bastante y la nota a
 > batir del MARL cambia con él — los 1.91/1.96 quedan OBSOLETOS.** Tres piezas congeladas juntas (v3.3 quedó sin
