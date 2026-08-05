@@ -5,7 +5,31 @@
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
 >
-> **Última actualización: 2026-08-04** · ***run02 del MARL de DRONES COMPLETADO (sobre el mundo terminado v3.4;
+> **Última actualización: 2026-08-05** · ***run08 de LOBOS (DIETA 50% DE DOS FRENTES) COMPLETADO — DESENLACE (3),
+> ESTRUCTURAL, con agravante: la dieta NO hace asomar el cebo; PPO con recompensa de equipo pura EROSIONA el cebo
+> scriptado.** Paso acotado pre-jerárquico (commit `250f278`): el residual de run05/07 (equipo pura +1/muerte,
+> shaping OFF, sin pista, δ autoridad plena, dos fases) con UN cambio — `--train-two-front-rate 0.5`: 50% de los
+> episodios de ENTRENAMIENTO con 2 subgrupos por muestreo por RECHAZO del spawn real v3.4 (nada sintético; cebo 1 /
+> asalto n−1 como los produce el mundo; natural ~29-35%; la EVAL siempre al ~29% real). SUELOS (paso 0): arnés δ≡0
+> = 2.68/2.77 con Δ +0.00 EXACTO · ligera 3.20 [1,0,5,4,5,3,3,5,3,3] · REFERENCIA del cebo scriptado v3.4
+> (cebo_diag --floor, 58 eps/203 muertes): killer-NO-CONFIRMADO 26.6%, cebo-confirmado 26.6%, no-anclado 79.3%,
+> sev-2-frentes 3.50, ancla=sector-cebo 65.5% (¡no nula — v2.8 daba 0.0%: el cebo a mano de v3.4 funciona!). CURSO
+> (10M, 8 envs, 5h53, 472 fps): fase 1 CLAVADA en 3.20; fase 2 osciló 2.4–3.6 con picos 3.50/3.60 (1.25M/3.25M) y
+> desde ~6.75M EROSIÓN SOSTENIDA — GUARDIA DISPARADA a 8.0M (6 evals consecutivas <2.9: 2.70/2.80/2.50/2.80/2.50/
+> 2.50); la parada SIGTERM pactada NO llegó a ejecutarse (fallo de permisos de la sesión en ese momento) y el run
+> completó los 10M con las últimas 8 ligeras en 2.0–2.5 — sin consecuencia para el veredicto (el mejor checkpoint
+> es muy anterior, 2.5M; el tramo final solo CONFIRMA la erosión). VEREDICTO (100 semillas, eval real): FINAL (10M)
+> **2.17/2.25 (Δ −0.51/−0.52 vs scriptado — erosión en el arnés)** · mejor por ligeras (2.5M) **2.71/2.58**
+> (Δ +0.03/−0.19 ≈ suelo). CEBO (58 eps de 2 frentes): killer-NO-CONFIRMADO **26.6% (scriptado) → 21.0% (mejor) →
+> 13.0% (final)** · sev-2-frentes 3.50 → 3.36 → 2.65 · ancla=cebo 65.5% → 62.1% → 53.4%. **Lectura (séptima del
+> cebo, la más limpia): subir la dieta del escenario ×1.7 NO arranca el cebo aprendido — el gradiente greedy de la
+> caza se come la desviación coordinada del propio script (cuanto más entrena, menos ceba). El problema es
+> ESTRUCTURAL (política plana), no de dieta: el JERÁRQUICO queda justificado con evidencia** (siguiente paso =
+> decisión del usuario; la dieta queda disponible como flag para componerla con él). GIFs gemelos (seed 76 lobos
+> 1+3: suelo = cebo scriptado pleno, 6 muertas todas no-confirmadas; política = lo conserva degradado, 5/5) en
+> /data/gifs/run08_dieta50/; artefactos en /data/wolves/run08_dieta50/ (evals, cebo_diag ×3, ancla ×3, 20
+> checkpoints, train.log con pacto y marca de guardia).* ·
+> *(2026-08-04: **run02 del MARL de DRONES COMPLETADO (sobre el mundo terminado v3.4;
 > infra `573e679`) — EL MARL BATE LA BARRERA v3.4: Reactive 2.68/0/2.77 → FINAL (20M) 2.40±1.78/0/2.27±1.54
 > (Δ −0.28/−0.50, ~1.6/3.2 SEM), SIN tocar mundo ni barrera congelada.** Dos cambios de diseño sobre la infra run01
 > (decisión del usuario): **(1) residual SIN RIGIDEZ** — `NonRigidBarrier` (rl/, la v3.4 sin el gobernador del más
