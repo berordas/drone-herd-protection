@@ -40,6 +40,7 @@ from hrl.events import EventTracker, spawn_groups
 
 PREMATURE_EDGE_WINDOW = 200   # ticks previos a ESCOLTA que mira el clasificador (adenda §5c)
 PREMATURE_EDGE_M = 25.0       # m: "pinzamiento de borde" del asalto (mín. dist al borde < 25)
+PREMATURE_SPAWN_SKIP = 200    # ticks iniciales excluidos del historial de borde (spawn en el perímetro)
 GOTERA_GAP = 24.0   # m: pares de drones contiguos a hueco <= 1.2*spacing = pared-corredor real
                     # (MISMO umbral que run02_comportamiento.py -> métricas comparables)
 
@@ -171,6 +172,7 @@ class EpisodeAudit:
         self._inv_hist: deque = deque(maxlen=PREMATURE_EDGE_WINDOW)   # (tick, inv_idx, contacto_es_corzo)
         self._edge_hist: deque = deque(maxlen=PREMATURE_EDGE_WINDOW)  # dist mín asalto→borde
         self.premature: dict | None = None
+        self._premature_pending: int | None = None
         self._escolta_seen = False
 
     # ------------------------------------------------------------------ #
@@ -211,23 +213,34 @@ class EpisodeAudit:
                 if keep.any():
                     es_corzo = bool(np.linalg.norm(w.corzos[keep] - c, axis=1).min() < 1e-6)
             self._inv_hist.append((t, i, es_corzo))
-        # (c): pinzamiento de borde del ASALTO.
+        # (c): pinzamiento de borde del ASALTO. Los lobos NACEN en el perímetro (spawn a
+        # ≤ ~5 m del borde): los primeros PREMATURE_SPAWN_SKIP ticks se excluyen para que el
+        # spawn no cuente como pinzamiento (medido: sin esto, borde_min=0.0 en el 100% de
+        # las prematuras tempranas — artefacto del spawn, no una maniobra pinzada).
         asa = np.asarray(self.tracker.assault_indices(), dtype=int)
-        if asa.size:
+        if asa.size and t >= PREMATURE_SPAWN_SKIP:
             p = w.wolves[asa]
             d_edge = float(np.min(np.concatenate([p[:, 0], w.W - p[:, 0], p[:, 1], w.H - p[:, 1]])))
             self._edge_hist.append(d_edge)
-        # Flanco de ESCOLTA antes del show => clasificar.
+        # Flanco de ESCOLTA antes del show => clasificar. La confirmación de EQUIPO de la
+        # barrera (`_confirmed`) se actualiza DENTRO de coord.act(), es decir, UN tick
+        # después de que el mundo latchee ESCOLTA en su step: la clasificación de "quién fue
+        # confirmado primero" se DIFIERE a la primera frontera con algún confirmado (a más
+        # tardar 2 fronteras después del flanco; si no lo hay, queda 'desconocido').
         if w.phase == "ESCOLTA" and not self._escolta_seen:
             self._escolta_seen = True
             t_show = next((e["t"] for e in self.tracker.events if e["ev"] == "SHOW_START"), None)
             staged = bool(w.wolf_decoy_released)
             if not staged and t_show is None and self.option_name and "CEBO" in self.option_name:
-                conf = getattr(self.tracker.reactive, "_confirmed", None)
+                self._premature_pending = t
+        if self._premature_pending is not None and self.premature is None:
+            conf = getattr(self.tracker.reactive, "_confirmed", None)
+            has_conf = conf is not None and bool(conf.any())
+            if has_conf or t - self._premature_pending >= 2:
                 dec = np.asarray(self.tracker.decoy_indices(), dtype=int)
                 first = None
                 quien = "desconocido"
-                if conf is not None and conf.any():
+                if has_conf:
                     first = int(np.where(conf)[0][0])          # menor índice confirmado
                     quien = "señuelo" if (dec.size and first in set(dec.tolist())) else "asalto"
                 elif dec.size == 0:
@@ -236,12 +249,13 @@ class EpisodeAudit:
                 inv_last = self._inv_hist[-1][1] if self._inv_hist else None
                 edge_min = float(min(self._edge_hist)) if self._edge_hist else None
                 self.premature = {
-                    "t": t, "primer_confirmado": first, "quien": quien,
+                    "t": int(self._premature_pending), "primer_confirmado": first, "quien": quien,
                     "investigador": inv_last, "investigador_hacia_corzo": bool(hacia_corzo),
                     "asalto_borde_min_m": edge_min,
                     "pinzamiento_borde": (edge_min is not None and edge_min < PREMATURE_EDGE_M),
                 }
-                self.tracker.emit(t, "ESCOLTA_PREMATURA", **self.premature)
+                self.tracker.emit(int(self._premature_pending), "ESCOLTA_PREMATURA",
+                                  **self.premature)
 
     def check_command(self, wp_before: np.ndarray, wp_cmd) -> None:
         for msg in check_command_mask(self.world, wp_before, wp_cmd):
