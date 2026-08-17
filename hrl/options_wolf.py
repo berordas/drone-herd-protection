@@ -1,0 +1,346 @@
+"""hrl/options_wolf.py — Capa de OPCIONES del bando LOBO (Etapa 0 del jerárquico).
+
+`WolfOptionLayer` implementa el protocolo del cerebro enchufable
+(`WolfController.decide(world) -> (v_deseada, coasting)`) y expone DOS opciones scripted
+congeladas que un MANAGER de alto nivel elige en la frontera del env (cada `frame_skip=5`
+pasos — la misma frontera en que muestrean los envs, lección SyncedReactiveCoordinator):
+
+  MASA          delega BIT A BIT en la heurística scriptada de paquete único sobre
+                `pack_prey` (`ScriptedWolfController._decide_single`): todo el paquete caza
+                la presa común, SIN roles — la opción "no cebar". Al ARRANCAR la opción se
+                escribe `pack_prey2 = -1` (contrato del pin: una vaca solo encara si es
+                presa; sin sector 2 no hay 2ª presa) — la única escritura extra.
+                [hrl_check verifica MASA ≡ ScriptedWolfController bit a bit en episodios de
+                1 grupo de spawn, donde el script toma exactamente ese camino; con 2 grupos
+                MASA difiere del script POR DISEÑO: es la decisión del manager de fusionar.]
+
+  CEBO(Δ, hold) la máquina de dos sectores v3.3/v3.4 con MEMBRESÍAS DICTADAS (no por spawn):
+                señuelo = lobo vivo de índice más bajo; asalto = resto. Rumbo señuelo =
+                rumbo actual del paquete al centroide del rebaño (el lado que ya ocupa);
+                rumbo asalto = señuelo + Δ. Reutiliza las FASES del script extraídas en el
+                Commit A (merodeo `decoy_prowl` > decoy_hold_dist; anillos oscuros
+                STAGE/CREEP/DEEP con `hold` parametrizable — default 50 => STAGE
+                r_detect+50=150; latch staged->show; `group_hunted`; ala rota
+                `decoy_broken_wing`; cola `pack_common_tail`). Presa del asalto: RÉPLICA de
+                la regla del mundo (`world._freest_prey_for_sector2`, world.py:1391 —
+                ternero-primero, máx. distancia al ACTIVE más cercano, quórum local,
+                anti-convergencia), leída AL INICIAR la opción y re-evaluada solo al perder
+                la presa (mismo contrato); escribe pack_prey/pack_prey2/wolf_decoy_released
+                respetando los contratos (riesgos #3/#6 del reconocimiento, incluido el
+                reset por retroceso de step_count).
+                `membership="spawn"` (E0.A.ii): membresías = los grupos de SPAWN y timing
+                por `decoy_timing` con defaults => camino BIT A BIT el del script (mide el
+                impuesto de interfaz puro). Requiere 2 grupos reales; si no los hay cae a
+                MASA y lo deja registrado (OPTION_FALLBACK).
+
+Decisiones de CAPA documentadas (no tocan wolf_controllers.py):
+  - Escalera con hold != 50: CREEP nunca más laxo que el STAGE (creep = min(25, hold)); el
+    DEEP (r_confirm+25=65) queda como está (siempre por debajo de los STAGE de E0.1:
+    150/105/90). Es la variante de escenificación de E0.1, no un cambio del script.
+  - Reposicionamiento del asalto (solo membership="manager"): mientras su rumbo real (visto
+    desde el centroide) difiera del objetivo Δ en > ASSAULT_BEARING_TOL_DEG, el punto de
+    presión de `assault_stage` es un punto LEJANO sobre el rumbo objetivo — el empuje del
+    hold lo hace DESLIZAR por fuera del sobre oscuro hasta ese lado (la maniobra del
+    script, con otro objetivo); el gate del show exige además rumbo alcanzado. Umbral
+    nombrado, se revisará con E0.2.
+  - Latch `wolf_decoy_released` MONÓTONO por episodio (contrato del World): una re-entrada
+    en CEBO tras el show NO lo resetea (el cebo re-entra ya "mostrado"); E0.5 mide ese
+    coste de conmutación.
+
+RNG: la capa NO consume ningún stream del mundo (regla 4) — todo es lectura + escrituras de
+contrato deterministas. Eventos propios (SHOW_START, OPTION_START, OPTION_FALLBACK,
+TIMEOUT_OPCION del manager) salen por `pop_events()` con tick de FRONTERA (los emitidos
+dentro de decide llevan step_count+1: el paso en que surten efecto — comparable con los
+flancos que el EventTracker detecta en la frontera)."""
+
+from __future__ import annotations
+
+import numpy as np
+
+from world import ACTIVE
+from wolf_controllers import (ASSAULT_DARK_HOLD, ScriptedWolfController, WolfController,
+                              assault_stage, assault_staged, decoy_broken_wing, decoy_prowl,
+                              decoy_timing, group_hunted, manage_pack_preys,
+                              pack_common_tail, sector_desired)
+
+ASSAULT_BEARING_TOL_DEG = 25.0   # ± grados: "rumbo de asalto alcanzado" (gate del show en
+                                 # membership=manager; afinable, se revisará con E0.2)
+REPOSITION_EXTRA_M = 60.0        # m sobre el anillo STAGE: radio del punto de presión del
+                                 # reposicionamiento (solo fija la DIRECCIÓN de la carga; la
+                                 # profundidad la gobierna el hold, como en el script)
+
+
+def freest_prey_for(w, sel: np.ndarray) -> tuple[str | None, int]:
+    """RÉPLICA CONDUCTA-FIEL de `World._freest_prey_for_sector2` (world.py:1391, mundo
+    CONGELADO — no se puede parametrizar allí) con la membresía `sel` del MANAGER en lugar
+    del sector de spawn: la res CAZABLE MÁS LIBRE (máx. distancia al dron ACTIVE más
+    cercano), ternero-primero, quórum local (adulta solo si sel >= n_min_adult),
+    anti-convergencia (excluye la presa del sector 1 si hay alternativa del mismo tipo);
+    sin ACTIVE cae a la más cercana al centroide de `sel`. SOLO LECTURA."""
+    if sel.size == 0:
+        return (None, -1)
+    act = w.drones[w.drone_state == ACTIVE]
+    cazable_calf = w.calf_alive & ~w.calf_safe
+    if cazable_calf.any():
+        cand = cazable_calf.copy()
+        if w.pack_prey_kind == "calf" and w.pack_prey >= 0 and cand.sum() > 1:
+            cand[w.pack_prey] = False
+        if act.shape[0] > 0:
+            d = np.linalg.norm(w.calves[:, None, :] - act[None, :, :], axis=2).min(axis=1)
+            d[~cand] = -np.inf
+            return ("calf", int(np.argmax(d)))
+        d = np.linalg.norm(w.calves - w.wolves[sel].mean(axis=0), axis=1)
+        d[~cand] = np.inf
+        return ("calf", int(np.argmin(d)))
+    if sel.size >= w.n_min_adult:
+        cazable = (w.cow_alive & ~w.cow_safe) & ~w._in_forbidden(w.cows)
+        if cazable.any():
+            cand = cazable.copy()
+            if w.pack_prey_kind == "adult" and w.pack_prey >= 0 and cand.sum() > 1:
+                cand[w.pack_prey] = False
+            if act.shape[0] > 0:
+                d = np.linalg.norm(w.cows[:, None, :] - act[None, :, :], axis=2).min(axis=1)
+                d[~cand] = -np.inf
+                return ("adult", int(np.argmax(d)))
+            d = np.linalg.norm(w.cows - w.wolves[sel].mean(axis=0), axis=1)
+            d[~cand] = np.inf
+            return ("adult", int(np.argmin(d)))
+    return (None, -1)
+
+
+class WolfOptionLayer(WolfController):
+    """Capa de opciones del lobo. `option` = opción FIJA ("MASA", {}) | ("CEBO", {...}) o
+    `manager` con `decide(world, layer) -> (nombre, params) | None`, consultado cada
+    `frame_skip` fronteras (None = mantener). Requiere `refresh(world)` UNA vez por paso de
+    física EN LA FRONTERA (SyncedReactiveCoordinator ya lo hace). Params de CEBO:
+    `delta_deg` (default 180), `hold` (offset sobre r_detect, default ASSAULT_DARK_HOLD=50),
+    `membership` ("manager" default | "spawn")."""
+
+    def __init__(self, option: tuple[str, dict] | None = None, manager=None,
+                 frame_skip: int = 5):
+        if (option is None) == (manager is None):
+            raise ValueError("WolfOptionLayer: pasa exactamente uno de option= o manager=")
+        self.fixed_option = option
+        self.manager = manager
+        self.frame_skip = int(frame_skip)
+        self.script = ScriptedWolfController()     # EL script, vivo (para MASA y utilidades)
+        self._events: list[dict] = []
+        self._last_step = -1
+        self._countdown = 0
+        self._opt_name: str | None = None
+        self._opt_params: dict = {}
+        self._opt_requested: tuple[str, dict] | None = None   # lo PEDIDO (≠ vigente si hubo fallback)
+        self._mode = "manager"
+        self._hold = float(ASSAULT_DARK_HOLD)
+        self._delta = np.pi
+        self._theta_asa: float | None = None
+        self._s1 = np.zeros(0, dtype=int)
+        self._s2 = np.zeros(0, dtype=int)
+
+    # ------------------------------------------------------------------ #
+    # Eventos propios (los integra hrl/events.EventTracker vía pop_events).
+    def push_event(self, ev: str, tick: int, **data) -> None:
+        self._events.append({"t": int(tick), "ev": ev, **data})
+
+    def pop_events(self) -> list[dict]:
+        out, self._events = self._events, []
+        return out
+
+    # Membresías vigentes (para EventTracker/diagnósticos).
+    def decoy_indices(self) -> np.ndarray:
+        return self._s1
+
+    def assault_indices(self) -> np.ndarray:
+        return self._s2
+
+    @property
+    def option(self) -> tuple[str | None, dict]:
+        return self._opt_name, dict(self._opt_params)
+
+    # ------------------------------------------------------------------ #
+    def refresh(self, world) -> None:
+        """UNA llamada por paso de física, EN LA FRONTERA (antes de world.step). Detecta el
+        episodio nuevo (retroceso de step_count — riesgo #6), y consulta al manager cada
+        frame_skip fronteras (la frontera de los envs)."""
+        step = int(world.step_count)
+        if step < self._last_step or self._opt_name is None:
+            self._countdown = 0                          # episodio nuevo: decisión inmediata
+            self._opt_name = None
+            self._opt_requested = None
+        self._last_step = step
+        if self._countdown <= 0:
+            self._countdown = self.frame_skip
+            want = (self.fixed_option if self.manager is None
+                    else self.manager.decide(world, self))
+            if want is not None:
+                name, params = want[0], dict(want[1] or {})
+                # Se compara contra lo SOLICITADO (no lo vigente): si CEBO/spawn cayó a MASA
+                # por fallback, re-pedir lo mismo NO re-arranca la opción cada frontera.
+                if (name, params) != self._opt_requested:
+                    self._start_option(world, name, params)
+        self._countdown -= 1
+
+    def _start_option(self, w, name: str, params: dict) -> None:
+        if name not in ("MASA", "CEBO"):
+            raise ValueError(f"opción desconocida: {name!r} (usa 'MASA' | 'CEBO')")
+        self._opt_requested = (name, dict(params))       # lo pedido, ANTES de cualquier fallback
+        if name == "CEBO" and params.get("membership", "manager") == "spawn" \
+                and len(w.wolf_group_sizes) != 2:
+            # E0.A.ii pide spawn real de 2 grupos; sin él no hay roles de spawn que imitar.
+            self.push_event("OPTION_FALLBACK", tick=int(w.step_count),
+                            de="CEBO/spawn", a="MASA")
+            name, params = "MASA", {}
+        self._opt_name, self._opt_params = name, dict(params)
+        self.push_event("OPTION_START", tick=int(w.step_count), option=name, **params)
+        if name == "MASA":
+            self._s1 = np.zeros(0, dtype=int)
+            self._s2 = np.zeros(0, dtype=int)
+            if w.pack_prey2 >= 0:                        # fusionar el paquete: sin 2ª presa
+                w.pack_prey2 = -1
+                w.pack_prey2_kind = None
+            return
+        # CEBO(Δ, hold): membresías + rumbos + presa del asalto, leídos AL INICIAR la opción.
+        self._mode = params.get("membership", "manager")
+        self._hold = float(params.get("hold", ASSAULT_DARK_HOLD))
+        self._delta = np.deg2rad(float(params.get("delta_deg", 180.0)))
+        if self._mode == "spawn":
+            n1 = int(w.wolf_group_sizes[0])
+            self._s1 = np.arange(0, n1)
+            self._s2 = np.arange(n1, w.n_wolves)
+            self._theta_asa = None                       # sin reposicionamiento: rumbo = spawn
+        else:
+            self._s1 = np.array([0], dtype=int) if w.n_wolves > 0 else np.zeros(0, dtype=int)
+            self._s2 = np.arange(1, w.n_wolves)
+            herd_c = self._herd_c(w)
+            v = w.wolves.mean(axis=0) - herd_c           # rumbo actual del paquete (lado que ocupa)
+            theta_dec = float(np.arctan2(v[1], v[0])) if np.linalg.norm(v) > 1e-9 else 0.0
+            self._theta_asa = theta_dec + self._delta
+            # Presa del asalto con la MEMBRESÍA del manager (sobrescribe la del spawn si el
+            # mundo fijó pack_prey2 en t=0 con sus sectores: aquí mandan las membresías).
+            kind, idx = freest_prey_for(w, self._s2)
+            w.pack_prey2, w.pack_prey2_kind = (idx, kind) if idx >= 0 else (-1, None)
+            if idx >= 0:
+                w._ever_committed = True
+
+    # ------------------------------------------------------------------ #
+    def decide(self, world) -> tuple[np.ndarray, bool]:
+        if self._opt_name is None:
+            raise RuntimeError("WolfOptionLayer sin refresh(): la opción se decide en la "
+                               "FRONTERA (usa SyncedReactiveCoordinator o llama a refresh "
+                               "antes de cada world.step)")
+        if self._opt_name == "MASA":
+            return self.script._decide_single(world)
+        return self._decide_cebo(world)
+
+    # ------------------------------------------------------------------ #
+    def _herd_c(self, w) -> np.ndarray:
+        """Centro del rebaño para rumbos: vacas VIVAS (mismo criterio que decoy_prowl)."""
+        return (w.cows[w.cow_alive].mean(axis=0) if w.cow_alive.any()
+                else np.array([w.W / 2.0, w.H / 2.0]))
+
+    def _bearing_ok(self, w, s2: np.ndarray) -> bool:
+        if self._theta_asa is None or s2.size == 0:
+            return True
+        v = w.wolves[s2].mean(axis=0) - self._herd_c(w)
+        if np.linalg.norm(v) < 1e-9:
+            return True
+        err = np.arctan2(v[1], v[0]) - self._theta_asa
+        err = (err + np.pi) % (2 * np.pi) - np.pi
+        return bool(abs(err) <= np.deg2rad(ASSAULT_BEARING_TOL_DEG))
+
+    def _reposition_point(self, w) -> np.ndarray:
+        """Punto de presión LEJANO sobre el rumbo objetivo del asalto: la carga apunta a él y
+        el empuje del hold (assault_stage) convierte esa presión en DESLIZAMIENTO por fuera
+        del sobre oscuro hasta el lado Δ — la misma maniobra del script con otro objetivo."""
+        u = np.array([np.cos(self._theta_asa), np.sin(self._theta_asa)])
+        return self._herd_c(w) + u * (w.r_detect + self._hold + REPOSITION_EXTRA_M)
+
+    def _manage_preys(self, w) -> None:
+        """Presa 1 SIEMPRE por la maquinaria del mundo. Presa 2: en spawn, también
+        (manage_pack_preys second=True ≡ script); en manager, ciclo de vida por RÉPLICA con
+        la membresía del asalto (mismo contrato: suelta por muerte/refugio + n_refix por
+        refugio + re-fijación de la MÁS LIBRE en ese instante)."""
+        if self._mode == "spawn":
+            manage_pack_preys(w, second=True)
+            return
+        manage_pack_preys(w)
+        reason2 = w._prey2_lost_reason()
+        if reason2 is not None:
+            w.pack_prey2 = -1
+            w.pack_prey2_kind = None
+            if reason2 == "refuge":
+                w.n_refix += 1
+        if w.pack_prey2 < 0 and self._s2.size > 0:
+            kind, idx = freest_prey_for(w, self._s2)
+            if idx >= 0:
+                w.pack_prey2, w.pack_prey2_kind = idx, kind
+                w._ever_committed = True
+
+    def _timing_manager(self, w, s1: np.ndarray, s2: np.ndarray) -> tuple[bool, float | None]:
+        """Espejo de wolf_controllers.decoy_timing (Commit A) para membership=manager: misma
+        escalera STAGE/CREEP/DEEP y mismo fallback group_hunted, con DOS diferencias de capa
+        (documentadas en cabecera): el gate del show exige además RUMBO ALCANZADO
+        (_bearing_ok) y CREEP = min(25, hold) — la escalera nunca más laxa que el STAGE."""
+        prowling = False
+        hold_r = None
+        if w.pack_prey2 >= 0 and s2.size > 0 and s1.size > 0:
+            p2 = w._prey_pos_of(w.pack_prey2, w.pack_prey2_kind)
+            if not w.wolf_decoy_released:
+                if assault_staged(w, s2, p2, stage_hold=self._hold) and self._bearing_ok(w, s2):
+                    w.wolf_decoy_released = True
+                else:
+                    prowling = True
+            if w.phase != "ESCOLTA" and not group_hunted(w, s2):
+                if not w.wolf_decoy_released:
+                    hold_r = w.r_detect + self._hold
+                else:
+                    decoy_c = w.wolves[s1].mean(axis=0)
+                    act = w.drones[w.drone_state == ACTIVE]
+                    d_decoy = (float(np.linalg.norm(act - decoy_c, axis=1).min())
+                               if act.shape[0] else 1e9)
+                    hold_r = (w.r_detect + min(25.0, self._hold)) \
+                        if d_decoy > w.r_detect + 10.0 else (w.r_confirm + 25.0)
+        elif not w.wolf_decoy_released:
+            w.wolf_decoy_released = True                 # sin asalto/presa: nada que acompasar
+        return prowling, hold_r
+
+    def _decide_cebo(self, w) -> tuple[np.ndarray, bool]:
+        d_wc = np.linalg.norm(w.cows[None, :, :] - w.wolves[:, None, :], axis=2)  # (nw, nc)
+        self._manage_preys(w)
+        if w._targets_exhausted():
+            w._wolf_attacking = False
+            return np.zeros((w.n_wolves, 2)), True
+        s1, s2 = self._s1, self._s2
+        desired = np.zeros((w.n_wolves, 2))
+
+        released_before = bool(w.wolf_decoy_released)
+        if self._mode == "spawn":
+            decoy_prowling, assault_hold = decoy_timing(
+                w, s1, s2, stage_hold=self._hold, creep_hold=min(25.0, self._hold))
+        else:
+            decoy_prowling, assault_hold = self._timing_manager(w, s1, s2)
+        if w.wolf_decoy_released and not released_before:
+            # El show surte efecto EN ESTE paso -> tick step_count+1 (frontera siguiente,
+            # comparable con el flanco STAGED que ve el EventTracker). Aserción A del
+            # protocolo: SHOW_START nunca antes del latch.
+            self.push_event("SHOW_START", tick=int(w.step_count) + 1, mode=self._mode)
+
+        atk1 = atk2 = False
+        if decoy_prowling:
+            decoy_prowl(w, s1, desired)
+        else:
+            atk1 = sector_desired(w, s1, w.pack_prey, w.pack_prey_kind, d_wc, desired)
+            if (w.wolf_decoy_size is not None and w.wolf_decoy_released and w.phase != "ESCOLTA"
+                    and s1.size > 0 and s2.size > 0):
+                if decoy_broken_wing(w, s1, desired):
+                    atk1 = False
+        if assault_hold is not None:
+            aim = w._prey_pos_of(w.pack_prey2, w.pack_prey2_kind)
+            if self._mode == "manager" and not self._bearing_ok(w, s2):
+                aim = self._reposition_point(w)
+            assault_stage(w, s2, aim, desired, hold=assault_hold)
+        elif s2.size > 0:
+            atk2 = sector_desired(w, s2, w.pack_prey2, w.pack_prey2_kind, d_wc, desired)
+        w._wolf_attacking = bool(atk1 or atk2)
+
+        return pack_common_tail(w, desired, d_wc), False
