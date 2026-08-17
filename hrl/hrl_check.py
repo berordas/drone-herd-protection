@@ -6,7 +6,8 @@ contenedor: `python3 hrl/hrl_check.py`. Asserts al estilo de los demás checks.
   0) UNIDADES de events/behavior_checks (Commit B): geometría de seg_cross · detector
      LURE_COMMIT dirigido (stub geométrico: 3/4 drones en el cono del señuelo + puerta del
      asalto abierta => ON; un dron en la puerta => OFF) · la aserción CRITICAL "ORDEN DEL
-     CEBO" salta con un SHOW_START sin latch.
+     CEBO" salta con un SHOW_START sin latch · clustering de amenazas dirigido (contactos ∪
+     confirmados, disjuntos; primario = clúster del ancla; secundario correcto).
   1) MASA vía capa ≡ ScriptedWolfController BIT A BIT (hash SHA256 del estado íntegro por
      tick, episodios COMPLETOS): 12 semillas lobos+mixto de 1 GRUPO de spawn — el camino en
      que el script ES la caza de masa. [Con 2 grupos MASA difiere del script POR DISEÑO:
@@ -18,7 +19,8 @@ contenedor: `python3 hrl/hrl_check.py`. Asserts al estilo de los demás checks.
      sin CRITICAL (orden del cebo, procedencia completa), sin violaciones de contrato
      (pack_prey/pack_prey2 válidos, máscara de comando respetada), OPTION_START presente.
      + DETERMINISMO de eventos: misma seed => misma línea temporal (bit a bit del JSON).
-  [4) Allocator 4-0 ≡ Reactive bit a bit + clustering dirigido: llegan con el Commit D.]
+  4) AllocatorCoordinator con partición 4-0 ≡ ReactiveCoordinator BIT A BIT (5 semillas
+     lobos+mixto, episodios completos — incluye relevos de batería e investigaciones).
 """
 
 from __future__ import annotations
@@ -39,6 +41,7 @@ from rl.policy_wolf_controller import SyncedReactiveCoordinator    # noqa: E402
 
 from hrl.behavior_checks import EpisodeAudit, seg_cross            # noqa: E402
 from hrl.events import EventTracker                                # noqa: E402
+from hrl.options_drone import AllocatorCoordinator, analyze_threats  # noqa: E402
 from hrl.options_wolf import WolfOptionLayer                       # noqa: E402
 
 
@@ -161,7 +164,24 @@ def test_0_unidades():
     assert any("ORDEN DEL CEBO" in c for c in rec["critical"]), \
         "SHOW_START sin STAGED no disparó la aserción CRITICAL"
 
-    print("  [0] unidades events/behavior_checks: OK")
+    # 0d — clustering de amenazas: contactos ∪ confirmados (disjuntos), primario = ancla.
+    ws = _stub_world([[300.0, 250.0], [260.0, 260.0]],
+                     [[350.0, 250.0], [340.0, 270.0], [250.0, 350.0]])
+    react = _stub_reactive(confirmed=np.array([True, False, False]), anchor=0)
+    info = analyze_threats(ws, react)
+    assert info["pts"].shape[0] == 3, f"amenazas: {info['pts'].shape[0]} != 3"
+    assert int(info["is_confirmed"].sum()) == 1, "el confirmado debe salir de contactos"
+    assert len(info["clusters"]) == 2, f"clusters: {len(info['clusters'])} != 2"
+    prim = info["clusters"][info["primario"]]
+    assert np.any(info["wolf_idx"][prim] == 0), "el primario no contiene al ancla"
+    sec = info["clusters"][info["secundario"]]
+    assert len(sec) == 1 and int(info["wolf_idx"][sec[0]]) == 2, "secundario incorrecto"
+    try:
+        AllocatorCoordinator(wr, particion=(3, 2))
+        raise AssertionError("partición 3+2 != 4 no lanzó ValueError")
+    except ValueError:
+        pass
+    print("  [0] unidades events/behavior_checks/clustering: OK")
 
 
 def test_1_masa_bit_a_bit():
@@ -231,9 +251,23 @@ def test_3_aserciones_y_determinismo():
           f"determinismo de eventos: OK")
 
 
+def test_4_allocator_4_0():
+    n = 0
+    for kind, count in (("lobos", 3), ("mixto", 2)):
+        seed = 0
+        for s in range(seed, seed + count):
+            ha = _run_hashed(s, kind)
+            hb = _run_hashed(s, kind,
+                             coord_factory=lambda w: AllocatorCoordinator(w, (4, 0)))
+            assert ha == hb, f"Allocator 4-0 != ReactiveCoordinator (seed {s} {kind})"
+            n += 1
+    print(f"  [4] AllocatorCoordinator 4-0 ≡ ReactiveCoordinator BIT A BIT: {n} episodios OK")
+
+
 if __name__ == "__main__":
     test_0_unidades()
     test_1_masa_bit_a_bit()
     test_2_cebo_spawn_bit_a_bit()
     test_3_aserciones_y_determinismo()
+    test_4_allocator_4_0()
     print("hrl_check: TODO OK.")
