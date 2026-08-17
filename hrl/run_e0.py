@@ -17,13 +17,20 @@ Experimentos (semillas EMPAREJADAS entre brazos: mismo seed+kind, distinta polí
        cebo_floor_v34.json — tolerancias: sev 3.50±0.15 · KNC 26.6%±3 · ancla-cebo
        65.5%±5. (iii) CEBO vía capa (manager: cebo=índice mín, Δ=180°) desde spawns
        ARBITRARIOS n>=3 — sin referencia numérica: lote de visionado + aserciones.
-  e01  Margen Δ del cebo: CEBO(Δ=180°) vs MASA, n>=3, oponentes Reactive y run02;
-       piloto 50 pares -> n = ceil((1.96·σ̂/(Δ̂/3))²) acotado [200,400]; variante de
-       escenificación hold ∈ {50, 5, -10} (anillos 150/105/90).
-  e02  Latencias -> K: distribuciones de t(inicio->staged/show/confirm/flip/commit),
-       t(release->1ª muerte), T_safe y ventana del release sobre los episodios CEBO de
-       e01 + grabación por-frontera de los canales del detector LURE_COMMIT para el ajuste
-       ROC de sus umbrales. Propuesta K = p75-p90 de t(inicio->commit), múltiplo de 5.
+  e01  Margen Δ del cebo (ADENDA tras STOP-1): estratificado por geometría de spawn en t0
+       (G = 2 grupos, S = 1 grupo; n>=3, lobos+mixto, pares dentro del estrato).
+       CONFIRMATORIA (G): MASA vs CEBO_keep (señuelo = índice mín, asalto en su rumbo
+       ACTUAL, reposicionamiento ≈ 0) vs Reactive y run02, hold 50; piloto 50 pares ->
+       n = ceil((1.96·σ̂/(Δ̂/3))²) en [200,400]. EXPLORATORIAS (100 pares/celda): S: MASA vs
+       CEBO(180) y CEBO(90) vs Reactive, hold sweep {50,5,-10} SOLO sobre el mejor Δ y
+       run02 solo ahí; G: CEBO(180) forzado vs Reactive (precio del re-split). Por celda:
+       Δsev con IC bootstrap emparejado 10k, distribución completa (media/mediana/P(0)/
+       P(>=4)), procedencia, tasas staged/commit/kill-post-release, reloj de oportunidad,
+       frecuencias de ESCOLTA prematura.
+  e02  Latencias -> K (ADENDA): por estrato y por Δ; REGLA PRE-REGISTRADA (p75 de
+       t(inicio->LURE_COMMIT) en las celdas del manager > 2000 => terminación-por-evento
+       principal; <= 2000 => K = p75-p90 múltiplo de 5); ROC de LURE_COMMIT (cono {2,3,4
+       de 4} × puerta {40,50,60,70}); T_safe y margen del release por celda.
   e03  Frontera de quórum: wolves_min=wolves_max=n, n ∈ {2,3,4,5}, CEBO vs MASA, ambos
        oponentes; n=2 partido por presencia de ternero.
   e04  Espejo dron: Dummy / Reactive / PROPORCIONAL / run02 contra (a) lobos CEBO-forzado
@@ -409,6 +416,13 @@ def pick_visionado(records: list[dict], jobs_by_key: dict, max_gifs: int = 12) -
     dosf = [r for r in records if len(r["grupos_spawn"]) == 2]
     if dosf:
         add("spawn_2grupos_manager", dosf[0])
+    # Adenda §7: 2 episodios con ESCOLTA prematura etiquetada + 1 con sev >= 5.
+    prem = sorted([r for r in records if r.get("premature")], key=lambda r: (r["seed"], r["kind"]))
+    for r in prem[:2]:
+        add(f"escolta_prematura_{r['premature']['quien']}", r)
+    sev5 = [r for r in records if r["sev"] >= 5]
+    if sev5:
+        add("sev5mas", max(sev5, key=lambda r: (r["sev"], -r["seed"])))
     return chosen
 
 
@@ -536,167 +550,321 @@ ARM_MASA = {"name": "masa", "wolf": ("opt", ("MASA", {})), "drone": "reactive",
             "option_name": "MASA"}
 
 
-def _arm_cebo(hold: float, drone="reactive"):
-    return {"name": f"cebo_h{int(hold)}_{drone if isinstance(drone, str) else drone[0]}",
-            "wolf": ("opt", ("CEBO", {"delta_deg": 180.0, "hold": float(hold)})),
-            "drone": drone, "option_name": "CEBO"}
+def _arm_cebo(hold: float, drone="reactive", delta: float = 180.0, membership: str = "manager"):
+    dl = drone if isinstance(drone, str) else drone[0]
+    if membership == "keep":
+        name, opt = f"cebo_keep_h{int(hold)}_{dl}", "CEBO_keep"
+        params = {"hold": float(hold), "membership": "keep"}
+    else:
+        name, opt = f"cebo_d{int(delta)}_h{int(hold)}_{dl}", "CEBO"
+        params = {"delta_deg": float(delta), "hold": float(hold)}
+    return {"name": name, "wolf": ("opt", ("CEBO", params)), "drone": drone,
+            "option_name": opt}
+
+
+def _sev_dist(recs):
+    """Distribución COMPLETA de severidad de un brazo (adenda §3): media, mediana,
+    P(sev=0), P(sev>=4) — se espera bimodalidad."""
+    v = np.asarray([r["sev"] for r in recs], dtype=float)
+    if v.size == 0:
+        return None
+    return {"n": int(v.size), "media": float(v.mean()), "mediana": float(np.median(v)),
+            "p_sev0": float(np.mean(v == 0)), "p_sev4mas": float(np.mean(v >= 4)),
+            "hist": np.bincount(v.astype(int), minlength=9).tolist()}
+
+
+def _procedencia(recs):
+    ds = [d for r in recs for d in r["deaths"]]
+    if not ds:
+        return {"n_muertes": 0}
+    return {
+        "n_muertes": len(ds),
+        "knc": float(np.mean([not d["killer_confirmado"] for d in ds])),
+        "gotera": float(np.mean([d["cruzo_gotera"] for d in ds])),
+        "octantes": np.bincount([d["octante_vs_ancla"] for d in ds
+                                 if d["octante_vs_ancla"] is not None], minlength=8).tolist(),
+        "por_ternero": float(np.mean([d["kind"] == "calf" for d in ds])),
+    }
+
+
+def _tasas(recs):
+    """Tasas staged / commit / kill-post-release + RELOJ DE OPORTUNIDAD (adenda §3) +
+    frecuencias del clasificador de ESCOLTA prematura (adenda §5)."""
+    n = max(len(recs), 1)
+    staged = [r for r in recs if r["clock"]["t_staged"] is not None]
+    kill_post = [r for r in recs if any(e["ev"] == "STRIKE_RESOLVED" and
+                                        e.get("outcome") == "kill" for e in r["events"])]
+    opp = [r["clock"]["t_staged"] / max(r["steps"], 1) for r in staged]
+    prem = [r["premature"] for r in recs if r.get("premature")]
+    return {
+        "n": len(recs), "staged": len(staged) / n,
+        "commit": sum(1 for r in recs if r["clock"]["t_lure_commit"] is not None) / n,
+        "kill_post_release": len(kill_post) / n,
+        "oportunidad_ticks_hasta_staged": (list(boot_ci([r["clock"]["t_staged"] for r in staged]))
+                                           if staged else None),
+        "oportunidad_frac_episodio": (list(boot_ci(opp)) if opp else None),
+        "escolta_prematura": {
+            "n": len(prem), "frac": len(prem) / n,
+            "confirmado_primero_senuelo": sum(1 for p in prem if p["quien"] == "señuelo"),
+            "confirmado_primero_asalto": sum(1 for p in prem if p["quien"] == "asalto"),
+            "investigador_hacia_corzo": sum(1 for p in prem if p["investigador_hacia_corzo"]),
+            "pinzamiento_borde": sum(1 for p in prem if p["pinzamiento_borde"]),
+        },
+    }
+
+
+def _cell(cebo, masa, extra_splits=()):
+    """Celda de E0.1: Δsev emparejado con IC bootstrap 10k (por n y por estrato de tamaño),
+    distribuciones completas, procedencia y tasas de AMBOS brazos."""
+    by = {(r["seed"], r["kind"]): r for r in masa}
+    delta = {}
+    splits = [("todos", lambda r: True)] + \
+        [(f"n{k}", lambda r, k=k: sum(r["grupos_spawn"]) == k) for k in (3, 4, 5)] + \
+        list(extra_splits)
+    for lab, sel in splits:
+        d = [r["sev"] - by[(r["seed"], r["kind"])]["sev"] for r in cebo
+             if (r["seed"], r["kind"]) in by and sel(r)]
+        if d:
+            delta[lab] = list(boot_ci(d)) + [len(d)]
+    grid = list(range(0, 24_000, 250))
+    valle = {}
+    for lab, rs in (("cebo", cebo), ("masa", masa)):
+        cum = np.zeros(len(grid))
+        for r in rs:
+            ts = sorted(d["t"] for d in r["deaths"])
+            cum += [sum(1 for t in ts if t <= g) for g in grid]
+        valle[lab] = (cum / max(len(rs), 1)).round(3).tolist()
+    return {"delta": delta,
+            "dist": {"cebo": _sev_dist(cebo), "masa": _sev_dist(masa)},
+            "procedencia": {"cebo": _procedencia(cebo), "masa": _procedencia(masa)},
+            "tasas": {"cebo": _tasas(cebo), "masa": _tasas(masa)},
+            "valle": valle, "grid": grid}
+
+
+def strata_pool(count_g: int, count_s: int):
+    """Semillas por ESTRATO de geometría de spawn en t0 (adenda §1; el spawn es determinista
+    por semilla): G = 2 grupos, S = 1 grupo; n>=3, tipos lobos+mixto (mitad y mitad)."""
+    def probe(kind, want_groups, count):
+        # El estrato G (2 grupos ∧ n>=3) es ~28% de las semillas: hace falta sondear
+        # ~4x más semillas (probe barato: solo World.reset, sin física).
+        return seeds_with(kind, lambda w: w.n_wolves >= 3 and
+                          len(w.wolf_group_sizes) == want_groups, count, hard_cap=1500)
+    G = [("lobos", s) for s in probe("lobos", 2, count_g // 2)] + \
+        [("mixto", s) for s in probe("mixto", 2, count_g - count_g // 2)]
+    S = [("lobos", s) for s in probe("lobos", 1, count_s // 2)] + \
+        [("mixto", s) for s in probe("mixto", 1, count_s - count_s // 2)]
+    return G, S
 
 
 def exp_e01(args):
+    """E0.1 (adenda): estratificado por geometría de spawn. CONFIRMATORIA (estrato G):
+    MASA vs CEBO_keep vs Reactive y vs run02, hold 50, n del piloto de 50 pares acotado a
+    [200,400]. EXPLORATORIAS (100 pares/celda): S: MASA vs CEBO(180) y CEBO(90) vs Reactive,
+    hold sweep {50,5,-10} SOLO sobre el mejor Δ y run02 solo en esa mejor celda; G: CEBO(180)
+    forzado vs Reactive (precio del re-split innecesario)."""
     outdir = pathlib.Path(OUT_BASE) / "e01"
     outdir.mkdir(parents=True, exist_ok=True)
-    pool_l = [("lobos", s) for s in seeds_with("lobos", lambda w: w.n_wolves >= 3, 200)]
-    pool_m = [("mixto", s) for s in seeds_with("mixto", lambda w: w.n_wolves >= 3, 200)]
+    n_expl = args.pairs or 100
+    G, S = strata_pool(400, max(n_expl, 100))
 
     def run_arm(pairs, arm, probe=None):
         return run_jobs([{"seed": s, "kind": k, "arm": arm,
                           **({"probe": probe} if probe else {})} for k, s in pairs],
                         args.procs)
 
-    # PILOTO (Reactive, hold 50, 25+25 pares) -> σ̂ de la diferencia -> n de pares.
-    pilot = pool_l[:25] + pool_m[:25]
-    cebo_p = run_arm(pilot, _arm_cebo(50.0, "reactive"))
+    results, all_recs = {}, []
+
+    # ---- CONFIRMATORIA (estrato G): piloto -> n -> celdas Reactive y run02 -------------
+    pilot = G[:25] + G[200:225]
     masa_p = run_arm(pilot, dict(ARM_MASA, name="masa_reactive"))
+    keep_p = run_arm(pilot, _arm_cebo(50.0, "reactive", membership="keep"))
     by_p = {(r["seed"], r["kind"]): r for r in masa_p}
-    diffs_p = [r["sev"] - by_p[(r["seed"], r["kind"])]["sev"] for r in cebo_p]
-    d_hat = float(np.mean(diffs_p))
-    sigma = float(np.std(diffs_p, ddof=1))
+    diffs_p = [r["sev"] - by_p[(r["seed"], r["kind"])]["sev"] for r in keep_p]
+    d_hat, sigma = float(np.mean(diffs_p)), float(np.std(diffs_p, ddof=1))
     n_pairs = 400 if abs(d_hat) < 1e-6 else int(np.ceil((1.96 * sigma / (abs(d_hat) / 3)) ** 2))
     n_pairs = int(np.clip(n_pairs, 200, 400))
     if args.pairs:
-        n_pairs = args.pairs
-    pairs = pool_l[:n_pairs // 2] + pool_m[:n_pairs - n_pairs // 2]
-
-    results = {"piloto": {"n": len(pilot), "delta_hat": d_hat, "sigma": sigma,
-                          "n_pares": n_pairs}}
-    all_recs = []
-    grid = list(range(0, 24_000, 250))
+        n_pairs = min(n_pairs, 2 * args.pairs)
+    pairs_g = G[:n_pairs // 2] + G[200:200 + n_pairs - n_pairs // 2]
+    results["piloto"] = {"n": len(pilot), "delta_hat": d_hat, "sigma": sigma,
+                         "n_pares_confirmatoria": n_pairs}
     for drone in ("reactive", "run02"):
-        # UN solo brazo MASA por oponente (no depende del hold); CEBO por cada hold.
-        masa = run_arm(pairs, dict(ARM_MASA, drone=drone, name=f"masa_{drone}"))
-        all_recs += masa
-        by = {(r["seed"], r["kind"]): r for r in masa}
-        for hold in (50.0, 5.0, -10.0):
-            cebo = run_arm(pairs, _arm_cebo(hold, drone),
-                           probe=("lure_rec" if hold == 50.0 else None))
-            all_recs += cebo
-            cell = {}
-            for nlab, sel in [("todos", lambda r: True)] + \
-                    [(f"n{k}", lambda r, k=k: sum(r["grupos_spawn"]) == k) for k in (3, 4, 5)]:
-                dsel = [r["sev"] - by[(r["seed"], r["kind"])]["sev"]
-                        for r in cebo if sel(r)]
-                if dsel:
-                    cell[nlab] = list(boot_ci(dsel)) + [len(dsel)]
-            prov = {}
-            for lab, rs in (("cebo", cebo), ("masa", masa)):
-                ds = [d for r in rs for d in r["deaths"]]
-                prov[lab] = {
-                    "n_muertes": len(ds),
-                    "knc": (float(np.mean([not d["killer_confirmado"] for d in ds]))
-                            if ds else None),
-                    "gotera": (float(np.mean([d["cruzo_gotera"] for d in ds])) if ds else None),
-                    "octantes": (np.bincount([d["octante_vs_ancla"] for d in ds
-                                              if d["octante_vs_ancla"] is not None],
-                                             minlength=8).tolist() if ds else None),
-                }
-            valle = {}
-            for lab, rs in (("cebo", cebo), ("masa", masa)):
-                cum = np.zeros(len(grid))
-                for r in rs:
-                    ts = sorted(d["t"] for d in r["deaths"])
-                    cum += [sum(1 for t in ts if t <= g) for g in grid]
-                valle[lab] = (cum / max(len(rs), 1)).round(3).tolist()
-            results[f"{drone}_h{int(hold)}"] = {"delta": cell, "procedencia": prov,
-                                                "valle": valle, "grid": grid}
+        masa = run_arm(pairs_g, dict(ARM_MASA, drone=drone, name=f"masa_{drone}"))
+        keep = run_arm(pairs_g, _arm_cebo(50.0, drone, membership="keep"),
+                       probe=("lure_rec" if drone == "reactive" else None))
+        all_recs += masa + keep
+        results[f"G_keep_h50_{drone}"] = _cell(keep, masa)
+        if drone == "reactive":
+            masa_g_reactive = masa
+    # ---- EXPLORATORIA (estrato G): CEBO(180) forzado vs Reactive (precio del re-split) ---
+    pairs_ge = G[:n_expl // 2] + G[200:200 + n_expl - n_expl // 2]
+    keys_ge = {(s, k) for k, s in pairs_ge}
+    masa_ge = [r for r in masa_g_reactive if (r["seed"], r["kind"]) in keys_ge]
+    if len(masa_ge) < len(pairs_ge):                     # pares fuera de la confirmatoria
+        masa_ge = run_arm(pairs_ge, dict(ARM_MASA, name="masa_reactive"))
+    d180_g = run_arm(pairs_ge, _arm_cebo(50.0, "reactive", delta=180.0))
+    all_recs += d180_g
+    results["G_d180_h50_reactive"] = _cell(d180_g, masa_ge)
+
+    # ---- EXPLORATORIA (estrato S) ------------------------------------------------------
+    pairs_s = S[:n_expl // 2] + S[len(S) // 2:len(S) // 2 + n_expl - n_expl // 2]
+    masa_s = run_arm(pairs_s, dict(ARM_MASA, name="masa_reactive"))
+    all_recs += masa_s
+    best_delta, best_mean = None, -np.inf
+    for delta in (180.0, 90.0):
+        cebo = run_arm(pairs_s, _arm_cebo(50.0, "reactive", delta=delta), probe="lure_rec")
+        all_recs += cebo
+        cell = _cell(cebo, masa_s)
+        results[f"S_d{int(delta)}_h50_reactive"] = cell
+        m = cell["delta"]["todos"][0]
+        if m > best_mean:
+            best_mean, best_delta = m, delta
+    results["S_mejor_delta"] = best_delta
+    for hold in (5.0, -10.0):                              # hold sweep SOLO sobre el mejor Δ
+        cebo = run_arm(pairs_s, _arm_cebo(hold, "reactive", delta=best_delta))
+        all_recs += cebo
+        results[f"S_d{int(best_delta)}_h{int(hold)}_reactive"] = _cell(cebo, masa_s)
+    masa_s2 = run_arm(pairs_s, dict(ARM_MASA, drone="run02", name="masa_run02"))
+    cebo_s2 = run_arm(pairs_s, _arm_cebo(50.0, "run02", delta=best_delta))
+    all_recs += masa_s2 + cebo_s2
+    results[f"S_d{int(best_delta)}_h50_run02"] = _cell(cebo_s2, masa_s2)
+
     _dump(outdir, {"fecha": datetime.now().isoformat(timespec="seconds"),
-                   "n_pares": n_pairs, "holds": [50, 5, -10],
-                   "oponentes": ["reactive", "run02"], "procs": args.procs},
-          all_recs, results)
-    print(json.dumps(results["piloto"], indent=1))
+                   "estratos": {"G": len(G), "S": len(S)}, "n_confirmatoria": n_pairs,
+                   "n_exploratoria": n_expl, "procs": args.procs}, all_recs, results)
+    slim = {k: (v if k in ("piloto", "S_mejor_delta") else
+                {"delta": v["delta"], "dist": v["dist"]}) for k, v in results.items()}
+    print(json.dumps(slim, indent=1, ensure_ascii=False))
     print("e01: resultados en", outdir)
     return results
 
 
+def _lat_dist(recs, key_a, key_b=None):
+    vals = []
+    for r in recs:
+        a = r["clock"][key_a]
+        b = 0 if key_b is None else r["clock"][key_b]
+        if a is not None and b is not None:
+            vals.append(a - b)
+    if not vals:
+        return None
+    v = np.asarray(vals)
+    return {"n": len(vals), "p25": float(np.percentile(v, 25)),
+            "p50": float(np.percentile(v, 50)), "p75": float(np.percentile(v, 75)),
+            "p90": float(np.percentile(v, 90))}
+
+
 def exp_e02(args):
-    """Latencias -> K. Analiza los episodios CEBO de e01 (results.json) y ajusta por ROC
-    los umbrales de LURE_COMMIT con los canales grabados (lure_rows)."""
+    """Latencias -> K (adenda §6): por ESTRATO y por Δ (en S, t(inicio->staged) separado del
+    resto de la cadena); REGLA PRE-REGISTRADA (p75 de t(inicio->LURE_COMMIT) en las celdas
+    del manager — G/CEBO_keep y la mejor de S — > 2000 => terminación-por-evento como
+    diseño PRINCIPAL; <= 2000 => K fijo = p75-p90 múltiplo de 5); ROC de LURE_COMMIT
+    (cono ∈ {2,3,4 de 4} × puerta ∈ {40,50,60,70}) contra "muerte del asalto sin expulsión
+    previa del matador"; T_safe y margen en el release por celda."""
     outdir = pathlib.Path(OUT_BASE) / "e02"
     outdir.mkdir(parents=True, exist_ok=True)
     src = pathlib.Path(OUT_BASE) / "e01" / "results.json"
     data = json.load(open(src))
-    cebo = [r for r in data["episodes"] if r["option"] == "CEBO"]
+    best_delta = data["resumen"].get("S_mejor_delta", 180.0)
+    eps = data["episodes"]
+    rows_npz = pathlib.Path(OUT_BASE) / "e01" / "lure_rows.npz"
+    lure_rows = dict(np.load(rows_npz)) if rows_npz.exists() else {}
+    for i, r in enumerate(eps):
+        if f"ep{i}" in lure_rows:
+            r["lure_rows"] = lure_rows[f"ep{i}"].tolist()
 
-    def dist(key_a, key_b=None):
-        vals = []
-        for r in cebo:
-            a = r["clock"][key_a]
-            b = 0 if key_b is None else r["clock"][key_b]
-            if a is not None and b is not None:
-                vals.append(a - b)
-        if not vals:
-            return None
-        v = np.asarray(vals)
-        return {"n": len(vals), "p25": float(np.percentile(v, 25)),
-                "p50": float(np.percentile(v, 50)), "p75": float(np.percentile(v, 75)),
-                "p90": float(np.percentile(v, 90))}
+    def cell(arm_name):
+        return [r for r in eps if r["arm"] == arm_name]
 
-    lat = {
-        "inicio_staged": dist("t_staged"),
-        "staged_show": dist("t_show", "t_staged"),
-        "show_confirm": dist("t_confirm_decoy", "t_show"),
-        "inicio_flip": dist("t_primer_ancla"),
-        "inicio_commit": dist("t_lure_commit"),
-        "escolta_safe": dist("t_safe", "t_escolta"),
+    cells = {
+        "G_keep_reactive": cell("cebo_keep_h50_reactive"),
+        "G_keep_run02": cell("cebo_keep_h50_run02"),
+        "G_d180_reactive": cell("cebo_d180_h50_reactive"),
+        f"S_d{int(best_delta)}_reactive": [r for r in cell(f"cebo_d{int(best_delta)}_h50_reactive")
+                                           if len(r["grupos_spawn"]) == 1],
+        "S_d180_reactive": [r for r in cell("cebo_d180_h50_reactive") if len(r["grupos_spawn"]) == 1],
+        "S_d90_reactive": [r for r in cell("cebo_d90_h50_reactive") if len(r["grupos_spawn"]) == 1],
     }
-    rel_kill = [e.get("latencia") for r in cebo for e in r["events"]
-                if e["ev"] == "STRIKE_RESOLVED" and e.get("outcome") == "kill"]
-    lat["release_muerte"] = (None if not rel_kill else
-                             {"n": len(rel_kill),
-                              "p50": float(np.percentile(rel_kill, 50)),
-                              "p90": float(np.percentile(rel_kill, 90))})
-    ventana = [r["clock"]["ventana_release"] for r in cebo
-               if r["clock"]["ventana_release"] is not None]
+    # G_d180 se corre en el estrato G (2 grupos): separar del S por grupos_spawn.
+    cells["G_d180_reactive"] = [r for r in cells["G_d180_reactive"] if len(r["grupos_spawn"]) == 2]
 
-    # ROC de LURE_COMMIT: etiqueta = "el asalto mató sin ser expulsado" (muerte post-release
-    # de un lobo != señuelo); predictor = commit alcanzado bajo el umbral candidato.
+    lat, tsafe = {}, {}
+    for name, cs in cells.items():
+        if not cs:
+            continue
+        lat[name] = {
+            "inicio_staged": _lat_dist(cs, "t_staged"),
+            "staged_show": _lat_dist(cs, "t_show", "t_staged"),
+            "show_confirm": _lat_dist(cs, "t_confirm_decoy", "t_show"),
+            "inicio_flip": _lat_dist(cs, "t_primer_ancla"),
+            "inicio_commit": _lat_dist(cs, "t_lure_commit"),
+            "staged_commit": _lat_dist(cs, "t_lure_commit", "t_staged"),
+        }
+        rk = [e.get("latencia") for r in cs for e in r["events"]
+              if e["ev"] == "STRIKE_RESOLVED" and e.get("outcome") == "kill"]
+        lat[name]["release_muerte"] = (None if not rk else {
+            "n": len(rk), "p50": float(np.percentile(rk, 50)), "p90": float(np.percentile(rk, 90))})
+        vent = [r["clock"]["ventana_release"] for r in cs if r["clock"]["ventana_release"] is not None]
+        tsafe[name] = {"T_safe": _lat_dist(cs, "t_safe", "t_escolta"),
+                       "margen_release": (None if not vent else {
+                           "n": len(vent), "p25": float(np.percentile(vent, 25)),
+                           "p50": float(np.percentile(vent, 50)),
+                           "p75": float(np.percentile(vent, 75)),
+                           "p_negativo": float(np.mean(np.asarray(vent) < 0))})}
+
+    # ROC de LURE_COMMIT: etiqueta = muerte de un lobo del ASALTO tras el release sin
+    # expulsión previa del matador (proxy: matador no confirmado y != señuelo).
+    roc_pool = cells["G_keep_reactive"] + cells[f"S_d{int(best_delta)}_reactive"]
     roc = []
-    for cone in (40.0, 50.0, 60.0, 70.0, 80.0):
-        for gate in (40.0, 50.0, 60.0, 70.0, 80.0):
-            for mind in (2, 3):
-                tp = fp = fn = tn = 0
-                for r in cebo:
-                    rows = r.get("lure_rows") or []
-                    hit = any(sum(1 for x in row[1:6] if 0 <= x <= np.deg2rad(cone)) >= mind
-                              and row[6] >= gate for row in rows)
-                    label = any(e["ev"] == "STRIKE_RESOLVED" and e.get("outcome") == "kill"
-                                for e in r["events"]) and \
-                        any(d["t"] >= (r["clock"]["t_staged"] or 1 << 30) and
-                            d["killer_nearest"] != 0 for d in r["deaths"])
-                    tp += hit and label; fp += hit and not label
-                    fn += (not hit) and label; tn += (not hit) and not label
-                tpr = tp / max(tp + fn, 1)
-                fpr = fp / max(fp + tn, 1)
-                roc.append({"cone": cone, "gate": gate, "min_drones": mind,
-                            "tpr": round(tpr, 3), "fpr": round(fpr, 3),
-                            "youden": round(tpr - fpr, 3)})
-    best = max(roc, key=lambda r: r["youden"])
+    for mind in (2, 3, 4):
+        for gate in (40.0, 50.0, 60.0, 70.0):
+            tp = fp = fn = tn = 0
+            for r in roc_pool:
+                rows = r.get("lure_rows") or []
+                hit = any(sum(1 for x in row[1:6] if 0 <= x <= np.deg2rad(60.0)) >= mind
+                          and row[6] >= gate for row in rows)
+                t_st = r["clock"]["t_staged"]
+                label = t_st is not None and any(
+                    d["t"] >= t_st and d["killer_nearest"] != 0 and not d["killer_confirmado"]
+                    for d in r["deaths"])
+                tp += hit and label; fp += hit and not label
+                fn += (not hit) and label; tn += (not hit) and not label
+            tpr, fpr = tp / max(tp + fn, 1), fp / max(fp + tn, 1)
+            roc.append({"min_drones": mind, "gate_m": gate, "cone_deg": 60.0,
+                        "tpr": round(tpr, 3), "fpr": round(fpr, 3),
+                        "youden": round(tpr - fpr, 3), "n": len(roc_pool)})
+    best = max(roc, key=lambda r: r["youden"]) if roc else None
 
-    commit = lat["inicio_commit"]
-    k_prop = None
-    if commit is not None:
-        k_prop = int(round(np.mean([commit["p75"], commit["p90"]]) / 5.0) * 5)
-    ep_len = [r["steps"] for r in cebo if r["kind"] == "lobos"]
+    # REGLA PRE-REGISTRADA (decisión en STOP-2).
+    manager_cells = ["G_keep_reactive", f"S_d{int(best_delta)}_reactive"]
+    p75s = {c: (lat[c]["inicio_commit"]["p75"] if c in lat and lat[c]["inicio_commit"] else None)
+            for c in manager_cells}
+    sin_dato = [c for c, p in p75s.items() if p is None]
+    worst = max([p for p in p75s.values() if p is not None], default=None)
+    if worst is None:
+        regla = "SIN DATO (ninguna celda del manager alcanzó LURE_COMMIT)"
+        k_prop = None
+    elif worst > 2000:
+        regla = ("terminación-por-evento = diseño PRINCIPAL de la Etapa 1 (p75 de "
+                 f"t(inicio->commit) = {worst:.0f} > 2000); K = techo de revisión")
+        k_prop = None
+    else:
+        pool = [lat[c]["inicio_commit"] for c in manager_cells if c in lat and lat[c]["inicio_commit"]]
+        k_prop = int(round(np.mean([np.mean([d["p75"], d["p90"]]) for d in pool]) / 5.0) * 5)
+        regla = f"K fijo = {k_prop} ticks (p75-p90, múltiplo de frame_skip)"
+    ep_len = [r["steps"] for r in roc_pool if r["kind"] == "lobos"]
     sanity = (None if k_prop is None or not ep_len else
               float(np.mean([l / k_prop >= 5 for l in ep_len])))
-    resumen = {"latencias": lat, "ventana_release_p50":
-               (float(np.percentile(ventana, 50)) if ventana else None),
-               "roc_mejor": best, "roc": roc, "K_propuesto": k_prop,
-               "frac_eps_con_5_decisiones": sanity,
-               "recomendacion": ("K por reloj" if (sanity or 0) >= 0.7 else
-                                 "terminación-por-evento como diseño principal")}
+    resumen = {"latencias": lat, "reloj_escolta": tsafe, "roc": roc, "roc_mejor": best,
+               "p75_inicio_commit_manager": p75s, "K_propuesto": k_prop,
+               "frac_eps_con_5_decisiones": sanity, "regla_preregistrada": regla,
+               "celdas_manager_sin_commit": sin_dato, "S_mejor_delta": best_delta}
     (outdir / "results.json").write_text(json.dumps(resumen, indent=1, ensure_ascii=False))
-    print(json.dumps({k: v for k, v in resumen.items() if k != "roc"}, indent=1,
-                     ensure_ascii=False))
+    print(json.dumps({k: v for k, v in resumen.items() if k not in ("roc", "latencias",
+                                                                    "reloj_escolta")},
+                     indent=1, ensure_ascii=False))
+    for c in lat:
+        print(c, "inicio_commit:", lat[c]["inicio_commit"], "| inicio_staged:", lat[c]["inicio_staged"])
     return resumen
 
 

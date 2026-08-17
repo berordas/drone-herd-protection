@@ -19,6 +19,9 @@ contenedor: `python3 hrl/hrl_check.py`. Asserts al estilo de los demás checks.
      sin CRITICAL (orden del cebo, procedencia completa), sin violaciones de contrato
      (pack_prey/pack_prey2 válidos, máscara de comando respetada), OPTION_START presente.
      + DETERMINISMO de eventos: misma seed => misma línea temporal (bit a bit del JSON).
+  3b) ADENDA tras STOP-1: CEBO_keep (membership='keep', estrato G) arranca sin CRITICAL ni
+     violaciones (señuelo = índice mín, sin gate de rumbo) + el clasificador de ESCOLTA
+     PREMATURA etiqueta un caso construido (asalto confirmado primero).
   4) AllocatorCoordinator con partición 4-0 ≡ ReactiveCoordinator BIT A BIT (5 semillas
      lobos+mixto, episodios completos — incluye relevos de batería e investigaciones).
 """
@@ -251,6 +254,58 @@ def test_3_aserciones_y_determinismo():
           f"determinismo de eventos: OK")
 
 
+def test_3b_cebo_keep_y_prematura():
+    """Adenda tras STOP-1: CEBO_keep (membership='keep') en el estrato G — señuelo = índice
+    mín (el singleton del spawn), asalto en su rumbo actual: sin gate de rumbo, arranca sin
+    CRITICAL ni violaciones y la presa 2 se fija con la membresía del manager. Además el
+    clasificador de ESCOLTA prematura etiqueta correctamente un caso construido (ESCOLTA
+    antes del show con un lobo del asalto confirmado primero)."""
+    seeds = _seeds_by_groups("lobos", 2, 2, min_wolves=3)
+    for s in seeds:
+        layer = WolfOptionLayer(option=("CEBO", {"membership": "keep"}))
+        w = build_world(s, "lobos", wolf_controller=layer)
+        coord = SyncedReactiveCoordinator(w)
+        w.reset()
+        audit = EpisodeAudit(w, coord, wolf_controller=layer, meta={"seed": s},
+                             decoy_indices=layer.decoy_indices,
+                             assault_indices=layer.assault_indices, option_name="CEBO_keep")
+        while True:
+            audit.on_boundary()
+            wp = coord.act(w.get_observation())
+            _o, _r, term, trunc, _i = w.step(wp)
+            audit.after_step()
+            if w.step_count == 3:
+                assert layer.decoy_indices().tolist() == [0], "keep: señuelo debe ser el índice 0"
+                assert layer._theta_asa is None, "keep: no debe haber objetivo de rumbo"
+                assert layer._bearing_ok(w, layer.assault_indices()), "keep: gate de rumbo activo"
+            if term or trunc:
+                break
+        rec = audit.finalize()
+        assert not rec["critical"] and not rec["violations"], (rec["critical"], rec["violations"])
+    # Clasificador de ESCOLTA prematura (caso construido sobre el estado real del mundo).
+    layer = WolfOptionLayer(option=("CEBO", {"delta_deg": 180.0}))
+    w = build_world(seeds[0], "lobos", wolf_controller=layer)
+    coord = SyncedReactiveCoordinator(w)
+    w.reset()
+    audit = EpisodeAudit(w, coord, wolf_controller=layer, meta={"seed": seeds[0]},
+                         decoy_indices=layer.decoy_indices,
+                         assault_indices=layer.assault_indices, option_name="CEBO")
+    layer.refresh(w)
+    audit.on_boundary()
+    conf = np.zeros(w.n_wolves, dtype=bool)
+    conf[1] = True                                        # un lobo del ASALTO confirmado
+    coord.inner._confirmed = conf
+    coord.inner._conf_step = int(w.step_count)
+    w.phase = "ESCOLTA"                                   # ESCOLTA antes del show
+    audit.on_boundary()
+    assert audit.premature is not None, "no clasificó la ESCOLTA prematura"
+    assert audit.premature["quien"] == "asalto" and audit.premature["primer_confirmado"] == 1, \
+        audit.premature
+    assert any(e["ev"] == "ESCOLTA_PREMATURA" for e in audit.tracker.events)
+    print(f"  [3b] CEBO_keep sin CRITICAL en {len(seeds)} episodios G + clasificador de "
+          f"ESCOLTA prematura: OK")
+
+
 def test_4_allocator_4_0():
     n = 0
     for kind, count in (("lobos", 3), ("mixto", 2)):
@@ -269,5 +324,6 @@ if __name__ == "__main__":
     test_1_masa_bit_a_bit()
     test_2_cebo_spawn_bit_a_bit()
     test_3_aserciones_y_determinismo()
+    test_3b_cebo_keep_y_prematura()
     test_4_allocator_4_0()
     print("hrl_check: TODO OK.")

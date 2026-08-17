@@ -32,6 +32,11 @@ pasos — la misma frontera en que muestrean los envs, lección SyncedReactiveCo
                 por `decoy_timing` con defaults => camino BIT A BIT el del script (mide el
                 impuesto de interfaz puro). Requiere 2 grupos reales; si no los hay cae a
                 MASA y lo deja registrado (OPTION_FALLBACK).
+                `membership="keep"` = CEBO_keep (adenda E0 §2, estrato G): membresías del
+                manager (señuelo = índice vivo más bajo = el singleton del spawn en G;
+                asalto = resto) pero rumbo del asalto = su rumbo ACTUAL (sin Δ) =>
+                reposicionamiento ≈ 0 — el cebo como decisión pura cuando la geometría de
+                dos frentes ya existe. Timing = escalera del manager (creep=min(25,hold)).
 
 Decisiones de CAPA documentadas (no tocan wolf_controllers.py):
   - Escalera con hold != 50: CREEP nunca más laxo que el STAGE (creep = min(25, hold)); el
@@ -114,7 +119,7 @@ class WolfOptionLayer(WolfController):
     `frame_skip` fronteras (None = mantener). Requiere `refresh(world)` UNA vez por paso de
     física EN LA FRONTERA (SyncedReactiveCoordinator ya lo hace). Params de CEBO:
     `delta_deg` (default 180), `hold` (offset sobre r_detect, default ASSAULT_DARK_HOLD=50),
-    `membership` ("manager" default | "spawn")."""
+    `membership` ("manager" default | "spawn" | "keep")."""
 
     def __init__(self, option: tuple[str, dict] | None = None, manager=None,
                  frame_skip: int = 5):
@@ -212,9 +217,16 @@ class WolfOptionLayer(WolfController):
             self._s1 = np.array([0], dtype=int) if w.n_wolves > 0 else np.zeros(0, dtype=int)
             self._s2 = np.arange(1, w.n_wolves)
             herd_c = self._herd_c(w)
-            v = w.wolves.mean(axis=0) - herd_c           # rumbo actual del paquete (lado que ocupa)
-            theta_dec = float(np.arctan2(v[1], v[0])) if np.linalg.norm(v) > 1e-9 else 0.0
-            self._theta_asa = theta_dec + self._delta
+            if self._mode == "keep":
+                # CEBO_keep (adenda E0 §2): rumbo del asalto = rumbo ACTUAL del centroide del
+                # resto (NO señuelo+Δ) -> reposicionamiento ≈ 0: mide el cebo como DECISIÓN
+                # pura cuando la geometría de dos frentes ya existe (estrato G). Sin objetivo
+                # de rumbo no hay gate de rumbo (_bearing_ok es True) ni punto de presión.
+                self._theta_asa = None
+            else:
+                v = w.wolves.mean(axis=0) - herd_c       # rumbo actual del paquete (lado que ocupa)
+                theta_dec = float(np.arctan2(v[1], v[0])) if np.linalg.norm(v) > 1e-9 else 0.0
+                self._theta_asa = theta_dec + self._delta
             # Presa del asalto con la MEMBRESÍA del manager (sobrescribe la del spawn si el
             # mundo fijó pack_prey2 en t=0 con sus sectores: aquí mandan las membresías).
             kind, idx = freest_prey_for(w, self._s2)
@@ -336,7 +348,7 @@ class WolfOptionLayer(WolfController):
                     atk1 = False
         if assault_hold is not None:
             aim = w._prey_pos_of(w.pack_prey2, w.pack_prey2_kind)
-            if self._mode == "manager" and not self._bearing_ok(w, s2):
+            if self._theta_asa is not None and not self._bearing_ok(w, s2):
                 aim = self._reposition_point(w)
             assault_stage(w, s2, aim, desired, hold=assault_hold)
         elif s2.size > 0:

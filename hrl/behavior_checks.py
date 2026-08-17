@@ -15,6 +15,11 @@ episodios de TODOS los experimentos se evalúa
      desde el último ANCHOR_FLIP.
   C) RELOJ DE ESCOLTA: tick(latch ESCOLTA), tick(rebaño a salvo), y en episodios CEBO la
      ventana restante en el release.
+  C') ESCOLTA PREMATURA (adenda E0 §5, episodios CEBO): si ESCOLTA salta ANTES del show,
+     etiqueta (a) quién fue confirmado primero (señuelo / miembro del asalto, índice), (b) si
+     el investigador iba hacia un DISTRACTOR (corzo) al cruzarse con el tránsito oscuro,
+     (c) pinzamiento de borde (mín. distancia del asalto al borde de parcela < 25 m en los
+     200 ticks previos). Evento ESCOLTA_PREMATURA en la línea temporal + campo `premature`.
   D) COHERENCIA DE CONTRATOS: pack_prey/pack_prey2 válidos tras las escrituras de la capa;
      ninguna opción comanda drones no comandables (check_command_mask, lo llama el arnés con
      los waypoints ANTES/DESPUÉS de coord.act()).
@@ -25,12 +30,16 @@ SOLO LECTURA sobre el mundo; sin RNG. El muestreo sigue la convención de cebo_d
 
 from __future__ import annotations
 
+from collections import deque
+
 import numpy as np
 
 from world import ACTIVE
 
 from hrl.events import EventTracker, spawn_groups
 
+PREMATURE_EDGE_WINDOW = 200   # ticks previos a ESCOLTA que mira el clasificador (adenda §5c)
+PREMATURE_EDGE_M = 25.0       # m: "pinzamiento de borde" del asalto (mín. dist al borde < 25)
 GOTERA_GAP = 24.0   # m: pares de drones contiguos a hueco <= 1.2*spacing = pared-corredor real
                     # (MISMO umbral que run02_comportamiento.py -> métricas comparables)
 
@@ -155,6 +164,14 @@ class EpisodeAudit:
         self._snap_herd_c: np.ndarray | None = None
         self._last_flip_tick: int | None = None
         self._captures_seen = 0
+        # Clasificador de ESCOLTA PREMATURA (adenda E0 §5): historial por frontera de
+        # (a) investigador y su contacto, (b) distancia mínima del asalto al borde de parcela
+        # (ventana de PREMATURE_EDGE_WINDOW ticks), evaluado al saltar ESCOLTA antes del show.
+        self._prev_conf_any = False
+        self._inv_hist: deque = deque(maxlen=PREMATURE_EDGE_WINDOW)   # (tick, inv_idx, contacto_es_corzo)
+        self._edge_hist: deque = deque(maxlen=PREMATURE_EDGE_WINDOW)  # dist mín asalto→borde
+        self.premature: dict | None = None
+        self._escolta_seen = False
 
     # ------------------------------------------------------------------ #
     def on_boundary(self) -> None:
@@ -163,6 +180,7 @@ class EpisodeAudit:
         for e in self.tracker.events:
             if e["ev"] == "ANCHOR_FLIP":
                 self._last_flip_tick = e["t"]
+        self._track_premature()
         conf = getattr(self.tracker.reactive, "_confirmed", None)
         self._snap_conf = None if conf is None else conf.copy()
         self._snap_anchor = getattr(self.tracker.reactive, "_anchor", None)
@@ -175,6 +193,55 @@ class EpisodeAudit:
             if msg not in self._contract_seen:            # dedup: una vez por episodio
                 self._contract_seen.add(msg)
                 self.violations.append(f"contrato@t={int(w.step_count)}: {msg}")
+
+    def _track_premature(self) -> None:
+        """Historial para el clasificador de ESCOLTA PREMATURA + la clasificación en el
+        flanco de ESCOLTA (si el show aún no ha ocurrido). SOLO LECTURA."""
+        w = self.world
+        t = int(w.step_count)
+        # (a)/(b): quién investiga y si su contacto es un distractor (el reflejo persigue el
+        # CUERPO más cercano; se compara drone_contact con las posiciones de corzos vivos).
+        inv = np.where(w.drone_investigating)[0]
+        if inv.size:
+            i = int(inv[0])
+            c = w.drone_contact[i]
+            es_corzo = False
+            if w.n_corzos > 0 and np.all(np.isfinite(c)):
+                keep = ~w.corzo_dismissed
+                if keep.any():
+                    es_corzo = bool(np.linalg.norm(w.corzos[keep] - c, axis=1).min() < 1e-6)
+            self._inv_hist.append((t, i, es_corzo))
+        # (c): pinzamiento de borde del ASALTO.
+        asa = np.asarray(self.tracker.assault_indices(), dtype=int)
+        if asa.size:
+            p = w.wolves[asa]
+            d_edge = float(np.min(np.concatenate([p[:, 0], w.W - p[:, 0], p[:, 1], w.H - p[:, 1]])))
+            self._edge_hist.append(d_edge)
+        # Flanco de ESCOLTA antes del show => clasificar.
+        if w.phase == "ESCOLTA" and not self._escolta_seen:
+            self._escolta_seen = True
+            t_show = next((e["t"] for e in self.tracker.events if e["ev"] == "SHOW_START"), None)
+            staged = bool(w.wolf_decoy_released)
+            if not staged and t_show is None and self.option_name and "CEBO" in self.option_name:
+                conf = getattr(self.tracker.reactive, "_confirmed", None)
+                dec = np.asarray(self.tracker.decoy_indices(), dtype=int)
+                first = None
+                quien = "desconocido"
+                if conf is not None and conf.any():
+                    first = int(np.where(conf)[0][0])          # menor índice confirmado
+                    quien = "señuelo" if (dec.size and first in set(dec.tolist())) else "asalto"
+                elif dec.size == 0:
+                    quien = "sin_roles"
+                hacia_corzo = any(es for (_t, _i, es) in self._inv_hist)
+                inv_last = self._inv_hist[-1][1] if self._inv_hist else None
+                edge_min = float(min(self._edge_hist)) if self._edge_hist else None
+                self.premature = {
+                    "t": t, "primer_confirmado": first, "quien": quien,
+                    "investigador": inv_last, "investigador_hacia_corzo": bool(hacia_corzo),
+                    "asalto_borde_min_m": edge_min,
+                    "pinzamiento_borde": (edge_min is not None and edge_min < PREMATURE_EDGE_M),
+                }
+                self.tracker.emit(t, "ESCOLTA_PREMATURA", **self.premature)
 
     def check_command(self, wp_before: np.ndarray, wp_cmd) -> None:
         for msg in check_command_mask(self.world, wp_before, wp_cmd):
@@ -277,6 +344,7 @@ class EpisodeAudit:
             "steps": t_end, "grupos_spawn": [int(x) for x in w.wolf_group_sizes],
             "primer_ancla": (int(first_flip["to"]) if first_flip else None),
             "clock": clock, "events": events, "deaths": self.deaths,
+            "premature": self.premature,
             "gotera_cruces": int(self.corridor.gotera.sum()),
             "corredor_cruces": int(self.corridor.cruces.sum()),
             "violations": self.violations, "critical": critical,
