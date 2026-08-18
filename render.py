@@ -90,7 +90,16 @@ def _sprite(name: str, px: int = 96, fade: float = 1.0) -> np.ndarray:
     return arr
 
 
-def render_episode(world, history, interval: int = 40, save_path: str | None = None):
+def render_episode(world, history, interval: int = 40, save_path: str | None = None,
+                   show_detected: bool = True, show_confirmed: bool = True):
+    """Reproduce `history` (snapshots del mundo; NUNCA llama a step()).
+    Commit F (misión forense v3.5): `show_detected` dibuja un CUADRADO alrededor de cada lobo
+    DETECTADO — geometría PURA recomputada desde el snapshot: lobo a <= r_detect de algún dron
+    ACTIVE (el criterio DRI del disparador del mundo, sin estado nuevo) — con entrada en la
+    leyenda; `show_confirmed` dibuja además un ROMBO alrededor del lobo CONFIRMADO ante la
+    barrera si el snapshot trae la máscara `confirmed_mask` (la escribe el arnés HRL desde el
+    latch de equipo del coordinador — no la calcula el mundo); sin ella no se dibuja nada. El
+    círculo de DETER_RADIUS=20 (el campo del "sonido") ya se dibujaba en cada ACTIVE."""
     W, H = world.W, world.H
     sx, sy, sr = world.safe_zone
     cx, cy, cr = world.central_station
@@ -136,6 +145,16 @@ def render_episode(world, history, interval: int = 40, save_path: str | None = N
         deter_rings[0].set_label("radio disuasión")
     invest_line, = ax.plot([], [], color="royalblue", lw=1.4, ls="--", alpha=0.8, zorder=4,
                            label="investigando")
+    # Commit F: marcadores de percepción del bando dron (solo lectura de snapshots).
+    r_detect = float(getattr(world, "r_detect", 100.0))
+    det_hl = ax.scatter(*empty.T, s=330, facecolors="none", edgecolors="crimson", linewidths=1.3,
+                        marker="s", zorder=7, visible=bool(show_detected),
+                        label=("cuadrado = lobo detectado (<= r_detect de un ACTIVE)"
+                               if show_detected else None))
+    conf_hl = ax.scatter(*empty.T, s=520, facecolors="none", edgecolors="darkorange", linewidths=1.3,
+                         marker="D", zorder=7, visible=bool(show_confirmed),
+                         label=("rombo = lobo confirmado (latch de la barrera)"
+                                if show_confirmed else None))
 
     # --- entidades: sprites de emoji (o scatter de reserva si no hay emojis) ---
     zf = EMOJI_SCALE * (m / 300)
@@ -183,7 +202,7 @@ def render_episode(world, history, interval: int = 40, save_path: str | None = N
     banner = ax.text(0.5, 0.02, "", transform=ax.transAxes, ha="center", va="bottom",
                      fontsize=12, weight="bold", color="white", zorder=12,
                      bbox=dict(boxstyle="round", fc="gray", alpha=0.9))
-    ax.legend(loc="lower right", fontsize=6.5, framealpha=0.85)   # solo zonas/estructura (la leyenda de entidades se quitó: los emojis se explican solos)
+    ax.legend(loc="lower right", fontsize=6.5, framealpha=0.85, markerscale=0.45)   # solo zonas/estructura + marcadores de percepción (Commit F); markerscale: los marcadores de detectado/confirmado a tamaño de leyenda
 
     SOUND_DY = 0.035 * m   # desplazamiento del 🔊 justo por DEBAJO del dron (la barra de batería va encima)
 
@@ -243,8 +262,27 @@ def render_episode(world, history, interval: int = 40, save_path: str | None = N
             scatters["corzo"].set_offsets(corzos if len(corzos) else empty)
             scatters["drone"].set_offsets(drones)
 
-        # Radio de disuasión de los ACTIVE (solo escolta).
+        # Commit F: DETECTADO = geometría pura desde el snapshot (<= r_detect de un ACTIVE);
+        # CONFIRMADO = máscara `confirmed_mask` del snapshot si el arnés la escribió.
         dstate = snap.get("drone_state")
+        if show_detected:
+            if dstate is not None and len(wolves):
+                act = drones[np.asarray(dstate) == ACTIVE]
+                if act.shape[0]:
+                    dd = np.linalg.norm(np.asarray(wolves)[:, None, :] - act[None, :, :], axis=2)
+                    det_hl.set_offsets(np.asarray(wolves)[(dd <= r_detect).any(axis=1)])
+                else:
+                    det_hl.set_offsets(empty)
+            else:
+                det_hl.set_offsets(empty)
+        if show_confirmed:
+            cm = snap.get("confirmed_mask")
+            if cm is not None and len(wolves) and len(cm) == len(wolves):
+                conf_hl.set_offsets(np.asarray(wolves)[np.asarray(cm, dtype=bool)])
+            else:
+                conf_hl.set_offsets(empty)
+
+        # Radio de disuasión de los ACTIVE (solo escolta).
         for i, ring in enumerate(deter_rings):
             on = deter_show and dstate is not None and dstate[i] == ACTIVE
             if on:
@@ -301,7 +339,7 @@ def render_episode(world, history, interval: int = 40, save_path: str | None = N
         else:
             banner.set_text("")
 
-        arts = [defender_hl, invest_line, cow_box, txt, banner,
+        arts = [defender_hl, invest_line, cow_box, txt, banner, det_hl, conf_hl,
                 *cone_polys, *calf_lines, *deter_rings, *bat_bg, *bat_fill]
         if EMOJI_OK:
             arts += [ab for pool in (cow_pool, calf_pool, wolf_pool, corzo_pool, drone_pool, sound_pool) for ab, _, _ in pool]

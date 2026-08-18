@@ -348,14 +348,23 @@ def render_gif(job: dict, tag: str, outdir: pathlib.Path, max_frames: int = 800,
                          decoy_indices=(wolf.decoy_indices if wolf is not None else None),
                          assault_indices=(wolf.assault_indices if wolf is not None else None),
                          option_name=job["arm"].get("option_name"))
-    hist = [{**w.snapshot(), "battery": w.battery.copy()}]
+    from hrl.events import reactive_of
+    react = reactive_of(coord)
+
+    def snap():
+        # Commit F: el arnés escribe la máscara de CONFIRMADOS de la barrera en el snapshot
+        # (latch de equipo del coordinador — no la calcula el mundo) para el rombo del render.
+        cm = getattr(react, "_confirmed", None)
+        return {**w.snapshot(), "battery": w.battery.copy(),
+                "confirmed_mask": (None if cm is None else cm.copy())}
+    hist = [snap()]
     while True:
         if wolf is not None:
             wolf.refresh(w)
         audit.on_boundary()
         _o, _r, term, trunc, _i = w.step(coord.act(w.get_observation()))
         audit.after_step()
-        hist.append({**w.snapshot(), "battery": w.battery.copy()})
+        hist.append(snap())
         if term or trunc:
             break
     rec = audit.finalize()
