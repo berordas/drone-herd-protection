@@ -17,8 +17,8 @@ RECOMPENSA (dos componentes, SIEMPRE registradas por separado — vigilancia ant
 - LOCAL (por puesto): +local_coef por cada (lobo, paso) EXPULSADO cuyo causante es el dron del
   puesto — atribución DETERMINISTA recomputada del estado expuesto, con la regla del mundo
   (el lobo huye del dron ACTIVE acercándose MÁS CERCANO; world._apply_deterrence): ingredientes
-  `_wolf_scared`, `drones`, `drone_vel`, `drone_state`, `wolves` + DETER_RADIUS /
-  SCARE_APPROACH_MIN. Se recomputa en la frontera POSTERIOR al paso (el lobo ya huyó medio
+  `_wolf_scared`, `drones`, `drone_state`, `wolves` + DETER_RADIUS (v3.5: regla del
+  sonido, sin approach). Se recomputa en la frontera POSTERIOR al paso (el lobo ya huyó medio
   paso): misma regla, medio paso después — determinista y sin tocar el mundo.
 - `info` por paso: `r_global`, `r_local` (N_SEATS,), `agent_rewards` (N_SEATS,) = global +
   local_coef·local. Al terminal: `ep_severity` (= n_depredadas del episodio) y `ep_deter`
@@ -40,7 +40,7 @@ import gymnasium as gym
 import numpy as np
 from stable_baselines3.common.vec_env.base_vec_env import VecEnvWrapper
 
-from world import ACTIVE, DETER_RADIUS, SCARE_APPROACH_MIN, World
+from world import ACTIVE, DETER_RADIUS, World
 from baseline import CONFIG_V2
 
 from rl.drone_obs import AGENT_OBS_SIZE, N_SEATS
@@ -52,9 +52,9 @@ LOCAL_COEF_DEFAULT = 0.01                   # peso del bono local de disuasión 
 
 def deter_credit(world, seats: np.ndarray) -> np.ndarray:
     """(N_SEATS,) nº de lobos EXPULSADOS este paso atribuidos al dron de cada puesto.
-    Regla del mundo (world._apply_deterrence): el lobo asustado huye del dron ACTIVE
-    ACERCÁNDOSE (aproximación > SCARE_APPROACH_MIN, distancia <= DETER_RADIUS) MÁS CERCANO.
-    Recomputado del estado expuesto en la frontera posterior al paso (solo lectura)."""
+    Regla del mundo v3.5 (world._apply_deterrence, REGLA DEL SONIDO): el lobo asustado huye del
+    dron ACTIVE MÁS CERCANO a <= DETER_RADIUS (sin requisito de aproximación; SCARE_APPROACH_MIN
+    deprecated). Recomputado del estado expuesto en la frontera posterior al paso (solo lectura)."""
     w = world
     out = np.zeros(N_SEATS)
     if w.n_wolves == 0 or not w._wolf_scared.any():
@@ -64,14 +64,12 @@ def deter_credit(world, seats: np.ndarray) -> np.ndarray:
         return out
     rel = w.wolves[:, None, :] - w.drones[act_idx][None, :, :]          # (nw,na,2) dron->lobo
     dd = np.linalg.norm(rel, axis=2)
-    units = rel / np.maximum(dd[:, :, None], 1e-9)
-    approach = np.sum(w.drone_vel[act_idx][None, :, :] * units, axis=2)
-    approaching = (dd <= DETER_RADIUS) & (approach > SCARE_APPROACH_MIN)
+    within = dd <= DETER_RADIUS
     seat_of = {int(d): k for k, d in enumerate(seats) if d >= 0}
     for j in np.where(w._wolf_scared)[0]:
-        cand = approaching[j]
+        cand = within[j]
         if not cand.any():
-            continue                                   # medio paso después ya no se le acerca nadie: sin crédito
+            continue                                   # medio paso después ya nadie a tiro: sin crédito
         d = int(act_idx[np.argmin(np.where(cand, dd[j], np.inf))])
         k = seat_of.get(d)
         if k is not None:

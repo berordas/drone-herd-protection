@@ -4,8 +4,9 @@ La MISMA vara que Dummy/Reactive (apples-to-apples): `baseline.evaluate` con las
 semillas, la MISMA CONFIG_V2 y los lobos SCRIPTADOS por defecto (v3.4: cebo con roles
 invertidos), cambiando SOLO el coordinador:
 `coordinator_factory=lambda w: ResidualDroneCoordinator(w, model=modelo)`.
-Referencias leídas de los artefactos VIGENTES del repo: Dummy (baseline_v2.json, v3.4
-3.82/0/3.84) y Reactive (baseline_v2_reactive.json, v3.4 2.68/0/2.77 = la NOTA A BATIR).
+Referencias leídas de los artefactos VIGENTES del repo: Dummy (baseline_v2.json) y Reactive
+(baseline_v2_reactive.json = la NOTA A BATIR). [v3.4: 3.82/0/3.84 y 2.68/0/2.77; desde v3.5-sonido
+(regla del sonido) los artefactos son los re-medidos en el mundo v3.5 — ver baseline.py.]
 SEVERIDAD: MENOS = MEJOR (signo contrario a eval_wolves).
 
 run02: el residual envuelve la barrera SIN RIGIDEZ (NonRigidBarrier, cambio de diseño 1) ⇒
@@ -100,7 +101,8 @@ def main() -> None:
         print("  %-12s %s %s %s %6.2f±%-4.2f %s %s %8.2f   success=%d predation=%d timeout=%d"
               % (KIND_LABEL[kind], d_s, re_s, fl_s, r["severity_mean"], r["severity_std"], d_re,
                  d_fl, r["n_safe_mean"], t["success"], t["predation"], t["timeout"]))
-    print("  (severidad = muertes/episodio: MENOS = mejor; NOTA A BATIR = Reactive v3.4 2.68/0/2.77; "
+    print("  (severidad = muertes/episodio: MENOS = mejor; NOTA A BATIR = Reactive del artefacto vigente (v3.5 desde el "
+          "tag v3.5-sonido; los 2.68/0/2.77 de v3.4 son HISTÓRICOS); "
           "'suelo' = δ≡0 SIN rigidez re-medido)")
 
     payload = {

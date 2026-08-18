@@ -1,5 +1,5 @@
 tipo,n,severidad_media,severidad_desv,severidad_max,n_safe_media,success,predation,timeout
-solo-lobos,100,3.8200,2.4057,8,2.7500,9,83,8
+solo-lobos,100,1.9000,2.1190,8,4.5300,20,57,23
 solo-corzos,100,0.0000,0.0000,0,0.0000,0,0,100
-mixto,100,3.8400,2.4278,8,2.7400,6,85,9
-AGREGADO,300,2.5533,2.6747,8,1.8300,15,168,117
+mixto,100,2.0200,2.1999,8,4.3100,18,62,20
+AGREGADO,300,1.3067,1.9915,8,2.9467,38,119,143

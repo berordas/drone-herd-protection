@@ -139,7 +139,7 @@ ABORT_NOTE_DIETA = (
     "RESPONDE: ¿el cebo no emergió por FALTA DE DIETA (escenario infrecuente) o por ARQUITECTURA "
     "(política plana)? SUELO v3.4 MEDIDO (paso 0): eval ligera 10 semillas lobos δ=0 = 3.20 "
     "(detalle [1,0,5,4,5,3,3,5,3,3]; en FASE 1, política congelada, las ligeras deben CLAVARSE "
-    "ahí); arnés = 2.68/0/2.77 (el scriptado v3.4 congelado, bit a bit por test 9). REFERENCIA DE "
+    "ahí); arnés = 2.68/0/2.77 (el scriptado v3.4; ¡desde v3.5-sonido RE-MEDIR: mundo distinto!). REFERENCIA DE "
     "CEBO DEL SCRIPTADO v3.4 (cebo_diag --floor, 58 eps de 2 subgrupos, 203 muertes; ¡NO nula — "
     "el scriptado v3.4 YA ceba a mano, en v2.8 era 0.0%!): killer-NO-CONFIRMADO 26.6%, "
     "cebo-confirmado 26.6%, muertes-del-NO-anclado 79.3%, sev 2-frentes 3.50. GUARDIA DEL SUELO: "

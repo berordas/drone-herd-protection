@@ -5,7 +5,36 @@
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
 >
-> **Última actualización: 2026-08-05** · ***run08 de LOBOS (DIETA 50% DE DOS FRENTES) COMPLETADO — DESENLACE (3),
+> **Última actualización: 2026-08-18** · ***v3.5 "REGLA DEL SONIDO" (tag `v3.5-sonido`) — ENMIENDA DE FÍSICA
+> tras el FORENSE de la Etapa 0 del jerárquico + CORRECCIÓN de la entrada de "agujeros deliberados".** El visionado
+> humano de STOP-1/2 (E0.1, GIF 2 = seed 398 mixto, MASA vs Reactive) mostró lobos cruzando la línea rígida por el
+> PUNTO MEDIO entre dos drones y drones apilados; el forense (replay determinista, `/data/hrl_e0/forense/FORENSE.md`)
+> confirmó la causa raíz por tick: **t=672, cruce a frac 0.50 del corredor de 20 m, dron más cercano a 9.96 m con
+> approach −0.57 < SCARE_APPROACH_MIN=1 ⇒ expulsión v2.4 INACTIVA; empuje de pared 0.01 ≈ 0 (cancelación simétrica)**.
+> **CORRECCIÓN: el corredor central NUNCA fue un agujero deliberado — era este defecto de la regla del susto por
+> movimiento (v2.4-v3.4). Flancos de la línea estrecha, espalda del anillo de 50 y 2º frente libre SIGUEN siendo
+> deliberados (no se tocan).** Especificación del dueño (regla del sonido, `world._apply_deterrence`): un lobo queda
+> EXPULSADO siempre que esté a ≤ DETER_RADIUS=20 de ALGÚN dron ACTIVE — SIN requisito de velocidad de aproximación;
+> huida radial del ACTIVE más cercano (sin acumular), perfil clip(4·(1−d/20), 0.8, 4) intacto, la huida sustituye la
+> intención y excluye matar ese tick; "detectado" se cumple solo (≤20 ⊂ ≤100); corzos sin cambio; pared blanda (≤10)
+> INTACTA en código pero en SOMBRA; `SCARE_APPROACH_MIN` deprecated (se conserva por imports); 🔊 = dron con lobo a ≤20.
+> Tests nuevos (nacen de los ojos del dueño, en la verja): `test_corredor_cerrado` (lobo al punto medio exacto de dos
+> ACTIVE quietos a 20 m → expulsado, 0 cruces del segmento, dist mín a un dron 19.4 = el borde del sonido),
+> `test_sonido_estatico` (dron quieto, lobo entra a <20 → huye; el dron no se mueve 0.00 m). RE-GOLD CONSCIENTE de los
+> tests que codificaban "quieto = poste" (cada cambio en el mensaje del commit): test_disuasion (a) el dron QUIETO a
+> 12 m ahora EXPULSA (inversión exacta de la cota 'poste' <2 m → >2 m + scared) y (b) el poste que suena mantiene al
+> lobo fuera de la presa; test_susto (A) quieto cubriendo = expulsión (no pared); test_pared_estatica (A) el dron a
+> 14 m con los lobos a ≤20 SALVA a la presa (antes no) y (B) mover ≥ quieto en vez de mover > quieto +3 m;
+> test_pin_envolvente el dron a 14 m salva. **RE-MEDIDO (metro DGX, 100/tipo): Dummy 3.82/0/3.84 → 1.90/0/2.02
+> (los drones CLAVADOS vuelven a disuadir a corta) · Reactive 2.68/0/2.77 → **0.88±1.82/0/0.76±1.70** (success 67/69%, n_safe 5.99/6.09: la línea rígida quieta ya SUENA en todo su frente) · suelo residual drones
+> (NonRigidBarrier δ≡0) 0.92/0/0.81 · run02 (política v3.4 EVALUADA en v3.5, sin re-entrenar) 1.09/0/0.78 — su ventaja de v3.4 ('moverse para disuadir', 2.40/0/2.27 vs 2.68/2.77) DESAPARECE: en v3.5 el sonido ya no exige movimiento y el δ aprendido queda por debajo de la Reactive quieta en lobos (+0.21) y ≈ en mixto (+0.02); es HISTÓRICO, no se re-entrena en esta misión · suelo del
+> cebo scriptado (2 frentes, 58 eps) 3.50 → 2.60 (KNC 26.6% → 37.7%: el asalto sigue matando sin confirmar, y ahora es la MAYOR fuente de muertes; ancla-cebo 65.5% IDÉNTICO — el spawn y el timing del cebo no cambian; gotera 0/ep) · cruces de corredor Reactive 0.075/ep con 2.4% de las muertes tras un cruce (v3.4: 30-55%) — el corredor está CERRADO en la práctica (los 0.075 residuales = lobos empujados por la propia huida en aglomeraciones).** Hallazgo B (drones apilados) =
+> BUG de diseño de `_cover_engaged` (PENETRADO asigna `order[s % n_lobos]` → varios drones al MISMO slot; 246
+> ticks-par a <3 m en el GIF 2) — DECISIÓN HUMANA PENDIENTE (arreglo con test dirigido en commit separado, o aceptar).
+> Etapa 0 (E0.A/E0.1/E0.2) se RE-CALIBRA en v3.5 (FASE 4) con predicciones pre-registradas; E0.3-E0.5 y la Etapa 1
+> siguen CONGELADOS hasta el STOP-2'.
+>
+> *(2026-08-05: run08 de LOBOS (DIETA 50% DE DOS FRENTES) COMPLETADO — DESENLACE (3),
 > ESTRUCTURAL, con agravante: la dieta NO hace asomar el cebo; PPO con recompensa de equipo pura EROSIONA el cebo
 > scriptado.** Paso acotado pre-jerárquico (commit `250f278`): el residual de run05/07 (equipo pura +1/muerte,
 > shaping OFF, sin pista, δ autoridad plena, dos fases) con UN cambio — `--train-two-front-rate 0.5`: 50% de los

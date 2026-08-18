@@ -52,30 +52,33 @@ DRONE_MAX_ACCEL = 4.0     # m/s^2
 # gasta (1+DRONE_MOVE_DRAIN)x -> perseguir/sobre-comprometer drones tiene coste táctico real. Afinable.
 DRONE_MOVE_DRAIN = 1.5
 
-# --- SUSTO DE DOS RADIOS (scare, v2.7; extiende el susto por movimiento de v2.4): respuesta del LOBO a un dron
-# ACTIVE cercano. Los depredadores se HABITÚAN a disuasores ESTÁTICOS a distancia, pero NO cruzan un obstáculo que
-# tienen ENCIMA. Modelo fiel a los datos de fuga (FID): huida fuerte ante algo que se acerca + una zona mínima de
-# incomodidad que no se cruza ni con el disuasor quieto. Es CÓMO responde el mundo al dron (infraestructura), NO el
-# coordinador (dónde está el dron lo deciden el reflejo/Dummy/coordinador). DOS radios anidados (mover > quieto,
-# SIEMPRE — el incentivo a moverse que el MARL aprendió se preserva):
-#   · EXPULSIÓN PLENA (v2.4, radio GRANDE DETER_RADIUS=20, INTACTA): dron ACERCÁNDOSE (aproximación >
-#     SCARE_APPROACH_MIN) -> el lobo HUYE RADIAL alejándose, módulo CRECIENTE al acercarse el dron, acotado
-#     [SCARE_SPEED_MIN, wolf_speed]; la huida SUSTITUYE a la caza y NO mata mientras huye (marcado _wolf_scared). Si
-#     varios se acercan, manda el acercándose MÁS CERCANO (desempate determinista por índice).
-#   · PARED BLANDA (v2.7, radio PEQUEÑO STATIC_DETER_RADIUS=10 = la mitad, NUEVO): un dron ACTIVE (aunque esté
-#     QUIETO o alejándose) a <= STATIC_DETER_RADIUS es un OBSTÁCULO que el lobo NO CRUZA: se le quita la componente
-#     de velocidad que apunta al dron (se DESLIZA/desvía) y se le añade un empuje radial saliente de frenado (crece
-#     al acercarse), acotado a la rapidez de caza -> FRENA y DESVÍA, no lanza (más débil que la huida plena). Marca
-#     _wolf_walled -> NO mata a través del dron (ver _process_predation). Un dron estático a > STATIC_DETER_RADIUS
-#     NO tiene efecto (habituación al disuasor estático a distancia, v2.4). Jerarquía: si además se acerca (dentro de
-#     DETER_RADIUS), la EXPULSIÓN domina (radio mayor + más fuerza) -> moverse hacia el lobo es ESTRICTAMENTE mejor.
-# Efecto de diseño: el dron quieto vuelve a REPELER a corta (deja de ser un poste atravesable) -> la barrera se hace
-# PARED; pero mover sigue siendo mejor (expulsa más lejos y más fuerte). Expulsado != rendido: al frenar/alejarse el
-# dron y salir de la pared, el lobo retoma la caza (sin cooldown). Solo ACTIVE disuaden; gateado por escort_enabled
-# (combate puro NO aplica -> face_check bit a bit). Afinable por render; MEDIDA, no objetivo (no tunear para cifras).
-DETER_RADIUS = 20.0          # m: radio de EXPULSIÓN por movimiento (= SCARE_RADIUS; render/coordinators lo importan).
+# --- SUSTO — REGLA DEL SONIDO (v3.5, especificación del dueño tras el forense de E0.1; sustituye al susto POR
+# MOVIMIENTO de v2.4 y deja en sombra la pared blanda de v2.7): un lobo queda EXPULSADO siempre que esté a
+# <= DETER_RADIUS=20 de ALGÚN dron ACTIVE — SIN requisito de velocidad de aproximación. Motivación MEDIDA
+# (FORENSE.md, GIF 2 de e01, t=672): con la regla v2.4 el lobo cruzaba la línea rígida por el PUNTO MEDIO exacto
+# entre dos drones a 20 m (dron más cercano a 9.96 m con approach -0.57 < SCARE_APPROACH_MIN => expulsión
+# inactiva; empuje de pared 0.01 ~ 0 por cancelación simétrica) — el corredor central NUNCA fue un agujero
+# deliberado: era este defecto de la regla. Con la regla del sonido el punto medio está a 10 m de dos ACTIVE =>
+# expulsado por construcción (test_corredor_cerrado, escort_check).
+#   · EXPULSIÓN (radio DETER_RADIUS=20): lobo a <= DETER_RADIUS de >= 1 ACTIVE -> HUYE RADIAL del ACTIVE MÁS
+#     CERCANO (sin acumular entre drones; desempate determinista por índice), módulo clip(wolf_speed·(1−d/R),
+#     SCARE_SPEED_MIN, wolf_speed) (mismo perfil que v2.4); la huida SUSTITUYE a la intención del controlador y
+#     EXCLUYE matar ese tick (_wolf_scared, ver _process_predation). La condición "detectado" se cumple sola
+#     (<= 20 ⊂ <= 100 de un ACTIVE) y también "confirmable" (<= 20 ⊂ <= r_confirm=40).
+#   · PARED BLANDA (v2.7, radio STATIC_DETER_RADIUS=10): INTACTA en el código pero en SOMBRA — todo lobo a <= 10
+#     está a <= 20 y ya está expulsado; solo actuaría si DETER_RADIUS < STATIC_DETER_RADIUS. Diff mínimo.
+#   · SCARE_APPROACH_MIN: DEPRECATED para la expulsión (ya no gatea nada en _apply_deterrence); se conserva la
+#     constante por compatibilidad de imports (rl/drone_env la usaba para deter_credit — actualizado a la regla
+#     nueva). El 🔊 del render (_drone_scaring) = dron ACTIVE con algún lobo a <= DETER_RADIUS.
+#   · CORZOS: sin cambio (no existe mecánica de susto para ellos) — decisión por defecto, vetable por el dueño.
+# Historia (v2.4-v3.4): "los depredadores se HABITÚAN a disuasores estáticos" -> solo expulsaba el dron que EMBESTÍA
+# (approach > SCARE_APPROACH_MIN); un dron quieto era un poste (v2.4) o una pared de 10 m (v2.7). Ese modelo dejaba
+# el corredor de 20 m permeable en el punto medio (medido en E0.1: 30-55% de las muertes tras un cruce de gotera).
+# Solo ACTIVE disuaden; gateado por escort_enabled (combate puro NO aplica -> face_check bit a bit). Afinable por
+# render; MEDIDA, no objetivo (no tunear para cifras).
+DETER_RADIUS = 20.0          # m: radio de EXPULSIÓN — el "sonido" del dron (v3.5: sin requisito de movimiento; render/coordinators lo importan).
                              #    El lobo es AUDAZ -> solo HUYE de cerca. EJE DE SENSIBILIDAD CLAVE.
-SCARE_APPROACH_MIN = 1.0     # m/s: velocidad de aproximación del dron a partir de la cual EXPULSA (por debajo = poste). TUNE
+SCARE_APPROACH_MIN = 1.0     # m/s: DEPRECATED (v3.5): ya NO gatea la expulsión (regla del sonido); se conserva por compatibilidad de imports.
 SCARE_SPEED_MIN = 0.8        # m/s: módulo MÍNIMO de la huida al expulsar (nunca v~0 -> sin "cuadro congelado" lobo-vaca-dron).
 STATIC_DETER_RADIUS = 10.0   # m: radio de la PARED BLANDA (v2.7): el lobo NO cruza hacia un dron ACTIVE aunque esté
                              #    quieto (la mitad de DETER_RADIUS -> mover > quieto). Escalado al campo 300×300. TUNE
@@ -1187,21 +1190,23 @@ class World:
         self._push_outside_circle(self.wolves, self.central_station)
 
     def _apply_deterrence(self, v_target: np.ndarray) -> np.ndarray:
-        """SUSTO DE DOS RADIOS (scare, v2.7). Para cada lobo y cada dron ACTIVE se mira la distancia y la
-        VELOCIDAD DE APROXIMACIÓN del dron (componente de su velocidad hacia el lobo). Dos radios anidados:
-          · EXPULSIÓN PLENA (v2.4, INTACTA; radio DETER_RADIUS=20): dron ACERCÁNDOSE (aprox. > SCARE_APPROACH_MIN)
-            -> el lobo HUYE RADIAL alejándose del dron acercándose MÁS CERCANO (manda el más amenazante; desempate
-            por índice), módulo clip(wolf_speed·(1-d/R), SCARE_SPEED_MIN, wolf_speed). La huida SUSTITUYE a la caza;
-            _wolf_scared -> NO mata mientras huye (ver _process_predation).
+        """SUSTO — REGLA DEL SONIDO (v3.5; ver bloque de cabecera). Para cada lobo y cada dron ACTIVE se mira SOLO
+        la distancia (la velocidad de aproximación ya NO interviene: SCARE_APPROACH_MIN deprecated). Dos radios:
+          · EXPULSIÓN (radio DETER_RADIUS=20): lobo a <= DETER_RADIUS de ALGÚN ACTIVE -> HUYE RADIAL alejándose del
+            ACTIVE MÁS CERCANO (sin acumular entre drones; desempate por índice), módulo clip(wolf_speed·(1-d/R),
+            SCARE_SPEED_MIN, wolf_speed) (perfil v2.4 intacto). La huida SUSTITUYE a la intención del controlador;
+            _wolf_scared -> NO mata ese tick (ver _process_predation). Cierra el corredor central por construcción
+            (el punto medio de dos drones a 20 m está a 10 m de ambos).
           · PARED BLANDA (v2.7, NUEVO; radio STATIC_DETER_RADIUS=10): un dron ACTIVE (aunque QUIETO o alejándose) a
             <= STATIC_DETER_RADIUS y lobo NO expulsado -> el lobo NO CRUZA hacia el dron: se le quita la componente
             de v_target que apunta al dron-pared más cercano (se DESLIZA/desvía) y se le suma un empuje radial
             saliente de frenado (crece al acercarse, sumado sobre todos los drones-pared), acotado a la rapidez de
             caza -> FRENA y DESVÍA, no lanza (más débil que la huida plena). _wolf_walled -> NO mata a través. Un
             dron estático a > STATIC_DETER_RADIUS NO tiene efecto (habituación al disuasor estático a distancia).
-        Jerarquía: la expulsión (radio mayor, más fuerza) DOMINA a la pared -> moverse hacia el lobo es
-        ESTRICTAMENTE mejor que estar quieto.
-        Marca self._drone_scaring = drones ACTIVE que se acercan a algún lobo a tiro (señal del 🔊 del render).
+        Jerarquía: la expulsión (radio mayor) DOMINA a la pared, que queda en SOMBRA (todo lobo a <= 10 ya está
+        a <= 20): el código de la pared se conserva INTACTO (diff mínimo) pero solo actuaría si DETER_RADIUS <
+        STATIC_DETER_RADIUS.
+        Marca self._drone_scaring = drones ACTIVE con algún lobo a tiro (señal del 🔊 del render).
         Solo en escolta (escort_enabled): en combate puro devuelve v_target SIN tocar y deja _wolf_scared/
         _wolf_walled/_drone_scaring en todo False -> face_check bit a bit. Solo drones ACTIVE disuaden
         (INCOMING/RETURNING/STRANDED no)."""
@@ -1214,24 +1219,21 @@ class World:
         if act_idx.size == 0:
             return v_target
         act = self.drones[act_idx]                                   # (na,2)
-        act_vel = self.drone_vel[act_idx]                            # (na,2)
         rel = self.wolves[:, None, :] - act[None, :, :]              # (nw,na,2): dron -> lobo (huye alejándose)
         dd = np.linalg.norm(rel, axis=2)                             # (nw,na)
         units = rel / np.maximum(dd[:, :, None], 1e-9)              # unitario dron->lobo
-        within = dd <= DETER_RADIUS                                  # (nw,na): dron a tiro (expulsión)
-        # Velocidad de aproximación de cada dron hacia cada lobo (componente de v_dron sobre dron->lobo).
-        approach = np.sum(act_vel[None, :, :] * units, axis=2)       # (nw,na) >0 = el dron se ECHA ENCIMA
-        approaching = within & (approach > SCARE_APPROACH_MIN)       # (nw,na): a tiro Y acercándose de verdad
-        # 🔊: un dron 'ladra' si se acerca a ALGÚN lobo a tiro (señal para el render; independiente de a quién expulsa).
-        self._drone_scaring[act_idx] = approaching.any(axis=0)
+        within = dd <= DETER_RADIUS                                  # (nw,na): dron a tiro = el lobo OYE el sonido
+        # v3.5 REGLA DEL SONIDO: la expulsión NO exige aproximación (act_vel ya no interviene; SCARE_APPROACH_MIN
+        # deprecated). 🔊: un dron 'suena' si tiene ALGÚN lobo a tiro (señal para el render).
+        self._drone_scaring[act_idx] = within.any(axis=0)
 
         v_out = v_target.copy()
 
-        # --- EXPULSIÓN (radio grande): cada lobo con >=1 dron acercándose HUYE del acercándose MÁS CERCANO ---
-        expelled = approaching.any(axis=1)                          # (nw,)
+        # --- EXPULSIÓN (radio DETER_RADIUS): cada lobo con >=1 ACTIVE a tiro HUYE del ACTIVE MÁS CERCANO ---
+        expelled = within.any(axis=1)                               # (nw,)
         if expelled.any():
-            dd_appr = np.where(approaching, dd, np.inf)             # distancia SOLO de los que se acercan
-            j = np.argmin(dd_appr, axis=1)                         # (nw,) dron acercándose más cercano (manda; empate -> menor índice)
+            dd_appr = np.where(within, dd, np.inf)                  # distancia SOLO de los que están a tiro
+            j = np.argmin(dd_appr, axis=1)                         # (nw,) ACTIVE más cercano (manda; empate -> menor índice)
             wi = np.arange(self.n_wolves)
             flee_dir = units[wi, j]                                # (nw,2) radial, alejándose del dron que embiste
             fall = np.clip(1.0 - dd[wi, j] / DETER_RADIUS, 0.0, 1.0)

@@ -272,7 +272,7 @@ def test_mundo_scriptado_intacto():
     # Spot-check: el andamiaje no puede haber movido la física (severidades IDÉNTICAS a v2.4).
     with open("baseline_v2.json", encoding="utf-8") as f:
         ref = json.load(f)
-    assert ref["frozen_tag"] == "v3.4-baseline"   # línea rígida + roles invertidos del cebo (v3.4); metro DGX (reproducible solo dentro del contenedor)
+    assert ref["frozen_tag"] == "v3.5-sonido"   # regla del sonido (v3.5); metro DGX (reproducible solo dentro del contenedor)
     checked = 0
     for kind in ("lobos", "corzos", "mixto"):
         eps = ref["by_kind"][kind]["episodes"]

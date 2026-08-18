@@ -137,44 +137,26 @@ EVAL_SEEDS = tuple(range(N_PER_KIND))
 KINDS = ("lobos", "corzos", "mixto")
 KIND_LABEL = {"lobos": "solo-lobos", "corzos": "solo-corzos", "mixto": "mixto"}
 TERMINALS = ("success", "predation", "timeout")
-FROZEN_TAG = "v3.4-baseline"   # tag git del commit congelado: LÍNEA RÍGIDA + ROLES INVERTIDOS DEL CEBO.
-                               # v3.3 (aceptada por el usuario EN GIF, congelada aquí): 1) TRINQUETE del avance —
-                               # el aim de la barrera es MONÓTONO hacia fuera (la línea sale hacia los lobos y SE
-                               # QUEDA fuera; métrica del usuario: dist centro->vaca más próxima CRECE mientras los
-                               # lobos se acercan — 58% por ventanas, series 13->50-60 sostenidas); 2) INVERSIÓN DE
-                               # ROLES del cebo (wolf_controllers.py) — el CEBO se deja confirmar PRIMERO (se muestra
-                               # + ALA ROTA arrastrando al investigador) y el ASALTO espera OSCURO por anillos
-                               # (STAGE r_detect+50 -> CREEP r_detect+25 -> DEEP r_confirm+25) hasta que la barrera
-                               # está comprometida: ancla = sector-cebo en ~60% de episodios de 2 frentes (techo
-                               # medido ~73%: el 27% restante el asalto NACE a 108-130 m de un dron y es cazado por
-                               # el barrido — geometría de spawn, irreducible del lado del lobo) con el asalto a
-                               # <=150 de su presa al saltar ESCOLTA en 42-45% (frontera ancla<->profundidad ~1:1
-                               # medida en 8 configuraciones; vías refutadas documentadas en wolf_controllers.py).
-                               # v3.4 (regla del usuario: si un dron avanza, avanzan TODOS): la barrera es una LÍNEA
-                               # RÍGIDA — UNA pose (centro C + eje u) con offsets FIJOS y GOBERNADOR DEL MÁS REZAGADO
-                               # (paso_pose = max(0, DRONE_MAX_SPEED·dt − err_max); la formación avanza al ritmo del
-                               # más rezagado y espera QUIETA mientras se forma). Rigidez MEDIDA (28 eps): error de
-                               # estación FORMADA p95 1.66 / máx 4.71 m; espaciado p5-p95 19.7-20.3 (nominal 20);
-                               # colinealidad p95 0.20 m. El CIERRE LOCAL v3.3 queda ELIMINADO (deformaba la línea
-                               # por definición); su coste MEDIDO: cruces de segmento 56 -> 149/28 eps (hacia dentro
-                               # con la línea en pie 33 -> 92) y PENETRADO 4159 -> 13593 pasos — agujeros DELIBERADOS
-                               # de la baseline rígida (junto a flancos + espalda del anillo + 2º frente lastrado por
-                               # la inversión). Defaults de World en 300 intactos (face_check bit a bit). METRO DGX.
-                               # Nota a batir del MARL -> Reactive v3.4 (la línea rígida con el cebo invertido).
+FROZEN_TAG = "v3.5-sonido"     # tag git del commit congelado: REGLA DEL SONIDO (especificación del dueño tras el
+                               # forense de E0.1, 2026-08-18). Cambio de FÍSICA en world._apply_deterrence: un lobo queda
+                               # EXPULSADO siempre que esté a <= DETER_RADIUS=20 de ALGÚN dron ACTIVE — SIN requisito de
+                               # velocidad de aproximación (SCARE_APPROACH_MIN deprecated); huida radial del ACTIVE más
+                               # cercano, mismo perfil clip(4·(1−d/20), 0.8, 4); la pared blanda v2.7 queda en SOMBRA
+                               # (código intacto). Motivación MEDIDA (FORENSE.md): con el susto por movimiento v2.4 el lobo
+                               # cruzaba la línea rígida por el PUNTO MEDIO exacto entre dos drones a 20 m (approach −0.57
+                               # < 1 => expulsión inactiva; empuje de pared ~0 por cancelación simétrica) — el corredor
+                               # central NUNCA fue un agujero deliberado; flancos, espalda del anillo y 2º frente SÍ lo
+                               # siguen siendo. Todo lo demás (barrera v3.4 rígida, cebo invertido, terreno 500, spawn)
+                               # INTACTO. Lineage: v3.4-baseline (3.82/0/3.84 · 2.68/0/2.77) -> v3.5-sonido. METRO DGX.
 
 # Referencia CONGELADA de severidad (media de muertes/ep) por tipo, para detectar DERIVA.
-# Se rellena tras la primera medición; en re-corridas debe coincidir (mundo reproducible POR ENTORNO).
-# v3.4 (METRO DGX): LÍNEA RÍGIDA + ROLES INVERTIDOS DEL CEBO (ver FROZEN_TAG). Al Dummy lo mueve poco
-# el lado lobo (+0.05/+0.10 vs v3.2: el asalto que espera oscuro apenas cambia contra drones clavados);
-# el que cambia es el Reactive (1.91/1.96 -> 2.68/2.77, +0.77/+0.81): el cebo INVERTIDO ancla la línea
-# única en ~60% de los 2 frentes (el asalto entra por el frente libre) y la línea rígida sin cierres
-# paga sus corredores — POR FIN el multi-frente scriptado rinde contra la defensa. Es medida, no
-# objetivo. Contraste v3.2: Dummy 3.77/0/3.74 · Reactive 1.91/0/1.96. v3.1: 3.74/0/3.69 · 2.18/0/2.21.
-# v3.0: 3.85/0/3.69 · 1.00/0/1.14 (artefacto del perseguidor). v2.9: 3.98/0/3.88 · 2.46/0/2.44.
+# v3.5 (METRO DGX): REGLA DEL SONIDO. El Dummy se HUNDE (3.82/0/3.84 -> 1.90/0/2.02): sus drones CLAVADOS (esquinas
+# + investigador) vuelven a expulsar a corta sin moverse (en v2.4-v3.4 eran postes/pared de 10 m). Es medida, no
+# objetivo. Contraste v3.4: Dummy 3.82/0/3.84 · Reactive 2.68/0/2.77.
 REFERENCE_SEVERITY = {
-    "lobos": 3.82,   # solo-lobos (amenaza pura); succ 9 / pred 83 / timeout 8; n_safe 2.75
-    "corzos": 0.00,  # solo-corzos = SIN amenaza (100/100 timeout; el rebaño pasta, n_safe 0)
-    "mixto": 3.84,   # ≈ solo-lobos (los corzos solo consumen ciclos de investigación); succ 6/pred 85/to 9; n_safe 2.74
+    "lobos": 1.90,   # solo-lobos; succ 20 / pred 57 / timeout 23; n_safe 4.53
+    "corzos": 0.00,  # solo-corzos = SIN amenaza (100/100 timeout)
+    "mixto": 2.02,   # mixto; succ 18 / pred 62 / timeout 20; n_safe 4.31
 }
 
 # Tolerancia de deriva (la media es exacta y reproducible bit a bit; margen mínimo por si

@@ -55,7 +55,7 @@ from rl.drone_obs import AGENT_OBS_SIZE, LOCAL_SIZE, N_SEATS
 from rl.residual_drone_coordinator import DRONE_RESIDUAL_SCALE_DEFAULT, ResidualDroneCoordinator
 from rl.train_wolves import HYPER, NET_ARCH, RESIDUAL_LOG_STD_INIT   # mismos hiperparámetros base
 
-FLOOR_LIGHT_MEAN = 3.00                       # suelo de la EVAL LIGERA re-medido (run02, δ=0 SIN rigidez)
+FLOOR_LIGHT_MEAN = 3.00                       # suelo de la EVAL LIGERA re-medido (run02, δ=0 SIN rigidez) — ¡MUNDO v3.4! Desde v3.5-sonido (regla del sonido) este suelo y las referencias 2.68/0/2.77 son HISTÓRICOS: RE-MEDIR antes de cualquier run (regla vigente: suelo verificado antes del run)
 FLOOR_LIGHT_DETAIL = "[3,0,5,4,5 | 2,0,2,4,5]"  # 10 eps deterministas (5 lobos + 5 mixto, seeds 0-4)
 EROSION_LIGHT = 3.2                           # umbral de la guardia de erosión (suelo ligera + margen)
 
