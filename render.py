@@ -95,9 +95,9 @@ def render_episode(world, history, interval: int = 40, save_path: str | None = N
     """Reproduce `history` (snapshots del mundo; NUNCA llama a step()).
     Commit F (misión forense v3.5): `show_detected` dibuja un CUADRADO alrededor de cada lobo
     DETECTADO — geometría PURA recomputada desde el snapshot: lobo a <= r_detect de algún dron
-    ACTIVE (el criterio DRI del disparador del mundo, sin estado nuevo) — con entrada en la
-    leyenda; `show_confirmed` dibuja además un ROMBO alrededor del lobo CONFIRMADO ante la
-    barrera si el snapshot trae la máscara `confirmed_mask` (la escribe el arnés HRL desde el
+    ACTIVE (el criterio DRI del disparador del mundo, sin estado nuevo) — cuadrado NARANJA con
+    entrada en la leyenda; `show_confirmed` dibuja un cuadrado ROJO alrededor del lobo
+    CONFIRMADO ante la barrera si el snapshot trae la máscara `confirmed_mask` (la escribe el arnés HRL desde el
     latch de equipo del coordinador — no la calcula el mundo); sin ella no se dibuja nada. El
     círculo de DETER_RADIUS=20 (el campo del "sonido") ya se dibujaba en cada ACTIVE."""
     W, H = world.W, world.H
@@ -147,13 +147,15 @@ def render_episode(world, history, interval: int = 40, save_path: str | None = N
                            label="investigando")
     # Commit F: marcadores de percepción del bando dron (solo lectura de snapshots).
     r_detect = float(getattr(world, "r_detect", 100.0))
-    det_hl = ax.scatter(*empty.T, s=330, facecolors="none", edgecolors="crimson", linewidths=1.3,
+    # (decisión del dueño, STOP-F1): DETECTADO = cuadrado NARANJA; CONFIRMADO = cuadrado ROJO
+    # (mismo marcador, el color dice el nivel de percepción; el rojo pisa al naranja).
+    det_hl = ax.scatter(*empty.T, s=330, facecolors="none", edgecolors="darkorange", linewidths=1.4,
                         marker="s", zorder=7, visible=bool(show_detected),
-                        label=("cuadrado = lobo detectado (<= r_detect de un ACTIVE)"
+                        label=("cuadrado naranja = lobo detectado (<= r_detect de un ACTIVE)"
                                if show_detected else None))
-    conf_hl = ax.scatter(*empty.T, s=520, facecolors="none", edgecolors="darkorange", linewidths=1.3,
-                         marker="D", zorder=7, visible=bool(show_confirmed),
-                         label=("rombo = lobo confirmado (latch de la barrera)"
+    conf_hl = ax.scatter(*empty.T, s=330, facecolors="none", edgecolors="red", linewidths=1.6,
+                         marker="s", zorder=8, visible=bool(show_confirmed),
+                         label=("cuadrado rojo = lobo confirmado (latch de la barrera)"
                                 if show_confirmed else None))
 
     # --- entidades: sprites de emoji (o scatter de reserva si no hay emojis) ---
@@ -270,7 +272,11 @@ def render_episode(world, history, interval: int = 40, save_path: str | None = N
                 act = drones[np.asarray(dstate) == ACTIVE]
                 if act.shape[0]:
                     dd = np.linalg.norm(np.asarray(wolves)[:, None, :] - act[None, :, :], axis=2)
-                    det_hl.set_offsets(np.asarray(wolves)[(dd <= r_detect).any(axis=1)])
+                    det_m = (dd <= r_detect).any(axis=1)
+                    cm0 = snap.get("confirmed_mask") if show_confirmed else None
+                    if cm0 is not None and len(cm0) == len(wolves):
+                        det_m = det_m & ~np.asarray(cm0, dtype=bool)   # confirmado => solo el rojo
+                    det_hl.set_offsets(np.asarray(wolves)[det_m])
                 else:
                     det_hl.set_offsets(empty)
             else:
