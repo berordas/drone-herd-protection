@@ -27,6 +27,13 @@ semilla FRESCA de la secuencia del env (mismo seed del env => misma secuencia; d
 CONTADOR PASIVO de PENETRADO (hallazgo B, sin arreglo): ticks en que el coordinador está en la
 rama PENETRADO (estado `_pose_last_step` de la barrera: rama CLEAN si == step; se lee SOLO para
 el contador, nunca para decidir) — va en info al terminal.
+
+CONTADORES DE CAZA (K-bis, instrumentación; solo se reportan en info["hunt"] al terminal): re-arranques
+de opción (OPTION_START de la capa), re-targets por la regla de caza (Commit K: causa "protegida"),
+re-targets bloqueados por cooldown, y re-fijaciones de presa NO debidas a la regla, por causa de la
+presa anterior (muerte / refugio / otro). Se leen de los contadores de la capa y del estado
+pack_prey/pack_prey2 tick a tick; los eventos de la capa NO se consumen aquí (pop_events queda para
+el auditor/visionado).
 """
 
 from __future__ import annotations
@@ -154,6 +161,8 @@ class ManagerEnv(gym.Env):
         self._decision_idx = 0
         self._log = []
         self._penetrado_ticks = 0
+        self._hunt = {"option_starts": 0, "retargets": 0, "retargets_blocked": 0,
+                      "refix_muerte": 0, "refix_refugio": 0, "refix_otro": 0}
         self._ctx = {"option": None, "last_event": EV_INICIO, "decision_idx": 0,
                      "decoy_idx": None, "active_c_prev": None}
         w = self._world
@@ -186,6 +195,37 @@ class ManagerEnv(gym.Env):
     def _active_centroid(self):
         act = self._world.drones[self._world.drone_state == ACTIVE]
         return act.mean(axis=0) if act.shape[0] else None
+
+    def _prey_state(self):
+        w = self._world
+        return (w.pack_prey_kind, int(w.pack_prey), w.pack_prey2_kind, int(w.pack_prey2))
+
+    @staticmethod
+    def _lost_cause(w, kind, idx) -> str:
+        """Causa de una re-fijación NO debida a la regla, por el estado de la presa anterior."""
+        if idx < 0 or kind is None:
+            return "refix_otro"
+        alive = w.calf_alive[idx] if kind == "calf" else w.cow_alive[idx]
+        safe = w.calf_safe[idx] if kind == "calf" else w.cow_safe[idx]
+        if not alive:
+            return "refix_muerte"
+        if safe:
+            return "refix_refugio"
+        return "refix_otro"
+
+    def _update_hunt(self, before, rt_before) -> None:
+        """Cuenta las re-fijaciones de presa de ESTE tick (pack_prey y pack_prey2: de una presa válida
+        a OTRA válida) no explicadas por la regla de caza (cuyo contador propio ya las recoge)."""
+        w = self._world
+        after = self._prey_state()
+        by_rule = self._layer.n_retargets - rt_before
+        for k0, i0, k1, i1 in ((before[0], before[1], after[0], after[1]),
+                               (before[2], before[3], after[2], after[3])):
+            if i0 >= 0 and i1 >= 0 and (k0, i0) != (k1, i1):
+                if by_rule > 0:
+                    by_rule -= 1
+                else:
+                    self._hunt[self._lost_cause(w, k0, i0)] += 1
 
     def _bait_failed(self) -> bool:
         """ABORT_BAIT_FAILED (observable): ESCOLTA latcheada y >= ABORT_MIN_ACTIVE ACTIVE dentro de
@@ -228,6 +268,8 @@ class ManagerEnv(gym.Env):
         # re-consulta cada frame_skip; forzamos la decisión inmediata para que el tramo empiece ya.
         layer._countdown = 0
         while True:
+            prey_before = self._prey_state()
+            rt_before = layer.n_retargets
             layer.refresh(w)                         # frontera: la capa aplica la opción vigente
             if self.on_boundary is not None:
                 self.on_boundary(w, coord, layer)    # observador (EpisodeAudit.on_boundary); no toca nada
@@ -238,6 +280,7 @@ class ManagerEnv(gym.Env):
                 self._penetrado_ticks += 1           # contador PASIVO (no decide nada)
             _o, _r, terminated, truncated, _i = w.step(wp)
             ticks += 1
+            self._update_hunt(prey_before, rt_before)   # contadores de caza (K-bis; solo reporte)
             if self.on_tick is not None:
                 self.on_tick(w, coord, layer)        # observador (snapshots); no toca la dinámica
             if terminated or truncated:
@@ -278,6 +321,10 @@ class ManagerEnv(gym.Env):
             info["ep_log"] = list(self._log)
             info["penetrado_ticks"] = int(self._penetrado_ticks)
             info["status"] = w.status
+            self._hunt["option_starts"] = int(layer.n_option_starts)
+            self._hunt["retargets"] = int(layer.n_retargets)
+            self._hunt["retargets_blocked"] = int(layer.n_retarget_blocked)
+            info["hunt"] = dict(self._hunt)
         return obs, reward, terminated, truncated, info
 
     # ------------------------------------------------------------------ #

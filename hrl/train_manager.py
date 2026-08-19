@@ -7,6 +7,11 @@ Reactive v3.5. Presupuesto 120k macro-pasos (fps y ETA en el log). Checkpoints c
 EVAL_LIGERA determinista cada 10k sobre 40 semillas FIJAS (20 lobos + 20 mixto, reset_to)
 registrando sev media, P(a|G), P(a|S), P(a|n) — LA CURVA DE EMERGENCIA (eval_ligera.jsonl) es el
 artefacto estrella. Contador pasivo de PENETRADO por política (solo se reporta).
+K-bis (instrumentación, tras STOP-M1): la ligera registra ADEMÁS la P(a) y la entropía de la
+política ESTOCÁSTICA en cada decisión (la determinista era ciega: argmax constante en RUN-M1) y
+los contadores de caza por episodio (re-arranques de opción/ep, re-targets/ep por causa —
+protegida / bloqueado por cooldown — y re-fijaciones por muerte/refugio/otro). El rollout de la
+ligera sigue ejecutando el argmax (sev comparable con la ligera de M1).
 
 Variantes pre-registradas (flags, default OFF = RUN-M1 intacto): --fixed-k 1000 (RUN-M2: opciones
 interrumpidas a K fijo) · --ablate-progress (RUN-M4, adenda 4 §3: sin los dos rasgos de progreso) ·
@@ -64,8 +69,13 @@ def _light_eval_one(job):
     stratum = "G" if info["two_front"] else "S"
     n = info["n_wolves"]
     done, first, a0, acts = False, True, None, []
+    probs, ents = [], []          # K-bis: P(a) y entropía de la política ESTOCÁSTICA en cada decisión
     while not done:
-        a, _ = model.predict(obs, deterministic=True)
+        obs_t, _ = model.policy.obs_to_tensor(obs)
+        dist = model.policy.get_distribution(obs_t)
+        probs.append(dist.distribution.probs.detach().cpu().numpy()[0].tolist())
+        ents.append(float(dist.entropy().item()))
+        a, _ = model.predict(obs, deterministic=True)   # se EJECUTA el argmax (comparable con la ligera de M1)
         a = int(a)
         if first:
             a0 = a; first = False
@@ -73,7 +83,8 @@ def _light_eval_one(job):
         obs, r, term, trunc, info = env.step(a)
         done = term or trunc
     return {"stratum": stratum, "n": n, "a0": a0, "acts": acts, "sev": info["ep_sev"],
-            "dec": info["ep_decisions"], "pen": info["penetrado_ticks"], "kind": kind}
+            "dec": info["ep_decisions"], "pen": info["penetrado_ticks"], "kind": kind,
+            "probs": probs, "ents": ents, "hunt": info.get("hunt", {})}
 
 
 def light_eval(model, opponent: str, fixed_k, ablate: bool = False, procs: int = 20) -> dict:
@@ -103,12 +114,33 @@ def light_eval(model, opponent: str, fixed_k, ablate: bool = False, procs: int =
     def dist(c):
         tot = sum(c.values())
         return {OPTION_NAMES[a]: round(c[a] / tot, 3) for a in range(N_OPTIONS)} if tot else None
+
+    # K-bis: política ESTOCÁSTICA (media de P(a) por estrato; primera decisión y todas) + entropía +
+    # contadores de caza por episodio (re-arranques de opción, re-targets por causa).
+    def pstoch(rows):
+        if not rows:
+            return None
+        m = np.mean(np.asarray(rows, dtype=float), axis=0)
+        return {OPTION_NAMES[a]: round(float(m[a]), 3) for a in range(N_OPTIONS)}
+    st_first = {"G": [], "S": []}; st_all = {"G": [], "S": []}; st_g3 = []
+    for r in res:
+        if r["probs"]:
+            st_first[r["stratum"]].append(r["probs"][0]); st_all[r["stratum"]] += r["probs"]
+            if r["stratum"] == "G" and r["n"] >= 3:
+                st_g3.append(1.0 - r["probs"][0][0])
+    hunt_keys = ("option_starts", "retargets", "retargets_blocked", "refix_muerte", "refix_refugio", "refix_otro")
+    hunt = {k: float(np.mean([r["hunt"].get(k, 0) for r in res])) for k in hunt_keys}
     return {"sev_media": float(np.mean(sev)), "sev_lobos": float(np.mean(sev[:20])),
             "sev_mixto": float(np.mean(sev[20:])),
             "P_cebo_G_n3": (cebo_g3[0] / cebo_g3[1] if cebo_g3[1] else None), "n_G_n3": cebo_g3[1],
             "P_a_G_first": dist(acts_by["G"]), "P_a_S_first": dist(acts_by["S"]),
             "P_a_n": {k: dist(v) for k, v in acts_by.items() if k.startswith("n")},
             "P_a_G_all": dist(all_by["G"]), "P_a_S_all": dist(all_by["S"]),
+            "Pstoch_a_G_first": pstoch(st_first["G"]), "Pstoch_a_S_first": pstoch(st_first["S"]),
+            "Pstoch_a_G_all": pstoch(st_all["G"]), "Pstoch_a_S_all": pstoch(st_all["S"]),
+            "Pstoch_cebo_G_n3": (float(np.mean(st_g3)) if st_g3 else None),
+            "entropia_media": float(np.mean([e for r in res for e in r["ents"]])) if any(r["ents"] for r in res) else None,
+            "caza_por_ep": hunt,
             "decisiones_media": float(np.mean(dec)), "penetrado_ticks_media": float(np.mean(pen))}
 
 
@@ -213,6 +245,10 @@ def main():
                       f"P(a|G)={ev['P_a_G_first']} P(a|S)={ev['P_a_S_first']} dec/ep={ev['decisiones_media']:.1f} "
                       f"pen={ev['penetrado_ticks_media']:.0f}")
                 print(l2, flush=True); log.write(l2 + "\n"); log.flush()
+                l3 = (f"  ESTOCÁSTICA Pstoch(a|G)={ev['Pstoch_a_G_first']} Pstoch(a|S)={ev['Pstoch_a_S_first']} "
+                      f"Pstoch(cebo|G,n>=3)={ev['Pstoch_cebo_G_n3']} H={ev['entropia_media']} "
+                      f"caza/ep={ {k: round(v, 2) for k, v in ev['caza_por_ep'].items()} }")
+                print(l3, flush=True); log.write(l3 + "\n"); log.flush()
                 if g_over is None and t >= 40_000 and ev["P_cebo_G_n3"] is not None and ev["P_cebo_G_n3"] < 0.3:
                     log.write("  AVISO CONTINGENCIA PRE-REGISTRADA (adenda 4 §2): P(cebo|G,n>=3) < 0.3 a >=40k "
                               "-> candidato a relanzar con --g-oversample 0.6 (decisión HUMANA; este run sigue)\n")

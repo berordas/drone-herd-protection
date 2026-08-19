@@ -12,7 +12,9 @@ Políticas (decide(obs, info_reset, env) -> acción Discrete(4)):
   manager  : checkpoint SB3 (predict determinista) — decide en CADA frontera de opción.
 Métricas: sev media ± IC bootstrap 10k (RNG propio del análisis), Δsev emparejado vs B_masa y vs
 B_oracle con IC, P(a | G/S, n) (heatmap), decisiones/episodio, eventos, ticks PENETRADO (contador
-pasivo), y el GAP DE TRANSFERENCIA Δsev(Reactive→run09) por política (adenda 4 §1).
+pasivo), el GAP DE TRANSFERENCIA Δsev(Reactive→run09) por política (adenda 4 §1) y (K-bis) los
+contadores de caza por episodio: re-arranques de opción, re-targets (regla: protegida), bloqueados
+por cooldown y re-fijaciones por muerte/refugio/otro.
 Artefactos: /data/hrl_m1/eval/<politica>_<oponente>.json + tabla.md. Uso:
     python3 hrl/eval_manager.py --policy oracle|masa|spawn|manager:<ckpt.zip> --opponent reactive|run02|run09 [--procs N]
 """
@@ -79,7 +81,8 @@ def run_one(job):
     return {"seed": seed, "kind": kind, "sev": int(info["ep_sev"]), "n_wolves": info["n_wolves"],
             "two_front": info["two_front"], "status": info["status"], "decisions": info["ep_decisions"],
             "penetrado_ticks": info["penetrado_ticks"], "actions": acts,
-            "events": [d["event"] for d in info["ep_log"]], "log": info["ep_log"]}
+            "events": [d["event"] for d in info["ep_log"]], "log": info["ep_log"],
+            "hunt": info.get("hunt", {})}
 
 
 def boot_ci(vals, n_boot=10_000, seed=20_260_819):
@@ -112,6 +115,9 @@ def summarize(recs):
             "P_a_first": {k: dist(v) for k, v in sorted(by_key.items())},
             "decisiones_media": float(np.mean([r["decisions"] for r in recs])),
             "penetrado_ticks_media": float(np.mean([r["penetrado_ticks"] for r in recs])),
+            "caza_por_ep": {k: float(np.mean([r.get("hunt", {}).get(k, 0) for r in recs]))
+                            for k in ("option_starts", "retargets", "retargets_blocked",
+                                      "refix_muerte", "refix_refugio", "refix_otro")},
             "eventos": dict(ev), "success": sum(1 for r in recs if r["status"] == "success")}
 
 
