@@ -42,7 +42,7 @@ from hrl.manager_obs import (EV_ABORT, EV_FIN, EV_HERD_SAFE, EV_INICIO, EV_KMAX,
                              MANAGER_OBS_SIZE, N_OPTIONS, build_manager_obs, herd_points)
 from hrl.options_wolf import WolfOptionLayer
 
-OPPONENTS = ("reactive", "run02", "run09")        # defensas congeladas para la tabla-escalera
+OPPONENTS = ("reactive", "run02", "run09", "mix") # defensas congeladas; 'mix' (adenda 4 §4, RUN-M3) = uniforme por episodio {reactive, run09}
 RUN02_MODEL = "/data/drones/run02_v34/model.zip"
 RUN09_MODEL = "/data/drones/run09_v35/model.zip"
 _MODEL_CACHE: dict = {}
@@ -79,13 +79,24 @@ class ManagerEnv(gym.Env):
 
     def __init__(self, kinds: tuple[str, ...] = ("lobos",), seed: int | None = None,
                  frame_skip: int = 5, k_max: int = K_MAX, fixed_k: int | None = None,
-                 config: dict | None = None, opponent: str = "reactive"):
+                 config: dict | None = None, opponent: str = "reactive",
+                 g_oversample: float | None = None, obs_ablate_progress: bool = False):
         """`opponent`: 'reactive' (v3.5 congelado; el de RUN-M1) | 'run02' | 'run09'
-        (ResidualDroneCoordinator con el modelo congelado; solo EVALUACIÓN/tabla-escalera)."""
+        (ResidualDroneCoordinator con el modelo congelado; solo EVALUACIÓN/tabla-escalera) |
+        'mix' (adenda 4 §4, RUN-M3: uniforme por episodio entre reactive y run09).
+        ADENDA 4 (default OFF = RUN-M1 intacto): `g_oversample` (§2, contingencia de currículo,
+        SOLO entrenamiento, jamás auto-activada): fracción de episodios FORZADA a spawn de 2
+        grupos por RECHAZO del spawn real (la maquinaria de dieta de wolf_env: stream propio
+        seed+11_000_003; nada sintético; None = natural; set_g_oversample(None) la apaga en
+        caliente). `obs_ablate_progress` (§3, RUN-M4): obs[19:21] = 0 (sin los dos rasgos de
+        progreso del cebo)."""
         super().__init__()
         if opponent not in OPPONENTS:
             raise ValueError(f"opponent {opponent!r} no está en {OPPONENTS}")
         self._opponent = opponent
+        self._g_over = g_oversample
+        self._g_rng = np.random.default_rng((seed or 0) + 11_000_003)   # mismo patrón que la dieta run08
+        self._ablate = bool(obs_ablate_progress)
         self._kinds = tuple(kinds)
         self._frame_skip = int(frame_skip)
         self._k_max = int(k_max)
@@ -112,7 +123,20 @@ class ManagerEnv(gym.Env):
             self._seed_rng = np.random.default_rng(seed)
         world_seed = int(self._seed_rng.integers(0, 2**31 - 1))
         kind = self._kinds[int(self._seed_rng.integers(len(self._kinds)))]
+        if self._g_over is not None:
+            # CONTINGENCIA DE CURRÍCULO (adenda 4 §2): oversampling de episodios G por RECHAZO del
+            # spawn real (re-sortea la semilla hasta que el spawn natural da 2 grupos / 1 grupo).
+            want_two = bool(self._g_rng.random() < self._g_over)
+            for _ in range(80):
+                probe = World(seed=world_seed, episode_kind=kind, **self._config)
+                if (len(probe.wolf_group_sizes) == 2) == want_two:
+                    break
+                world_seed = int(self._seed_rng.integers(0, 2**31 - 1))
         return self._reset_world(world_seed, kind)
+
+    def set_g_oversample(self, frac):
+        """Contingencia de currículo: cambia (o apaga con None) el oversampling de G en caliente."""
+        self._g_over = frac
 
     def reset_to(self, world_seed: int, kind: str):
         """Episodio CONCRETO (evaluación emparejada / baselines): misma semilla, mismo mundo."""
@@ -135,13 +159,22 @@ class ManagerEnv(gym.Env):
                             "n_wolves": int(w.n_wolves), "n_calves": int(w.n_calves),
                             "two_front": bool(len(w.wolf_group_sizes) == 2),
                             "grupos_spawn": [int(x) for x in w.wolf_group_sizes]}
-        return build_manager_obs(w, self._ctx), dict(self._info_reset)
+        return self._obs(), dict(self._info_reset)
+
+    def _obs(self):
+        o = build_manager_obs(self._world, self._ctx)
+        if self._ablate:
+            o[19:21] = 0.0                            # RUN-M4: sin rasgos de progreso del cebo
+        return o
 
     def _make_coord(self, w):
-        if self._opponent == "reactive":
+        opp = self._opponent
+        if opp == "mix":
+            opp = ("reactive", "run09")[int(self._seed_rng.integers(2))]
+        if opp == "reactive":
             return ReactiveCoordinator(w)
         from rl.residual_drone_coordinator import ResidualDroneCoordinator
-        path = RUN02_MODEL if self._opponent == "run02" else RUN09_MODEL
+        path = RUN02_MODEL if opp == "run02" else RUN09_MODEL
         if path not in _MODEL_CACHE:
             from stable_baselines3 import PPO
             _MODEL_CACHE[path] = PPO.load(path, device="cpu")
@@ -230,7 +263,7 @@ class ManagerEnv(gym.Env):
         self._ctx = {"option": a, "last_event": event, "decision_idx": self._decision_idx,
                      "decoy_idx": (layer.decoy_indices() if a != 0 else None),
                      "active_c_prev": active_c0}
-        obs = build_manager_obs(w, self._ctx)
+        obs = self._obs()
         info = {"event": EVENT_NAMES[event], "ticks": ticks, "option": OPTION_NAMES[a],
                 "decision_idx": self._decision_idx, **self._info_reset}
         if terminated or truncated:
