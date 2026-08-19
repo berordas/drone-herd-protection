@@ -55,16 +55,15 @@ from rl.drone_obs import AGENT_OBS_SIZE, LOCAL_SIZE, N_SEATS
 from rl.residual_drone_coordinator import DRONE_RESIDUAL_SCALE_DEFAULT, ResidualDroneCoordinator
 from rl.train_wolves import HYPER, NET_ARCH, RESIDUAL_LOG_STD_INIT   # mismos hiperparámetros base
 
-FLOOR_LIGHT_MEAN = 3.00                       # suelo de la EVAL LIGERA re-medido (run02, δ=0 SIN rigidez) — ¡MUNDO v3.4! Desde v3.5-sonido (regla del sonido) este suelo y las referencias 2.68/0/2.77 son HISTÓRICOS: RE-MEDIR antes de cualquier run (regla vigente: suelo verificado antes del run)
-FLOOR_LIGHT_DETAIL = "[3,0,5,4,5 | 2,0,2,4,5]"  # 10 eps deterministas (5 lobos + 5 mixto, seeds 0-4)
-EROSION_LIGHT = 3.2                           # umbral de la guardia de erosión (suelo ligera + margen)
+FLOOR_LIGHT_MEAN = 0.50                       # suelo de la EVAL LIGERA re-medido en el mundo v3.5-sonido (run09: NonRigidBarrier δ=0; v3.4/run02 era 3.00)
+FLOOR_LIGHT_DETAIL = "[0,0,5,0,0 | 0,0,0,0,0]"  # 10 eps deterministas (5 lobos + 5 mixto, seeds 0-4) — un solo episodio mata (5), el resto 0: la línea que suena
+EROSION_LIGHT = 1.2                           # umbral de la guardia de erosión (suelo ligera + margen; v3.4: 3.2 sobre suelo 3.00 — el suelo v3.5 es 0.5 y la ligera es discreta: una muerte extra en 10 eps = +0.1)
 
 ABORT_NOTE_DRONES = (
-    "PACTO run02 sobre v3.4 (guardias INVERTIDAS — MENOS severidad = MEJOR, ¡signo contrario a "
-    "los lobos!): el SUELO es la barrera v3.4 SIN RIGIDEZ (NonRigidBarrier, δ=0) RE-MEDIDO — "
-    "arnés 100 semillas 2.74±1.68/0/2.63±1.67 (vs Reactive RÍGIDA 2.68/0/2.77, la nota a "
-    "batir: Δ +0.06/−0.14, dentro del ruido — quitar el gobernador ni ayuda ni estropea a la "
-    "barrera scriptada; la rigidez afectaba al comportamiento, por eso se re-midió); eval "
+    "PACTO run09 sobre v3.5-sonido (misma receta que run02; guardias INVERTIDAS — MENOS severidad = "
+    "MEJOR, ¡signo contrario a los lobos!): el SUELO es la barrera SIN RIGIDEZ (NonRigidBarrier, δ=0) "
+    "en v3.5 — arnés 100 semillas 0.92/0/0.81 (metro_v35; vs Reactive RÍGIDA v3.5 0.88/0/0.76, la "
+    "nota a batir); [run02/v3.4: suelo 2.74/0/2.63 vs Reactive 2.68/0/2.77 — HISTÓRICO]; eval "
     "ligera 10 eps 5 lobos+5 "
     "mixto con δ=0 = %.2f EXACTO, detalle %s. FASE 1 (solo-crítico, δ medio 0): las ligeras "
     "deben CLAVARSE en ese suelo. GUARDIA DE EROSIÓN: ligera SOSTENIDA por encima de ~%.1f en "
@@ -76,7 +75,7 @@ ABORT_NOTE_DRONES = (
     "global pura— = decisión del usuario); cada eval ligera imprime el buffer (ep_sev, "
     "ep_deter) para esta vigilancia. SIN aborto por estancamiento: el suelo es útil (δ≈0 = la "
     "barrera sin rigidez); no bajar del suelo NO es fracaso catastrófico. ÉXITO = bajar la "
-    "severidad de forma CLARA y SOSTENIDA — la cifra estrella es vs Reactive 2.68/0/2.77; la "
+    "severidad de forma CLARA y SOSTENIDA — la cifra estrella es vs Reactive v3.5 0.88/0/0.76; la "
     "vara final es el arnés de 100 semillas (rl/drone_eval.py), no la recompensa."
     % (FLOOR_LIGHT_MEAN, FLOOR_LIGHT_DETAIL, EROSION_LIGHT))
 
