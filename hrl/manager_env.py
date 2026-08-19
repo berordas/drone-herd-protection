@@ -115,6 +115,8 @@ class ManagerEnv(gym.Env):
         self._log: list[dict] = []
         self._penetrado_ticks = 0
         self._info_reset: dict = {}
+        self.on_tick = None                       # gancho de SOLO LECTURA (render/visionado): f(world, coord, layer) tras cada step
+        self.on_boundary = None                   # gancho de SOLO LECTURA (auditoría): f(world, coord, layer) ANTES de coord.act()
 
     # ------------------------------------------------------------------ #
     def reset(self, *, seed: int | None = None, options: dict | None = None):
@@ -227,6 +229,8 @@ class ManagerEnv(gym.Env):
         layer._countdown = 0
         while True:
             layer.refresh(w)                         # frontera: la capa aplica la opción vigente
+            if self.on_boundary is not None:
+                self.on_boundary(w, coord, layer)    # observador (EpisodeAudit.on_boundary); no toca nada
             wp = coord.act(w.get_observation())
             react = getattr(coord, "inner", coord)   # Reactive o la barrera interior del residual
             if getattr(react, "_pose_last_step", -10) != int(w.step_count) and w.phase == "ESCOLTA" \
@@ -234,6 +238,8 @@ class ManagerEnv(gym.Env):
                 self._penetrado_ticks += 1           # contador PASIVO (no decide nada)
             _o, _r, terminated, truncated, _i = w.step(wp)
             ticks += 1
+            if self.on_tick is not None:
+                self.on_tick(w, coord, layer)        # observador (snapshots); no toca la dinámica
             if terminated or truncated:
                 event = EV_FIN
                 break
