@@ -65,11 +65,15 @@ from hrl.options_drone import (AllocatorCoordinator, ProportionalAllocatorCoordi
 from hrl.options_wolf import WolfOptionLayer                       # noqa: E402
 from hrl.scripted_manager import SwitchingAllocator, SwitchingWolfManager  # noqa: E402
 
-OUT_BASE = "/data/hrl_e0"
+OUT_BASE = "/data/hrl_e0/v35"                 # Etapa 0 RE-CALIBRADA en el mundo v3.5
 RUN02_MODEL = "/data/drones/run02_v34/model.zip"
-CEBO_FLOOR_JSON = "/data/wolves/run08_dieta50/cebo_floor_v34.json"
-REF_E0A = {"sev": 3.50, "sev_tol": 0.15, "knc": 0.266, "knc_tol": 0.03,
+# v3.5 (regla del sonido): E0.A(ii) re-anclado al suelo NUEVO del cebo scriptado (metro v3.5, mismas 58
+# parejas de 2 frentes: el spawn no cambia) — /data/metro_v35/cebo_floor_v35.json (v3.4:
+# /data/wolves/run08_dieta50/cebo_floor_v34.json, referencias 3.50 / 26.6% / 65.5%).
+CEBO_FLOOR_JSON = "/data/metro_v35/cebo_floor_v35.json"
+REF_E0A = {"sev": 2.60, "sev_tol": 0.15, "knc": 0.377, "knc_tol": 0.03,
            "ancla": 0.655, "ancla_tol": 0.05}
+OUT_BASE_V34 = "/data/hrl_e0"                 # artefactos de la Etapa 0 en el mundo v3.4 (históricos)
 GATE_OPEN_M = 60.0            # e05: "puerta abierta" = punto-puerta de un clúster a >= 60 m
 _RUN02 = None                 # caché del modelo run02 POR PROCESO (fork)
 
@@ -442,7 +446,8 @@ def exp_e0a(args):
     outdir = pathlib.Path(OUT_BASE) / "e0a"
     outdir.mkdir(parents=True, exist_ok=True)
     ref = json.load(open(CEBO_FLOOR_JSON))
-    ref_by = {(e["seed"], e["kind"]): e for e in ref["episodes"]}
+    ref_by = {(e["seed"], e["kind"]): {**e, "n_depredadas": e.get("n_depredadas", e.get("sev"))}
+              for e in ref["episodes"]}
 
     # (ii) CEBO vía capa, membresías = spawn, sobre las MISMAS 58 parejas de 2 frentes.
     arm_ii = {"name": "cebo_capa_spawn", "wolf": ("opt", ("CEBO", {"membership": "spawn"})),
