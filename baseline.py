@@ -174,11 +174,31 @@ def build_world(seed: int, kind: str, wolf_controller=None) -> World:
 
 def run_episode_metrics(world: World, coordinator) -> dict:
     """Corre un episodio hasta terminal (mismo bucle que main.run_episode, SIN historial)
-    y devuelve sus métricas. El coordinador es lo único que cambia entre evaluaciones."""
+    y devuelve sus métricas. El coordinador es lo único que cambia entre evaluaciones.
+    v3.6 (Commit L): añade MÉTRICAS DE RELEVO (solo lectura, flancos de drone_relief_hold /
+    drone_state por tick): t(anuncio->hand-off) media y máx del episodio, nº de STRANDED,
+    y relevos completados en patrulla (fase != ESCOLTA) vs en barrera (ESCOLTA)."""
+    from world import ACTIVE as _ACT, INCOMING as _INC, STRANDED as _STR
     world.reset()
+    hold_since: dict[int, int] = {}
+    esperas: list[int] = []
+    relevos = {"ESCOLTA": 0, "patrulla": 0}
+    stranded_seen: set[int] = set()
+    prev_state = world.drone_state.copy()
+    prev_hold = world.drone_relief_hold.copy()
     while True:
         actions = coordinator.act(world.get_observation())
         _obs, _reward, terminated, truncated, info = world.step(actions)
+        st, hold = world.drone_state, world.drone_relief_hold
+        for i in np.where(hold & ~prev_hold)[0]:
+            hold_since[int(i)] = int(world.step_count)          # flanco de ANUNCIO
+        if bool(((prev_state == _INC) & (st == _ACT)).any()):    # hand-off este tick
+            for j in np.where(prev_hold & ~hold)[0]:             # el bajo liberado
+                if int(j) in hold_since:
+                    esperas.append(int(world.step_count) - hold_since.pop(int(j)))
+                    relevos["ESCOLTA" if world.phase == "ESCOLTA" else "patrulla"] += 1
+        stranded_seen |= set(int(x) for x in np.where(st == _STR)[0])
+        prev_state = st.copy(); prev_hold = hold.copy()
         if terminated or truncated:
             break
     return {
@@ -190,6 +210,13 @@ def run_episode_metrics(world: World, coordinator) -> dict:
         "n_depredadas": int(world.n_depredadas),                 # SEVERIDAD del episodio
         "n_safe": int(world.cow_safe.sum() + world.calf_safe.sum()),
         "steps": int(world.step_count),
+        # v3.6: métricas de relevo (solo reporte; no cambian la dinámica)
+        "relevos": int(sum(relevos.values())),
+        "relevos_escolta": int(relevos["ESCOLTA"]),
+        "relevos_patrulla": int(relevos["patrulla"]),
+        "espera_handoff_media": (float(np.mean(esperas)) if esperas else None),
+        "espera_handoff_max": (int(max(esperas)) if esperas else None),
+        "stranded": len(stranded_seen),
     }
 
 

@@ -233,17 +233,35 @@ def test_percepcion():
     print("  (A) el lobo cruza los 40 m de un dron -> CONFIRMADO -> barrera (err eje=%.1f°)" % err2)
     assert bool(c2._confirmed[0]), "FALLO: el lobo a <= r_confirm no quedó confirmado"
     assert err2 < 25.0, "FALLO: la barrera no reaccionó al lobo recién confirmado"
-    # Se aleja MÁS ALLÁ incluso de r_detect -> SIGUE confirmado (memoria/tracking): la barrera lo rastrea.
+    # Se aleja MÁS ALLÁ incluso de r_detect -> SIGUE confirmado (memoria/tracking): la barrera lo
+    # rastrea. RE-GOLD DE LA MEDIDA v3.6 (misma exigencia, 25°): la pose RÍGIDA v3.4 es GOBERNADA
+    # (gira despacio) -> se mide con la pose CONVERGIDA (200 pasos, lobos CLAVADOS — el MISMO patrón
+    # que (B2) de este test). La medida instantánea anterior pasaba por suerte geométrica con la
+    # patrulla en órbita; con la patrulla estática (v3.6) el mundo llega al montaje con otra
+    # geometría y la única llamada dejaba a la pose a medio giro (28°) — la PROPIEDAD (memoria +
+    # tracking) es la misma. Los no confirmados se APARCAN lejos de los drones (como en B2) para
+    # que el giro de la línea no los confirme por accidente durante la convergencia.
     cand = np.array([[3.0, 3.0], [297.0, 3.0], [3.0, 297.0], [297.0, 297.0]])
-    far = cand[np.argmax([float(np.linalg.norm(flying - cc, axis=1).min()) for cc in cand])]
+    dist_c = [float(np.linalg.norm(flying - cc, axis=1).min()) for cc in cand]
+    order = np.argsort(dist_c)[::-1]
+    far = cand[order[0]]
+    park_a = cand[order[1]]                                           # 2ª esquina más lejana: aparcadero
     w.wolves[0] = far
+    w.wolves[1:] = park_a + rng.normal(0, 1, size=(w.n_wolves - 1, 2))
     dfar = float(np.linalg.norm(flying - far, axis=1).min())
+    hold_a = w.wolves.copy()
+    for _ in range(200):
+        w.step(c2.act(w.get_observation()))
+        w.wolves[:] = hold_a
+    hc3 = _herd(w).mean(axis=0)
+    idx3 = np.where(_free(w))[0]
     a3 = c2.act(w.get_observation())
-    err3 = _bearing_err(a3[idx].mean(axis=0), hc, w.wolves[0])
-    print("  (A) el confirmado se aleja a %.0f m (> r_detect) -> SIGUE confirmado (memoria): la barrera lo rastrea (err=%.1f°)"
+    err3 = _bearing_err(a3[idx3].mean(axis=0), hc3, w.wolves[0])
+    print("  (A) el confirmado se aleja a %.0f m (> r_detect) -> SIGUE confirmado (memoria): la barrera lo rastrea (err=%.1f°, pose convergida)"
           % (dfar, err3))
     assert dfar > w.r_detect, "montaje: el punto lejano debería quedar fuera de r_detect"
     assert bool(c2._confirmed[0]), "FALLO: la confirmación se olvidó al alejarse (sin memoria)"
+    assert not c2._confirmed[1:].any(), "montaje: los aparcados no deberían confirmarse al converger"
     assert err3 < 25.0, "FALLO: la barrera no rastrea al confirmado que se aleja"
 
     # ---- (B) dos frentes: uno CONFIRMADO y otro NUNCA a <= 40 m -> solo el confirmado coloca ----
@@ -589,9 +607,15 @@ def test_cebo_disenado():
 
 
 def test_patrulla():
-    print("=== 5) PATRULLA sin amenaza (solo-corzos): órbita alrededor del rebaño ===")
+    """RE-GOLD CONSCIENTE v3.6 (Commit L, decisión de diseño del dueño): la patrulla OFICIAL es
+    ESTÁTICA (patrol_omega=0.0) — anillo repartido ANCLADO al rebaño, SIN rotación (con v3.5 un dron
+    quieto disuade igual; el hand-off contra blanco en órbita daba problemas; menos batería). El test
+    exige: anillo formado + SIN giro con la config oficial, y que la órbita HISTÓRICA (0.02) siga
+    disponible y gire (la capacidad no se pierde: es la config de entrenamiento de run02/run09)."""
+    print("=== 5) PATRULLA sin amenaza (solo-corzos): anillo ESTÁTICO anclado al rebaño (v3.6) ===")
     w = World(seed=7, corzos_max=3, episode_kind="corzos"); w.reset()
     c = ReactiveCoordinator(w)
+    assert c.patrol_omega == 0.0, "la config OFICIAL v3.6 es patrulla estática"
     for _ in range(300):
         w.step(c.act(w.get_observation()))
     ang1 = _ring_angles(w)
@@ -601,11 +625,23 @@ def test_patrulla():
     idx = np.where(_free(w))[0]; herd = _herd(w); hc = herd.mean(0)
     rad = np.linalg.norm(w.drones[idx] - hc, axis=1)
     rot = float(np.abs(((ang2 - ang1 + 180) % 360) - 180).mean())
-    print("  fase=%s | %d drones | radio medio=%.0f m (cv=%.2f, anillo) | giro medio en 30 pasos=%.1f° (orbita)"
+    print("  fase=%s | %d drones | radio medio=%.0f m (cv=%.2f, anillo) | giro medio en 30 pasos=%.2f° (estática)"
           % (w.phase, idx.size, rad.mean(), rad.std() / max(rad.mean(), 1e-9), rot))
     assert w.phase in ("VIGILANCIA", "SOSPECHA"), "en solo-corzos no debe haber ESCOLTA"
     assert rad.std() / max(rad.mean(), 1e-9) < 0.35, "no es un anillo (radios dispares)"
-    assert rot > 1.0, "la patrulla no orbita (no rota)"
+    assert rot < 0.5, "la patrulla OFICIAL v3.6 no debe rotar"
+    # La órbita histórica sigue disponible por parámetro (capacidad conservada, no config oficial).
+    w2 = World(seed=7, corzos_max=3, episode_kind="corzos"); w2.reset()
+    c2 = ReactiveCoordinator(w2, patrol_omega=0.02)
+    for _ in range(300):
+        w2.step(c2.act(w2.get_observation()))
+    a1 = _ring_angles(w2)
+    for _ in range(30):
+        w2.step(c2.act(w2.get_observation()))
+    a2 = _ring_angles(w2)
+    rot2 = float(np.abs(((a2 - a1 + 180) % 360) - 180).mean())
+    assert rot2 > 1.0, "patrol_omega=0.02 debe seguir orbitando (config histórica run02/run09)"
+    print("  órbita histórica (patrol_omega=0.02): giro medio en 30 pasos=%.1f° (disponible)" % rot2)
     print("  OK\n")
 
 

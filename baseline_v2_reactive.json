@@ -113,14 +113,14 @@
     "lobos": {
       "label": "solo-lobos",
       "n": 100,
-      "severity_mean": 0.88,
-      "severity_std": 1.8181309083781618,
-      "severity_max": 7,
-      "n_safe_mean": 5.99,
+      "severity_mean": 0.94,
+      "severity_std": 1.9484352696458769,
+      "severity_max": 8,
+      "n_safe_mean": 5.78,
       "terminals": {
-        "success": 67,
-        "predation": 25,
-        "timeout": 8
+        "success": 68,
+        "predation": 22,
+        "timeout": 10
       },
       "episodes": [
         {
@@ -131,7 +131,13 @@
           "n_corzos_descartados": 0,
           "n_depredadas": 0,
           "n_safe": 7,
-          "steps": 2078
+          "steps": 2029,
+          "relevos": 3,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 1,
+          "espera_handoff_media": 95.33333333333333,
+          "espera_handoff_max": 159,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -141,7 +147,13 @@
           "n_corzos_descartados": 0,
           "n_depredadas": 0,
           "n_safe": 7,
-          "steps": 1803
+          "steps": 1834,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 106.0,
+          "espera_handoff_max": 106,
+          "stranded": 0
         },
         {
           "status": "predation",
@@ -151,7 +163,13 @@
           "n_corzos_descartados": 0,
           "n_depredadas": 5,
           "n_safe": 1,
-          "steps": 1704
+          "steps": 1669,
+          "relevos": 2,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 162.5,
+          "espera_handoff_max": 243,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -161,7 +179,13 @@
           "n_corzos_descartados": 0,
           "n_depredadas": 0,
           "n_safe": 6,
-          "steps": 1211
+          "steps": 1234,
+          "relevos": 0,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": null,
+          "espera_handoff_max": null,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -171,7 +195,13 @@
           "n_corzos_descartados": 0,
           "n_depredadas": 0,
           "n_safe": 8,
-          "steps": 1455
+          "steps": 1412,
+          "relevos": 2,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 58.5,
+          "espera_handoff_max": 66,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -181,7 +211,13 @@
           "n_corzos_descartados": 0,
           "n_depredadas": 0,
           "n_safe": 8,
-          "steps": 1290
+          "steps": 1299,
+          "relevos": 2,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 84.5,
+          "espera_handoff_max": 99,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -191,7 +227,13 @@
           "n_corzos_descartados": 0,
           "n_depredadas": 0,
           "n_safe": 7,
-          "steps": 1988
+          "steps": 1981,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 38.0,
+          "espera_handoff_max": 38,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -201,7 +243,13 @@
           "n_corzos_descartados": 0,
           "n_depredadas": 0,
           "n_safe": 8,
-          "steps": 2366
+          "steps": 2383,
+          "relevos": 4,
+          "relevos_escolta": 3,
+          "relevos_patrulla": 1,
+          "espera_handoff_media": 109.0,
+          "espera_handoff_max": 131,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -211,7 +259,13 @@
           "n_corzos_descartados": 0,
           "n_depredadas": 0,
           "n_safe": 7,
-          "steps": 2208
+          "steps": 2191,
+          "relevos": 3,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 1,
+          "espera_handoff_media": 106.66666666666667,
+          "espera_handoff_max": 113,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -221,7 +275,13 @@
           "n_corzos_descartados": 0,
           "n_depredadas": 0,
           "n_safe": 7,
-          "steps": 1435
+          "steps": 1400,
+          "relevos": 2,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 55.5,
+          "espera_handoff_max": 56,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -231,7 +291,13 @@
           "n_corzos_descartados": 0,
           "n_depredadas": 0,
           "n_safe": 8,
-          "steps": 1902
+          "steps": 1930,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 107.0,
+          "espera_handoff_max": 107,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -241,377 +307,13 @@
           "n_corzos_descartados": 0,
           "n_depredadas": 0,
           "n_safe": 7,
-          "steps": 1463
-        },
-        {
-          "status": "timeout",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 6,
-          "steps": 23570
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 1,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 6,
-          "steps": 1868
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 5,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 8,
-          "steps": 1856
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 1,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 6,
-          "steps": 1855
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 1,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 6,
-          "steps": 1784
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 2,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 7,
-          "steps": 1226
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 5,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 7,
-          "steps": 1594
-        },
-        {
-          "status": "timeout",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 5,
-          "steps": 23570
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 8,
-          "steps": 1554
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 2,
-          "n_safe": 6,
-          "steps": 2013
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 2,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 1,
-          "n_safe": 5,
-          "steps": 1840
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 2,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 7,
-          "steps": 1539
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 3,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 6,
-          "steps": 1235
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 2,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 6,
-          "steps": 1410
-        },
-        {
-          "status": "timeout",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 6,
-          "steps": 23570
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 2,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 7,
-          "steps": 2340
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 3,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 6,
-          "steps": 2242
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 3,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 2,
-          "n_safe": 4,
-          "steps": 23570
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 2,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 7,
-          "steps": 2118
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 2,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 8,
-          "steps": 1604
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 3,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 7,
-          "steps": 2024
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 2,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 8,
-          "steps": 1989
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 1,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 7,
-          "steps": 1460
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 8,
-          "steps": 1615
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 7,
-          "steps": 2018
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 5,
-          "n_safe": 1,
-          "steps": 23570
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 1,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 8,
-          "steps": 1810
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 1,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 6,
-          "steps": 1655
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 3,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 5,
-          "n_safe": 2,
-          "steps": 1478
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 8,
-          "steps": 1744
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 5,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 2,
-          "n_safe": 4,
-          "steps": 915
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 1,
-          "n_safe": 5,
-          "steps": 1603
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 2,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 8,
-          "steps": 1791
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 3,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 7,
-          "n_safe": 1,
-          "steps": 1395
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 5,
-          "n_safe": 2,
-          "steps": 2472
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 8,
-          "steps": 1695
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 3,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 3,
-          "n_safe": 5,
-          "steps": 1413
+          "steps": 1502,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 105.0,
+          "espera_handoff_max": 105,
+          "stranded": 0
         },
         {
           "status": "predation",
@@ -621,17 +323,77 @@
           "n_corzos_descartados": 0,
           "n_depredadas": 5,
           "n_safe": 3,
-          "steps": 1891
+          "steps": 1588,
+          "relevos": 0,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": null,
+          "espera_handoff_max": null,
+          "stranded": 0
         },
         {
           "status": "success",
           "episodio": "lobos",
-          "n_wolves": 3,
+          "n_wolves": 1,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 1904,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 91.0,
+          "espera_handoff_max": 91,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 5,
           "n_corzos": 0,
           "n_corzos_descartados": 0,
           "n_depredadas": 0,
           "n_safe": 8,
-          "steps": 1900
+          "steps": 1839,
+          "relevos": 0,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": null,
+          "espera_handoff_max": null,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 1,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 1905,
+          "relevos": 2,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 80.5,
+          "espera_handoff_max": 86,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 1,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 1843,
+          "relevos": 2,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 101.5,
+          "espera_handoff_max": 113,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -641,7 +403,461 @@
           "n_corzos_descartados": 0,
           "n_depredadas": 0,
           "n_safe": 7,
-          "steps": 2191
+          "steps": 1200,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 75.0,
+          "espera_handoff_max": 75,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 5,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1578,
+          "relevos": 2,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 149.5,
+          "espera_handoff_max": 227,
+          "stranded": 0
+        },
+        {
+          "status": "timeout",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 0,
+          "steps": 23570,
+          "relevos": 23,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 23,
+          "espera_handoff_media": 86.73913043478261,
+          "espera_handoff_max": 136,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1513,
+          "relevos": 3,
+          "relevos_escolta": 3,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 69.66666666666667,
+          "espera_handoff_max": 80,
+          "stranded": 0
+        },
+        {
+          "status": "predation",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 2,
+          "n_safe": 6,
+          "steps": 2080,
+          "relevos": 3,
+          "relevos_escolta": 3,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 190.66666666666666,
+          "espera_handoff_max": 408,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 2,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 1768,
+          "relevos": 3,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 1,
+          "espera_handoff_media": 110.33333333333333,
+          "espera_handoff_max": 133,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 2,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1489,
+          "relevos": 2,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 87.0,
+          "espera_handoff_max": 103,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 3,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 1213,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 86.0,
+          "espera_handoff_max": 86,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 2,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 1468,
+          "relevos": 2,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 105.0,
+          "espera_handoff_max": 108,
+          "stranded": 0
+        },
+        {
+          "status": "predation",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 5,
+          "n_safe": 3,
+          "steps": 1571,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 52.0,
+          "espera_handoff_max": 52,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 2,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 2320,
+          "relevos": 2,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 1,
+          "espera_handoff_media": 74.0,
+          "espera_handoff_max": 75,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 3,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 2248,
+          "relevos": 3,
+          "relevos_escolta": 3,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 49.666666666666664,
+          "espera_handoff_max": 72,
+          "stranded": 0
+        },
+        {
+          "status": "predation",
+          "episodio": "lobos",
+          "n_wolves": 3,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 6,
+          "n_safe": 2,
+          "steps": 2006,
+          "relevos": 0,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": null,
+          "espera_handoff_max": null,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 2,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 2073,
+          "relevos": 3,
+          "relevos_escolta": 3,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 75.66666666666667,
+          "espera_handoff_max": 98,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 2,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1666,
+          "relevos": 0,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": null,
+          "espera_handoff_max": null,
+          "stranded": 0
+        },
+        {
+          "status": "predation",
+          "episodio": "lobos",
+          "n_wolves": 3,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 2,
+          "n_safe": 5,
+          "steps": 2567,
+          "relevos": 2,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 153.5,
+          "espera_handoff_max": 162,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 2,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1989,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 91.0,
+          "espera_handoff_max": 91,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 1,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1427,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 76.0,
+          "espera_handoff_max": 76,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1613,
+          "relevos": 2,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 221.5,
+          "espera_handoff_max": 320,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 2076,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 65.0,
+          "espera_handoff_max": 65,
+          "stranded": 0
+        },
+        {
+          "status": "predation",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 5,
+          "n_safe": 2,
+          "steps": 2116,
+          "relevos": 0,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": null,
+          "espera_handoff_max": null,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 1,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1789,
+          "relevos": 4,
+          "relevos_escolta": 4,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 125.75,
+          "espera_handoff_max": 203,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 1,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 1689,
+          "relevos": 3,
+          "relevos_escolta": 3,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 51.0,
+          "espera_handoff_max": 61,
+          "stranded": 0
+        },
+        {
+          "status": "predation",
+          "episodio": "lobos",
+          "n_wolves": 3,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 5,
+          "n_safe": 2,
+          "steps": 1510,
+          "relevos": 2,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 178.5,
+          "espera_handoff_max": 247,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1758,
+          "relevos": 3,
+          "relevos_escolta": 3,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 102.66666666666667,
+          "espera_handoff_max": 105,
+          "stranded": 0
+        },
+        {
+          "status": "predation",
+          "episodio": "lobos",
+          "n_wolves": 5,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 2,
+          "n_safe": 4,
+          "steps": 916,
+          "relevos": 0,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": null,
+          "espera_handoff_max": null,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 2015,
+          "relevos": 3,
+          "relevos_escolta": 3,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 70.0,
+          "espera_handoff_max": 76,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 2,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1813,
+          "relevos": 2,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 45.0,
+          "espera_handoff_max": 60,
+          "stranded": 0
+        },
+        {
+          "status": "predation",
+          "episodio": "lobos",
+          "n_wolves": 3,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 7,
+          "n_safe": 1,
+          "steps": 1513,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 55.0,
+          "espera_handoff_max": 55,
+          "stranded": 0
         },
         {
           "status": "predation",
@@ -651,57 +867,13 @@
           "n_corzos_descartados": 0,
           "n_depredadas": 4,
           "n_safe": 2,
-          "steps": 4019
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 5,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 7,
-          "steps": 1917
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 1,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 7,
-          "steps": 2102
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 3,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 7,
-          "steps": 970
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 3,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 8,
-          "steps": 1945
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 5,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 2,
-          "n_safe": 4,
-          "steps": 1675
+          "steps": 23570,
+          "relevos": 20,
+          "relevos_escolta": 17,
+          "relevos_patrulla": 3,
+          "espera_handoff_media": 68.45,
+          "espera_handoff_max": 262,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -710,368 +882,766 @@
           "n_corzos": 0,
           "n_corzos_descartados": 0,
           "n_depredadas": 0,
-          "n_safe": 6,
-          "steps": 9123
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 1,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
           "n_safe": 8,
-          "steps": 2229
+          "steps": 1681,
+          "relevos": 2,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 122.5,
+          "espera_handoff_max": 235,
+          "stranded": 0
         },
         {
-          "status": "timeout",
+          "status": "predation",
           "episodio": "lobos",
           "n_wolves": 3,
           "n_corzos": 0,
           "n_corzos_descartados": 0,
-          "n_depredadas": 0,
+          "n_depredadas": 3,
           "n_safe": 5,
-          "steps": 23570
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 5,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 6,
-          "steps": 1735
-        },
-        {
-          "status": "timeout",
-          "episodio": "lobos",
-          "n_wolves": 1,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 6,
-          "steps": 23570
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 8,
-          "steps": 2155
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 3,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 5,
-          "n_safe": 2,
-          "steps": 1155
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 2,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 6,
-          "steps": 1745
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 3,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 7,
-          "steps": 1799
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 6,
-          "steps": 1792
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 3,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 8,
-          "steps": 1484
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 2,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 7,
-          "steps": 1290
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 5,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 6,
-          "steps": 1176
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 7,
-          "steps": 1943
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 2,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 6,
-          "steps": 1753
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 2,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 7,
-          "steps": 1960
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 3,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 8,
-          "steps": 2258
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 2,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 6,
-          "steps": 1603
+          "steps": 1412,
+          "relevos": 3,
+          "relevos_escolta": 3,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 215.66666666666666,
+          "espera_handoff_max": 309,
+          "stranded": 0
         },
         {
           "status": "predation",
           "episodio": "lobos",
           "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 6,
-          "n_safe": 0,
-          "steps": 1333
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 5,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 7,
-          "n_safe": 1,
-          "steps": 4169
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 3,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 6,
-          "n_safe": 2,
-          "steps": 2989
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 5,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 2,
-          "n_safe": 4,
-          "steps": 1798
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 3,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 8,
-          "steps": 1677
-        },
-        {
-          "status": "timeout",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 4,
-          "steps": 23570
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 1,
-          "n_safe": 4,
-          "steps": 23570
-        },
-        {
-          "status": "timeout",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 5,
-          "steps": 23570
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 3,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 8,
-          "steps": 3499
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 2,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 8,
-          "steps": 1869
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 2,
-          "n_safe": 5,
-          "steps": 2548
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 5,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 6,
-          "steps": 2141
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 5,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 1,
-          "n_safe": 5,
-          "steps": 23570
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 3,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 6,
-          "steps": 2048
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 1,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 8,
-          "steps": 1260
-        },
-        {
-          "status": "timeout",
-          "episodio": "lobos",
-          "n_wolves": 5,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 5,
-          "steps": 23570
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 1,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 7,
-          "steps": 1346
-        },
-        {
-          "status": "success",
-          "episodio": "lobos",
-          "n_wolves": 4,
-          "n_corzos": 0,
-          "n_corzos_descartados": 0,
-          "n_depredadas": 0,
-          "n_safe": 8,
-          "steps": 2233
-        },
-        {
-          "status": "predation",
-          "episodio": "lobos",
-          "n_wolves": 5,
           "n_corzos": 0,
           "n_corzos_descartados": 0,
           "n_depredadas": 5,
           "n_safe": 3,
-          "steps": 1344
+          "steps": 2751,
+          "relevos": 4,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 4,
+          "espera_handoff_media": 119.75,
+          "espera_handoff_max": 193,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 3,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1997,
+          "relevos": 4,
+          "relevos_escolta": 3,
+          "relevos_patrulla": 1,
+          "espera_handoff_media": 134.5,
+          "espera_handoff_max": 252,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 2,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 2246,
+          "relevos": 1,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 1,
+          "espera_handoff_media": 76.0,
+          "espera_handoff_max": 76,
+          "stranded": 0
+        },
+        {
+          "status": "predation",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 5,
+          "n_safe": 1,
+          "steps": 1558,
+          "relevos": 2,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 95.5,
+          "espera_handoff_max": 107,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 5,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1917,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 148.0,
+          "espera_handoff_max": 148,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 1,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 2139,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 309.0,
+          "espera_handoff_max": 309,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 3,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 992,
+          "relevos": 0,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": null,
+          "espera_handoff_max": null,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 3,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1941,
+          "relevos": 0,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": null,
+          "espera_handoff_max": null,
+          "stranded": 0
+        },
+        {
+          "status": "timeout",
+          "episodio": "lobos",
+          "n_wolves": 5,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 5,
+          "steps": 23570,
+          "relevos": 24,
+          "relevos_escolta": 24,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 84.125,
+          "espera_handoff_max": 101,
+          "stranded": 0
+        },
+        {
+          "status": "timeout",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 0,
+          "steps": 23570,
+          "relevos": 20,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 20,
+          "espera_handoff_media": 81.3,
+          "espera_handoff_max": 134,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 1,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 2203,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 37.0,
+          "espera_handoff_max": 37,
+          "stranded": 0
+        },
+        {
+          "status": "timeout",
+          "episodio": "lobos",
+          "n_wolves": 3,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 5,
+          "steps": 23570,
+          "relevos": 20,
+          "relevos_escolta": 20,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 92.15,
+          "espera_handoff_max": 128,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 5,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 1734,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 172.0,
+          "espera_handoff_max": 172,
+          "stranded": 0
+        },
+        {
+          "status": "timeout",
+          "episodio": "lobos",
+          "n_wolves": 1,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 23570,
+          "relevos": 23,
+          "relevos_escolta": 23,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 97.30434782608695,
+          "espera_handoff_max": 129,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 2156,
+          "relevos": 2,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 56.0,
+          "espera_handoff_max": 69,
+          "stranded": 0
+        },
+        {
+          "status": "timeout",
+          "episodio": "lobos",
+          "n_wolves": 3,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 0,
+          "steps": 23570,
+          "relevos": 24,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 24,
+          "espera_handoff_media": 105.5,
+          "espera_handoff_max": 155,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 2,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 1787,
+          "relevos": 2,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 2,
+          "espera_handoff_media": 98.5,
+          "espera_handoff_max": 128,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 3,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1699,
+          "relevos": 0,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": null,
+          "espera_handoff_max": null,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 1777,
+          "relevos": 2,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 50.0,
+          "espera_handoff_max": 63,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 3,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1465,
+          "relevos": 2,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 176.0,
+          "espera_handoff_max": 230,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 2,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1232,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 100.0,
+          "espera_handoff_max": 100,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 5,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 1178,
+          "relevos": 0,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": null,
+          "espera_handoff_max": null,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1932,
+          "relevos": 2,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 81.5,
+          "espera_handoff_max": 114,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 2,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 1746,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 98.0,
+          "espera_handoff_max": 98,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 2,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1919,
+          "relevos": 2,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 147.0,
+          "espera_handoff_max": 224,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 3,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 2239,
+          "relevos": 3,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 1,
+          "espera_handoff_media": 67.0,
+          "espera_handoff_max": 82,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 2,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 1620,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 82.0,
+          "espera_handoff_max": 82,
+          "stranded": 0
+        },
+        {
+          "status": "timeout",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 4,
+          "steps": 23570,
+          "relevos": 20,
+          "relevos_escolta": 20,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 99.35,
+          "espera_handoff_max": 120,
+          "stranded": 0
+        },
+        {
+          "status": "predation",
+          "episodio": "lobos",
+          "n_wolves": 5,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 8,
+          "n_safe": 0,
+          "steps": 2538,
+          "relevos": 1,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 1,
+          "espera_handoff_media": 129.0,
+          "espera_handoff_max": 129,
+          "stranded": 0
+        },
+        {
+          "status": "predation",
+          "episodio": "lobos",
+          "n_wolves": 3,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 5,
+          "n_safe": 3,
+          "steps": 6577,
+          "relevos": 6,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 5,
+          "espera_handoff_media": 94.33333333333333,
+          "espera_handoff_max": 163,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 5,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 1669,
+          "relevos": 2,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 105.5,
+          "espera_handoff_max": 115,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 3,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1655,
+          "relevos": 0,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": null,
+          "espera_handoff_max": null,
+          "stranded": 0
+        },
+        {
+          "status": "timeout",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 4,
+          "steps": 23570,
+          "relevos": 20,
+          "relevos_escolta": 20,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 42.2,
+          "espera_handoff_max": 71,
+          "stranded": 0
+        },
+        {
+          "status": "predation",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 2,
+          "n_safe": 2,
+          "steps": 23570,
+          "relevos": 21,
+          "relevos_escolta": 20,
+          "relevos_patrulla": 1,
+          "espera_handoff_media": 44.095238095238095,
+          "espera_handoff_max": 74,
+          "stranded": 0
+        },
+        {
+          "status": "timeout",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 5,
+          "steps": 23570,
+          "relevos": 20,
+          "relevos_escolta": 20,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 73.4,
+          "espera_handoff_max": 110,
+          "stranded": 0
+        },
+        {
+          "status": "predation",
+          "episodio": "lobos",
+          "n_wolves": 3,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 6,
+          "n_safe": 2,
+          "steps": 2919,
+          "relevos": 3,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 2,
+          "espera_handoff_media": 86.66666666666667,
+          "espera_handoff_max": 100,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 2,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1909,
+          "relevos": 3,
+          "relevos_escolta": 3,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 51.666666666666664,
+          "espera_handoff_max": 68,
+          "stranded": 0
+        },
+        {
+          "status": "predation",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 4,
+          "n_safe": 3,
+          "steps": 2533,
+          "relevos": 2,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 88.5,
+          "espera_handoff_max": 103,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 5,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 2131,
+          "relevos": 2,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 1,
+          "espera_handoff_media": 136.5,
+          "espera_handoff_max": 163,
+          "stranded": 0
+        },
+        {
+          "status": "predation",
+          "episodio": "lobos",
+          "n_wolves": 5,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 4,
+          "n_safe": 3,
+          "steps": 1119,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 304.0,
+          "espera_handoff_max": 304,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 3,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 2037,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 66.0,
+          "espera_handoff_max": 66,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 1,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1269,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 120.0,
+          "espera_handoff_max": 120,
+          "stranded": 0
+        },
+        {
+          "status": "timeout",
+          "episodio": "lobos",
+          "n_wolves": 5,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 5,
+          "steps": 23570,
+          "relevos": 21,
+          "relevos_escolta": 21,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 73.71428571428571,
+          "espera_handoff_max": 221,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 1,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1325,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 213.0,
+          "espera_handoff_max": 213,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 4,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 2232,
+          "relevos": 2,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 1,
+          "espera_handoff_media": 104.0,
+          "espera_handoff_max": 121,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "lobos",
+          "n_wolves": 5,
+          "n_corzos": 0,
+          "n_corzos_descartados": 0,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1669,
+          "relevos": 3,
+          "relevos_escolta": 3,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 93.66666666666667,
+          "espera_handoff_max": 104,
+          "stranded": 0
         },
         {
           "status": "predation",
@@ -1081,7 +1651,13 @@
           "n_corzos_descartados": 0,
           "n_depredadas": 1,
           "n_safe": 6,
-          "steps": 1435
+          "steps": 1447,
+          "relevos": 3,
+          "relevos_escolta": 3,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 241.66666666666666,
+          "espera_handoff_max": 364,
+          "stranded": 0
         },
         {
           "status": "predation",
@@ -1091,7 +1667,13 @@
           "n_corzos_descartados": 0,
           "n_depredadas": 3,
           "n_safe": 3,
-          "steps": 1226
+          "steps": 1258,
+          "relevos": 2,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 106.0,
+          "espera_handoff_max": 124,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -1101,7 +1683,13 @@
           "n_corzos_descartados": 0,
           "n_depredadas": 0,
           "n_safe": 8,
-          "steps": 1383
+          "steps": 1359,
+          "relevos": 0,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": null,
+          "espera_handoff_max": null,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -1111,7 +1699,13 @@
           "n_corzos_descartados": 0,
           "n_depredadas": 0,
           "n_safe": 6,
-          "steps": 2325
+          "steps": 2274,
+          "relevos": 2,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 51.0,
+          "espera_handoff_max": 54,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -1121,7 +1715,13 @@
           "n_corzos_descartados": 0,
           "n_depredadas": 0,
           "n_safe": 8,
-          "steps": 1840
+          "steps": 1894,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 114.0,
+          "espera_handoff_max": 114,
+          "stranded": 0
         }
       ]
     },
@@ -1146,7 +1746,13 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 22,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 22,
+          "espera_handoff_media": 101.22727272727273,
+          "espera_handoff_max": 160,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1156,7 +1762,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 20,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 20,
+          "espera_handoff_media": 91.1,
+          "espera_handoff_max": 138,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1166,7 +1778,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 21,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 21,
+          "espera_handoff_media": 103.95238095238095,
+          "espera_handoff_max": 148,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1176,7 +1794,13 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 21,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 21,
+          "espera_handoff_media": 105.04761904761905,
+          "espera_handoff_max": 148,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1186,7 +1810,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 22,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 22,
+          "espera_handoff_media": 90.04545454545455,
+          "espera_handoff_max": 135,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1196,7 +1826,13 @@
           "n_corzos_descartados": 1,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 22,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 22,
+          "espera_handoff_media": 102.68181818181819,
+          "espera_handoff_max": 150,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1206,7 +1842,13 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 20,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 20,
+          "espera_handoff_media": 83.5,
+          "espera_handoff_max": 144,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1216,7 +1858,13 @@
           "n_corzos_descartados": 1,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 21,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 21,
+          "espera_handoff_media": 106.23809523809524,
+          "espera_handoff_max": 142,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1226,7 +1874,13 @@
           "n_corzos_descartados": 1,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 21,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 21,
+          "espera_handoff_media": 107.04761904761905,
+          "espera_handoff_max": 130,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1236,7 +1890,13 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 22,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 22,
+          "espera_handoff_media": 96.45454545454545,
+          "espera_handoff_max": 138,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1246,7 +1906,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 21,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 21,
+          "espera_handoff_media": 105.38095238095238,
+          "espera_handoff_max": 144,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1256,7 +1922,13 @@
           "n_corzos_descartados": 1,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 20,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 20,
+          "espera_handoff_media": 98.05,
+          "espera_handoff_max": 140,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1266,7 +1938,13 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 20,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 20,
+          "espera_handoff_media": 109.0,
+          "espera_handoff_max": 178,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1276,7 +1954,13 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 20,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 20,
+          "espera_handoff_media": 89.45,
+          "espera_handoff_max": 133,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1286,7 +1970,13 @@
           "n_corzos_descartados": 1,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 20,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 20,
+          "espera_handoff_media": 108.85,
+          "espera_handoff_max": 248,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1296,7 +1986,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 21,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 21,
+          "espera_handoff_media": 97.38095238095238,
+          "espera_handoff_max": 145,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1306,7 +2002,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 22,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 22,
+          "espera_handoff_media": 104.04545454545455,
+          "espera_handoff_max": 156,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1316,7 +2018,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 20,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 20,
+          "espera_handoff_media": 110.75,
+          "espera_handoff_max": 151,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1326,7 +2034,13 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 21,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 21,
+          "espera_handoff_media": 91.9047619047619,
+          "espera_handoff_max": 173,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1336,7 +2050,13 @@
           "n_corzos_descartados": 1,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 23,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 23,
+          "espera_handoff_media": 96.73913043478261,
+          "espera_handoff_max": 142,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1346,7 +2066,13 @@
           "n_corzos_descartados": 1,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 23,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 23,
+          "espera_handoff_media": 105.69565217391305,
+          "espera_handoff_max": 141,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1356,7 +2082,13 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 22,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 22,
+          "espera_handoff_media": 107.13636363636364,
+          "espera_handoff_max": 295,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1366,7 +2098,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 22,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 22,
+          "espera_handoff_media": 104.04545454545455,
+          "espera_handoff_max": 134,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1376,7 +2114,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 22,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 22,
+          "espera_handoff_media": 99.68181818181819,
+          "espera_handoff_max": 143,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1386,7 +2130,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 20,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 20,
+          "espera_handoff_media": 86.15,
+          "espera_handoff_max": 135,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1396,7 +2146,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 23,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 23,
+          "espera_handoff_media": 108.73913043478261,
+          "espera_handoff_max": 139,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1406,7 +2162,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 21,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 21,
+          "espera_handoff_media": 97.85714285714286,
+          "espera_handoff_max": 141,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1416,7 +2178,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 21,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 21,
+          "espera_handoff_media": 92.19047619047619,
+          "espera_handoff_max": 134,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1426,7 +2194,13 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 21,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 21,
+          "espera_handoff_media": 111.0952380952381,
+          "espera_handoff_max": 190,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1436,7 +2210,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 20,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 20,
+          "espera_handoff_media": 115.75,
+          "espera_handoff_max": 198,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1446,7 +2226,13 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 23,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 23,
+          "espera_handoff_media": 105.04347826086956,
+          "espera_handoff_max": 141,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1456,7 +2242,13 @@
           "n_corzos_descartados": 1,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 20,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 20,
+          "espera_handoff_media": 90.0,
+          "espera_handoff_max": 144,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1466,7 +2258,13 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 20,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 20,
+          "espera_handoff_media": 98.5,
+          "espera_handoff_max": 190,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1476,7 +2274,13 @@
           "n_corzos_descartados": 1,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 20,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 20,
+          "espera_handoff_media": 92.85,
+          "espera_handoff_max": 149,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1486,7 +2290,13 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 21,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 21,
+          "espera_handoff_media": 97.33333333333333,
+          "espera_handoff_max": 140,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1496,7 +2306,13 @@
           "n_corzos_descartados": 1,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 22,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 22,
+          "espera_handoff_media": 101.63636363636364,
+          "espera_handoff_max": 174,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1506,7 +2322,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 21,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 21,
+          "espera_handoff_media": 98.33333333333333,
+          "espera_handoff_max": 189,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1516,7 +2338,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 20,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 20,
+          "espera_handoff_media": 124.2,
+          "espera_handoff_max": 264,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1526,7 +2354,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 24,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 24,
+          "espera_handoff_media": 107.66666666666667,
+          "espera_handoff_max": 173,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1536,7 +2370,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 20,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 20,
+          "espera_handoff_media": 86.85,
+          "espera_handoff_max": 135,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1546,7 +2386,13 @@
           "n_corzos_descartados": 1,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 22,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 22,
+          "espera_handoff_media": 105.22727272727273,
+          "espera_handoff_max": 144,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1556,7 +2402,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 21,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 21,
+          "espera_handoff_media": 101.66666666666667,
+          "espera_handoff_max": 136,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1566,7 +2418,13 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 20,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 20,
+          "espera_handoff_media": 97.45,
+          "espera_handoff_max": 145,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1576,7 +2434,13 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 22,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 22,
+          "espera_handoff_media": 108.18181818181819,
+          "espera_handoff_max": 230,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1586,7 +2450,13 @@
           "n_corzos_descartados": 1,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 22,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 22,
+          "espera_handoff_media": 103.18181818181819,
+          "espera_handoff_max": 145,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1596,7 +2466,13 @@
           "n_corzos_descartados": 1,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 21,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 21,
+          "espera_handoff_media": 106.19047619047619,
+          "espera_handoff_max": 173,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1606,7 +2482,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 20,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 20,
+          "espera_handoff_media": 100.05,
+          "espera_handoff_max": 149,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1616,7 +2498,13 @@
           "n_corzos_descartados": 1,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 22,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 22,
+          "espera_handoff_media": 99.86363636363636,
+          "espera_handoff_max": 158,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1626,7 +2514,13 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 22,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 22,
+          "espera_handoff_media": 115.18181818181819,
+          "espera_handoff_max": 262,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1636,7 +2530,13 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 22,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 22,
+          "espera_handoff_media": 100.77272727272727,
+          "espera_handoff_max": 132,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1646,7 +2546,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 24,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 24,
+          "espera_handoff_media": 118.375,
+          "espera_handoff_max": 309,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1656,7 +2562,13 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 21,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 21,
+          "espera_handoff_media": 90.0,
+          "espera_handoff_max": 136,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1666,7 +2578,13 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 22,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 22,
+          "espera_handoff_media": 93.81818181818181,
+          "espera_handoff_max": 141,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1676,7 +2594,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 21,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 21,
+          "espera_handoff_media": 108.80952380952381,
+          "espera_handoff_max": 152,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1686,7 +2610,13 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 21,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 21,
+          "espera_handoff_media": 105.28571428571429,
+          "espera_handoff_max": 209,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1696,7 +2626,13 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 21,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 21,
+          "espera_handoff_media": 112.0,
+          "espera_handoff_max": 152,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1706,7 +2642,13 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 20,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 20,
+          "espera_handoff_media": 84.65,
+          "espera_handoff_max": 137,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1716,7 +2658,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 22,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 22,
+          "espera_handoff_media": 105.9090909090909,
+          "espera_handoff_max": 138,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1726,7 +2674,13 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 20,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 20,
+          "espera_handoff_media": 82.65,
+          "espera_handoff_max": 134,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1736,7 +2690,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 20,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 20,
+          "espera_handoff_media": 92.15,
+          "espera_handoff_max": 138,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1746,7 +2706,13 @@
           "n_corzos_descartados": 1,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 20,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 20,
+          "espera_handoff_media": 77.55,
+          "espera_handoff_max": 141,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1756,7 +2722,13 @@
           "n_corzos_descartados": 1,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 21,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 21,
+          "espera_handoff_media": 114.47619047619048,
+          "espera_handoff_max": 178,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1766,7 +2738,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 21,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 21,
+          "espera_handoff_media": 113.42857142857143,
+          "espera_handoff_max": 160,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1776,7 +2754,13 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 20,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 20,
+          "espera_handoff_media": 86.45,
+          "espera_handoff_max": 137,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1786,7 +2770,13 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 24,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 24,
+          "espera_handoff_media": 112.875,
+          "espera_handoff_max": 176,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1796,7 +2786,13 @@
           "n_corzos_descartados": 1,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 22,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 22,
+          "espera_handoff_media": 100.22727272727273,
+          "espera_handoff_max": 150,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1806,7 +2802,13 @@
           "n_corzos_descartados": 1,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 20,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 20,
+          "espera_handoff_media": 87.45,
+          "espera_handoff_max": 141,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1816,7 +2818,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 20,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 20,
+          "espera_handoff_media": 93.95,
+          "espera_handoff_max": 140,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1826,7 +2834,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 22,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 22,
+          "espera_handoff_media": 115.4090909090909,
+          "espera_handoff_max": 184,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1836,7 +2850,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 22,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 22,
+          "espera_handoff_media": 97.5909090909091,
+          "espera_handoff_max": 136,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1846,7 +2866,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 20,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 20,
+          "espera_handoff_media": 98.9,
+          "espera_handoff_max": 138,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1856,7 +2882,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 22,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 22,
+          "espera_handoff_media": 104.27272727272727,
+          "espera_handoff_max": 182,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1866,7 +2898,13 @@
           "n_corzos_descartados": 1,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 20,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 20,
+          "espera_handoff_media": 112.7,
+          "espera_handoff_max": 237,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1876,7 +2914,13 @@
           "n_corzos_descartados": 1,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 22,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 22,
+          "espera_handoff_media": 90.81818181818181,
+          "espera_handoff_max": 132,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1886,7 +2930,13 @@
           "n_corzos_descartados": 1,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 22,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 22,
+          "espera_handoff_media": 90.63636363636364,
+          "espera_handoff_max": 141,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1896,7 +2946,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 20,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 20,
+          "espera_handoff_media": 95.65,
+          "espera_handoff_max": 129,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1906,7 +2962,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 21,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 21,
+          "espera_handoff_media": 106.14285714285714,
+          "espera_handoff_max": 132,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1916,7 +2978,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 21,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 21,
+          "espera_handoff_media": 102.38095238095238,
+          "espera_handoff_max": 144,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1926,7 +2994,13 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 21,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 21,
+          "espera_handoff_media": 105.0952380952381,
+          "espera_handoff_max": 160,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1936,7 +3010,13 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 20,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 20,
+          "espera_handoff_media": 98.2,
+          "espera_handoff_max": 142,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1946,7 +3026,13 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 20,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 20,
+          "espera_handoff_media": 91.2,
+          "espera_handoff_max": 198,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1956,7 +3042,13 @@
           "n_corzos_descartados": 1,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 22,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 22,
+          "espera_handoff_media": 89.81818181818181,
+          "espera_handoff_max": 142,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1966,7 +3058,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 21,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 21,
+          "espera_handoff_media": 90.19047619047619,
+          "espera_handoff_max": 137,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1976,7 +3074,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 20,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 20,
+          "espera_handoff_media": 100.5,
+          "espera_handoff_max": 143,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1986,7 +3090,13 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 22,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 22,
+          "espera_handoff_media": 102.0909090909091,
+          "espera_handoff_max": 144,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -1996,7 +3106,13 @@
           "n_corzos_descartados": 1,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 22,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 22,
+          "espera_handoff_media": 110.31818181818181,
+          "espera_handoff_max": 144,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -2006,7 +3122,13 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 21,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 21,
+          "espera_handoff_media": 95.71428571428571,
+          "espera_handoff_max": 141,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -2016,7 +3138,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 21,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 21,
+          "espera_handoff_media": 107.66666666666667,
+          "espera_handoff_max": 157,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -2026,7 +3154,13 @@
           "n_corzos_descartados": 1,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 22,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 22,
+          "espera_handoff_media": 101.5,
+          "espera_handoff_max": 219,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -2036,7 +3170,13 @@
           "n_corzos_descartados": 1,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 20,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 20,
+          "espera_handoff_media": 94.1,
+          "espera_handoff_max": 146,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -2046,7 +3186,13 @@
           "n_corzos_descartados": 1,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 22,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 22,
+          "espera_handoff_media": 101.5909090909091,
+          "espera_handoff_max": 145,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -2056,7 +3202,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 22,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 22,
+          "espera_handoff_media": 103.9090909090909,
+          "espera_handoff_max": 147,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -2066,7 +3218,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 21,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 21,
+          "espera_handoff_media": 92.85714285714286,
+          "espera_handoff_max": 134,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -2076,7 +3234,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 21,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 21,
+          "espera_handoff_media": 115.38095238095238,
+          "espera_handoff_max": 147,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -2086,7 +3250,13 @@
           "n_corzos_descartados": 1,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 23,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 23,
+          "espera_handoff_media": 106.6086956521739,
+          "espera_handoff_max": 139,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -2096,7 +3266,13 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 23,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 23,
+          "espera_handoff_media": 115.56521739130434,
+          "espera_handoff_max": 201,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -2106,7 +3282,13 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 22,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 22,
+          "espera_handoff_media": 100.5,
+          "espera_handoff_max": 137,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -2116,7 +3298,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 21,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 21,
+          "espera_handoff_media": 108.57142857142857,
+          "espera_handoff_max": 138,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -2126,7 +3314,13 @@
           "n_corzos_descartados": 1,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 21,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 21,
+          "espera_handoff_media": 95.42857142857143,
+          "espera_handoff_max": 150,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -2136,21 +3330,27 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 21,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 21,
+          "espera_handoff_media": 97.47619047619048,
+          "espera_handoff_max": 132,
+          "stranded": 0
         }
       ]
     },
     "mixto": {
       "label": "mixto",
       "n": 100,
-      "severity_mean": 0.76,
-      "severity_std": 1.7036431551237483,
-      "severity_max": 7,
-      "n_safe_mean": 6.09,
+      "severity_mean": 0.93,
+      "severity_std": 1.9557862868933302,
+      "severity_max": 8,
+      "n_safe_mean": 5.85,
       "terminals": {
         "success": 69,
-        "predation": 22,
-        "timeout": 9
+        "predation": 23,
+        "timeout": 8
       },
       "episodes": [
         {
@@ -2161,7 +3361,13 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 0,
           "n_safe": 7,
-          "steps": 2166
+          "steps": 2082,
+          "relevos": 3,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 1,
+          "espera_handoff_media": 112.0,
+          "espera_handoff_max": 210,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -2171,77 +3377,125 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 7,
-          "steps": 1834
+          "steps": 1857,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 96.0,
+          "espera_handoff_max": 96,
+          "stranded": 0
         },
         {
-          "status": "timeout",
+          "status": "predation",
+          "episodio": "mixto",
+          "n_wolves": 3,
+          "n_corzos": 3,
+          "n_corzos_descartados": 3,
+          "n_depredadas": 5,
+          "n_safe": 1,
+          "steps": 1614,
+          "relevos": 2,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 1,
+          "espera_handoff_media": 118.5,
+          "espera_handoff_max": 150,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 4,
+          "n_corzos": 2,
+          "n_corzos_descartados": 2,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 1249,
+          "relevos": 0,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": null,
+          "espera_handoff_max": null,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 2,
+          "n_corzos": 2,
+          "n_corzos_descartados": 2,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1435,
+          "relevos": 2,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 68.5,
+          "espera_handoff_max": 70,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 3,
+          "n_corzos": 1,
+          "n_corzos_descartados": 1,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1293,
+          "relevos": 2,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 86.5,
+          "espera_handoff_max": 97,
+          "stranded": 0
+        },
+        {
+          "status": "success",
           "episodio": "mixto",
           "n_wolves": 3,
           "n_corzos": 3,
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1909,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 38.0,
+          "espera_handoff_max": 38,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 2,
+          "n_corzos": 2,
+          "n_corzos_descartados": 2,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 2300,
+          "relevos": 2,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 1,
+          "espera_handoff_media": 117.0,
+          "espera_handoff_max": 133,
+          "stranded": 0
+        },
+        {
+          "status": "predation",
+          "episodio": "mixto",
+          "n_wolves": 4,
+          "n_corzos": 3,
+          "n_corzos_descartados": 3,
+          "n_depredadas": 2,
           "n_safe": 5,
-          "steps": 23570
-        },
-        {
-          "status": "success",
-          "episodio": "mixto",
-          "n_wolves": 4,
-          "n_corzos": 2,
-          "n_corzos_descartados": 2,
-          "n_depredadas": 0,
-          "n_safe": 6,
-          "steps": 1231
-        },
-        {
-          "status": "success",
-          "episodio": "mixto",
-          "n_wolves": 2,
-          "n_corzos": 2,
-          "n_corzos_descartados": 2,
-          "n_depredadas": 0,
-          "n_safe": 8,
-          "steps": 1461
-        },
-        {
-          "status": "success",
-          "episodio": "mixto",
-          "n_wolves": 3,
-          "n_corzos": 1,
-          "n_corzos_descartados": 1,
-          "n_depredadas": 0,
-          "n_safe": 8,
-          "steps": 1297
-        },
-        {
-          "status": "success",
-          "episodio": "mixto",
-          "n_wolves": 3,
-          "n_corzos": 3,
-          "n_corzos_descartados": 3,
-          "n_depredadas": 0,
-          "n_safe": 7,
-          "steps": 1925
-        },
-        {
-          "status": "success",
-          "episodio": "mixto",
-          "n_wolves": 2,
-          "n_corzos": 2,
-          "n_corzos_descartados": 2,
-          "n_depredadas": 0,
-          "n_safe": 8,
-          "steps": 2309
-        },
-        {
-          "status": "success",
-          "episodio": "mixto",
-          "n_wolves": 4,
-          "n_corzos": 3,
-          "n_corzos_descartados": 3,
-          "n_depredadas": 0,
-          "n_safe": 7,
-          "steps": 2161
+          "steps": 2041,
+          "relevos": 3,
+          "relevos_escolta": 3,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 111.33333333333333,
+          "espera_handoff_max": 147,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -2251,7 +3505,13 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 0,
           "n_safe": 7,
-          "steps": 1385
+          "steps": 1358,
+          "relevos": 2,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 71.0,
+          "espera_handoff_max": 89,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -2261,7 +3521,13 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 0,
           "n_safe": 8,
-          "steps": 1940
+          "steps": 1968,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 107.0,
+          "espera_handoff_max": 107,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -2271,7 +3537,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 7,
-          "steps": 1475
+          "steps": 1515,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 105.0,
+          "espera_handoff_max": 105,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -2281,7 +3553,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 6,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 20,
+          "relevos_escolta": 20,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 94.45,
+          "espera_handoff_max": 115,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -2291,7 +3569,13 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 0,
           "n_safe": 6,
-          "steps": 2009
+          "steps": 2025,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 90.0,
+          "espera_handoff_max": 90,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -2301,7 +3585,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 8,
-          "steps": 1829
+          "steps": 1807,
+          "relevos": 0,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": null,
+          "espera_handoff_max": null,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -2311,7 +3601,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 6,
-          "steps": 1914
+          "steps": 1949,
+          "relevos": 2,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 86.5,
+          "espera_handoff_max": 88,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -2321,7 +3617,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 6,
-          "steps": 1780
+          "steps": 1819,
+          "relevos": 2,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 101.5,
+          "espera_handoff_max": 112,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -2331,7 +3633,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 7,
-          "steps": 1241
+          "steps": 1204,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 78.0,
+          "espera_handoff_max": 78,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -2341,17 +3649,29 @@
           "n_corzos_descartados": 1,
           "n_depredadas": 0,
           "n_safe": 7,
-          "steps": 1607
+          "steps": 1588,
+          "relevos": 2,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 150.0,
+          "espera_handoff_max": 228,
+          "stranded": 0
         },
         {
-          "status": "success",
+          "status": "predation",
           "episodio": "mixto",
           "n_wolves": 4,
           "n_corzos": 1,
           "n_corzos_descartados": 1,
-          "n_depredadas": 0,
-          "n_safe": 7,
-          "steps": 3090
+          "n_depredadas": 6,
+          "n_safe": 1,
+          "steps": 19599,
+          "relevos": 19,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 18,
+          "espera_handoff_media": 106.21052631578948,
+          "espera_handoff_max": 223,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -2361,17 +3681,29 @@
           "n_corzos_descartados": 1,
           "n_depredadas": 0,
           "n_safe": 8,
-          "steps": 1557
+          "steps": 1508,
+          "relevos": 3,
+          "relevos_escolta": 3,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 69.66666666666667,
+          "espera_handoff_max": 80,
+          "stranded": 0
         },
         {
-          "status": "success",
+          "status": "predation",
           "episodio": "mixto",
           "n_wolves": 4,
           "n_corzos": 1,
           "n_corzos_descartados": 1,
-          "n_depredadas": 0,
-          "n_safe": 8,
-          "steps": 1658
+          "n_depredadas": 2,
+          "n_safe": 6,
+          "steps": 1925,
+          "relevos": 3,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 1,
+          "espera_handoff_media": 141.33333333333334,
+          "espera_handoff_max": 319,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -2381,7 +3713,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 6,
-          "steps": 1725
+          "steps": 1717,
+          "relevos": 3,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 1,
+          "espera_handoff_media": 102.0,
+          "espera_handoff_max": 126,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -2391,7 +3729,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 7,
-          "steps": 1463
+          "steps": 1398,
+          "relevos": 2,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 88.0,
+          "espera_handoff_max": 102,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -2401,7 +3745,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 6,
-          "steps": 1271
+          "steps": 1231,
+          "relevos": 2,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 72.0,
+          "espera_handoff_max": 89,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -2411,7 +3761,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 6,
-          "steps": 1370
+          "steps": 1436,
+          "relevos": 2,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 103.5,
+          "espera_handoff_max": 106,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -2421,7 +3777,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 6,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 21,
+          "relevos_escolta": 21,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 85.19047619047619,
+          "espera_handoff_max": 112,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -2431,7 +3793,13 @@
           "n_corzos_descartados": 1,
           "n_depredadas": 0,
           "n_safe": 7,
-          "steps": 2178
+          "steps": 2180,
+          "relevos": 2,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 1,
+          "espera_handoff_media": 88.0,
+          "espera_handoff_max": 102,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -2441,7 +3809,13 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 0,
           "n_safe": 6,
-          "steps": 2181
+          "steps": 2199,
+          "relevos": 2,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 45.5,
+          "espera_handoff_max": 60,
+          "stranded": 0
         },
         {
           "status": "predation",
@@ -2451,7 +3825,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 5,
           "n_safe": 3,
-          "steps": 1870
+          "steps": 1871,
+          "relevos": 0,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": null,
+          "espera_handoff_max": null,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -2461,7 +3841,13 @@
           "n_corzos_descartados": 1,
           "n_depredadas": 0,
           "n_safe": 7,
-          "steps": 2151
+          "steps": 2105,
+          "relevos": 3,
+          "relevos_escolta": 3,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 76.66666666666667,
+          "espera_handoff_max": 100,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -2471,7 +3857,13 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 0,
           "n_safe": 8,
-          "steps": 1574
+          "steps": 1615,
+          "relevos": 0,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": null,
+          "espera_handoff_max": null,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -2481,7 +3873,13 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 0,
           "n_safe": 7,
-          "steps": 2255
+          "steps": 2207,
+          "relevos": 2,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 55.5,
+          "espera_handoff_max": 65,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -2491,7 +3889,13 @@
           "n_corzos_descartados": 1,
           "n_depredadas": 0,
           "n_safe": 8,
-          "steps": 2079
+          "steps": 2074,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 101.0,
+          "espera_handoff_max": 101,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -2501,7 +3905,13 @@
           "n_corzos_descartados": 1,
           "n_depredadas": 0,
           "n_safe": 7,
-          "steps": 1519
+          "steps": 1483,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 76.0,
+          "espera_handoff_max": 76,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -2511,7 +3921,13 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 0,
           "n_safe": 8,
-          "steps": 1601
+          "steps": 1601,
+          "relevos": 2,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 221.5,
+          "espera_handoff_max": 320,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -2521,17 +3937,29 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 7,
-          "steps": 1906
+          "steps": 1977,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 65.0,
+          "espera_handoff_max": 65,
+          "stranded": 0
         },
         {
-          "status": "timeout",
+          "status": "predation",
           "episodio": "mixto",
           "n_wolves": 4,
           "n_corzos": 1,
           "n_corzos_descartados": 1,
-          "n_depredadas": 0,
-          "n_safe": 5,
-          "steps": 23570
+          "n_depredadas": 5,
+          "n_safe": 2,
+          "steps": 1649,
+          "relevos": 0,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": null,
+          "espera_handoff_max": null,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -2541,7 +3969,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 8,
-          "steps": 1807
+          "steps": 1782,
+          "relevos": 4,
+          "relevos_escolta": 4,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 127.0,
+          "espera_handoff_max": 211,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -2551,7 +3985,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 6,
-          "steps": 1651
+          "steps": 1675,
+          "relevos": 3,
+          "relevos_escolta": 3,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 58.333333333333336,
+          "espera_handoff_max": 74,
+          "stranded": 0
         },
         {
           "status": "predation",
@@ -2561,7 +4001,13 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 6,
           "n_safe": 1,
-          "steps": 1527
+          "steps": 1455,
+          "relevos": 2,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 1,
+          "espera_handoff_media": 155.5,
+          "espera_handoff_max": 248,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -2571,7 +4017,13 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 0,
           "n_safe": 8,
-          "steps": 1846
+          "steps": 1828,
+          "relevos": 3,
+          "relevos_escolta": 3,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 101.66666666666667,
+          "espera_handoff_max": 109,
+          "stranded": 0
         },
         {
           "status": "predation",
@@ -2581,17 +4033,29 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 2,
           "n_safe": 4,
-          "steps": 917
+          "steps": 917,
+          "relevos": 0,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": null,
+          "espera_handoff_max": null,
+          "stranded": 0
         },
         {
-          "status": "predation",
+          "status": "success",
           "episodio": "mixto",
           "n_wolves": 4,
           "n_corzos": 2,
           "n_corzos_descartados": 2,
-          "n_depredadas": 1,
-          "n_safe": 5,
-          "steps": 1621
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 1925,
+          "relevos": 3,
+          "relevos_escolta": 3,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 69.0,
+          "espera_handoff_max": 74,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -2601,7 +4065,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 8,
-          "steps": 1861
+          "steps": 1890,
+          "relevos": 2,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 45.0,
+          "espera_handoff_max": 59,
+          "stranded": 0
         },
         {
           "status": "predation",
@@ -2611,7 +4081,13 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 7,
           "n_safe": 1,
-          "steps": 1385
+          "steps": 1504,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 240.0,
+          "espera_handoff_max": 240,
+          "stranded": 0
         },
         {
           "status": "predation",
@@ -2621,17 +4097,29 @@
           "n_corzos_descartados": 1,
           "n_depredadas": 5,
           "n_safe": 2,
-          "steps": 2299
+          "steps": 7732,
+          "relevos": 8,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 6,
+          "espera_handoff_media": 92.125,
+          "espera_handoff_max": 146,
+          "stranded": 0
         },
         {
-          "status": "predation",
+          "status": "success",
           "episodio": "mixto",
           "n_wolves": 4,
           "n_corzos": 2,
           "n_corzos_descartados": 2,
-          "n_depredadas": 1,
-          "n_safe": 7,
-          "steps": 1857
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1656,
+          "relevos": 2,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 151.0,
+          "espera_handoff_max": 264,
+          "stranded": 0
         },
         {
           "status": "predation",
@@ -2641,17 +4129,29 @@
           "n_corzos_descartados": 1,
           "n_depredadas": 3,
           "n_safe": 5,
-          "steps": 1411
+          "steps": 1411,
+          "relevos": 3,
+          "relevos_escolta": 3,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 216.33333333333334,
+          "espera_handoff_max": 312,
+          "stranded": 0
         },
         {
-          "status": "predation",
+          "status": "timeout",
           "episodio": "mixto",
           "n_wolves": 4,
           "n_corzos": 1,
           "n_corzos_descartados": 1,
-          "n_depredadas": 4,
-          "n_safe": 2,
-          "steps": 23570
+          "n_depredadas": 0,
+          "n_safe": 0,
+          "steps": 23570,
+          "relevos": 23,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 23,
+          "espera_handoff_media": 103.08695652173913,
+          "espera_handoff_max": 186,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -2661,7 +4161,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 8,
-          "steps": 1905
+          "steps": 2046,
+          "relevos": 4,
+          "relevos_escolta": 3,
+          "relevos_patrulla": 1,
+          "espera_handoff_media": 134.5,
+          "espera_handoff_max": 254,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -2671,7 +4177,13 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 0,
           "n_safe": 7,
-          "steps": 2376
+          "steps": 2406,
+          "relevos": 2,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 1,
+          "espera_handoff_media": 59.5,
+          "espera_handoff_max": 71,
+          "stranded": 0
         },
         {
           "status": "predation",
@@ -2681,7 +4193,13 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 4,
           "n_safe": 2,
-          "steps": 2871
+          "steps": 3325,
+          "relevos": 4,
+          "relevos_escolta": 4,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 87.25,
+          "espera_handoff_max": 107,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -2691,7 +4209,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 7,
-          "steps": 1969
+          "steps": 1942,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 147.0,
+          "espera_handoff_max": 147,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -2701,7 +4225,13 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 0,
           "n_safe": 7,
-          "steps": 1995
+          "steps": 2010,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 304.0,
+          "espera_handoff_max": 304,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -2711,7 +4241,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 7,
-          "steps": 1001
+          "steps": 1008,
+          "relevos": 0,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": null,
+          "espera_handoff_max": null,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -2721,7 +4257,13 @@
           "n_corzos_descartados": 1,
           "n_depredadas": 0,
           "n_safe": 8,
-          "steps": 1973
+          "steps": 1971,
+          "relevos": 0,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": null,
+          "espera_handoff_max": null,
+          "stranded": 0
         },
         {
           "status": "predation",
@@ -2729,19 +4271,31 @@
           "n_wolves": 5,
           "n_corzos": 3,
           "n_corzos_descartados": 3,
-          "n_depredadas": 2,
-          "n_safe": 4,
-          "steps": 1461
+          "n_depredadas": 3,
+          "n_safe": 3,
+          "steps": 1461,
+          "relevos": 2,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 61.5,
+          "espera_handoff_max": 68,
+          "stranded": 0
         },
         {
-          "status": "predation",
+          "status": "timeout",
           "episodio": "mixto",
           "n_wolves": 4,
           "n_corzos": 2,
           "n_corzos_descartados": 2,
-          "n_depredadas": 6,
+          "n_depredadas": 0,
           "n_safe": 0,
-          "steps": 16226
+          "steps": 23570,
+          "relevos": 20,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 20,
+          "espera_handoff_media": 80.45,
+          "espera_handoff_max": 137,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -2751,7 +4305,13 @@
           "n_corzos_descartados": 1,
           "n_depredadas": 0,
           "n_safe": 8,
-          "steps": 2301
+          "steps": 2305,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 36.0,
+          "espera_handoff_max": 36,
+          "stranded": 0
         },
         {
           "status": "timeout",
@@ -2761,7 +4321,13 @@
           "n_corzos_descartados": 1,
           "n_depredadas": 0,
           "n_safe": 5,
-          "steps": 23570
+          "steps": 23570,
+          "relevos": 20,
+          "relevos_escolta": 20,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 84.25,
+          "espera_handoff_max": 130,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -2771,17 +4337,29 @@
           "n_corzos_descartados": 1,
           "n_depredadas": 0,
           "n_safe": 6,
-          "steps": 1736
+          "steps": 1736,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 165.0,
+          "espera_handoff_max": 165,
+          "stranded": 0
         },
         {
-          "status": "timeout",
+          "status": "success",
           "episodio": "mixto",
           "n_wolves": 1,
           "n_corzos": 1,
           "n_corzos_descartados": 1,
           "n_depredadas": 0,
-          "n_safe": 6,
-          "steps": 23570
+          "n_safe": 8,
+          "steps": 1679,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 19.0,
+          "espera_handoff_max": 19,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -2791,7 +4369,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 8,
-          "steps": 2245
+          "steps": 2243,
+          "relevos": 2,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 58.0,
+          "espera_handoff_max": 70,
+          "stranded": 0
         },
         {
           "status": "predation",
@@ -2801,7 +4385,13 @@
           "n_corzos_descartados": 2,
           "n_depredadas": 5,
           "n_safe": 2,
-          "steps": 1151
+          "steps": 2392,
+          "relevos": 4,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 3,
+          "espera_handoff_media": 115.75,
+          "espera_handoff_max": 141,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -2811,7 +4401,13 @@
           "n_corzos_descartados": 1,
           "n_depredadas": 0,
           "n_safe": 6,
-          "steps": 1783
+          "steps": 1829,
+          "relevos": 2,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 2,
+          "espera_handoff_media": 101.5,
+          "espera_handoff_max": 132,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -2821,7 +4417,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 7,
-          "steps": 1864
+          "steps": 1816,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 48.0,
+          "espera_handoff_max": 48,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -2831,67 +4433,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 6,
-          "steps": 1756
-        },
-        {
-          "status": "success",
-          "episodio": "mixto",
-          "n_wolves": 3,
-          "n_corzos": 1,
-          "n_corzos_descartados": 1,
-          "n_depredadas": 0,
-          "n_safe": 8,
-          "steps": 1482
-        },
-        {
-          "status": "success",
-          "episodio": "mixto",
-          "n_wolves": 2,
-          "n_corzos": 3,
-          "n_corzos_descartados": 3,
-          "n_depredadas": 0,
-          "n_safe": 7,
-          "steps": 1338
-        },
-        {
-          "status": "success",
-          "episodio": "mixto",
-          "n_wolves": 5,
-          "n_corzos": 3,
-          "n_corzos_descartados": 3,
-          "n_depredadas": 0,
-          "n_safe": 6,
-          "steps": 1188
-        },
-        {
-          "status": "success",
-          "episodio": "mixto",
-          "n_wolves": 4,
-          "n_corzos": 3,
-          "n_corzos_descartados": 3,
-          "n_depredadas": 0,
-          "n_safe": 7,
-          "steps": 1926
-        },
-        {
-          "status": "success",
-          "episodio": "mixto",
-          "n_wolves": 2,
-          "n_corzos": 1,
-          "n_corzos_descartados": 1,
-          "n_depredadas": 0,
-          "n_safe": 6,
-          "steps": 1749
-        },
-        {
-          "status": "success",
-          "episodio": "mixto",
-          "n_wolves": 2,
-          "n_corzos": 1,
-          "n_corzos_descartados": 1,
-          "n_depredadas": 0,
-          "n_safe": 7,
-          "steps": 1951
+          "steps": 1732,
+          "relevos": 2,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 48.5,
+          "espera_handoff_max": 63,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -2901,7 +4449,109 @@
           "n_corzos_descartados": 1,
           "n_depredadas": 0,
           "n_safe": 8,
-          "steps": 2347
+          "steps": 1468,
+          "relevos": 2,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 177.0,
+          "espera_handoff_max": 232,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 2,
+          "n_corzos": 3,
+          "n_corzos_descartados": 3,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1251,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 107.0,
+          "espera_handoff_max": 107,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 5,
+          "n_corzos": 3,
+          "n_corzos_descartados": 3,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 1195,
+          "relevos": 0,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": null,
+          "espera_handoff_max": null,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 4,
+          "n_corzos": 3,
+          "n_corzos_descartados": 3,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1932,
+          "relevos": 2,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 85.0,
+          "espera_handoff_max": 123,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 2,
+          "n_corzos": 1,
+          "n_corzos_descartados": 1,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 1747,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 98.0,
+          "espera_handoff_max": 98,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 2,
+          "n_corzos": 1,
+          "n_corzos_descartados": 1,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1917,
+          "relevos": 2,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 151.5,
+          "espera_handoff_max": 211,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 3,
+          "n_corzos": 1,
+          "n_corzos_descartados": 1,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 2277,
+          "relevos": 3,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 1,
+          "espera_handoff_media": 64.66666666666667,
+          "espera_handoff_max": 79,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -2911,7 +4561,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 0,
           "n_safe": 6,
-          "steps": 1571
+          "steps": 1592,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 87.0,
+          "espera_handoff_max": 87,
+          "stranded": 0
         },
         {
           "status": "predation",
@@ -2919,19 +4575,31 @@
           "n_wolves": 4,
           "n_corzos": 3,
           "n_corzos_descartados": 3,
-          "n_depredadas": 1,
-          "n_safe": 4,
-          "steps": 23570
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 5,
-          "n_corzos": 1,
-          "n_corzos_descartados": 1,
           "n_depredadas": 2,
           "n_safe": 4,
-          "steps": 23570
+          "steps": 883,
+          "relevos": 0,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": null,
+          "espera_handoff_max": null,
+          "stranded": 0
+        },
+        {
+          "status": "predation",
+          "episodio": "mixto",
+          "n_wolves": 5,
+          "n_corzos": 1,
+          "n_corzos_descartados": 1,
+          "n_depredadas": 8,
+          "n_safe": 0,
+          "steps": 2010,
+          "relevos": 1,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 1,
+          "espera_handoff_media": 135.0,
+          "espera_handoff_max": 135,
+          "stranded": 0
         },
         {
           "status": "predation",
@@ -2939,169 +4607,271 @@
           "n_wolves": 3,
           "n_corzos": 1,
           "n_corzos_descartados": 1,
-          "n_depredadas": 6,
-          "n_safe": 2,
-          "steps": 3004
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 5,
-          "n_corzos": 2,
-          "n_corzos_descartados": 2,
-          "n_depredadas": 1,
-          "n_safe": 5,
-          "steps": 1861
-        },
-        {
-          "status": "success",
-          "episodio": "mixto",
-          "n_wolves": 3,
-          "n_corzos": 3,
-          "n_corzos_descartados": 3,
-          "n_depredadas": 0,
-          "n_safe": 8,
-          "steps": 1622
-        },
-        {
-          "status": "timeout",
-          "episodio": "mixto",
-          "n_wolves": 4,
-          "n_corzos": 1,
-          "n_corzos_descartados": 1,
-          "n_depredadas": 0,
-          "n_safe": 4,
-          "steps": 23570
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 4,
-          "n_corzos": 3,
-          "n_corzos_descartados": 3,
-          "n_depredadas": 4,
-          "n_safe": 2,
-          "steps": 2980
-        },
-        {
-          "status": "timeout",
-          "episodio": "mixto",
-          "n_wolves": 4,
-          "n_corzos": 1,
-          "n_corzos_descartados": 1,
-          "n_depredadas": 0,
-          "n_safe": 5,
-          "steps": 23570
-        },
-        {
-          "status": "success",
-          "episodio": "mixto",
-          "n_wolves": 3,
-          "n_corzos": 3,
-          "n_corzos_descartados": 3,
-          "n_depredadas": 0,
-          "n_safe": 8,
-          "steps": 4915
-        },
-        {
-          "status": "success",
-          "episodio": "mixto",
-          "n_wolves": 2,
-          "n_corzos": 1,
-          "n_corzos_descartados": 1,
-          "n_depredadas": 0,
-          "n_safe": 8,
-          "steps": 1916
-        },
-        {
-          "status": "success",
-          "episodio": "mixto",
-          "n_wolves": 4,
-          "n_corzos": 3,
-          "n_corzos_descartados": 3,
-          "n_depredadas": 0,
-          "n_safe": 7,
-          "steps": 2026
-        },
-        {
-          "status": "success",
-          "episodio": "mixto",
-          "n_wolves": 5,
-          "n_corzos": 3,
-          "n_corzos_descartados": 3,
-          "n_depredadas": 0,
-          "n_safe": 6,
-          "steps": 2140
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 5,
-          "n_corzos": 2,
-          "n_corzos_descartados": 2,
-          "n_depredadas": 1,
-          "n_safe": 5,
-          "steps": 23570
-        },
-        {
-          "status": "success",
-          "episodio": "mixto",
-          "n_wolves": 3,
-          "n_corzos": 1,
-          "n_corzos_descartados": 1,
-          "n_depredadas": 0,
-          "n_safe": 6,
-          "steps": 2066
-        },
-        {
-          "status": "success",
-          "episodio": "mixto",
-          "n_wolves": 1,
-          "n_corzos": 2,
-          "n_corzos_descartados": 2,
-          "n_depredadas": 0,
-          "n_safe": 8,
-          "steps": 1270
-        },
-        {
-          "status": "timeout",
-          "episodio": "mixto",
-          "n_wolves": 5,
-          "n_corzos": 2,
-          "n_corzos_descartados": 2,
-          "n_depredadas": 0,
-          "n_safe": 5,
-          "steps": 23570
-        },
-        {
-          "status": "success",
-          "episodio": "mixto",
-          "n_wolves": 1,
-          "n_corzos": 2,
-          "n_corzos_descartados": 2,
-          "n_depredadas": 0,
-          "n_safe": 7,
-          "steps": 1437
-        },
-        {
-          "status": "success",
-          "episodio": "mixto",
-          "n_wolves": 4,
-          "n_corzos": 2,
-          "n_corzos_descartados": 2,
-          "n_depredadas": 0,
-          "n_safe": 8,
-          "steps": 2187
-        },
-        {
-          "status": "predation",
-          "episodio": "mixto",
-          "n_wolves": 5,
-          "n_corzos": 3,
-          "n_corzos_descartados": 3,
           "n_depredadas": 5,
           "n_safe": 3,
-          "steps": 1251
+          "steps": 6554,
+          "relevos": 6,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 5,
+          "espera_handoff_media": 94.5,
+          "espera_handoff_max": 156,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 5,
+          "n_corzos": 2,
+          "n_corzos_descartados": 2,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 1655,
+          "relevos": 2,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 103.0,
+          "espera_handoff_max": 108,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 3,
+          "n_corzos": 3,
+          "n_corzos_descartados": 3,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1603,
+          "relevos": 0,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": null,
+          "espera_handoff_max": null,
+          "stranded": 0
+        },
+        {
+          "status": "timeout",
+          "episodio": "mixto",
+          "n_wolves": 4,
+          "n_corzos": 1,
+          "n_corzos_descartados": 1,
+          "n_depredadas": 0,
+          "n_safe": 4,
+          "steps": 23570,
+          "relevos": 20,
+          "relevos_escolta": 20,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 42.1,
+          "espera_handoff_max": 72,
+          "stranded": 0
+        },
+        {
+          "status": "predation",
+          "episodio": "mixto",
+          "n_wolves": 4,
+          "n_corzos": 3,
+          "n_corzos_descartados": 3,
+          "n_depredadas": 3,
+          "n_safe": 2,
+          "steps": 23570,
+          "relevos": 21,
+          "relevos_escolta": 20,
+          "relevos_patrulla": 1,
+          "espera_handoff_media": 64.80952380952381,
+          "espera_handoff_max": 93,
+          "stranded": 0
+        },
+        {
+          "status": "timeout",
+          "episodio": "mixto",
+          "n_wolves": 4,
+          "n_corzos": 1,
+          "n_corzos_descartados": 1,
+          "n_depredadas": 0,
+          "n_safe": 5,
+          "steps": 23570,
+          "relevos": 20,
+          "relevos_escolta": 20,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 76.2,
+          "espera_handoff_max": 113,
+          "stranded": 0
+        },
+        {
+          "status": "predation",
+          "episodio": "mixto",
+          "n_wolves": 3,
+          "n_corzos": 3,
+          "n_corzos_descartados": 3,
+          "n_depredadas": 6,
+          "n_safe": 2,
+          "steps": 2962,
+          "relevos": 3,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 2,
+          "espera_handoff_media": 86.0,
+          "espera_handoff_max": 97,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 2,
+          "n_corzos": 1,
+          "n_corzos_descartados": 1,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1963,
+          "relevos": 3,
+          "relevos_escolta": 3,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 53.666666666666664,
+          "espera_handoff_max": 68,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 4,
+          "n_corzos": 3,
+          "n_corzos_descartados": 3,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 2030,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 115.0,
+          "espera_handoff_max": 115,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 5,
+          "n_corzos": 3,
+          "n_corzos_descartados": 3,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 2138,
+          "relevos": 2,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 1,
+          "espera_handoff_media": 134.5,
+          "espera_handoff_max": 158,
+          "stranded": 0
+        },
+        {
+          "status": "predation",
+          "episodio": "mixto",
+          "n_wolves": 5,
+          "n_corzos": 2,
+          "n_corzos_descartados": 2,
+          "n_depredadas": 1,
+          "n_safe": 5,
+          "steps": 23570,
+          "relevos": 21,
+          "relevos_escolta": 21,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 51.904761904761905,
+          "espera_handoff_max": 301,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 3,
+          "n_corzos": 1,
+          "n_corzos_descartados": 1,
+          "n_depredadas": 0,
+          "n_safe": 6,
+          "steps": 2053,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 71.0,
+          "espera_handoff_max": 71,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 1,
+          "n_corzos": 2,
+          "n_corzos_descartados": 2,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 1283,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 120.0,
+          "espera_handoff_max": 120,
+          "stranded": 0
+        },
+        {
+          "status": "timeout",
+          "episodio": "mixto",
+          "n_wolves": 5,
+          "n_corzos": 2,
+          "n_corzos_descartados": 2,
+          "n_depredadas": 0,
+          "n_safe": 5,
+          "steps": 23570,
+          "relevos": 21,
+          "relevos_escolta": 21,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 70.85714285714286,
+          "espera_handoff_max": 249,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 1,
+          "n_corzos": 2,
+          "n_corzos_descartados": 2,
+          "n_depredadas": 0,
+          "n_safe": 7,
+          "steps": 1394,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 220.0,
+          "espera_handoff_max": 220,
+          "stranded": 0
+        },
+        {
+          "status": "success",
+          "episodio": "mixto",
+          "n_wolves": 4,
+          "n_corzos": 2,
+          "n_corzos_descartados": 2,
+          "n_depredadas": 0,
+          "n_safe": 8,
+          "steps": 2185,
+          "relevos": 2,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 1,
+          "espera_handoff_media": 104.5,
+          "espera_handoff_max": 122,
+          "stranded": 0
+        },
+        {
+          "status": "predation",
+          "episodio": "mixto",
+          "n_wolves": 5,
+          "n_corzos": 3,
+          "n_corzos_descartados": 3,
+          "n_depredadas": 6,
+          "n_safe": 2,
+          "steps": 1278,
+          "relevos": 3,
+          "relevos_escolta": 3,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 103.33333333333333,
+          "espera_handoff_max": 119,
+          "stranded": 0
         },
         {
           "status": "predation",
@@ -3111,7 +4881,13 @@
           "n_corzos_descartados": 3,
           "n_depredadas": 1,
           "n_safe": 6,
-          "steps": 1441
+          "steps": 1451,
+          "relevos": 3,
+          "relevos_escolta": 3,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 242.0,
+          "espera_handoff_max": 365,
+          "stranded": 0
         },
         {
           "status": "predation",
@@ -3119,9 +4895,15 @@
           "n_wolves": 5,
           "n_corzos": 2,
           "n_corzos_descartados": 2,
-          "n_depredadas": 4,
-          "n_safe": 2,
-          "steps": 1386
+          "n_depredadas": 1,
+          "n_safe": 3,
+          "steps": 23570,
+          "relevos": 21,
+          "relevos_escolta": 21,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 46.95238095238095,
+          "espera_handoff_max": 129,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -3131,7 +4913,13 @@
           "n_corzos_descartados": 1,
           "n_depredadas": 0,
           "n_safe": 8,
-          "steps": 1368
+          "steps": 1367,
+          "relevos": 0,
+          "relevos_escolta": 0,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": null,
+          "espera_handoff_max": null,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -3141,7 +4929,13 @@
           "n_corzos_descartados": 1,
           "n_depredadas": 0,
           "n_safe": 6,
-          "steps": 2314
+          "steps": 2234,
+          "relevos": 2,
+          "relevos_escolta": 2,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 50.5,
+          "espera_handoff_max": 56,
+          "stranded": 0
         },
         {
           "status": "success",
@@ -3151,21 +4945,27 @@
           "n_corzos_descartados": 1,
           "n_depredadas": 0,
           "n_safe": 8,
-          "steps": 1852
+          "steps": 1909,
+          "relevos": 1,
+          "relevos_escolta": 1,
+          "relevos_patrulla": 0,
+          "espera_handoff_media": 115.0,
+          "espera_handoff_max": 115,
+          "stranded": 0
         }
       ]
     }
   },
   "aggregate": {
     "n": 300,
-    "severity_mean": 0.5466666666666666,
-    "severity_std": 1.4903541711806476,
-    "severity_max": 7,
-    "n_safe_mean": 4.026666666666666,
+    "severity_mean": 0.6233333333333333,
+    "severity_std": 1.6537197129165782,
+    "severity_max": 8,
+    "n_safe_mean": 3.8766666666666665,
     "terminals": {
-      "success": 136,
-      "predation": 47,
-      "timeout": 117
+      "success": 137,
+      "predation": 45,
+      "timeout": 118
     }
   },
   "dummy_reference": {

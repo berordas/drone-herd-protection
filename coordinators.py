@@ -127,7 +127,7 @@ class ReactiveCoordinator:
     def __init__(self, world, *, barrier_standoff: float | None = None, drone_spacing: float | None = None,
                  front_cows: int | None = None, engage_standoff: float | None = None,
                  max_advance_from_herd: float = 50.0,
-                 patrol_radius: float | None = None, patrol_omega: float = 0.02):
+                 patrol_radius: float | None = None, patrol_omega: float = 0.0):
         self.world = world
         self.n_drones = world.n_drones
         # Parámetros ETIQUETADOS / afinables (m; rad/paso). v3.2 (arreglo 1 — BARRERA SIN HUECOS):
@@ -148,8 +148,17 @@ class ReactiveCoordinator:
         self.max_advance_from_herd = float(max_advance_from_herd)
         self.front_cows = front_cows                                                                        # (sin uso desde v3.2: el eje ancla en el CENTROIDE de collares; se conserva por compat de firma)
         self.engage_standoff = engage_standoff if engage_standoff is not None else 2.0 * world.r_face_safe  # penetrado: dron entre la vaca y el lobo enganchado
-        self.patrol_radius = patrol_radius                                                                 # órbita de patrulla (None -> adaptativo al tamaño del rebaño)
-        self.patrol_omega = patrol_omega                                                                   # giro de la órbita (patrulla en movimiento)
+        self.patrol_radius = patrol_radius                                                                 # anillo de patrulla (None -> adaptativo al tamaño del rebaño)
+        # v3.6 (Commit L, decisión de diseño del dueño): PATRULLA ESTÁTICA como config OFICIAL de la
+        # defensa clásica — patrol_omega default 0.02 -> 0.0. Motivos (documentados): (a) el hand-off
+        # de relevo exige <= relay_handoff_tol=2 m contra un blanco EN ÓRBITA (~12-14 m/s tangencial)
+        # y daba problemas observados; (b) en v3.5 (regla del sonido) un dron QUIETO disuade igual
+        # (expulsión a <= DETER_RADIUS=20 sin requisito de movimiento) -> la órbita ya no compra
+        # disuasión; (c) menor drenaje de batería (moverse gasta DRONE_MOVE_DRAIN extra). Las ranuras
+        # siguen ANCLADAS al rebaño (mismo radio adaptativo: si el rebaño deriva, lo siguen); SIN
+        # rotación. Modos barrera/escolta: sin cambios. La órbita de siempre sigue disponible con
+        # patrol_omega=0.02 (config de entrenamiento de run02/run09: mismatch documentado en su eval).
+        self.patrol_omega = patrol_omega                                                                   # giro del anillo (0.0 = estática OFICIAL v3.6; 0.02 = órbita histórica <= v3.5)
         # Estado de la PATRULLA: ancla la FASE de la formación a la posición angular ACTUAL de los drones
         # -> desde el paso 0 cada dron va a su ranura MÁS CERCANA (no cruza el centro). Se re-ancla si cambia
         # el nº de drones libres o si la patrulla se reanuda tras una interrupción (ESCOLTA).

@@ -34,7 +34,7 @@ from collections import deque
 
 import numpy as np
 
-from world import ACTIVE
+from world import ACTIVE, INCOMING, STRANDED
 
 from hrl.events import EventTracker, spawn_groups
 
@@ -174,11 +174,20 @@ class EpisodeAudit:
         self.premature: dict | None = None
         self._premature_pending: int | None = None
         self._escolta_seen = False
+        # v3.6 (Commit L): métricas de RELEVO (solo lectura; flancos por frontera — cadencia 1 tick
+        # en los arneses de E0/M1, que llaman on_boundary cada paso de física).
+        self._relay_hold_since: dict[int, int] = {}
+        self._relay_esperas: list[int] = []
+        self._relay_por_fase = {"ESCOLTA": 0, "patrulla": 0}
+        self._relay_stranded: set[int] = set()
+        self._relay_prev_state: np.ndarray | None = None
+        self._relay_prev_hold: np.ndarray | None = None
 
     # ------------------------------------------------------------------ #
     def on_boundary(self) -> None:
         w = self.world
         self.tracker.on_boundary()
+        self._track_relays()
         for e in self.tracker.events:
             if e["ev"] == "ANCHOR_FLIP":
                 self._last_flip_tick = e["t"]
@@ -195,6 +204,23 @@ class EpisodeAudit:
             if msg not in self._contract_seen:            # dedup: una vez por episodio
                 self._contract_seen.add(msg)
                 self.violations.append(f"contrato@t={int(w.step_count)}: {msg}")
+
+    def _track_relays(self) -> None:
+        """v3.6: flancos de relevo (anuncio drone_relief_hold OFF->ON; hand-off INCOMING->ACTIVE
+        con el bajo liberado ese tick). Solo lectura."""
+        w = self.world
+        st, hold = w.drone_state, w.drone_relief_hold
+        if self._relay_prev_state is not None:
+            for i in np.where(hold & ~self._relay_prev_hold)[0]:
+                self._relay_hold_since[int(i)] = int(w.step_count)
+            if bool(((self._relay_prev_state == INCOMING) & (st == ACTIVE)).any()):
+                for j in np.where(self._relay_prev_hold & ~hold)[0]:
+                    if int(j) in self._relay_hold_since:
+                        self._relay_esperas.append(int(w.step_count) - self._relay_hold_since.pop(int(j)))
+                        self._relay_por_fase["ESCOLTA" if w.phase == "ESCOLTA" else "patrulla"] += 1
+            self._relay_stranded |= set(int(x) for x in np.where(st == STRANDED)[0])
+        self._relay_prev_state = st.copy()
+        self._relay_prev_hold = hold.copy()
 
     def _track_premature(self) -> None:
         """Historial para el clasificador de ESCOLTA PREMATURA + la clasificación en el
@@ -361,5 +387,13 @@ class EpisodeAudit:
             "premature": self.premature,
             "gotera_cruces": int(self.corridor.gotera.sum()),
             "corredor_cruces": int(self.corridor.cruces.sum()),
+            "relevos": {"n": len(self._relay_esperas),
+                        "escolta": self._relay_por_fase["ESCOLTA"],
+                        "patrulla": self._relay_por_fase["patrulla"],
+                        "espera_media": (float(np.mean(self._relay_esperas))
+                                         if self._relay_esperas else None),
+                        "espera_max": (int(max(self._relay_esperas))
+                                       if self._relay_esperas else None),
+                        "stranded": len(self._relay_stranded)},
             "violations": self.violations, "critical": critical,
         }
