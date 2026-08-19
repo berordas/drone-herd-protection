@@ -23,6 +23,8 @@ contenedor: `python3 hrl/hrl_check.py`. Asserts al estilo de los demás checks.
      violaciones (señuelo = índice mín, sin gate de rumbo) + el clasificador de ESCOLTA
      PREMATURA etiqueta un caso construido (asalto confirmado primero).
   5) Etapa 1 — manager_obs: builder sobre estado sintético con valores conocidos (Commit G).
+  6) Etapa 1 — ManagerEnv (Commit H): determinismo · B_masa ≡ MASA-forzado bit a bit (10 eps) ·
+     contratos (un paso = una opción hasta evento; K_MAX; ABORT solo CEBO*).
   4) AllocatorCoordinator con partición 4-0 ≡ ReactiveCoordinator BIT A BIT (5 semillas
      lobos+mixto, episodios completos — incluye relevos de batería e investigaciones).
 """
@@ -362,6 +364,67 @@ def test_5_manager_obs():
     print("  [5] manager_obs: layout 35 + manada/rebaño/puertas/cebo/contexto con valores conocidos OK")
 
 
+def test_6_manager_env():
+    """Etapa 1 (Commit H): ManagerEnv — (a) DETERMINISMO: mismo seed del env y misma secuencia
+    de acciones => misma secuencia de (obs, reward, eventos) bit a bit; (b) B_masa vía
+    ManagerEnv (acción 0 siempre, reset_to(seed, kind)) ≡ MASA-forzado de E0.1 (WolfOptionLayer
+    MASA + ReactiveCoordinator en el arnés) BIT A BIT en 10 semillas (hash del estado íntegro al
+    final + severidad + steps); (c) contratos: un paso = una opción hasta evento; cada MUERTE
+    termina la opción; K_MAX acota; ABORT sólo con CEBO*."""
+    from hrl.manager_env import ManagerEnv, EVENT_NAMES, K_MAX
+    # (a) determinismo
+    def rollout(seed):
+        env = ManagerEnv(seed=seed)
+        obs, info = env.reset()
+        out = [obs.tobytes(), json.dumps(info, sort_keys=True)]
+        rng = np.random.default_rng(seed + 7)
+        for _ in range(2):
+            done = False
+            while not done:
+                a = int(rng.integers(4))
+                obs, r, term, trunc, info = env.step(a)
+                out.append((obs.tobytes(), r, info["event"], info["ticks"]))
+                done = term or trunc
+            if not done:
+                break
+            obs, info = env.reset()
+        return out
+    assert rollout(3) == rollout(3), "ManagerEnv NO determinista con el mismo seed"
+    # (b) B_masa ≡ MASA-forzado de E0.1 (10 semillas lobos)
+    n = 0
+    for s_ in range(10):
+        env = ManagerEnv(seed=0)
+        obs, info = env.reset_to(s_, "lobos")
+        done = False; ev_seen = []
+        while not done:
+            obs, r, term, trunc, info = env.step(0)
+            ev_seen.append(info["event"]); done = term or trunc
+        h_env = hashlib.sha256(_blob(env.world)).hexdigest()
+        # referencia: MASA-forzado de E0.1 por el arnés (misma semilla/tipo) -> ESTADO FINAL íntegro
+        w_ref = build_world(s_, "lobos", wolf_controller=WolfOptionLayer(option=("MASA", {})))
+        c_ref = SyncedReactiveCoordinator(w_ref); w_ref.reset()
+        while True:
+            _o, _r, t_, tr_, _i = w_ref.step(c_ref.act(w_ref.get_observation()))
+            if t_ or tr_:
+                break
+        assert hashlib.sha256(_blob(w_ref)).hexdigest() == h_env, f"B_masa != MASA-forzado (seed {s_})"
+        assert "ABORT_BAIT_FAILED" not in ev_seen, "ABORT con MASA (solo CEBO* puede abortar)"
+        n += 1
+    # (c) contratos con CEBO_keep en un episodio: ticks por opción <= K_MAX; cada tramo termina en
+    # un evento nombrado; la re-decisión tras MUERTE existe.
+    env = ManagerEnv(seed=1)
+    obs, info = env.reset_to(_seeds_by_groups("lobos", 2, 1, min_wolves=3)[0], "lobos")
+    done = False; evs = []
+    while not done:
+        obs, r, term, trunc, info = env.step(1)
+        assert info["ticks"] <= K_MAX and info["event"] in EVENT_NAMES
+        assert obs.shape == (35,) and np.all(np.isfinite(obs))
+        evs.append(info["event"]); done = term or trunc
+    assert evs[-1] == "FIN_EPISODIO"
+    print(f"  [6] ManagerEnv: determinismo OK · B_masa ≡ MASA-forzado BIT A BIT ({n} eps) · contratos "
+          f"(eventos {sorted(set(evs))}) OK")
+
+
 def test_4_allocator_4_0():
     n = 0
     for kind, count in (("lobos", 3), ("mixto", 2)):
@@ -383,4 +446,5 @@ if __name__ == "__main__":
     test_3b_cebo_keep_y_prematura()
     test_4_allocator_4_0()
     test_5_manager_obs()
+    test_6_manager_env()
     print("hrl_check: TODO OK.")
