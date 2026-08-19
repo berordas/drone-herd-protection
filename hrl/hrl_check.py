@@ -22,6 +22,7 @@ contenedor: `python3 hrl/hrl_check.py`. Asserts al estilo de los demás checks.
   3b) ADENDA tras STOP-1: CEBO_keep (membership='keep', estrato G) arranca sin CRITICAL ni
      violaciones (señuelo = índice mín, sin gate de rumbo) + el clasificador de ESCOLTA
      PREMATURA etiqueta un caso construido (asalto confirmado primero).
+  5) Etapa 1 — manager_obs: builder sobre estado sintético con valores conocidos (Commit G).
   4) AllocatorCoordinator con partición 4-0 ≡ ReactiveCoordinator BIT A BIT (5 semillas
      lobos+mixto, episodios completos — incluye relevos de batería e investigaciones).
 """
@@ -306,6 +307,61 @@ def test_3b_cebo_keep_y_prematura():
           f"ESCOLTA prematura: OK")
 
 
+def test_5_manager_obs():
+    """Etapa 1 (Commit G): builder de la OBS del manager sobre un estado SINTÉTICO con valores
+    conocidos — layout 35, manada (n, clústeres, separación, menor, dist), rebaño/reloj, puertas
+    por octante, rasgos del cebo (cono del señuelo + progreso), contexto one-hot."""
+    from hrl.manager_obs import (MANAGER_OBS_SIZE, EV_MUERTE, build_manager_obs, wolf_clusters,
+                                 gate_distances)
+    w = build_world(0, "lobos"); w.reset()
+    # Estado sintético: rebaño = 1 vaca en (250,250); 3 lobos: 2 al ESTE (0°) a 100 m, 1 al OESTE
+    # (180°) a 200 m; 4 ACTIVE: 3 al este a 60 m (en el cono del señuelo = lobo 2 al oeste? no: el
+    # señuelo será el lobo 2 (oeste) -> 0 ACTIVE en su cono), 1 al norte.
+    w.cows[:] = np.array([250.0, 250.0]); w.cow_alive[:] = False; w.cow_alive[0] = True; w.cow_safe[:] = False
+    w.calf_alive[:] = False
+    w.wolves = np.array([[350.0, 250.0], [352.0, 262.0], [50.0, 250.0]])[: w.n_wolves] if w.n_wolves >= 3 \
+        else np.array([[350.0, 250.0], [352.0, 262.0], [50.0, 250.0]])
+    w.n_wolves = 3
+    w.wolf_vel = np.zeros((3, 2))
+    w.drone_state[:] = 3                           # READY (aparcados)
+    w.drones[:] = 1e4
+    for i, p_ in enumerate([[310.0, 250.0], [310.0, 262.0], [310.0, 238.0], [250.0, 310.0]]):
+        w.drone_state[i] = ACTIVE; w.drones[i] = p_
+    w.phase = "ESCOLTA"; w.n_depredadas = 2
+    herd_c = np.array([250.0, 250.0])
+    cl, _ang = wolf_clusters(w, herd_c)
+    assert len(cl) == 2 and sorted(len(c) for c in cl) == [1, 2], f"clusters: {[len(c) for c in cl]}"
+    ctx = {"option": 1, "last_event": EV_MUERTE, "decision_idx": 3,
+           "decoy_idx": np.array([2]), "active_c_prev": np.array([270.0, 265.0])}
+    o = build_manager_obs(w, ctx)
+    assert o.shape == (MANAGER_OBS_SIZE,) and o.dtype == np.float32
+    assert abs(o[0] - 3 / 5) < 1e-6, "n/5"
+    assert abs(o[1] - 1.0) < 1e-6, "2 clusters -> 1.0"
+    # centroide del clúster este = (351, 256) -> rumbo 3.4°; oeste 180° -> separación 176.6°/180
+    assert abs(o[2] - (180.0 - np.degrees(np.arctan2(6.0, 101.0))) / 180.0) < 1e-3, \
+        f"separación angular /π, got {o[2]}"
+    assert abs(o[3] - 1 / 3) < 1e-6, "menor/n = 1/3"
+    assert abs(o[4] - ((100 + np.hypot(102, 12) + 200) / 3) / 250.0) < 1e-3, "dist media /250"
+    assert abs(o[5] - 1 / 6) < 1e-6 and o[6] == 0.0 and o[8] == 1.0 and abs(o[9] - 2 / 6) < 1e-6
+    # puertas: octante 0 (este): puerta en (250+0+17.32, 250) -> ACTIVE más cercano (310,250) a 42.68
+    g = gate_distances(w, w.cows[:1], herd_c)
+    assert abs(g[0] - 42.68 / 250.0) < 1e-2, f"puerta este {g[0]*250:.1f}"
+    # octante 4 (oeste): puerta (232.68,250): ACTIVE más cercano (250,310) a sqrt(17.32²+60²)=62.45
+    assert abs(g[4] - np.hypot(17.32, 60.0) / 250.0) < 1e-2, f"puerta oeste {g[4]*250:.1f}"
+    # rasgos del cebo: señuelo = lobo 2 (oeste, 180°); ACTIVEs a 0° (3) y 90° (1) -> ninguno en ±60°
+    assert o[19] == 0.0, f"frac cono señuelo {o[19]}"
+    # progreso: centroide ACTIVE actual (295, 265) − prev (270,265) = (25,0) proyectado sobre u=(-1,0) = -25 -> -0.25
+    assert abs(o[20] - (-0.25)) < 1e-6, f"progreso {o[20]}"
+    assert o[21 + 1] == 1.0 and o[21:25].sum() == 1.0, "one-hot opción"
+    assert o[25 + EV_MUERTE] == 1.0 and o[25:31].sum() == 1.0, "one-hot evento"
+    assert abs(o[31] - 3 / 8) < 1e-6
+    # señuelo al este -> 3 de 4 ACTIVE en el cono
+    ctx2 = dict(ctx, decoy_idx=np.array([0]), active_c_prev=None)
+    o2 = build_manager_obs(w, ctx2)
+    assert abs(o2[19] - 0.75) < 1e-6 and o2[20] == 0.0, f"cono este {o2[19]} prog {o2[20]}"
+    print("  [5] manager_obs: layout 35 + manada/rebaño/puertas/cebo/contexto con valores conocidos OK")
+
+
 def test_4_allocator_4_0():
     n = 0
     for kind, count in (("lobos", 3), ("mixto", 2)):
@@ -326,4 +382,5 @@ if __name__ == "__main__":
     test_3_aserciones_y_determinismo()
     test_3b_cebo_keep_y_prematura()
     test_4_allocator_4_0()
+    test_5_manager_obs()
     print("hrl_check: TODO OK.")
