@@ -42,6 +42,11 @@ from hrl.manager_obs import (EV_ABORT, EV_FIN, EV_HERD_SAFE, EV_INICIO, EV_KMAX,
                              MANAGER_OBS_SIZE, N_OPTIONS, build_manager_obs, herd_points)
 from hrl.options_wolf import WolfOptionLayer
 
+OPPONENTS = ("reactive", "run02", "run09")        # defensas congeladas para la tabla-escalera
+RUN02_MODEL = "/data/drones/run02_v34/model.zip"
+RUN09_MODEL = "/data/drones/run09_v35/model.zip"
+_MODEL_CACHE: dict = {}
+
 K_MAX = 4500                       # ticks: techo de revisión de una opción (p90 inicio->commit G/keep ≈ 4518)
 ABORT_CONE_DEG = 60.0              # ±° del rumbo del ASALTO (cono espejo)
 ABORT_MIN_ACTIVE = 3               # >= 3 de 4 ACTIVE en el cono del asalto, con ESCOLTA latcheada
@@ -74,8 +79,13 @@ class ManagerEnv(gym.Env):
 
     def __init__(self, kinds: tuple[str, ...] = ("lobos",), seed: int | None = None,
                  frame_skip: int = 5, k_max: int = K_MAX, fixed_k: int | None = None,
-                 config: dict | None = None):
+                 config: dict | None = None, opponent: str = "reactive"):
+        """`opponent`: 'reactive' (v3.5 congelado; el de RUN-M1) | 'run02' | 'run09'
+        (ResidualDroneCoordinator con el modelo congelado; solo EVALUACIÓN/tabla-escalera)."""
         super().__init__()
+        if opponent not in OPPONENTS:
+            raise ValueError(f"opponent {opponent!r} no está en {OPPONENTS}")
+        self._opponent = opponent
         self._kinds = tuple(kinds)
         self._frame_skip = int(frame_skip)
         self._k_max = int(k_max)
@@ -113,7 +123,7 @@ class ManagerEnv(gym.Env):
         self._layer = WolfOptionLayer(manager=self._mgr, frame_skip=self._frame_skip)
         self._world = World(seed=world_seed, episode_kind=kind, wolf_controller=self._layer,
                             **self._config)
-        self._coord = ReactiveCoordinator(self._world)
+        self._coord = self._make_coord(self._world)
         self._last_event = EV_INICIO
         self._decision_idx = 0
         self._log = []
@@ -126,6 +136,16 @@ class ManagerEnv(gym.Env):
                             "two_front": bool(len(w.wolf_group_sizes) == 2),
                             "grupos_spawn": [int(x) for x in w.wolf_group_sizes]}
         return build_manager_obs(w, self._ctx), dict(self._info_reset)
+
+    def _make_coord(self, w):
+        if self._opponent == "reactive":
+            return ReactiveCoordinator(w)
+        from rl.residual_drone_coordinator import ResidualDroneCoordinator
+        path = RUN02_MODEL if self._opponent == "run02" else RUN09_MODEL
+        if path not in _MODEL_CACHE:
+            from stable_baselines3 import PPO
+            _MODEL_CACHE[path] = PPO.load(path, device="cpu")
+        return ResidualDroneCoordinator(w, model=_MODEL_CACHE[path])
 
     # ------------------------------------------------------------------ #
     def _active_centroid(self):
@@ -175,8 +195,9 @@ class ManagerEnv(gym.Env):
         while True:
             layer.refresh(w)                         # frontera: la capa aplica la opción vigente
             wp = coord.act(w.get_observation())
-            if getattr(coord, "_pose_last_step", -10) != int(w.step_count) and w.phase == "ESCOLTA" \
-                    and getattr(coord, "_anchor", None) is not None:
+            react = getattr(coord, "inner", coord)   # Reactive o la barrera interior del residual
+            if getattr(react, "_pose_last_step", -10) != int(w.step_count) and w.phase == "ESCOLTA" \
+                    and getattr(react, "_anchor", None) is not None:
                 self._penetrado_ticks += 1           # contador PASIVO (no decide nada)
             _o, _r, terminated, truncated, _i = w.step(wp)
             ticks += 1
