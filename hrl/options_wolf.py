@@ -38,6 +38,29 @@ pasos — la misma frontera en que muestrean los envs, lección SyncedReactiveCo
                 reposicionamiento ≈ 0 — el cebo como decisión pura cuando la geometría de
                 dos frentes ya existe. Timing = escalera del manager (creep=min(25,hold)).
 
+REGLA DE CAZA OPORTUNISTA (Commit K, Etapa 1 — decisión de diseño del dueño: "cambiar de presa
+cuando la actual está protegida es caza REALISTA"; lo ilegítimo en RUN-M1 era el MECANISMO: el
+re-apuntado lo disparaba el churn de re-arranques de opción, solo el manager tenía la capacidad y
+con ese exploit no aprendió criterio). Desde K:
+  - La presa del CAZADOR PERSISTE por defecto: MASA => `pack_prey` (todo el paquete); CEBO* =>
+    `pack_prey2` (el asalto), que la capa RECUERDA (`_asa_prey`) y RESTAURA en cada arranque o
+    re-arranque de opción si sigue cazable (el churn de opciones ya NO re-apunta: botón cerrado;
+    solo el PRIMER arranque del episodio la lee fresca con la regla de siempre).
+  - RE-TARGET permitido sii: la presa actual está PROTEGIDA (algún dron ACTIVE a <=
+    THREAT_GUARD_DIST m de ella, sostenido >= GUARD_HOLD ticks, medido cada frontera) Y la
+    alternativa de la regla de siempre (`freest_prey_for`: res en juego más libre, ternero-
+    primero, quórum local) tiene su ACTIVE más cercano >= RETARGET_MARGIN m MÁS LEJOS que el de
+    la actual. Cooldown por paquete RETARGET_COOLDOWN ticks (anti-metrónomo). La suelta por
+    muerte/refugio sigue siendo la maquinaria de siempre del mundo/script (no pasa por aquí).
+  - La regla vive en la CAPA y aplica a TODO el que juegue por ella (MASA, CEBO*, B_masa,
+    B_spawn, B_oracle y el manager). world.py y wolf_controllers.py NO se tocan (física e
+    historia congeladas). CONSECUENCIA DOCUMENTADA: el "≡ script bit a bit" de MASA y de
+    CEBO/spawn SOLO se mantiene mientras la regla no dispara (sin drones cerca de la presa);
+    con drones cerca es un comportamiento NUEVO y deliberado (hrl_check [1]/[2] lo miden con
+    drones lejos; [K] mide la regla). Eventos: RETARGET (causa="protegida", de/a, distancias)
+    y RETARGET_BLOCKED (causa="cooldown", una vez por ventana). Constantes marcadas CALIBRAR
+    si el visionado lo pide.
+
 Decisiones de CAPA documentadas (no tocan wolf_controllers.py):
   - Escalera con hold != 50: CREEP nunca más laxo que el STAGE (creep = min(25, hold)); el
     DEEP (r_confirm+25=65) queda como está (siempre por debajo de los STAGE de E0.1:
@@ -73,6 +96,15 @@ ASSAULT_BEARING_TOL_DEG = 25.0   # ± grados: "rumbo de asalto alcanzado" (gate 
 REPOSITION_EXTRA_M = 60.0        # m sobre el anillo STAGE: radio del punto de presión del
                                  # reposicionamiento (solo fija la DIRECCIÓN de la carga; la
                                  # profundidad la gobierna el hold, como en el script)
+
+# --- Regla de caza oportunista (Commit K; decisión de diseño del dueño: caza oportunista
+# realista). CALIBRAR si el visionado lo pide. ---
+THREAT_GUARD_DIST = 25.0         # m: presa "PROTEGIDA" = algún dron ACTIVE a <= esta distancia de ella
+GUARD_HOLD = 50                  # ticks: protección SOSTENIDA (medida cada frontera, 5 ticks) antes de
+                                 # poder re-apuntar
+RETARGET_MARGIN = 30.0           # m: la alternativa debe tener su ACTIVE más cercano >= este margen MÁS
+                                 # LEJOS que el de la presa actual
+RETARGET_COOLDOWN = 250          # ticks entre dos re-targets del MISMO paquete (anti-metrónomo)
 
 
 def freest_prey_for(w, sel: np.ndarray) -> tuple[str | None, int]:
@@ -141,6 +173,15 @@ class WolfOptionLayer(WolfController):
         self._theta_asa: float | None = None
         self._s1 = np.zeros(0, dtype=int)
         self._s2 = np.zeros(0, dtype=int)
+        # Regla de caza (Commit K): memoria de la presa del asalto + estado de la regla.
+        self._asa_prey: tuple[str, int] | None = None   # (kind, idx) del asalto, PERSISTE entre opciones
+        self._guard_prey: tuple[str, int] | None = None # presa cuya protección se está midiendo
+        self._guard_since: int | None = None            # tick de la 1ª frontera protegida consecutiva
+        self._last_retarget: int | None = None          # tick del último re-target por la regla
+        self._blocked_logged = False                    # RETARGET_BLOCKED emitido en esta ventana
+        self.n_retargets = 0                            # contadores del episodio (K-bis los lee)
+        self.n_retarget_blocked = 0
+        self.n_option_starts = 0
 
     # ------------------------------------------------------------------ #
     # Eventos propios (los integra hrl/events.EventTracker vía pop_events).
@@ -172,6 +213,12 @@ class WolfOptionLayer(WolfController):
             self._countdown = 0                          # episodio nuevo: decisión inmediata
             self._opt_name = None
             self._opt_requested = None
+            self._asa_prey = None                        # la memoria de presa es POR EPISODIO
+            self._guard_prey = None
+            self._guard_since = None
+            self._last_retarget = None
+            self._blocked_logged = False
+            self.n_retargets = self.n_retarget_blocked = self.n_option_starts = 0
         self._last_step = step
         if self._countdown <= 0:
             self._countdown = self.frame_skip
@@ -183,7 +230,92 @@ class WolfOptionLayer(WolfController):
                 # por fallback, re-pedir lo mismo NO re-arranca la opción cada frontera.
                 if (name, params) != self._opt_requested:
                     self._start_option(world, name, params)
+            # Regla de caza oportunista (Commit K): cada frontera de env (frame_skip ticks).
+            self._hunt_rule(world)
+            if self._opt_name == "CEBO" and world.pack_prey2 >= 0:
+                self._asa_prey = (world.pack_prey2_kind, int(world.pack_prey2))   # memoria del asalto
         self._countdown -= 1
+
+    # ------------------------------------------------------------------ #
+    @staticmethod
+    def _cazable(w, kind: str | None, idx: int, n_hunters: int) -> bool:
+        """¿Sigue siendo presa legal para `n_hunters` lobos? (viva, no refugiada; adulta solo con
+        quórum y fuera de zona prohibida) — el mismo criterio de cazable de freest_prey_for."""
+        if idx < 0 or kind is None:
+            return False
+        if kind == "calf":
+            return bool(w.calf_alive[idx] and not w.calf_safe[idx])
+        return bool(n_hunters >= w.n_min_adult and w.cow_alive[idx] and not w.cow_safe[idx]
+                    and not w._in_forbidden(w.cows[idx][None, :])[0])
+
+    @staticmethod
+    def _d_guard(w, kind: str | None, idx: int, act: np.ndarray) -> float:
+        """Distancia de la presa (kind, idx) al dron ACTIVE más cercano (inf si no hay ACTIVE)."""
+        if act.shape[0] == 0:
+            return float("inf")
+        p = w._prey_pos_of(idx, kind)
+        return float(np.linalg.norm(act - p[None, :], axis=1).min())
+
+    def _hunter(self, w) -> tuple[np.ndarray, str, str | None, int]:
+        """Quién caza y a qué presa gobierna la regla: MASA => todo el paquete sobre pack_prey;
+        CEBO* => el asalto (s2) sobre pack_prey2."""
+        if self._opt_name == "MASA":
+            return np.arange(w.n_wolves), "paquete", w.pack_prey_kind, int(w.pack_prey)
+        return self._s2, "asalto", w.pack_prey2_kind, int(w.pack_prey2)
+
+    def _hunt_rule(self, w) -> None:
+        """REGLA DE CAZA OPORTUNISTA (Commit K). Evaluada en la frontera: si la presa del cazador
+        está PROTEGIDA de forma sostenida y la regla de siempre ofrece una alternativa
+        RETARGET_MARGIN m más libre, re-fija (una vez; cooldown por paquete). SOLO LECTURA salvo la
+        escritura de contrato pack_prey/pack_prey2 (el mismo patrón que manage_pack_preys)."""
+        if self._opt_name is None:
+            return
+        sel, who, cur_kind, cur_idx = self._hunter(w)
+        step = int(w.step_count)
+        if cur_idx < 0 or sel.size == 0:
+            self._guard_prey, self._guard_since = None, None
+            return
+        if self._guard_prey != (cur_kind, cur_idx):     # presa nueva (muerte/refugio/opción): reloj a 0
+            self._guard_prey, self._guard_since = (cur_kind, cur_idx), None
+            self._blocked_logged = False
+        act = w.drones[w.drone_state == ACTIVE]
+        d_cur = self._d_guard(w, cur_kind, cur_idx, act)
+        if d_cur > THREAT_GUARD_DIST:
+            self._guard_since = None                     # no protegida: el reloj se reinicia
+            self._blocked_logged = False
+            return
+        if self._guard_since is None:
+            self._guard_since = step
+        if step - self._guard_since < GUARD_HOLD:
+            return
+        kind, idx = freest_prey_for(w, sel)              # la regla de siempre (ternero-primero, quórum)
+        if idx < 0 or (kind, idx) == (cur_kind, cur_idx):
+            return
+        d_cand = self._d_guard(w, kind, idx, act)
+        if d_cand < d_cur + RETARGET_MARGIN:
+            return
+        if self._last_retarget is not None and step - self._last_retarget < RETARGET_COOLDOWN:
+            if not self._blocked_logged:
+                self.push_event("RETARGET_BLOCKED", tick=step, causa="cooldown", quien=who,
+                                de=[cur_kind, cur_idx], a=[kind, idx],
+                                restante=int(RETARGET_COOLDOWN - (step - self._last_retarget)))
+                self._blocked_logged = True
+                self.n_retarget_blocked += 1
+            return
+        guard_ticks = int(step - self._guard_since)
+        if who == "paquete":
+            w.pack_prey, w.pack_prey_kind = idx, kind
+        else:
+            w.pack_prey2, w.pack_prey2_kind = idx, kind
+            self._asa_prey = (kind, idx)
+        w._ever_committed = True
+        self._last_retarget = step
+        self._guard_prey, self._guard_since = (kind, idx), None
+        self._blocked_logged = False
+        self.n_retargets += 1
+        self.push_event("RETARGET", tick=step, causa="protegida", quien=who, option=self._opt_name,
+                        de=[cur_kind, cur_idx], a=[kind, idx], d_cur=round(d_cur, 2),
+                        d_cand=round(d_cand, 2), guard_ticks=guard_ticks)
 
     def _start_option(self, w, name: str, params: dict) -> None:
         if name not in ("MASA", "CEBO"):
@@ -196,6 +328,7 @@ class WolfOptionLayer(WolfController):
                             de="CEBO/spawn", a="MASA")
             name, params = "MASA", {}
         self._opt_name, self._opt_params = name, dict(params)
+        self.n_option_starts += 1
         self.push_event("OPTION_START", tick=int(w.step_count), option=name, **params)
         if name == "MASA":
             self._s1 = np.zeros(0, dtype=int)
@@ -227,12 +360,21 @@ class WolfOptionLayer(WolfController):
                 v = w.wolves.mean(axis=0) - herd_c       # rumbo actual del paquete (lado que ocupa)
                 theta_dec = float(np.arctan2(v[1], v[0])) if np.linalg.norm(v) > 1e-9 else 0.0
                 self._theta_asa = theta_dec + self._delta
-            # Presa del asalto con la MEMBRESÍA del manager (sobrescribe la del spawn si el
-            # mundo fijó pack_prey2 en t=0 con sus sectores: aquí mandan las membresías).
-            kind, idx = freest_prey_for(w, self._s2)
+            # Presa del asalto (Commit K): PERSISTE — si la capa recuerda una presa del asalto
+            # de este episodio y sigue cazable (y no es la presa del señuelo: anti-convergencia),
+            # se RESTAURA; solo el PRIMER arranque (o una presa perdida) la lee fresca con la
+            # regla de siempre y la MEMBRESÍA del manager (sobrescribe la del spawn si el mundo
+            # fijó pack_prey2 en t=0 con sus sectores: aquí mandan las membresías).
+            prev = self._asa_prey
+            if prev is not None and self._cazable(w, prev[0], prev[1], self._s2.size) \
+                    and prev != (w.pack_prey_kind, int(w.pack_prey)):
+                kind, idx = prev
+            else:
+                kind, idx = freest_prey_for(w, self._s2)
             w.pack_prey2, w.pack_prey2_kind = (idx, kind) if idx >= 0 else (-1, None)
             if idx >= 0:
                 w._ever_committed = True
+                self._asa_prey = (kind, idx)
 
     # ------------------------------------------------------------------ #
     def decide(self, world) -> tuple[np.ndarray, bool]:

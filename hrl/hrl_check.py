@@ -8,13 +8,22 @@ contenedor: `python3 hrl/hrl_check.py`. Asserts al estilo de los demás checks.
      asalto abierta => ON; un dron en la puerta => OFF) · la aserción CRITICAL "ORDEN DEL
      CEBO" salta con un SHOW_START sin latch · clustering de amenazas dirigido (contactos ∪
      confirmados, disjuntos; primario = clúster del ancla; secundario correcto).
-  1) MASA vía capa ≡ ScriptedWolfController BIT A BIT (hash SHA256 del estado íntegro por
-     tick, episodios COMPLETOS): 12 semillas lobos+mixto de 1 GRUPO de spawn — el camino en
-     que el script ES la caza de masa. [Con 2 grupos MASA difiere del script POR DISEÑO:
-     es la decisión del manager de fusionar el paquete — no se compara ahí.]
-  2) CEBO membership="spawn" ≡ script de dos sectores BIT A BIT (5 semillas de 2 grupos,
-     lobos y mixto): el impuesto de interfaz del camino spawn es CERO por construcción —
-     la referencia dura de E0.A(ii).
+  1) MASA vía capa vs ScriptedWolfController (hash SHA256 del estado íntegro por tick,
+     episodios COMPLETOS, 12 semillas lobos+mixto de 1 GRUPO de spawn — el camino en que el
+     script ES la caza de masa; con 2 grupos MASA difiere POR DISEÑO). Desde el Commit K la
+     capa lleva la REGLA DE CAZA OPORTUNISTA (re-target con presa protegida), así que el
+     "≡ bit a bit" SOLO vale mientras la regla no dispara: se exige hash IGUAL si no hubo
+     RETARGET y hash DISTINTO si lo hubo (la regla hace algo). [K4] lo cierra con drones LEJOS.
+  2) CEBO membership="spawn" vs script de dos sectores: misma lógica (igual sii sin RETARGET;
+     5 semillas de 2 grupos). El impuesto de interfaz del camino spawn es CERO por construcción
+     mientras la regla no dispara (referencia de E0.A(ii)).
+  K) REGLA DE CAZA OPORTUNISTA (Commit K; decisión de diseño del dueño): K1 presa viva y
+     DESPROTEGIDA (drones lejos) => nunca cambia, ni tras >= 10 re-arranques de opción
+     (keep/MASA/Δ90/Δ180 rotando) — persiste también a través de MASA. K2 protegida sostenida
+     + alternativa >= 30 m más libre => cambia UNA vez (tras >= GUARD_HOLD), y la siguiente
+     respeta el cooldown (RETARGET_BLOCKED entre medias). K3 protegida SIN alternativa mejor
+     => no cambia. K4 MASA-forzado con 0 drones cerca (drones LEJOS) ≡ script BIT A BIT y la
+     regla no dispara.
   3) ASERCIONES del protocolo sobre 5 episodios CEBO (membership manager, Δ=180°, n>=3):
      sin CRITICAL (orden del cebo, procedencia completa), sin violaciones de contrato
      (pack_prey/pack_prey2 válidos, máscara de comando respetada), OPTION_START presente.
@@ -190,29 +199,266 @@ def test_0_unidades():
     print("  [0] unidades events/behavior_checks/clustering: OK")
 
 
+class _FarCoordinator:
+    """Drones LEJOS (test de la regla de caza): comanda a TODOS los drones a la esquina más
+    alejada del rebaño y de la manada en t=0 (0 drones cerca de ninguna presa => la regla de
+    caza nunca dispara). Sincroniza la capa de opciones como SyncedReactiveCoordinator."""
+
+    def __init__(self, world):
+        self.world = world
+        self._corner = None
+
+    def act(self, observation=None):
+        w = self.world
+        if hasattr(w.wolf_controller, "refresh"):
+            w.wolf_controller.refresh(w)
+        if self._corner is None:
+            herd_c = w.cows.mean(axis=0)
+            wolf_c = w.wolves.mean(axis=0) if w.n_wolves else herd_c
+            corners = np.array([[5.0, 5.0], [w.W - 5.0, 5.0], [5.0, w.H - 5.0], [w.W - 5.0, w.H - 5.0]])
+            score = np.minimum(np.linalg.norm(corners - herd_c, axis=1),
+                               np.linalg.norm(corners - wolf_c, axis=1))
+            self._corner = corners[int(np.argmax(score))]
+        return np.tile(self._corner, (w.n_drones, 1))
+
+
+def _run_hashed_events(seed, kind, wolf_layer, coord_factory):
+    """Como _run_hashed pero con la capa: devuelve (hash, eventos de la capa)."""
+    w = build_world(seed, kind, wolf_controller=wolf_layer)
+    coord = coord_factory(w)
+    w.reset()
+    h = hashlib.sha256()
+    h.update(_blob(w))
+    evs = []
+    while True:
+        _o, _r, term, trunc, _i = w.step(coord.act(w.get_observation()))
+        h.update(_blob(w))
+        evs += wolf_layer.pop_events()
+        if term or trunc:
+            break
+    return h.hexdigest(), evs
+
+
 def test_1_masa_bit_a_bit():
-    n = 0
+    n = n_rt = 0
     for kind in ("lobos", "mixto"):
         for s in _seeds_by_groups(kind, 1, 6):
             ha = _run_hashed(s, kind)
-            hb = _run_hashed(s, kind, wolf_layer=WolfOptionLayer(option=("MASA", {})),
-                             coord_factory=lambda w: SyncedReactiveCoordinator(w))
-            assert ha == hb, f"MASA vía capa != scriptado (seed {s} {kind})"
+            hb, evs = _run_hashed_events(s, kind, WolfOptionLayer(option=("MASA", {})),
+                                         lambda w: SyncedReactiveCoordinator(w))
+            rt = sum(e["ev"] == "RETARGET" for e in evs)
+            if rt == 0:
+                assert ha == hb, f"MASA vía capa != scriptado sin RETARGET (seed {s} {kind})"
+            else:
+                assert ha != hb, f"RETARGET sin efecto en el estado (seed {s} {kind})"
+                n_rt += 1
             n += 1
-    print(f"  [1] MASA vía capa ≡ scriptado BIT A BIT: {n} episodios de 1 grupo OK")
+    print(f"  [1] MASA vía capa ≡ scriptado BIT A BIT salvo regla de caza: {n} episodios de 1 grupo "
+          f"OK ({n_rt} con RETARGET, distintos como debe)")
 
 
 def test_2_cebo_spawn_bit_a_bit():
-    n = 0
+    n = n_rt = 0
     for kind, count in (("lobos", 3), ("mixto", 2)):
         for s in _seeds_by_groups(kind, 2, count):
             ha = _run_hashed(s, kind)
-            hb = _run_hashed(s, kind,
-                             wolf_layer=WolfOptionLayer(option=("CEBO", {"membership": "spawn"})),
-                             coord_factory=lambda w: SyncedReactiveCoordinator(w))
-            assert ha == hb, f"CEBO/spawn vía capa != script 2 sectores (seed {s} {kind})"
+            hb, evs = _run_hashed_events(s, kind, WolfOptionLayer(option=("CEBO", {"membership": "spawn"})),
+                                         lambda w: SyncedReactiveCoordinator(w))
+            rt = sum(e["ev"] == "RETARGET" for e in evs)
+            if rt == 0:
+                assert ha == hb, f"CEBO/spawn vía capa != script 2 sectores sin RETARGET (seed {s} {kind})"
+            else:
+                assert ha != hb, f"RETARGET sin efecto en el estado (seed {s} {kind})"
+                n_rt += 1
             n += 1
-    print(f"  [2] CEBO membership=spawn ≡ script BIT A BIT: {n} episodios de 2 grupos OK")
+    print(f"  [2] CEBO membership=spawn ≡ script BIT A BIT salvo regla de caza: {n} episodios de 2 grupos "
+          f"OK ({n_rt} con RETARGET)")
+
+
+class _RotatingManager:
+    """Re-arranca la opción cada `period` ticks rotando la secuencia (todas distintas entre sí =>
+    cada cambio es un re-arranque real de la capa)."""
+
+    def __init__(self, sequence, period):
+        self.sequence, self.period = sequence, int(period)
+
+    def decide(self, world, layer):
+        return self.sequence[(int(world.step_count) // self.period) % len(self.sequence)]
+
+
+def _prey_ok(w, kind, idx):
+    if idx < 0:
+        return False
+    return bool(w.calf_alive[idx] and not w.calf_safe[idx]) if kind == "calf" \
+        else bool(w.cow_alive[idx] and not w.cow_safe[idx])
+
+
+def test_K1_persistencia_sin_proteccion():
+    """K1: presa del asalto viva y DESPROTEGIDA (drones lejos) => nunca cambia, ni tras >= 10
+    re-arranques de opción (keep -> MASA -> Δ90 -> MASA -> Δ180 -> ...): la capa la RECUERDA y la
+    RESTAURA en cada arranque de CEBO (también a través de MASA, que por contrato pone pack_prey2=-1)."""
+    seq = [("CEBO", {"membership": "keep", "hold": 50.0}), ("MASA", {}),
+           ("CEBO", {"delta_deg": 90.0, "hold": 50.0}), ("MASA", {}),
+           ("CEBO", {"delta_deg": 180.0, "hold": 50.0})]
+    n_eps = n_starts_alive = 0
+    for s in _seeds_by_groups("lobos", 1, 3, min_wolves=3):
+        layer = WolfOptionLayer(manager=_RotatingManager(seq, 30))
+        w = build_world(s, "lobos", wolf_controller=layer)
+        coord = _FarCoordinator(w)
+        w.reset()
+        remembered = None; starts = 0; changes_bad = []
+        while True:
+            _o, _r, term, trunc, _i = w.step(coord.act(w.get_observation()))
+            for e in layer.pop_events():
+                assert e["ev"] != "RETARGET", "RETARGET con drones lejos"
+                if e["ev"] == "OPTION_START" and e["option"] == "CEBO":
+                    starts += 1
+                    cur = (w.pack_prey2_kind, int(w.pack_prey2))
+                    if remembered is not None and _prey_ok(w, *remembered) \
+                            and remembered != (w.pack_prey_kind, int(w.pack_prey)):
+                        if cur != remembered:
+                            changes_bad.append((int(w.step_count), remembered, cur))
+                        n_starts_alive += 1
+                    if cur[1] >= 0:
+                        remembered = cur
+            if w.step_count > 900 or term or trunc:
+                break
+        assert not changes_bad, f"la presa del asalto cambió en re-arranque sin perderse (seed {s}): {changes_bad}"
+        assert starts >= 10, f"pocos re-arranques ({starts}) en seed {s}"
+        n_eps += 1
+    assert n_starts_alive >= 10, f"pocos re-arranques con presa viva: {n_starts_alive}"
+    print(f"  [K1] presa del asalto PERSISTE sin protección: {n_eps} episodios, "
+          f"{n_starts_alive} re-arranques con presa viva sin cambio OK")
+
+
+class _GuardCoordinator:
+    """Dron 0 PEGADO a la presa del paquete (pack_prey) cada tick; el resto lejos."""
+
+    def __init__(self, world, corner):
+        self.world, self.corner = world, np.asarray(corner, float)
+
+    def act(self, observation=None):
+        w = self.world
+        if hasattr(w.wolf_controller, "refresh"):
+            w.wolf_controller.refresh(w)
+        wp = np.tile(self.corner, (w.n_drones, 1))
+        if w.pack_prey >= 0:
+            wp[0] = w._prey_pos_of(int(w.pack_prey), w.pack_prey_kind)
+        return wp
+
+
+def _guard_world(seed):
+    """Escenario dirigido sobre un mundo real (lobos, 1 grupo, sin terneros, n>=2): la presa del
+    paquete en su sitio; las demás adultas reubicadas a ~80-100 m al ESTE (más libres con el
+    guardián encima de la presa); ESCOLTA latcheada (sin reflejo de investigación: el dron 0 no
+    abandona la presa); baterías llenas (sin relevos en la ventana del test); drones 1-3 lejos."""
+    layer = WolfOptionLayer(option=("MASA", {}))
+    w = build_world(seed, "lobos", wolf_controller=layer)
+    w.reset()
+    w.battery[:] = 1.0
+    w.phase = "ESCOLTA"
+    p0 = w.cows[int(w.pack_prey)].copy()
+    k = 0
+    for i in range(w.n_cows):
+        if i == int(w.pack_prey):
+            continue
+        w.cows[i] = p0 + np.array([80.0 + 5.0 * k, 12.0 * (k % 3) - 12.0])
+        k += 1
+    w.drones[0] = p0.copy(); w.drone_waypoint[0] = p0.copy(); w.drone_vel[0] = 0.0
+    w.drone_state[0] = ACTIVE
+    return w, layer
+
+
+def _find_guard_seed():
+    for s in range(200):
+        w = build_world(s, "lobos"); w.reset()
+        if len(w.wolf_group_sizes) == 1 and w.n_calves == 0 and w.n_wolves >= 2 \
+                and w.pack_prey_kind == "adult" and w.pack_prey >= 0:
+            return s
+    raise AssertionError("sin semilla para el escenario del guardián")
+
+
+def test_K2_retarget_protegida_y_cooldown():
+    """K2: presa PROTEGIDA de forma sostenida (dron 0 encima) + alternativa >= RETARGET_MARGIN más
+    libre => re-target UNA vez (no antes de GUARD_HOLD ticks de protección), y con el guardián
+    siguiendo a la nueva presa, el siguiente re-target respeta RETARGET_COOLDOWN (y entre medias
+    se registra RETARGET_BLOCKED por cooldown)."""
+    from hrl.options_wolf import GUARD_HOLD, RETARGET_COOLDOWN
+    s = _find_guard_seed()
+    w, layer = _guard_world(s)
+    coord = _GuardCoordinator(w, (w.W - 5.0, 5.0))
+    evs = []
+    prey0 = (w.pack_prey_kind, int(w.pack_prey))
+    t = 0
+    while t < 600:
+        _o, _r, term, trunc, _i = w.step(coord.act(w.get_observation()))
+        evs += layer.pop_events()
+        t += 1
+        if term or trunc:
+            break
+    rts = [e for e in evs if e["ev"] == "RETARGET"]
+    bls = [e for e in evs if e["ev"] == "RETARGET_BLOCKED"]
+    assert len(rts) >= 1, f"la regla no re-apuntó con presa protegida (seed {s}): {evs[:5]}"
+    r0 = rts[0]
+    assert r0["t"] >= GUARD_HOLD and r0["causa"] == "protegida" and r0["quien"] == "paquete", r0
+    assert tuple(r0["de"]) == prey0 and r0["d_cand"] >= r0["d_cur"] + 30.0, r0
+    assert r0["guard_ticks"] >= GUARD_HOLD, r0
+    # primer re-target: UNO solo en su ventana de cooldown
+    in_window = [e for e in rts if r0["t"] < e["t"] < r0["t"] + RETARGET_COOLDOWN]
+    assert not in_window, f"re-target dentro del cooldown: {in_window}"
+    if len(rts) >= 2:
+        assert rts[1]["t"] - r0["t"] >= RETARGET_COOLDOWN, (rts[0], rts[1])
+    assert any(r0["t"] < b["t"] < r0["t"] + RETARGET_COOLDOWN for b in bls), \
+        f"sin RETARGET_BLOCKED por cooldown con el guardián sobre la nueva presa: {bls}"
+    assert layer.n_retargets == len(rts)
+    print(f"  [K2] re-target con presa protegida: 1º a t={r0['t']} (guard {r0['guard_ticks']} ticks, "
+          f"{r0['d_cur']}->{r0['d_cand']} m), {len(rts)} en 600 ticks, cooldown respetado, "
+          f"{len(bls)} BLOCKED: OK")
+
+
+def test_K3_protegida_sin_alternativa():
+    """K3: presa protegida pero SIN alternativa >= RETARGET_MARGIN más libre (todas las reses
+    juntas, el guardián encima del grupo) => no cambia nunca."""
+    s = _find_guard_seed()
+    layer = WolfOptionLayer(option=("MASA", {}))
+    w = build_world(s, "lobos", wolf_controller=layer)
+    w.reset()
+    w.battery[:] = 1.0
+    w.phase = "ESCOLTA"
+    p0 = w.cows[int(w.pack_prey)].copy()
+    for i in range(w.n_cows):            # todas a <= 10 m de la presa: ninguna 30 m más libre
+        w.cows[i] = p0 + np.array([6.0 * ((i % 3) - 1), 6.0 * ((i // 3) - 0.5)])
+    w.drones[0] = p0.copy(); w.drone_waypoint[0] = p0.copy(); w.drone_vel[0] = 0.0
+    w.drone_state[0] = ACTIVE
+    coord = _GuardCoordinator(w, (w.W - 5.0, 5.0))
+    prey0 = (w.pack_prey_kind, int(w.pack_prey))
+    evs = []; protected_ticks = 0
+    for t in range(400):
+        _o, _r, term, trunc, _i = w.step(coord.act(w.get_observation()))
+        evs += layer.pop_events()
+        if np.linalg.norm(w.drones[0] - w.cows[prey0[1]]) <= 25.0:
+            protected_ticks += 1
+        if term or trunc or not _prey_ok(w, *prey0):
+            break
+    assert protected_ticks >= 100, f"el escenario no protegió a la presa ({protected_ticks} ticks)"
+    assert not [e for e in evs if e["ev"] == "RETARGET"], "re-target sin alternativa mejor"
+    assert (w.pack_prey_kind, int(w.pack_prey)) == prey0 or not _prey_ok(w, *prey0)
+    print(f"  [K3] protegida ({protected_ticks} ticks) sin alternativa mejor: sin re-target OK")
+
+
+def test_K4_masa_drones_lejos_bit_a_bit():
+    """K4: MASA-forzado con 0 drones cerca (drones LEJOS) ≡ ScriptedWolfController BIT A BIT y la
+    regla no dispara (el ≡ de siempre, en el único régimen en que sigue aplicando)."""
+    n = 0
+    for kind in ("lobos", "mixto"):
+        for s in _seeds_by_groups(kind, 1, 3):
+            ha = _run_hashed(s, kind, coord_factory=lambda w: _FarCoordinator(w))
+            hb, evs = _run_hashed_events(s, kind, WolfOptionLayer(option=("MASA", {})),
+                                         lambda w: _FarCoordinator(w))
+            assert not [e for e in evs if e["ev"] == "RETARGET"], f"RETARGET con drones lejos (seed {s})"
+            assert ha == hb, f"MASA vía capa != scriptado con drones lejos (seed {s} {kind})"
+            n += 1
+    print(f"  [K4] MASA con drones LEJOS ≡ scriptado BIT A BIT (regla sin disparar): {n} episodios OK")
 
 
 def _run_cebo_audit(seed: int) -> dict:
@@ -442,6 +688,10 @@ if __name__ == "__main__":
     test_0_unidades()
     test_1_masa_bit_a_bit()
     test_2_cebo_spawn_bit_a_bit()
+    test_K1_persistencia_sin_proteccion()
+    test_K2_retarget_protegida_y_cooldown()
+    test_K3_protegida_sin_alternativa()
+    test_K4_masa_drones_lejos_bit_a_bit()
     test_3_aserciones_y_determinismo()
     test_3b_cebo_keep_y_prematura()
     test_4_allocator_4_0()
