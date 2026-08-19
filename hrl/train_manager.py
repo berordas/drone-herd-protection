@@ -48,34 +48,57 @@ def make_env(seed, opponent, fixed_k, ablate=False, g_over=None):
     return _f
 
 
-def light_eval(model, opponent: str, fixed_k, ablate: bool = False) -> dict:
-    """40 semillas FIJAS (reset_to), política determinista. Devuelve sev media, P(a|G), P(a|S),
+_EVAL_MODEL = {}
+
+
+def _light_eval_one(job):
+    """Un episodio de la ligera en un proceso hijo (fork): carga el checkpoint una vez por proceso."""
+    ckpt, s, kind, opponent, fixed_k, ablate = job
+    if ckpt not in _EVAL_MODEL:
+        from stable_baselines3 import PPO
+        _EVAL_MODEL[ckpt] = PPO.load(ckpt, device="cpu")
+    model = _EVAL_MODEL[ckpt]
+    env = ManagerEnv(kinds=(kind,), seed=12345, opponent=opponent, fixed_k=fixed_k,
+                     obs_ablate_progress=ablate)
+    obs, info = env.reset_to(s, kind)
+    stratum = "G" if info["two_front"] else "S"
+    n = info["n_wolves"]
+    done, first, a0, acts = False, True, None, []
+    while not done:
+        a, _ = model.predict(obs, deterministic=True)
+        a = int(a)
+        if first:
+            a0 = a; first = False
+        acts.append(a)
+        obs, r, term, trunc, info = env.step(a)
+        done = term or trunc
+    return {"stratum": stratum, "n": n, "a0": a0, "acts": acts, "sev": info["ep_sev"],
+            "dec": info["ep_decisions"], "pen": info["penetrado_ticks"], "kind": kind}
+
+
+def light_eval(model, opponent: str, fixed_k, ablate: bool = False, procs: int = 20) -> dict:
+    """40 semillas FIJAS (reset_to), política determinista, en un POOL de procesos (la ligera
+    secuencial tardaba ~5 min y hundía los fps del smoke). Devuelve sev media, P(a|G), P(a|S),
     P(a|n), P(cebo|G,n>=3), ticks PENETRADO medios y nº de decisiones medio."""
+    import multiprocessing as mp
+    import tempfile
     from collections import Counter, defaultdict
     eval_opp = "reactive" if opponent == "mix" else opponent      # la ligera siempre vs Reactive
-    env = ManagerEnv(kinds=("lobos",), seed=12345, opponent=eval_opp, fixed_k=fixed_k,
-                     obs_ablate_progress=ablate)
-    sev, dec, pen = [], [], []
+    tmp = tempfile.NamedTemporaryFile(suffix=".zip", delete=False).name
+    model.save(tmp)
+    jobs = [(tmp, s, kind, eval_opp, fixed_k, ablate) for s, kind in EVAL_SEEDS]
+    with mp.get_context("fork").Pool(min(procs, len(jobs))) as pool:
+        res = pool.map(_light_eval_one, jobs, chunksize=1)
+    sev = [r["sev"] for r in res]; dec = [r["dec"] for r in res]; pen = [r["pen"] for r in res]
     acts_by = defaultdict(Counter)      # clave -> Counter de acciones (primera decisión)
     all_by = defaultdict(Counter)       # clave -> Counter de acciones (todas las decisiones)
     cebo_g3 = [0, 0]
-    for s, kind in EVAL_SEEDS:
-        obs, info = env.reset_to(s, kind)
-        stratum = "G" if info["two_front"] else "S"
-        n = info["n_wolves"]
-        done, first = False, True
-        while not done:
-            a, _ = model.predict(obs, deterministic=True)
-            a = int(a)
-            if first:
-                acts_by[stratum][a] += 1; acts_by[f"n{n}"][a] += 1
-                if stratum == "G" and n >= 3:
-                    cebo_g3[1] += 1; cebo_g3[0] += int(a != 0)
-                first = False
-            all_by[stratum][a] += 1
-            obs, r, term, trunc, info = env.step(a)
-            done = term or trunc
-        sev.append(info["ep_sev"]); dec.append(info["ep_decisions"]); pen.append(info["penetrado_ticks"])
+    for r in res:
+        acts_by[r["stratum"]][r["a0"]] += 1; acts_by[f"n{r['n']}"][r["a0"]] += 1
+        if r["stratum"] == "G" and r["n"] >= 3:
+            cebo_g3[1] += 1; cebo_g3[0] += int(r["a0"] != 0)
+        for a in r["acts"]:
+            all_by[r["stratum"]][a] += 1
 
     def dist(c):
         tot = sum(c.values())
@@ -93,7 +116,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--run", default="M1")
     ap.add_argument("--total", type=int, default=120_000, help="macro-pasos (env steps)")
-    ap.add_argument("--n-envs", type=int, default=24)
+    ap.add_argument("--n-envs", type=int, default=32)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--opponent", default="reactive", choices=["reactive", "run02", "run09", "mix"])
     ap.add_argument("--fixed-k", type=int, default=None, help="RUN-M2: interrumpir opciones a K ticks")
@@ -106,7 +129,9 @@ def main():
     ap.add_argument("--smoke", action="store_true", help="1k macro-pasos, 8 envs, eval cada 500")
     args = ap.parse_args()
     if args.smoke:
-        args.total, args.n_envs, args.eval_every, args.ckpt_every = 1_000, 8, 500, 500
+        # 1 rollout con la config real (n_envs de la línea de comandos): mide fps/ETA reales
+        args.total = HYPER["n_steps"] * args.n_envs
+        args.eval_every, args.ckpt_every = args.total, args.total
         args.run = args.run + "_smoke"
     out = pathlib.Path("/data/hrl_m1") / args.run
     out.mkdir(parents=True, exist_ok=True)
