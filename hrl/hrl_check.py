@@ -341,6 +341,31 @@ def test_S2_abort_solo_preshow():
           f"(termina {i2['event']} a {i2['ticks']} ticks)")
 
 
+def test_S3_censura():
+    """MÉTRICA DE CENSURA (adjudicación VERIF-0 del dueño; estándar en todas las tablas): hitos
+    de la jugada (t_staged/t_show/t_suelta) en la capa + info['jugada'] del ManagerEnv, con orden
+    temporal coherente y completa := show ∧ suelta — sev 0 sin jugar != sev 0 jugando y fallando."""
+    from hrl.manager_env import ManagerEnv
+    s = _seeds_by_groups("lobos", 1, 1, min_wolves=3)[0]
+    env = ManagerEnv(kinds=("lobos",), seed=0)
+    obs, info = env.reset_to(s, "lobos")
+    done = False
+    while not done:
+        obs, r, term, trunc, info = env.step(2)              # CEBO d90 fijo (brazo de celda)
+        done = term or trunc
+    j = info["jugada"]
+    assert set(j) == {"t_staged", "t_show", "t_suelta", "t_strike", "completa"}, j
+    if j["t_show"] is not None and j["t_staged"] is not None:
+        assert j["t_staged"] <= j["t_show"], j
+    if j["t_suelta"] is not None:
+        assert j["t_show"] is not None and j["t_show"] <= j["t_suelta"], j
+    if j["t_strike"] is not None:
+        assert j["t_suelta"] is not None and j["t_suelta"] <= j["t_strike"], j
+    assert j["completa"] == (j["t_show"] is not None and j["t_suelta"] is not None), j
+    print(f"  [S3] censura (hitos de jugada): {j} (CEBO d90 fijo, seed {s}, "
+          f"sev {info['ep_sev']})")
+
+
 class _RotatingManager:
     """Re-arranca la opción cada `period` ticks rotando la secuencia (todas distintas entre sí =>
     cada cambio es un re-arranque real de la capa)."""
@@ -868,6 +893,7 @@ if __name__ == "__main__":
     test_2_cebo_spawn_bit_a_bit()
     test_S1_gate_mejor_esfuerzo()
     test_S2_abort_solo_preshow()
+    test_S3_censura()
     test_K1_persistencia_sin_proteccion()
     test_K2_retarget_protegida_y_cooldown()
     test_K3_protegida_sin_alternativa()

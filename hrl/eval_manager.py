@@ -82,7 +82,7 @@ def run_one(job):
             "two_front": info["two_front"], "status": info["status"], "decisions": info["ep_decisions"],
             "penetrado_ticks": info["penetrado_ticks"], "actions": acts,
             "events": [d["event"] for d in info["ep_log"]], "log": info["ep_log"],
-            "hunt": info.get("hunt", {})}
+            "hunt": info.get("hunt", {}), "jugada": info.get("jugada")}
 
 
 def boot_ci(vals, n_boot=10_000, seed=20_260_819):
@@ -92,6 +92,20 @@ def boot_ci(vals, n_boot=10_000, seed=20_260_819):
     rng = np.random.default_rng(seed)
     m = v[rng.integers(0, v.size, size=(n_boot, v.size))].mean(axis=1)
     return [float(v.mean()), float(np.percentile(m, 2.5)), float(np.percentile(m, 97.5))]
+
+
+def _censura(recs):
+    cebo = [r for r in recs if r["n_wolves"] >= 3 and any(a != 0 for a in r["actions"])]
+    jug = [r["jugada"] for r in cebo if r.get("jugada")]
+    if not jug:
+        return {"n_eps_cebo_n3": len(cebo), "jugada_completa_frac": None}
+    shows = [j["t_show"] for j in jug if j["t_show"] is not None]
+    return {"n_eps_cebo_n3": len(cebo),
+            "jugada_completa_frac": round(float(np.mean([j["completa"] for j in jug])), 3),
+            "con_show_frac": round(float(np.mean([j["t_show"] is not None for j in jug])), 3),
+            "con_staged_frac": round(float(np.mean([j["t_staged"] is not None for j in jug])), 3),
+            "con_strike_frac": round(float(np.mean([j.get("t_strike") is not None for j in jug])), 3),
+            "t_show_mediana": (float(np.median(shows)) if shows else None)}
 
 
 def summarize(recs):
@@ -118,6 +132,10 @@ def summarize(recs):
             "caza_por_ep": {k: float(np.mean([r.get("hunt", {}).get(k, 0) for r in recs]))
                             for k in ("option_starts", "retargets", "retargets_blocked",
                                       "refix_muerte", "refix_refugio", "refix_otro")},
+            # MÉTRICA DE CENSURA (adjudicación VERIF-0): episodios "con cebo jugable" = alguna
+            # acción CEBO y n>=3 (el fallback de quórum absorbe n<=2). Jugada COMPLETA = show y
+            # asalto SUELTO. sev 0 sin jugar != sev 0 jugando y fallando.
+            "censura": _censura(recs),
             "eventos": dict(ev), "success": sum(1 for r in recs if r["status"] == "success")}
 
 

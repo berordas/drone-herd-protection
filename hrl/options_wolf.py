@@ -209,6 +209,18 @@ class WolfOptionLayer(WolfController):
         self.n_retargets = 0                            # contadores del episodio (K-bis los lee)
         self.n_retarget_blocked = 0
         self.n_option_starts = 0
+        # MÉTRICA DE CENSURA (adjudicación VERIF-0 del dueño): hitos de la JUGADA por episodio
+        # (sev 0 sin jugar != sev 0 jugando y fallando). t_staged = 1er tick con el asalto
+        # ESTACIONADO pre-show · t_show = latch del show · t_suelta (RELEASE) = 1er tick
+        # post-show con el asalto SUELTO de los anillos oscuros (assault_hold None: ESCOLTA
+        # latcheada o group_hunted — va a por su presa) · t_strike = 1er tick post-show con el
+        # asalto A TIRO (flag attacking de sector_desired: flanco y <= r_face_safe). Jugada
+        # COMPLETA := show + suelta (el strike es DESENLACE — la defensa puede negarlo
+        # legítimamente; la censura mide el MECANISMO).
+        self.t_staged: int | None = None
+        self.t_show: int | None = None
+        self.t_suelta: int | None = None
+        self.t_strike: int | None = None
 
     # ------------------------------------------------------------------ #
     # Eventos propios (los integra hrl/events.EventTracker vía pop_events).
@@ -246,6 +258,7 @@ class WolfOptionLayer(WolfController):
             self._last_retarget = None
             self._blocked_logged = False
             self.n_retargets = self.n_retarget_blocked = self.n_option_starts = 0
+            self.t_staged = self.t_show = self.t_suelta = self.t_strike = None   # censura
         self._last_step = step
         if self._countdown <= 0:
             self._countdown = self.frame_skip
@@ -556,11 +569,20 @@ class WolfOptionLayer(WolfController):
             # protocolo: SHOW_START nunca antes del latch. Commit S1: registra el ERROR ANGULAR
             # CONSEGUIDO (θ logrado vs pretendido) — las celdas S pasan a ser "Δ pretendido" con
             # distribución de Δ conseguido.
+            if self.t_show is None:
+                self.t_show = int(w.step_count) + 1          # hito de censura (tick de efecto)
             self.push_event("SHOW_START", tick=int(w.step_count) + 1, mode=self._mode,
                             err_rumbo_deg=(None if self._theta_asa is None else
                                            round(float(np.rad2deg(self._bearing_err(w, s2))), 1)),
                             delta_pretendida_deg=(None if self._theta_asa is None else
                                                   round(float(np.rad2deg(self._delta)), 0)))
+
+        # Hito de censura: primer tick con el asalto ESTACIONADO pre-show (cualquier membership).
+        if self.t_staged is None and not w.wolf_decoy_released and w.pack_prey2 >= 0 \
+                and s1.size > 0 and s2.size > 0:
+            if assault_staged(w, s2, w._prey_pos_of(w.pack_prey2, w.pack_prey2_kind),
+                              stage_hold=self._hold):
+                self.t_staged = int(w.step_count)
 
         atk1 = atk2 = False
         if decoy_prowling:
@@ -580,7 +602,11 @@ class WolfOptionLayer(WolfController):
                 aim = self._reposition_point(w)
             assault_stage(w, s2, aim, desired, hold=assault_hold)
         elif s2.size > 0:
+            if w.wolf_decoy_released and self.t_suelta is None:
+                self.t_suelta = int(w.step_count)            # censura: asalto SUELTO (release)
             atk2 = sector_desired(w, s2, w.pack_prey2, w.pack_prey2_kind, d_wc, desired)
         w._wolf_attacking = bool(atk1 or atk2)
+        if atk2 and w.wolf_decoy_released and self.t_strike is None:
+            self.t_strike = int(w.step_count)                # censura: asalto A TIRO (strike)
 
         return pack_common_tail(w, desired, d_wc), False

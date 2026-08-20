@@ -181,6 +181,7 @@ def run_episode_metrics(world: World, coordinator) -> dict:
     from world import ACTIVE as _ACT, INCOMING as _INC, STRANDED as _STR
     world.reset()
     hold_since: dict[int, int] = {}
+    t_show = t_strike = t_escolta = None                         # censura (adjudicación VERIF-0)
     esperas: list[int] = []
     relevos = {"ESCOLTA": 0, "patrulla": 0}
     stranded_seen: set[int] = set()
@@ -198,6 +199,12 @@ def run_episode_metrics(world: World, coordinator) -> dict:
                     esperas.append(int(world.step_count) - hold_since.pop(int(j)))
                     relevos["ESCOLTA" if world.phase == "ESCOLTA" else "patrulla"] += 1
         stranded_seen |= set(int(x) for x in np.where(st == _STR)[0])
+        if t_show is None and world.wolf_decoy_released:
+            t_show = int(world.step_count)                       # hito: el cebo se MOSTRÓ
+        if t_escolta is None and world.phase == "ESCOLTA":
+            t_escolta = int(world.step_count)                    # hito: ESCOLTA latcheada (release)
+        if t_show is not None and t_strike is None and getattr(world, "_wolf_attacking", False):
+            t_strike = int(world.step_count)                     # hito: ataque a tiro tras el show
         prev_state = st.copy(); prev_hold = hold.copy()
         if terminated or truncated:
             break
@@ -217,6 +224,17 @@ def run_episode_metrics(world: World, coordinator) -> dict:
         "espera_handoff_media": (float(np.mean(esperas)) if esperas else None),
         "espera_handoff_max": (int(max(esperas)) if esperas else None),
         "stranded": len(stranded_seen),
+        # MÉTRICA DE CENSURA (adjudicación VERIF-0 del dueño; estándar en TODAS las tablas):
+        # hitos de la jugada del cebo scriptado (solo episodios con 2 frentes reales) — sev 0
+        # sin jugar != sev 0 jugando y fallando.
+        "cebo_2f": world.wolf_decoy_size is not None,
+        "t_show": t_show,
+        "t_escolta": t_escolta,
+        "t_strike": t_strike,
+        # completa (script) := show + ESCOLTA latcheada (con la escolta en pie el guion v3.3
+        # SUELTA el asalto; el strike es desenlace, no mecanismo).
+        "jugada_completa": (bool(t_show is not None and t_escolta is not None)
+                            if world.wolf_decoy_size is not None else None),
     }
 
 
@@ -247,6 +265,10 @@ def evaluate(coordinator_factory=lambda w: DummyCoordinator(w.n_drones),
             "severity_max": int(deaths_a.max()),
             "n_safe_mean": float(np.mean(safe)),
             "terminals": {t: int(terms.get(t, 0)) for t in TERMINALS},
+            "jugada_completa_frac": (float(np.mean([e["jugada_completa"] for e in episodes
+                                                    if e["cebo_2f"]]))
+                                     if any(e["cebo_2f"] for e in episodes) else None),
+            "n_cebo_2f": int(sum(1 for e in episodes if e["cebo_2f"])),
             "episodes": episodes,
         }
         all_deaths.extend(deaths); all_safe.extend(safe); all_terms.update(terms)

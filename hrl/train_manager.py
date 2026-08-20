@@ -92,7 +92,8 @@ def _light_eval_one(job):
         done = term or trunc
     return {"stratum": stratum, "n": n, "a0": a0, "acts": acts, "sev": info["ep_sev"],
             "dec": info["ep_decisions"], "pen": info["penetrado_ticks"], "kind": kind,
-            "probs": probs, "ents": ents, "hunt": info.get("hunt", {})}
+            "probs": probs, "ents": ents, "hunt": info.get("hunt", {}),
+            "jugada": info.get("jugada")}
 
 
 def light_eval(model, opponent: str, fixed_k, ablate: bool = False, procs: int = 20) -> dict:
@@ -149,6 +150,10 @@ def light_eval(model, opponent: str, fixed_k, ablate: bool = False, procs: int =
             "Pstoch_cebo_G_n3": (float(np.mean(st_g3)) if st_g3 else None),
             "entropia_media": float(np.mean([e for r in res for e in r["ents"]])) if any(r["ents"] for r in res) else None,
             "caza_por_ep": hunt,
+            "jugada_completa_frac": (lambda js: (round(float(np.mean([j["completa"] for j in js])), 3)
+                                                 if js else None))(
+                [r["jugada"] for r in res if r.get("jugada") and r["n"] >= 3
+                 and any(a != 0 for a in r["acts"])]),
             "decisiones_media": float(np.mean(dec)), "penetrado_ticks_media": float(np.mean(pen))}
 
 

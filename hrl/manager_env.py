@@ -341,6 +341,11 @@ class ManagerEnv(gym.Env):
             self._hunt["retargets"] = int(layer.n_retargets)
             self._hunt["retargets_blocked"] = int(layer.n_retarget_blocked)
             info["hunt"] = dict(self._hunt)
+            # MÉTRICA DE CENSURA (adjudicación VERIF-0): hitos de la jugada del episodio.
+            info["jugada"] = {"t_staged": layer.t_staged, "t_show": layer.t_show,
+                              "t_suelta": layer.t_suelta, "t_strike": layer.t_strike,
+                              "completa": bool(layer.t_show is not None
+                                               and layer.t_suelta is not None)}
             pat = self._patrol.finalize()
             info["patrulla"] = {k: pat[k] for k in
                                 ("ticks_patrulla", "ticks_aviso", "ticks_violacion", "D_max",
