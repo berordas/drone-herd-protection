@@ -17,6 +17,11 @@ contenedor: `python3 hrl/hrl_check.py`. Asserts al estilo de los demás checks.
   2) CEBO membership="spawn" vs script de dos sectores: misma lógica (igual sii sin RETARGET;
      5 semillas de 2 grupos). El impuesto de interfaz del camino spawn es CERO por construcción
      mientras la regla no dispara (referencia de E0.A(ii)).
+  P) AUDITOR DE PATRULLA (adenda post-visionado seed 84, Encargo 1): geometría dirigida sobre un
+     World real — anillo de 4 a R=150 (D≈212 > 2·r_detect) => VIOLACIÓN y un lobo que entra por
+     el arco ancho sin detectar queda registrado (entrada_no_detectada + cruzo_arco_violacion);
+     anillo a R=60 (D≈85 <= 100) => OK; el investigador queda FUERA del anillo auditado; en
+     ESCOLTA no se audita (ticks_patrulla no avanza).
   K) REGLA DE CAZA OPORTUNISTA (Commit K; decisión de diseño del dueño): K1 presa viva y
      DESPROTEGIDA (drones lejos) => nunca cambia, ni tras >= 10 re-arranques de opción
      (keep/MASA/Δ90/Δ180 rotando) — persiste también a través de MASA. K2 protegida sostenida
@@ -671,6 +676,67 @@ def test_6_manager_env():
           f"(eventos {sorted(set(evs))}) OK")
 
 
+def test_P_auditor_patrulla():
+    from hrl.behavior_checks import PatrolCoverageTracker
+    w = build_world(0, "lobos")
+    w.reset()
+    w.phase = "VIGILANCIA"
+    w.battery[:] = 1.0
+    herd_c = w.cows[w.cow_alive].mean(axis=0)
+    act = np.where(w.drone_state == ACTIVE)[0][:4]
+
+    def ring(R):
+        for k, i in enumerate(act):
+            ang = np.pi / 4 + k * np.pi / 2
+            w.drones[i] = herd_c + R * np.array([np.cos(ang), np.sin(ang)])
+
+    # (1) anillo R=150 -> D ≈ 1.41·150 ≈ 212 > 200 => VIOLACIÓN; lobo entrando por el arco 0-90°
+    tr = PatrolCoverageTracker(w)
+    ring(150.0)
+    w.wolves[:] = herd_c + np.array([400.0, 400.0])          # lejos: sin detectar
+    d0 = np.linalg.norm(w.drones[act] - herd_c, axis=1)
+    path = np.linspace(1.0, 0.0, 12)                         # entra en diagonal por el arco ancho (45°+45°=90°? no: bisectriz 90°)
+    for frac in path:
+        w.wolves[0] = herd_c + (30.0 + frac * 200.0) * np.array([np.cos(np.pi / 2), np.sin(np.pi / 2)])
+        w.step_count += 1
+        tr.on_boundary()
+    rec1 = tr.finalize()
+    assert rec1["ticks_violacion"] == len(path), rec1
+    assert rec1["D_max"] > 2 * w.r_detect, rec1
+    assert rec1["entradas_no_detectadas"] == 1 and rec1["entradas_no_detectadas_por_arco_violacion"] == 1, rec1
+    # (2) anillo R=60 -> D ≈ 85 <= 100 => OK (ni aviso ni violación)
+    tr2 = PatrolCoverageTracker(w)
+    ring(60.0)
+    w.wolves[:] = herd_c + np.array([400.0, 400.0])
+    w.step_count += 1
+    tr2.on_boundary()
+    rec2 = tr2.finalize()
+    assert rec2["ticks_aviso"] == 0 and rec2["ticks_violacion"] == 0 and rec2["D_max"] < 100.0, rec2
+    # (3) el INVESTIGADOR queda fuera del anillo: 3 en anillo cerrado + 1 investigando LEJOS no
+    # abre aviso (con 4 y el 4º lejos sí lo abriría)
+    tr3 = PatrolCoverageTracker(w)
+    for k, i in enumerate(act[:3]):
+        ang = np.pi / 4 + k * 2 * np.pi / 3
+        w.drones[i] = herd_c + 55.0 * np.array([np.cos(ang), np.sin(ang)])
+    w.drones[act[3]] = herd_c + np.array([250.0, 0.0])
+    w.drone_investigating[act[3]] = True
+    w.step_count += 1
+    tr3.on_boundary()
+    w.drone_investigating[act[3]] = False
+    rec3 = tr3.finalize()
+    assert rec3["ticks_aviso"] == 0 and rec3["ticks_violacion"] == 0, rec3
+    # (4) en ESCOLTA no se audita
+    tr4 = PatrolCoverageTracker(w)
+    w.phase = "ESCOLTA"
+    w.step_count += 1
+    tr4.on_boundary()
+    rec4 = tr4.finalize()
+    assert rec4["ticks_patrulla"] == 0, rec4
+    w.phase = "VIGILANCIA"
+    print("  [P] auditor de patrulla: VIOLACIÓN a R=150 (D=%.0f) + entrada no detectada por el arco"
+          " · OK a R=60 · investigador excluido · ESCOLTA fuera de ámbito" % rec1["D_max"])
+
+
 def test_4_allocator_4_0():
     n = 0
     for kind, count in (("lobos", 3), ("mixto", 2)):
@@ -692,6 +758,7 @@ if __name__ == "__main__":
     test_K2_retarget_protegida_y_cooldown()
     test_K3_protegida_sin_alternativa()
     test_K4_masa_drones_lejos_bit_a_bit()
+    test_P_auditor_patrulla()
     test_3_aserciones_y_determinismo()
     test_3b_cebo_keep_y_prematura()
     test_4_allocator_4_0()

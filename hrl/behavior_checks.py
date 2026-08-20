@@ -36,6 +36,17 @@ import numpy as np
 
 from world import ACTIVE, INCOMING, STRANDED
 
+# --- Auditoría de COBERTURA DE VIGILANCIA en PATRULLA (adenda post-visionado seed 84, Encargo 1;
+# regla del dueño). Ámbito: SOLO pre-confirmación (fase != ESCOLTA); la barrera NO se audita aquí
+# (validada por el dueño en visionado). Fundamento: la detección es r_detect=100 alrededor de cada
+# ACTIVE; dos vecinos ADYACENTES del anillo separados D dejan su punto medio a D/2 de ambos =>
+# con D > 2·r_detect ese punto queda FUERA de la vista de los dos: pasillo ciego real.
+PATROL_WARN_D = 100.0            # AVISO si D > 100 (listón conservador del dueño = r_detect)
+                                 # VIOLACIÓN si D > 2·r_detect = 200 (agujero ciego; derivado de w.r_detect)
+PATROL_R_WARN = 71.0             # diagnóstico M=4: D ≈ 1.41·R => AVISO desde R≈71
+PATROL_R_VIOL = 142.0            #                               VIOLACIÓN desde R≈142
+PATROL_MAX_WINDOWS = 50          # ventanas guardadas por episodio (las más largas; el resto agrega)
+
 from hrl.events import EventTracker, spawn_groups
 
 PREMATURE_EDGE_WINDOW = 200   # ticks previos a ESCOLTA que mira el clasificador (adenda §5c)
@@ -96,6 +107,167 @@ class CorridorTracker:
                         self.gotera[j] += 1
 
 
+class PatrolCoverageTracker:
+    """Encargo 1a/1b: métrica POR TICK en patrulla (fase != ESCOLTA) — separación euclídea entre
+    cada par de vecinos ADYACENTES del anillo (drones ACTIVE no-investigando; los relevos en
+    tránsito INCOMING/RETURNING/STRANDED no son ACTIVE y quedan fuera; el anunciado sigue en el
+    anillo: sigue cubriendo). SOLO LECTURA del World; sin RNG.
+
+    Estados por tick: OK · AVISO (algún par D > PATROL_WARN_D) · VIOLACIÓN (algún par D >
+    2·r_detect). Ventanas contiguas con (t0, t1, D_max, R_en_D_max, M). Además: distribución del
+    radio R del anillo (media de distancias al centroide del rebaño) con las zonas del diagnóstico
+    M=4 (R<71 / 71-142 / >142), y ENTRADAS de lobo: primer tick de cada lobo a < PATROL_WARN_D de
+    la res en juego más cercana — ¿había sido DETECTADO antes (alguna vez a <= r_detect de un
+    ACTIVE)? Si NO: ¿su rumbo cruzó (mientras estaba sin detectar y dentro del anillo extendido)
+    un arco en AVISO/VIOLACIÓN? (latch por lobo, evaluado cada tick de patrulla)."""
+
+    def __init__(self, world):
+        self.world = world
+        self.viol_d = 2.0 * float(world.r_detect)
+        self.ticks_patrulla = 0
+        self.ticks_aviso = 0
+        self.ticks_violacion = 0
+        self.d_max = 0.0
+        self.r_sum = 0.0
+        self.r_max = 0.0
+        self.r_zonas = {"lt71": 0, "z71_142": 0, "gt142": 0}
+        self.windows: list[dict] = []
+        self._cur: dict | None = None                 # ventana abierta {estado, t0, d_max, r, m}
+        self._detected = np.zeros(world.n_wolves, dtype=bool)
+        self._entered = np.zeros(world.n_wolves, dtype=bool)
+        self._cruzo_aviso = np.zeros(world.n_wolves, dtype=bool)
+        self._cruzo_viol = np.zeros(world.n_wolves, dtype=bool)
+        self.entradas: list[dict] = []
+
+    # ------------------------------------------------------------------ #
+    @staticmethod
+    def _herd_pts(w):
+        pts = []
+        m = w.cow_alive & ~w.cow_safe
+        if m.any():
+            pts.append(w.cows[m])
+        if w.n_calves > 0:
+            mc = w.calf_alive & ~w.calf_safe
+            if mc.any():
+                pts.append(w.calves[mc])
+        return np.vstack(pts) if pts else w.cows
+
+    def _close_window(self, t):
+        if self._cur is not None:
+            self._cur["t1"] = int(t)
+            if len(self.windows) < PATROL_MAX_WINDOWS:
+                self.windows.append(self._cur)
+            else:                                     # cap: conserva las más largas
+                j = min(range(len(self.windows)),
+                        key=lambda k: self.windows[k]["t1"] - self.windows[k]["t0"])
+                if (self._cur["t1"] - self._cur["t0"]) > (self.windows[j]["t1"] - self.windows[j]["t0"]):
+                    self.windows[j] = self._cur
+            self._cur = None
+
+    def on_boundary(self) -> None:
+        w = self.world
+        t = int(w.step_count)
+        if w.phase == "ESCOLTA":                      # ámbito: SOLO patrulla (pre-confirmación)
+            self._close_window(t)
+            return
+        act_mask = w.drone_state == ACTIVE
+        # DETECCIÓN (latch por lobo): alguna vez a <= r_detect de algún ACTIVE.
+        act_all = w.drones[act_mask]
+        if w.n_wolves > 0 and act_all.shape[0] > 0:
+            dw = np.linalg.norm(w.wolves[:, None, :] - act_all[None, :, :], axis=2).min(axis=1)
+            self._detected |= dw <= w.r_detect
+        ring_mask = act_mask & ~w.drone_investigating
+        ring = w.drones[ring_mask]
+        m = int(ring.shape[0])
+        herd = self._herd_pts(w)
+        herd_c = herd.mean(axis=0)
+        self.ticks_patrulla += 1
+        estado = "ok"
+        arcs = []                                     # (ang_a, ang_b, D) de pares en aviso/violación
+        d_max_t = 0.0
+        r_ring = 0.0
+        if m >= 2:
+            rel = ring - herd_c
+            ang = np.arctan2(rel[:, 1], rel[:, 0])
+            order = np.argsort(ang)
+            r_ring = float(np.linalg.norm(rel, axis=1).mean())
+            for k in range(m):
+                a, b = order[k], order[(k + 1) % m]
+                D = float(np.linalg.norm(ring[a] - ring[b]))
+                d_max_t = max(d_max_t, D)
+                if D > PATROL_WARN_D:
+                    arcs.append((float(ang[a]), float(ang[b]), D))
+            if d_max_t > self.viol_d:
+                estado = "violacion"
+                self.ticks_violacion += 1
+            elif d_max_t > PATROL_WARN_D:
+                estado = "aviso"
+                self.ticks_aviso += 1
+        else:
+            estado = "violacion"                      # anillo degenerado (<2 en el anillo): sin cobertura
+            self.ticks_violacion += 1
+            d_max_t = float("inf") if m < 2 else d_max_t
+        self.d_max = max(self.d_max, 0.0 if not np.isfinite(d_max_t) else d_max_t)
+        self.r_sum += r_ring
+        self.r_max = max(self.r_max, r_ring)
+        self.r_zonas["lt71" if r_ring < PATROL_R_WARN else
+                     ("z71_142" if r_ring <= PATROL_R_VIOL else "gt142")] += 1
+        # ventanas contiguas por estado (aviso y violación)
+        if estado == "ok":
+            self._close_window(t)
+        else:
+            if self._cur is None or self._cur["estado"] != estado:
+                self._close_window(t)
+                self._cur = {"estado": estado, "t0": t, "d_max": 0.0, "r": r_ring, "m": m}
+            if np.isfinite(d_max_t) and d_max_t > self._cur["d_max"]:
+                self._cur["d_max"] = round(d_max_t, 1)
+                self._cur["r"] = round(r_ring, 1)
+                self._cur["m"] = m
+        # cruce de arco afectado por lobos SIN detectar (dentro del anillo extendido)
+        if w.n_wolves > 0 and arcs and m >= 2:
+            relw = w.wolves - herd_c
+            dw_c = np.linalg.norm(relw, axis=1)
+            angw = np.arctan2(relw[:, 1], relw[:, 0])
+            inside = dw_c <= (r_ring + w.r_detect)
+            for i in np.where(~self._detected & inside)[0]:
+                for (aa, bb, D) in arcs:
+                    span = (bb - aa) % (2 * np.pi)
+                    off = (angw[i] - aa) % (2 * np.pi)
+                    if off <= span:
+                        if D > self.viol_d:
+                            self._cruzo_viol[i] = True
+                        else:
+                            self._cruzo_aviso[i] = True
+        # ENTRADA: primer tick de cada lobo a < PATROL_WARN_D de la res en juego más cercana
+        if w.n_wolves > 0:
+            d_entry = np.linalg.norm(w.wolves[:, None, :] - herd[None, :, :], axis=2).min(axis=1)
+            for i in np.where(~self._entered & (d_entry < PATROL_WARN_D))[0]:
+                self._entered[i] = True
+                self.entradas.append({"lobo": int(i), "t": t, "detectado": bool(self._detected[i]),
+                                      "cruzo_arco_aviso": bool(self._cruzo_aviso[i]),
+                                      "cruzo_arco_violacion": bool(self._cruzo_viol[i])})
+
+    def finalize(self) -> dict:
+        self._close_window(int(self.world.step_count))
+        nd = [e for e in self.entradas if not e["detectado"]]
+        wins = sorted(self.windows, key=lambda v: v["t0"] - v["t1"])[:10]
+        return {
+            "ticks_patrulla": self.ticks_patrulla,
+            "ticks_aviso": self.ticks_aviso,
+            "ticks_violacion": self.ticks_violacion,
+            "D_max": round(self.d_max, 1),
+            "R_media": (round(self.r_sum / self.ticks_patrulla, 1) if self.ticks_patrulla else None),
+            "R_max": round(self.r_max, 1),
+            "R_zonas": dict(self.r_zonas),
+            "ventanas_top": wins,
+            "n_ventanas": len(self.windows) + (1 if self._cur is not None else 0),
+            "entradas": self.entradas,
+            "entradas_no_detectadas": len(nd),
+            "entradas_no_detectadas_por_arco_violacion": sum(1 for e in nd if e["cruzo_arco_violacion"]),
+            "entradas_no_detectadas_por_arco_aviso": sum(1 for e in nd if e["cruzo_arco_aviso"]),
+        }
+
+
 def check_prey_contract(w) -> list[str]:
     """Validez de pack_prey/pack_prey2 (contrato compartido con el pin de la vaca): índice en
     rango para su `kind`, kind coherente, y -1 <=> kind None. Devuelve mensajes de violación."""
@@ -150,6 +322,7 @@ class EpisodeAudit:
         self.tracker = EventTracker(world, coordinator, wolf_controller=wolf_controller,
                                     decoy_indices=decoy_indices, assault_indices=assault_indices)
         self.corridor = CorridorTracker(world)
+        self.patrol = PatrolCoverageTracker(world)    # Encargo 1e: auditor permanente del arnés
         self.meta = dict(meta or {})
         self.option_name = option_name
         self.deaths: list[dict] = []
@@ -188,6 +361,7 @@ class EpisodeAudit:
         w = self.world
         self.tracker.on_boundary()
         self._track_relays()
+        self.patrol.on_boundary()
         for e in self.tracker.events:
             if e["ev"] == "ANCHOR_FLIP":
                 self._last_flip_tick = e["t"]
@@ -387,6 +561,7 @@ class EpisodeAudit:
             "premature": self.premature,
             "gotera_cruces": int(self.corridor.gotera.sum()),
             "corredor_cruces": int(self.corridor.cruces.sum()),
+            "patrulla": self.patrol.finalize(),
             "relevos": {"n": len(self._relay_esperas),
                         "escolta": self._relay_por_fase["ESCOLTA"],
                         "patrulla": self._relay_por_fase["patrulla"],

@@ -28,6 +28,10 @@ CONTADOR PASIVO de PENETRADO (hallazgo B, sin arreglo): ticks en que el coordina
 rama PENETRADO (estado `_pose_last_step` de la barrera: rama CLEAN si == step; se lee SOLO para
 el contador, nunca para decidir) — va en info al terminal.
 
+AUDITOR DE PATRULLA (adenda post-visionado seed 84, Encargo 1e; pasivo): PatrolCoverageTracker
+por episodio (fase != ESCOLTA): pares adyacentes del anillo con AVISO D>100 / VIOLACIÓN D>2·r_detect,
+radio del anillo y entradas de lobo no detectadas — resumen en info["patrulla"] al terminal.
+
 CONTADORES DE CAZA (K-bis, instrumentación; solo se reportan en info["hunt"] al terminal): re-arranques
 de opción (OPTION_START de la capa), re-targets por la regla de caza (Commit K: causa "protegida"),
 re-targets bloqueados por cooldown, y re-fijaciones de presa NO debidas a la regla, por causa de la
@@ -47,6 +51,7 @@ from world import ACTIVE, World
 
 from hrl.manager_obs import (EV_ABORT, EV_FIN, EV_HERD_SAFE, EV_INICIO, EV_KMAX, EV_MUERTE,
                              MANAGER_OBS_SIZE, N_OPTIONS, build_manager_obs, herd_points)
+from hrl.behavior_checks import PatrolCoverageTracker
 from hrl.options_wolf import WolfOptionLayer
 
 OPPONENTS = ("reactive", "run02", "run09", "mix") # defensas congeladas; 'mix' (adenda 4 §4, RUN-M3) = uniforme por episodio {reactive, run09}
@@ -163,6 +168,7 @@ class ManagerEnv(gym.Env):
         self._penetrado_ticks = 0
         self._hunt = {"option_starts": 0, "retargets": 0, "retargets_blocked": 0,
                       "refix_muerte": 0, "refix_refugio": 0, "refix_otro": 0}
+        self._patrol = PatrolCoverageTracker(self._world)
         self._ctx = {"option": None, "last_event": EV_INICIO, "decision_idx": 0,
                      "decoy_idx": None, "active_c_prev": None}
         w = self._world
@@ -271,6 +277,7 @@ class ManagerEnv(gym.Env):
             prey_before = self._prey_state()
             rt_before = layer.n_retargets
             layer.refresh(w)                         # frontera: la capa aplica la opción vigente
+            self._patrol.on_boundary()               # auditor de patrulla (Encargo 1e; pasivo)
             if self.on_boundary is not None:
                 self.on_boundary(w, coord, layer)    # observador (EpisodeAudit.on_boundary); no toca nada
             wp = coord.act(w.get_observation())
@@ -325,6 +332,11 @@ class ManagerEnv(gym.Env):
             self._hunt["retargets"] = int(layer.n_retargets)
             self._hunt["retargets_blocked"] = int(layer.n_retarget_blocked)
             info["hunt"] = dict(self._hunt)
+            pat = self._patrol.finalize()
+            info["patrulla"] = {k: pat[k] for k in
+                                ("ticks_patrulla", "ticks_aviso", "ticks_violacion", "D_max",
+                                 "R_media", "R_max", "entradas_no_detectadas",
+                                 "entradas_no_detectadas_por_arco_violacion")}
         return obs, reward, terminated, truncated, info
 
     # ------------------------------------------------------------------ #
