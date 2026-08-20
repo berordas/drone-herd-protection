@@ -54,7 +54,8 @@ con ese exploit no aprendió criterio). Desde K:
     muerte/refugio sigue siendo la maquinaria de siempre del mundo/script (no pasa por aquí).
   - La regla vive en la CAPA y aplica a TODO el que juegue por ella (MASA, CEBO*, B_masa,
     B_spawn, B_oracle y el manager). world.py y wolf_controllers.py NO se tocan (física e
-    historia congeladas). CONSECUENCIA DOCUMENTADA: el "≡ script bit a bit" de MASA y de
+    historia congeladas). FALLBACK de quórum (mini-E0.3): CEBO con asalto < n_min_adult cae a
+    MASA (OPTION_FALLBACK "CEBO/quorum") — espeja el cap del mundo (asalto siempre >= 2). CONSECUENCIA DOCUMENTADA: el "≡ script bit a bit" de MASA y de
     CEBO/spawn SOLO se mantiene mientras la regla no dispara (sin drones cerca de la presa);
     con drones cerca es un comportamiento NUEVO y deliberado (hrl_check [1]/[2] lo miden con
     drones lejos; [K] mide la regla). Eventos: RETARGET (causa="protegida", de/a, distancias)
@@ -327,6 +328,17 @@ class WolfOptionLayer(WolfController):
             self.push_event("OPTION_FALLBACK", tick=int(w.step_count),
                             de="CEBO/spawn", a="MASA")
             name, params = "MASA", {}
+        if name == "CEBO":
+            # FALLBACK de quórum (mini-E0.3, plan M1''): si el ASALTO quedaría con < n_min_adult
+            # lobos, el cebo no tiene brazo que golpee (espeja el cap del mundo: wolf_decoy_size se
+            # capa a n-2 para que el asalto conserve quórum >= 2) -> cae a MASA y queda registrado.
+            memb = params.get("membership", "manager")
+            n_asalto = (int(w.wolf_group_sizes[1]) if memb == "spawn" and len(w.wolf_group_sizes) == 2
+                        else w.n_wolves - 1)
+            if n_asalto < w.n_min_adult:
+                self.push_event("OPTION_FALLBACK", tick=int(w.step_count),
+                                de=f"CEBO/quorum(n={w.n_wolves})", a="MASA")
+                name, params = "MASA", {}
         self._opt_name, self._opt_params = name, dict(params)
         self.n_option_starts += 1
         self.push_event("OPTION_START", tick=int(w.step_count), option=name, **params)

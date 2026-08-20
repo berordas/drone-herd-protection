@@ -676,6 +676,57 @@ def test_6_manager_env():
           f"(eventos {sorted(set(evs))}) OK")
 
 
+def test_Q_fallback_quorum():
+    """Fallback de quórum (mini-E0.3, plan M1''): CEBO con n_wolves <= n_min_adult (asalto < 2)
+    cae a MASA con OPTION_FALLBACK 'CEBO/quorum' y el episodio queda BIT A BIT igual que
+    MASA-forzado (misma semilla). Con n >= 3 no dispara."""
+    import re
+    from baseline import CONFIG_V2
+    from world import World
+
+    def build_n(seed, n):
+        cfg = dict(CONFIG_V2)
+        cfg["wolves_min"] = cfg["wolves_max"] = n
+        return cfg
+
+    n_ok = 0
+    for n in (1, 2):
+        for seed in (0, 3):
+            cfg = build_n(seed, n)
+            layer = WolfOptionLayer(option=("CEBO", {"membership": "keep", "hold": 50.0}))
+            wa = World(seed=seed, episode_kind="lobos", wolf_controller=layer, **cfg)
+            ca = SyncedReactiveCoordinator(wa); wa.reset()
+            ha = hashlib.sha256(); ha.update(_blob(wa))
+            evs = []
+            while True:
+                _o, _r, t, tr, _i = wa.step(ca.act(wa.get_observation()))
+                ha.update(_blob(wa)); evs += layer.pop_events()
+                if t or tr:
+                    break
+            fb = [e for e in evs if e["ev"] == "OPTION_FALLBACK"]
+            assert fb and fb[0]["de"].startswith("CEBO/quorum"), f"sin fallback de quórum (n={n} seed {seed}): {evs[:3]}"
+            layer_m = WolfOptionLayer(option=("MASA", {}))
+            wb = World(seed=seed, episode_kind="lobos", wolf_controller=layer_m, **cfg)
+            cb = SyncedReactiveCoordinator(wb); wb.reset()
+            hb = hashlib.sha256(); hb.update(_blob(wb))
+            while True:
+                _o, _r, t, tr, _i = wb.step(cb.act(wb.get_observation()))
+                hb.update(_blob(wb))
+                if t or tr:
+                    break
+            assert ha.hexdigest() == hb.hexdigest(), f"CEBO/quorum-fallback != MASA (n={n} seed {seed})"
+            n_ok += 1
+    # con n>=3 NO dispara
+    layer3 = WolfOptionLayer(option=("CEBO", {"membership": "keep", "hold": 50.0}))
+    w3 = World(seed=_seeds_by_groups("lobos", 1, 1, min_wolves=3)[0], episode_kind="lobos",
+               wolf_controller=layer3, **CONFIG_V2)
+    c3 = SyncedReactiveCoordinator(w3); w3.reset()
+    for _ in range(20):
+        w3.step(c3.act(w3.get_observation()))
+    assert not [e for e in layer3.pop_events() if e["ev"] == "OPTION_FALLBACK"], "fallback con n>=3"
+    print(f"  [Q] fallback de quórum CEBO->MASA: {n_ok} episodios n<=2 BIT A BIT ≡ MASA + n>=3 sin disparar")
+
+
 def test_P_auditor_patrulla():
     from hrl.behavior_checks import PatrolCoverageTracker
     w = build_world(0, "lobos")
@@ -759,6 +810,7 @@ if __name__ == "__main__":
     test_K3_protegida_sin_alternativa()
     test_K4_masa_drones_lejos_bit_a_bit()
     test_P_auditor_patrulla()
+    test_Q_fallback_quorum()
     test_3_aserciones_y_determinismo()
     test_3b_cebo_keep_y_prematura()
     test_4_allocator_4_0()
