@@ -318,6 +318,29 @@ def test_S1_gate_mejor_esfuerzo():
           f"sev={[r['sev'] for r in rows]}")
 
 
+def test_S2_abort_solo_preshow():
+    """Commit S2 (adjudicación VERIF-0 del dueño): ABORT_BAIT_FAILED solo es evaluable ANTES de
+    wolf_decoy_released — un cebo que ya mostró y soltó el asalto no ha "fallado" (post-show la
+    condición se mantenía cierta de CONTINUO y el ABORT degeneraba en metrónomo de 50 ticks:
+    verif0 s67/s86/s98 con d2≈1-6 m). Dirigido: con la condición del ABORT FORZADA a cierta,
+    pre-show aborta a los ~ABORT_GRACE_TICKS; con el show ya latcheado NO aborta (techo)."""
+    from hrl.manager_env import ManagerEnv, ABORT_GRACE_TICKS
+    s = _seeds_by_groups("lobos", 1, 1, min_wolves=3)[0]
+    env = ManagerEnv(kinds=("lobos",), seed=0, k_max=250)
+    env.reset_to(s, "lobos")
+    env._bait_failed = lambda: True                     # condición del ABORT SIEMPRE cierta
+    _o, _r, _t, _tr, i1 = env.step(2)                   # CEBO d90 pre-show: aborta en la gracia
+    assert i1["event"] == "ABORT_BAIT_FAILED" and i1["ticks"] == ABORT_GRACE_TICKS, i1
+    env2 = ManagerEnv(kinds=("lobos",), seed=0, k_max=250)
+    env2.reset_to(s, "lobos")
+    env2._bait_failed = lambda: True
+    env2._world.wolf_decoy_released = True              # show YA disparado (latch monótono)
+    _o, _r, _t, _tr, i2 = env2.step(2)
+    assert i2["event"] != "ABORT_BAIT_FAILED", i2
+    print(f"  [S2] ABORT solo PRE-show: pre aborta a {i1['ticks']} ticks; post-show no aborta "
+          f"(termina {i2['event']} a {i2['ticks']} ticks)")
+
+
 class _RotatingManager:
     """Re-arranca la opción cada `period` ticks rotando la secuencia (todas distintas entre sí =>
     cada cambio es un re-arranque real de la capa)."""
@@ -844,6 +867,7 @@ if __name__ == "__main__":
     test_1_masa_bit_a_bit()
     test_2_cebo_spawn_bit_a_bit()
     test_S1_gate_mejor_esfuerzo()
+    test_S2_abort_solo_preshow()
     test_K1_persistencia_sin_proteccion()
     test_K2_retarget_protegida_y_cooldown()
     test_K3_protegida_sin_alternativa()

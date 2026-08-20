@@ -15,9 +15,11 @@ opciones son las de hrl/options_wolf.WolfOptionLayer (hold=50 de serie).
 
 EVENTOS TERMINALES de toda opción: cada MUERTE de res · HERD_SAFE (todas las reses resueltas) ·
 FIN de episodio (terminated/truncated del mundo) · techo K_MAX=4500 ticks en la opción. Además,
-para CEBO*: ABORT_BAIT_FAILED := ESCOLTA latcheada ∧ >= 3 de 4 ACTIVE dentro de ±60° del rumbo
-del ASALTO (cono ESPEJO al del señuelo; observable: posiciones de drones/lobos/reses; PROHIBIDO
-leer _anchor/_confirmed del coordinador en lógica de decisión).
+para CEBO* y SOLO PRE-SHOW (Commit S2, adjudicación VERIF-0: post-show la condición se mantenía
+cierta de continuo y el ABORT era un falso terminal en bucle — metrónomo de 50 ticks):
+ABORT_BAIT_FAILED := no wolf_decoy_released ∧ ESCOLTA latcheada ∧ >= 3 de 4 ACTIVE dentro de
+±60° del rumbo del ASALTO (cono ESPEJO al del señuelo; observable: posiciones de
+drones/lobos/reses; PROHIBIDO leer _anchor/_confirmed del coordinador en lógica de decisión).
 
 RECOMPENSA = Δmuertes durante la opción (el tramo entero), sin shaping. γ=1.0 (episódico; esquiva
 el descuento SMDP de τ variable). Episodio del manager = episodio del mundo (2-6 decisiones
@@ -235,7 +237,8 @@ class ManagerEnv(gym.Env):
 
     def _bait_failed(self) -> bool:
         """ABORT_BAIT_FAILED (observable): ESCOLTA latcheada y >= ABORT_MIN_ACTIVE ACTIVE dentro de
-        ±ABORT_CONE_DEG del rumbo del ASALTO (desde el centroide del rebaño)."""
+        ±ABORT_CONE_DEG del rumbo del ASALTO (desde el centroide del rebaño). Solo se CONSULTA
+        pre-show (Commit S2): el llamador lo gatea con not wolf_decoy_released."""
         w = self._world
         if w.phase != "ESCOLTA":
             return False
@@ -307,7 +310,13 @@ class ManagerEnv(gym.Env):
             if ticks >= self._k_max:
                 event = EV_KMAX
                 break
-            if a != 0 and ticks >= ABORT_GRACE_TICKS and self._bait_failed():
+            if a != 0 and ticks >= ABORT_GRACE_TICKS and not w.wolf_decoy_released \
+                    and self._bait_failed():
+                # Commit S2 (adjudicación VERIF-0): el ABORT solo es evaluable ANTES del show —
+                # un cebo que ya mostró y soltó el asalto no ha "fallado"; post-show la condición
+                # era cierta de CONTINUO y el ABORT degeneraba en metrónomo de 50 ticks (verif0:
+                # s67/s86/s98 con d2≈1-6 m). Post-release los terminales de CEBO son MUERTE /
+                # HERD_SAFE / techo / FIN.
                 event = EV_ABORT
                 break
         reward = float(w.n_depredadas - deaths0)
