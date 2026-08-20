@@ -280,6 +280,44 @@ def test_2_cebo_spawn_bit_a_bit():
           f"OK ({n_rt} con RETARGET)")
 
 
+def _s1_episode(seed):
+    layer = WolfOptionLayer(option=("CEBO", {"delta_deg": 90.0, "hold": 50.0}))
+    w = build_world(seed, "lobos", wolf_controller=layer)
+    coord = SyncedReactiveCoordinator(w)
+    w.reset()
+    evs = []
+    while True:
+        _o, _r, term, trunc, _i = w.step(coord.act(w.get_observation()))
+        evs += layer.pop_events()
+        if term or trunc:
+            break
+    show = [e for e in evs if e["ev"] == "SHOW_START"]
+    align = [e for e in evs if e["ev"] == "ALIGN_END"]
+    return {"seed": seed, "sev": int(w.n_depredadas), "show_t": (show[0]["t"] if show else None),
+            "err_deg": (show[0]["err_rumbo_deg"] if show else None),
+            "align": (align[0]["causa"] if align else None), "ticks": int(w.step_count)}
+
+
+def test_S1_gate_mejor_esfuerzo():
+    """Commit S1 (adjudicación VERIF-0 del dueño): los 9 seeds de INTERBLOQUEO de verif0
+    (B_oracle en S: CEBO Δ90 fijo vs Reactive-estática — 9/20 episodios ESTACIONADOS sin show,
+    máx 23.570 ticks, sev 0) llegan TODOS a show — el gate de rumbo ya no bloquea: la fase de
+    alineación termina por tolerancia/sin-progreso/techo y después manda el guion v3.3 (staged
+    por PROXIMIDAD => show, el camino sano de B_spawn). Reporta sev por episodio (la severidad
+    con la jugada JUGADA — la tabla de la adjudicación). [2] cubre que B_spawn sigue bit a bit."""
+    import multiprocessing as mp
+    seeds = [3, 5, 9, 14, 18, 24, 35, 36, 55]
+    with mp.get_context("fork").Pool(len(seeds)) as pool:
+        rows = pool.map(_s1_episode, seeds, chunksize=1)
+    for r in rows:
+        assert r["show_t"] is not None, f"S1: seed {r['seed']} SIGUE sin show (interbloqueo)"
+        assert r["align"] is not None, f"S1: seed {r['seed']} sin ALIGN_END"
+        print(f"    seed {r['seed']:>2d}: show t={r['show_t']:>5d} (align={r['align']:<12s} "
+              f"err={r['err_deg']}°) sev={r['sev']} ticks={r['ticks']}")
+    print(f"  [S1] gate mejor-esfuerzo: 9/9 seeds de interbloqueo con show (antes 0/9); "
+          f"sev={[r['sev'] for r in rows]}")
+
+
 class _RotatingManager:
     """Re-arranca la opción cada `period` ticks rotando la secuencia (todas distintas entre sí =>
     cada cambio es un re-arranque real de la capa)."""
@@ -805,6 +843,7 @@ if __name__ == "__main__":
     test_0_unidades()
     test_1_masa_bit_a_bit()
     test_2_cebo_spawn_bit_a_bit()
+    test_S1_gate_mejor_esfuerzo()
     test_K1_persistencia_sin_proteccion()
     test_K2_retarget_protegida_y_cooldown()
     test_K3_protegida_sin_alternativa()

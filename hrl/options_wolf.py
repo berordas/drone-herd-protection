@@ -70,8 +70,9 @@ Decisiones de CAPA documentadas (no tocan wolf_controllers.py):
     desde el centroide) difiera del objetivo Δ en > ASSAULT_BEARING_TOL_DEG, el punto de
     presión de `assault_stage` es un punto LEJANO sobre el rumbo objetivo — el empuje del
     hold lo hace DESLIZAR por fuera del sobre oscuro hasta ese lado (la maniobra del
-    script, con otro objetivo); el gate del show exige además rumbo alcanzado. Umbral
-    nombrado, se revisará con E0.2.
+    script, con otro objetivo) MIENTRAS dura la fase de ALINEACIÓN (Commit S1, adjudicación
+    VERIF-0: mejor-esfuerzo con salidas por tolerancia/sin-progreso/techo — el gate duro ±25°
+    interbloqueaba el show en S: 9/20 episodios de B_oracle sin jugar, ambas patrullas).
   - Latch `wolf_decoy_released` MONÓTONO por episodio (contrato del World): una re-entrada
     en CEBO tras el show NO lo resetea (el cebo re-entra ya "mostrado"); E0.5 mide ese
     coste de conmutación.
@@ -106,6 +107,25 @@ GUARD_HOLD = 50                  # ticks: protección SOSTENIDA (medida cada fro
 RETARGET_MARGIN = 30.0           # m: la alternativa debe tener su ACTIVE más cercano >= este margen MÁS
                                  # LEJOS que el de la presa actual
 RETARGET_COOLDOWN = 250          # ticks entre dos re-targets del MISMO paquete (anti-metrónomo)
+
+# --- Fase de ALINEACIÓN del asalto (Commit S1; adjudicación VERIF-0 del dueño: el gate de rumbo
+# pasa de BLOQUEO a MEJOR-ESFUERZO). VERIF-0 midió el gate duro en INTERBLOQUEO: B_oracle en S
+# solo 8/20 shows, 9/20 episodios ESTACIONADOS sin show >= 400 ticks (máx 23.570 = el episodio
+# entero, sev 0, 100% de los ticks con bearing_ok=False), con AMBAS patrullas (estática 9/9 y
+# órbita v3.5 9/9) — el mismo modo de fallo que el script eliminó en v3.3 (docstring de
+# assault_staged), reintroducido por la capa al materializar Δ. Desde S1: el tránsito sigue
+# dirigiéndose a θ_asa (Δ conserva su significado de rumbo PRETENDIDO), pero la fase de
+# alineación TERMINA por CUALQUIERA de
+#   (a) error <= ASSAULT_BEARING_TOL_DEG (la tolerancia pasa de requisito a PREFERENCIA),
+#   (b) SIN PROGRESO angular (mejora < ALIGN_NO_PROGRESS_DEG en ALIGN_NO_PROGRESS_TICKS ticks),
+#   (c) techo T_ALIGN_MAX ticks desde el arranque de la opción;
+# al terminar mandan las condiciones v3.3 del guion (staged por PROXIMIDAD => show), como en el
+# camino de B_spawn (sano en VERIF-0: 9/10 shows, espera máx 1 tick). El error angular CONSEGUIDO
+# se registra en ALIGN_END y en SHOW_START (las celdas S pasan a ser "Δ pretendido" con
+# distribución de Δ conseguido). Constantes CALIBRAR si el visionado lo pide. ---
+ALIGN_NO_PROGRESS_DEG = 2.0      # °: mejora mínima del error para contar como PROGRESO
+ALIGN_NO_PROGRESS_TICKS = 300    # ticks sin progreso => fin de la fase de alineación (causa b)
+ALIGN_T_MAX = 2500               # ticks: techo absoluto de la fase de alineación (causa c)
 
 
 def freest_prey_for(w, sel: np.ndarray) -> tuple[str | None, int]:
@@ -174,6 +194,12 @@ class WolfOptionLayer(WolfController):
         self._theta_asa: float | None = None
         self._s1 = np.zeros(0, dtype=int)
         self._s2 = np.zeros(0, dtype=int)
+        # Fase de alineación (Commit S1): solo los brazos CEBO con rumbo pretendido (θ_asa) la
+        # tienen; _align_done latchea POR ARRANQUE de opción (mejor-esfuerzo, no bloqueo).
+        self._align_done = True
+        self._align_best: float | None = None
+        self._align_mark = 0
+        self._align_t0 = 0
         # Regla de caza (Commit K): memoria de la presa del asalto + estado de la regla.
         self._asa_prey: tuple[str, int] | None = None   # (kind, idx) del asalto, PERSISTE entre opciones
         self._guard_prey: tuple[str, int] | None = None # presa cuya protección se está midiendo
@@ -340,6 +366,7 @@ class WolfOptionLayer(WolfController):
                                 de=f"CEBO/quorum(n={w.n_wolves})", a="MASA")
                 name, params = "MASA", {}
         self._opt_name, self._opt_params = name, dict(params)
+        self._align_done = True                          # (Commit S1) default: sin fase de alineación
         self.n_option_starts += 1
         self.push_event("OPTION_START", tick=int(w.step_count), option=name, **params)
         if name == "MASA":
@@ -372,6 +399,11 @@ class WolfOptionLayer(WolfController):
                 v = w.wolves.mean(axis=0) - herd_c       # rumbo actual del paquete (lado que ocupa)
                 theta_dec = float(np.arctan2(v[1], v[0])) if np.linalg.norm(v) > 1e-9 else 0.0
                 self._theta_asa = theta_dec + self._delta
+                # Fase de alineación (Commit S1): se RE-ABRE en cada arranque con rumbo pretendido
+                # (un re-arranque re-fija θ_asa => el reloj de mejor-esfuerzo parte de 0).
+                self._align_done = False
+                self._align_best = None
+                self._align_mark = self._align_t0 = int(w.step_count)
             # Presa del asalto (Commit K): PERSISTE — si la capa recuerda una presa del asalto
             # de este episodio y sigue cazable (y no es la presa del señuelo: anti-convergencia),
             # se RESTAURA; solo el PRIMER arranque (o una presa perdida) la lee fresca con la
@@ -404,15 +436,43 @@ class WolfOptionLayer(WolfController):
         return (w.cows[w.cow_alive].mean(axis=0) if w.cow_alive.any()
                 else np.array([w.W / 2.0, w.H / 2.0]))
 
-    def _bearing_ok(self, w, s2: np.ndarray) -> bool:
+    def _bearing_err(self, w, s2: np.ndarray) -> float:
+        """|error| (rad) entre el rumbo REAL del asalto (centroide, visto desde el rebaño) y el
+        rumbo PRETENDIDO θ_asa. 0.0 si no hay rumbo pretendido (keep/spawn) o sin asalto."""
         if self._theta_asa is None or s2.size == 0:
-            return True
+            return 0.0
         v = w.wolves[s2].mean(axis=0) - self._herd_c(w)
         if np.linalg.norm(v) < 1e-9:
-            return True
+            return 0.0
         err = np.arctan2(v[1], v[0]) - self._theta_asa
-        err = (err + np.pi) % (2 * np.pi) - np.pi
-        return bool(abs(err) <= np.deg2rad(ASSAULT_BEARING_TOL_DEG))
+        return abs(float((err + np.pi) % (2 * np.pi) - np.pi))
+
+    def _bearing_ok(self, w, s2: np.ndarray) -> bool:
+        return self._bearing_err(w, s2) <= np.deg2rad(ASSAULT_BEARING_TOL_DEG)
+
+    def _align_update(self, w, s2: np.ndarray) -> None:
+        """Commit S1: avance de la fase de ALINEACIÓN (mejor-esfuerzo), una llamada por tick.
+        Termina por (a) tolerancia alcanzada (preferencia), (b) SIN PROGRESO (mejora <
+        ALIGN_NO_PROGRESS_DEG en ALIGN_NO_PROGRESS_TICKS) o (c) techo ALIGN_T_MAX; latchea
+        _align_done por arranque de opción y emite ALIGN_END con causa y error conseguido."""
+        if self._align_done:
+            return
+        step = int(w.step_count)
+        err = self._bearing_err(w, s2)
+        if self._align_best is None or err < self._align_best - np.deg2rad(ALIGN_NO_PROGRESS_DEG):
+            self._align_best = err                       # progreso real: el reloj (b) se re-arma
+            self._align_mark = step
+        if err <= np.deg2rad(ASSAULT_BEARING_TOL_DEG):
+            causa = "tolerancia"
+        elif step - self._align_mark >= ALIGN_NO_PROGRESS_TICKS:
+            causa = "sin_progreso"
+        elif step - self._align_t0 >= ALIGN_T_MAX:
+            causa = "t_max"
+        else:
+            return
+        self._align_done = True
+        self.push_event("ALIGN_END", tick=step, causa=causa, err_deg=round(float(np.rad2deg(err)), 1),
+                        ticks=int(step - self._align_t0))
 
     def _reposition_point(self, w) -> np.ndarray:
         """Punto de presión LEJANO sobre el rumbo objetivo del asalto: la carga apunta a él y
@@ -445,14 +505,18 @@ class WolfOptionLayer(WolfController):
     def _timing_manager(self, w, s1: np.ndarray, s2: np.ndarray) -> tuple[bool, float | None]:
         """Espejo de wolf_controllers.decoy_timing (Commit A) para membership=manager: misma
         escalera STAGE/CREEP/DEEP y mismo fallback group_hunted, con DOS diferencias de capa
-        (documentadas en cabecera): el gate del show exige además RUMBO ALCANZADO
-        (_bearing_ok) y CREEP = min(25, hold) — la escalera nunca más laxa que el STAGE."""
+        (documentadas en cabecera): el gate del show exige además que la fase de ALINEACIÓN haya
+        TERMINADO (Commit S1: mejor-esfuerzo — tolerancia, sin-progreso o techo; ya NO bloqueo
+        duro ±25°) y CREEP = min(25, hold) — la escalera nunca más laxa que el STAGE."""
         prowling = False
         hold_r = None
         if w.pack_prey2 >= 0 and s2.size > 0 and s1.size > 0:
             p2 = w._prey_pos_of(w.pack_prey2, w.pack_prey2_kind)
             if not w.wolf_decoy_released:
-                if assault_staged(w, s2, p2, stage_hold=self._hold) and self._bearing_ok(w, s2):
+                # Commit S1: el show ya NO exige cerrar ±25° — exige que la fase de alineación
+                # haya TERMINADO (por tolerancia, sin-progreso o techo); después manda el guion
+                # v3.3: staged por PROXIMIDAD => show.
+                if assault_staged(w, s2, p2, stage_hold=self._hold) and self._align_done:
                     w.wolf_decoy_released = True
                 else:
                     prowling = True
@@ -484,12 +548,19 @@ class WolfOptionLayer(WolfController):
             decoy_prowling, assault_hold = decoy_timing(
                 w, s1, s2, stage_hold=self._hold, creep_hold=min(25.0, self._hold))
         else:
+            self._align_update(w, s2)                    # Commit S1: fase de alineación (por tick)
             decoy_prowling, assault_hold = self._timing_manager(w, s1, s2)
         if w.wolf_decoy_released and not released_before:
             # El show surte efecto EN ESTE paso -> tick step_count+1 (frontera siguiente,
             # comparable con el flanco STAGED que ve el EventTracker). Aserción A del
-            # protocolo: SHOW_START nunca antes del latch.
-            self.push_event("SHOW_START", tick=int(w.step_count) + 1, mode=self._mode)
+            # protocolo: SHOW_START nunca antes del latch. Commit S1: registra el ERROR ANGULAR
+            # CONSEGUIDO (θ logrado vs pretendido) — las celdas S pasan a ser "Δ pretendido" con
+            # distribución de Δ conseguido.
+            self.push_event("SHOW_START", tick=int(w.step_count) + 1, mode=self._mode,
+                            err_rumbo_deg=(None if self._theta_asa is None else
+                                           round(float(np.rad2deg(self._bearing_err(w, s2))), 1)),
+                            delta_pretendida_deg=(None if self._theta_asa is None else
+                                                  round(float(np.rad2deg(self._delta)), 0)))
 
         atk1 = atk2 = False
         if decoy_prowling:
@@ -502,7 +573,10 @@ class WolfOptionLayer(WolfController):
                     atk1 = False
         if assault_hold is not None:
             aim = w._prey_pos_of(w.pack_prey2, w.pack_prey2_kind)
-            if self._theta_asa is not None and not self._bearing_ok(w, s2):
+            # Commit S1: el tránsito se dirige a θ_asa MIENTRAS dura la fase de alineación (Δ
+            # conserva su significado de rumbo PRETENDIDO); al terminar (tolerancia, sin-progreso
+            # o techo) la presión vuelve a la presa — condiciones v3.3 del guion.
+            if self._theta_asa is not None and not self._align_done:
                 aim = self._reposition_point(w)
             assault_stage(w, s2, aim, desired, hold=assault_hold)
         elif s2.size > 0:
