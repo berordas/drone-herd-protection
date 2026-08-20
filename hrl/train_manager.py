@@ -13,6 +13,9 @@ los contadores de caza por episodio (re-arranques de opción/ep, re-targets/ep p
 protegida / bloqueado por cooldown — y re-fijaciones por muerte/refugio/otro). El rollout de la
 ligera sigue ejecutando el argmax (sev comparable con la ligera de M1).
 
+RUN-M1'' (plan post-STOP-M1): --wolves-min 3 => TRAIN con n ~ U{3,4,5} (mini-E0.3: n<=2 apenas
+caza contra la defensa real y n=2 es forzosamente S; la EVAL/ligera sigue NATURAL U{1..5} con
+desglose por n; el fallback de quórum de la capa cubre CEBO con n<=2).
 Variantes pre-registradas (flags, default OFF = RUN-M1 intacto): --fixed-k 1000 (RUN-M2: opciones
 interrumpidas a K fijo) · --ablate-progress (RUN-M4, adenda 4 §3: sin los dos rasgos de progreso) ·
 --opponent mix (RUN-M3, adenda 4 §4) · --g-oversample 0.6 --g-oversample-steps 30000 (CONTINGENCIA
@@ -46,10 +49,15 @@ NET_ARCH = [64, 64]
 EVAL_SEEDS = tuple((s, "lobos") for s in range(20)) + tuple((s, "mixto") for s in range(20))
 
 
-def make_env(seed, opponent, fixed_k, ablate=False, g_over=None):
+def make_env(seed, opponent, fixed_k, ablate=False, g_over=None, wolves_min=None):
     def _f():
+        config = None
+        if wolves_min is not None:
+            from baseline import CONFIG_V2
+            config = dict(CONFIG_V2)
+            config["wolves_min"] = int(wolves_min)   # RUN-M1'': train n ~ U{wolves_min..wolves_max}
         return ManagerEnv(kinds=("lobos",), seed=seed, opponent=opponent, fixed_k=fixed_k,
-                          obs_ablate_progress=ablate, g_oversample=g_over)
+                          obs_ablate_progress=ablate, g_oversample=g_over, config=config)
     return _f
 
 
@@ -158,6 +166,8 @@ def main():
     ap.add_argument("--g-oversample-steps", type=int, default=30_000)
     ap.add_argument("--eval-every", type=int, default=10_000)
     ap.add_argument("--ckpt-every", type=int, default=5_000)
+    ap.add_argument("--wolves-min", type=int, default=None,
+                    help="RUN-M1'': wolves_min del TRAIN (n ~ U{min..5}); la EVAL sigue natural U{1..5}")
     ap.add_argument("--smoke", action="store_true", help="1k macro-pasos, 8 envs, eval cada 500")
     args = ap.parse_args()
     if args.smoke:
@@ -177,7 +187,8 @@ def main():
 
     g_over = args.g_oversample
     venv = SubprocVecEnv([make_env(args.seed * 1000 + i, args.opponent, args.fixed_k,
-                                   args.ablate_progress, g_over) for i in range(args.n_envs)],
+                                   args.ablate_progress, g_over, args.wolves_min)
+                          for i in range(args.n_envs)],
                          start_method="fork")
 
     def ent_sched(progress_remaining):   # 1 -> 0 a lo largo del run
