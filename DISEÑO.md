@@ -1941,6 +1941,15 @@ Ver §4.3.
     de fases VIGILANCIA→ESCOLTA (disparador por **detección de dron**) están **implementados y verificados**
     (`escort_check.py`, 8 tests: disparador, ÉXITO/DEPREDACIÓN/TIMEOUT forzados, refugio=soltar presa,
     exclusión del lobo, reproducibilidad, sin regresiones). Hecho ANTES del guiado al refugio. Ver §4.4.
+14. ✅ **RESUELTA (v3.7) — Rotación espuria de ranuras en cada relevo (silenciosa desde v3.0).**
+    La patrulla repartía las ranuras del anillo **por orden de índice** de los drones libres: en cada
+    hand-off el fresco entraba con OTRO índice y **todos los drones rotaban una ranura** — una
+    recolocación no ordenada que además sacudía la geometría (medido: desatascaba de chiripa jugadas
+    del cebo en meseta — ver Commit S3 de la Etapa 1). Descubierta al implementar el **RELEVO DE
+    CENTINELA** (Commit R, v3.7: el bajo anuncia y se CLAVA en su puesto; el READY más cargado vuela
+    DIRECTO al puesto; traspaso a 2 m; ranura **ESTABLE por dron** — el fresco la HEREDA del
+    saliente; verificado con mundo GEMELO bit a bit en `battery_check`). **Principio de diseño
+    (dueño): "ningún comportamiento del sistema debe volver a apoyarse en movimiento no ordenado."**
 
 ---
 

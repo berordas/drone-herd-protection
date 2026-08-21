@@ -120,9 +120,13 @@ class ReactiveCoordinator:
     proyección en el frente — order-matching, sin cruces por construcción; estable una vez formada).
 
     Solo comanda a los drones LIBRES (ACTIVE y no-investigando): NO toca el reflejo de investigación (el
-    investigador). v3.0 (pieza 5): el dron que ANUNCIÓ relevo sigue siendo comandable (ya no se clava
-    esperando; el INCOMING lo persigue). NO toca la física (world.py congelado); construye un array de
-    waypoints y deja que la disuasión del mundo haga el trabajo. Parámetros afinables."""
+    investigador). v3.7 (Commit R, RELEVO DE CENTINELA — invierte la pieza 5 de v3.0): el dron que
+    ANUNCIÓ relevo queda CLAVADO en su puesto POR EL MUNDO (waypoint congelado; el mundo le rechaza
+    comandos hasta el hand-off). El coordinador lo SIGUE contando en su formación (mismo free-mask):
+    su ranura queda OCUPADA -> cero recolocaciones de otros ACTIVE por causa del relevo (en patrulla
+    nadie se mueve; en barrera el gobernador del más rezagado espera por él de forma natural, y tras
+    el hand-off el fresco ocupa la misma ranura). Construye un array de waypoints y deja que la
+    disuasión del mundo haga el trabajo. Parámetros afinables."""
 
     def __init__(self, world, *, barrier_standoff: float | None = None, drone_spacing: float | None = None,
                  front_cows: int | None = None, engage_standoff: float | None = None,
@@ -164,6 +168,7 @@ class ReactiveCoordinator:
         # el nº de drones libres o si la patrulla se reanuda tras una interrupción (ESCOLTA).
         self._patrol_base: float | None = None
         self._patrol_k: int | None = None
+        self._patrol_slot: dict[int, int] = {}    # v3.7: ranura POR DRON (el fresco la hereda)
         self._patrol_step0: int = 0
         self._patrol_last_step: int = -10
         # Estado de PERCEPCIÓN (v2.8): máscara de lobos CONFIRMADOS (latch de equipo con memoria) +
@@ -192,6 +197,9 @@ class ReactiveCoordinator:
         central, investigador, relevos); solo se reescribe el de los drones ACTIVE LIBRES."""
         w = self.world
         wp = w.drone_waypoint.copy()
+        # v3.7: el free-mask INCLUYE al clavado por relevo (drone_relief_hold) A PROPÓSITO — ocupa su
+        # ranura en la formación (el mundo ignora el waypoint que se le calcule): así ningún otro
+        # ACTIVE cambia de ranura por causa del relevo, y el gobernador de la barrera espera por él.
         free = (w.drone_state == ACTIVE) & (~w.drone_investigating)
         idx = np.where(free)[0]
         if idx.size == 0:
@@ -395,7 +403,7 @@ class ReactiveCoordinator:
             spread = float(np.linalg.norm(herd - c, axis=1).max()) if herd.shape[0] > 1 else 0.0
             r = spread + self.world.r_notice + DETER_RADIUS               # justo fuera del rebaño, listos para reaccionar
         step = self.world.step_count
-        grid = 2 * np.pi * np.arange(k) / max(k, 1)                        # ranura equiespaciada por dron (por índice)
+        grid = 2 * np.pi * np.arange(k) / max(k, 1)                        # ángulos de las RANURAS
         # (Re)ancla la fase: primera patrulla, cambia el nº de libres, o se reanuda tras un hueco (ESCOLTA).
         if self._patrol_base is None or self._patrol_k != k or step - self._patrol_last_step > 1:
             d = self.world.drones[idx] - c
@@ -404,8 +412,31 @@ class ReactiveCoordinator:
             self._patrol_base = float(np.arctan2(np.sin(resid).mean(), np.cos(resid).mean()))  # media circular -> ancla
             self._patrol_k = k
             self._patrol_step0 = step
+            self._patrol_slot = {int(i): j for j, i in enumerate(idx)}    # ranura POR DRON (v3.7)
+        elif set(int(i) for i in idx) != set(self._patrol_slot):
+            # v3.7 (Commit R, RELEVO DE CENTINELA): RANURAS ESTABLES POR DRON — la ranura es del
+            # PUESTO, no del orden de la lista. En un relevo (mismo k, cambia UN id) el reparto
+            # por índice ROTABA a todos una ranura (medido: el hand-off 0->4 movía a 1/2/3 al
+            # puesto del vecino — el "intercambio entre activos" que el protocolo PROHÍBE, y que
+            # existía silencioso desde v3.0). Ahora cada ENTRANTE hereda la ranura LIBRE cuyo
+            # ángulo objetivo tenga más cerca (el fresco llega AL puesto del saliente -> hereda
+            # exactamente su ranura) y NADIE más cambia. k distinto o hueco -> re-ancla (arriba).
+            prev = self._patrol_slot
+            new_ids = [int(i) for i in idx]
+            keep = {i: s_ for i, s_ in prev.items() if i in set(new_ids)}
+            freed = sorted(set(range(k)) - set(keep.values()))
+            base_now = self._patrol_base + self.patrol_omega * (step - self._patrol_step0)
+            for i in [i for i in new_ids if i not in keep]:
+                di = self.world.drones[i] - c
+                th = float(np.arctan2(di[1], di[0]))
+                err = lambda s_: abs(float((base_now + grid[s_] - th + np.pi) % (2 * np.pi) - np.pi))
+                best = min(freed, key=err)
+                freed.remove(best)
+                keep[i] = best
+            self._patrol_slot = keep
         self._patrol_last_step = step
-        ang = self._patrol_base + self.patrol_omega * (step - self._patrol_step0) + grid
+        slots_idx = np.array([self._patrol_slot[int(i)] for i in idx])
+        ang = self._patrol_base + self.patrol_omega * (step - self._patrol_step0) + grid[slots_idx]
         return c[None, :] + r * np.column_stack([np.cos(ang), np.sin(ang)])
 
     def _assign(self, idx: np.ndarray, slots: np.ndarray, axis: np.ndarray | None) -> np.ndarray:
