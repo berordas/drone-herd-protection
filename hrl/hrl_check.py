@@ -295,7 +295,9 @@ def _s1_episode(seed):
     align = [e for e in evs if e["ev"] == "ALIGN_END"]
     return {"seed": seed, "sev": int(w.n_depredadas), "show_t": (show[0]["t"] if show else None),
             "err_deg": (show[0]["err_rumbo_deg"] if show else None),
-            "align": (align[0]["causa"] if align else None), "ticks": int(w.step_count)}
+            "align": (align[0]["causa"] if align else None), "ticks": int(w.step_count),
+            "staged_causa": (show[0].get("staged_causa") if show else None),
+            "stalls": int(layer.n_stalls)}
 
 
 def test_S1_gate_mejor_esfuerzo():
@@ -313,7 +315,8 @@ def test_S1_gate_mejor_esfuerzo():
         assert r["show_t"] is not None, f"S1: seed {r['seed']} SIGUE sin show (interbloqueo)"
         assert r["align"] is not None, f"S1: seed {r['seed']} sin ALIGN_END"
         print(f"    seed {r['seed']:>2d}: show t={r['show_t']:>5d} (align={r['align']:<12s} "
-              f"err={r['err_deg']}°) sev={r['sev']} ticks={r['ticks']}")
+              f"err={r['err_deg']}° staged={r['staged_causa']} stalls={r['stalls']}) "
+              f"sev={r['sev']} ticks={r['ticks']}")
     print(f"  [S1] gate mejor-esfuerzo: 9/9 seeds de interbloqueo con show (antes 0/9); "
           f"sev={[r['sev'] for r in rows]}")
 
@@ -418,6 +421,24 @@ def test_QB_tripwire_show():
     assert not stall[0]["align_done"], stall
     print(f"  [QB] tripwire del show: STALL a t={stall[0]['t']} (400 staged, alineación "
           f"bloqueada) y show forzado a t={show[0]['t']}")
+
+
+def test_S3_staged_meseta():
+    """Commit S3 (firma del hallazgo MESETA; 2ª aplicación de la plantilla S1): la cláusula de
+    A-TIRO del staged pasa a MEJOR-ESFUERZO — asalto ESTACIONADO en el anillo con d_prey en
+    meseta (mejora < STAGED_PLATEAU_M en STAGED_PLATEAU_TICKS) => staged por readiness
+    posicional (causa "meseta") => show por el guion. Seed 14 (el del interbloqueo por meseta)
+    muestra SIN tripwire; un seed sano (9) conserva su mecanismo a_tiro. La composición
+    a_tiro/meseta va en las celdas (SHOW_START.staged_causa)."""
+    import multiprocessing as mp
+    with mp.get_context("fork").Pool(2) as pool:
+        r14, r9 = pool.map(_s1_episode, [14, 9], chunksize=1)
+    assert r14["show_t"] is not None, "S3: seed 14 sigue sin show (meseta no cerrada)"
+    assert r14["staged_causa"] == "meseta", r14
+    assert r14["stalls"] == 0, ("S3: el rescate debe ser del guion (meseta), no del tripwire", r14)
+    assert r9["show_t"] is not None and r9["staged_causa"] == "a_tiro", r9
+    print(f"  [S3b] staged mejor-esfuerzo: seed 14 muestra por MESETA (t={r14['show_t']}, "
+          f"stalls 0); seed 9 conserva a_tiro (t={r9['show_t']})")
 
 
 class _RotatingManager:
@@ -950,6 +971,7 @@ if __name__ == "__main__":
     test_S3_censura()
     test_QC_coste_deliberacion()
     test_QB_tripwire_show()
+    test_S3_staged_meseta()
     test_K1_persistencia_sin_proteccion()
     test_K2_retarget_protegida_y_cooldown()
     test_K3_protegida_sin_alternativa()

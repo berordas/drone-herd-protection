@@ -88,7 +88,7 @@ from __future__ import annotations
 import numpy as np
 
 from world import ACTIVE
-from wolf_controllers import (ASSAULT_DARK_HOLD, ScriptedWolfController, WolfController,
+from wolf_controllers import (ASSAULT_DARK_BAND, ASSAULT_DARK_HOLD, ScriptedWolfController, WolfController,
                               assault_stage, assault_staged, decoy_broken_wing, decoy_prowl,
                               decoy_timing, group_hunted, manage_pack_preys,
                               pack_common_tail, sector_desired)
@@ -126,6 +126,22 @@ RETARGET_COOLDOWN = 250          # ticks entre dos re-targets del MISMO paquete 
 ALIGN_NO_PROGRESS_DEG = 2.0      # °: mejora mínima del error para contar como PROGRESO
 ALIGN_NO_PROGRESS_TICKS = 300    # ticks sin progreso => fin de la fase de alineación (causa b)
 ALIGN_T_MAX = 2500               # ticks: techo absoluto de la fase de alineación (causa c)
+
+# --- Staged por MEJOR-ESFUERZO (Commit S3; firma del hallazgo MESETA — 2ª aplicación de la
+# plantilla S1): la cláusula de A-TIRO del staged (d_prey <= assault_trigger_dist + show_lead)
+# es un umbral geométrico ABSOLUTO que la defensa puede NEGAR indefinidamente — el 2º modo de
+# interbloqueo, MISMA FAMILIA que S1 (umbral absoluto vs geometría negable). La garantía v3.3
+# del slide ("(b) se alcanza en cualquier rumbo") PRESUPONÍA el anillo rotante espurio de
+# v3.0-v3.6 (el reparto por índice rotaba las ranuras en cada hand-off y sacudía el equilibrio);
+# con el anillo estático de verdad (v3.7) el asalto puede quedar ESTACIONADO con d_prey en
+# MESETA para siempre (seed 14: 23.358 ticks, VIGILANCIA eterna, sev 0). Desde S3: si el asalto
+# está ESTACIONADO en el anillo y d_prey lleva PLATEAU_TICKS sin mejorar >= PLATEAU_M, el staged
+# dispara por READINESS POSICIONAL (causa "meseta") => show por el guion. La causa del staged
+# (a_tiro | meseta) se registra como S1 registra el error angular conseguido — las celdas llevan
+# la composición. Solo memberships manager/keep (spawn = espejo bit a bit del script). El reloj
+# se RE-ARMA al cambiar la presa del asalto. CALIBRAR junto a las constantes de S1. ---
+STAGED_PLATEAU_M = 5.0           # m: mejora mínima de d_prey para contar como PROGRESO
+STAGED_PLATEAU_TICKS = 300       # ticks sin progreso (estacionado) => staged por meseta
 
 SHOW_STALL_TICKS = 400           # Q-bis (plan M1'''' del dueño; DEGRADADO a TRIPWIRE tras S1): asalto
                                  # STAGED este nº de ticks ACUMULADOS sin show => show FORZADO + evento
@@ -230,6 +246,13 @@ class WolfOptionLayer(WolfController):
         self.t_strike: int | None = None
         self._staged_noshow = 0                          # Q-bis: ticks staged acumulados sin show
         self.n_stalls = 0                                # Q-bis: disparos del tripwire (salud)
+        # Commit S3: reloj de MESETA de d_prey + causa del staged de la jugada.
+        self._plateau_best: float | None = None
+        self._plateau_mark = 0
+        self._plateau_prey: tuple | None = None
+        self._staged_now = False
+        self._staged_causa_now: str | None = None
+        self.staged_causa: str | None = None             # causa del staged del PRIMER show (censura)
 
     # ------------------------------------------------------------------ #
     # Eventos propios (los integra hrl/events.EventTracker vía pop_events).
@@ -270,6 +293,8 @@ class WolfOptionLayer(WolfController):
             self.t_staged = self.t_show = self.t_suelta = self.t_strike = None   # censura
             self._staged_noshow = 0
             self.n_stalls = 0
+            self._plateau_best, self._plateau_prey = None, None
+            self._staged_now, self._staged_causa_now, self.staged_causa = False, None, None
         self._last_step = step
         if self._countdown <= 0:
             self._countdown = self.frame_skip
@@ -392,6 +417,8 @@ class WolfOptionLayer(WolfController):
         self._opt_name, self._opt_params = name, dict(params)
         self._align_done = True                          # (Commit S1) default: sin fase de alineación
         self._staged_noshow = 0                          # (Q-bis) el reloj del tripwire es POR JUGADA
+        self._plateau_best, self._plateau_prey = None, None   # (S3) el reloj de meseta también
+        self._staged_now, self._staged_causa_now = False, None
         self.n_option_starts += 1
         self.push_event("OPTION_START", tick=int(w.step_count), option=name, **params)
         if name == "MASA":
@@ -475,6 +502,29 @@ class WolfOptionLayer(WolfController):
     def _bearing_ok(self, w, s2: np.ndarray) -> bool:
         return self._bearing_err(w, s2) <= np.deg2rad(ASSAULT_BEARING_TOL_DEG)
 
+    def _ring_stationed(self, w, s2: np.ndarray) -> bool:
+        """¿Asalto ESTACIONADO en el borde del sobre oscuro? (la mitad POSICIONAL de
+        assault_staged, sin la cláusula de a-tiro). Sin ACTIVE: estacionado."""
+        act = w.drones[w.drone_state == ACTIVE]
+        if act.shape[0] == 0:
+            return True
+        dmin = float(np.linalg.norm(w.wolves[s2][:, None, :] - act[None, :, :], axis=2).min())
+        return dmin <= w.r_detect + self._hold + ASSAULT_DARK_BAND
+
+    def _plateau_update(self, w, s2: np.ndarray, p2: np.ndarray) -> None:
+        """Commit S3: reloj de MESETA de d_prey (espejo del reloj de sin-progreso de S1).
+        Se re-arma con cada mejora >= STAGED_PLATEAU_M y al CAMBIAR la presa del asalto."""
+        step = int(w.step_count)
+        prey = (w.pack_prey2_kind, int(w.pack_prey2))
+        d = float(np.linalg.norm(w.wolves[s2].mean(axis=0) - p2))
+        if self._plateau_prey != prey or self._plateau_best is None:
+            self._plateau_prey = prey
+            self._plateau_best = d
+            self._plateau_mark = step
+        elif d < self._plateau_best - STAGED_PLATEAU_M:
+            self._plateau_best = d                       # progreso real: el reloj se re-arma
+            self._plateau_mark = step
+
     def _align_update(self, w, s2: np.ndarray) -> None:
         """Commit S1: avance de la fase de ALINEACIÓN (mejor-esfuerzo), una llamada por tick.
         Termina por (a) tolerancia alcanzada (preferencia), (b) SIN PROGRESO (mejora <
@@ -539,9 +589,10 @@ class WolfOptionLayer(WolfController):
             p2 = w._prey_pos_of(w.pack_prey2, w.pack_prey2_kind)
             if not w.wolf_decoy_released:
                 # Commit S1: el show ya NO exige cerrar ±25° — exige que la fase de alineación
-                # haya TERMINADO (por tolerancia, sin-progreso o techo); después manda el guion
-                # v3.3: staged por PROXIMIDAD => show.
-                if assault_staged(w, s2, p2, stage_hold=self._hold) and self._align_done:
+                # haya TERMINADO (por tolerancia, sin-progreso o techo). Commit S3: el staged es
+                # MEJOR-ESFUERZO — a_tiro (v3.3) O meseta (estacionado con d_prey sin progreso);
+                # lo computa _decide_cebo cada tick (_staged_now, con causa).
+                if self._staged_now and self._align_done:
                     w.wolf_decoy_released = True
                 else:
                     prowling = True
@@ -569,20 +620,29 @@ class WolfOptionLayer(WolfController):
         desired = np.zeros((w.n_wolves, 2))
 
         released_before = bool(w.wolf_decoy_released)
-        # Censura (hito staged) + TRIPWIRE del show (Q-bis): asalto ESTACIONADO pre-show.
-        if not w.wolf_decoy_released and w.pack_prey2 >= 0 and s1.size > 0 and s2.size > 0 \
-                and assault_staged(w, s2, w._prey_pos_of(w.pack_prey2, w.pack_prey2_kind),
-                                   stage_hold=self._hold):
-            if self.t_staged is None:
+        # Censura (hito staged) + STAGED MEJOR-ESFUERZO (S3: a_tiro | meseta) + TRIPWIRE (Q-bis).
+        self._staged_now, self._staged_causa_now = False, None
+        if not w.wolf_decoy_released and w.pack_prey2 >= 0 and s1.size > 0 and s2.size > 0:
+            p2m = w._prey_pos_of(w.pack_prey2, w.pack_prey2_kind)
+            atiro = bool(assault_staged(w, s2, p2m, stage_hold=self._hold))
+            meseta = False
+            if self._mode != "spawn":                    # spawn = espejo del script (sin S3)
+                self._plateau_update(w, s2, p2m)
+                meseta = (not atiro) and self._ring_stationed(w, s2) and \
+                    (int(w.step_count) - self._plateau_mark >= STAGED_PLATEAU_TICKS)
+            self._staged_now = atiro or meseta
+            self._staged_causa_now = "a_tiro" if atiro else ("meseta" if meseta else None)
+            if self._staged_now and self.t_staged is None:
                 self.t_staged = int(w.step_count)
-            self._staged_noshow += 1
-            if self._staged_noshow >= SHOW_STALL_TICKS:
-                w.wolf_decoy_released = True             # TRIPWIRE: show forzado
-                self.n_stalls += 1
-                self._staged_noshow = 0
-                self.push_event("STALL", tick=int(w.step_count) + 1,
-                                ticks_staged=SHOW_STALL_TICKS, mode=self._mode,
-                                align_done=self._align_done)
+            if atiro:                                    # el TRIPWIRE conserva su letra (Q-bis)
+                self._staged_noshow += 1
+                if self._staged_noshow >= SHOW_STALL_TICKS:
+                    w.wolf_decoy_released = True         # TRIPWIRE: show forzado
+                    self.n_stalls += 1
+                    self._staged_noshow = 0
+                    self.push_event("STALL", tick=int(w.step_count) + 1,
+                                    ticks_staged=SHOW_STALL_TICKS, mode=self._mode,
+                                    align_done=self._align_done)
         if self._mode == "spawn":
             decoy_prowling, assault_hold = decoy_timing(
                 w, s1, s2, stage_hold=self._hold, creep_hold=min(25.0, self._hold))
@@ -597,7 +657,9 @@ class WolfOptionLayer(WolfController):
             # distribución de Δ conseguido.
             if self.t_show is None:
                 self.t_show = int(w.step_count) + 1          # hito de censura (tick de efecto)
+                self.staged_causa = self._staged_causa_now   # composición a_tiro/meseta (S3)
             self.push_event("SHOW_START", tick=int(w.step_count) + 1, mode=self._mode,
+                            staged_causa=self._staged_causa_now,
                             err_rumbo_deg=(None if self._theta_asa is None else
                                            round(float(np.rad2deg(self._bearing_err(w, s2))), 1)),
                             delta_pretendida_deg=(None if self._theta_asa is None else
