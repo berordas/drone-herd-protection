@@ -62,7 +62,7 @@ from rl.policy_wolf_controller import SyncedReactiveCoordinator    # noqa: E402
 from hrl.behavior_checks import EpisodeAudit, seg_cross            # noqa: E402
 from hrl.events import EventTracker                                # noqa: E402
 from hrl.options_drone import AllocatorCoordinator, analyze_threats  # noqa: E402
-from hrl.options_wolf import WolfOptionLayer                       # noqa: E402
+from hrl.options_wolf import DECOY_V2_WAIT_BAND, WolfOptionLayer                       # noqa: E402
 
 
 # ---------------------------------------------------------------------- #
@@ -439,6 +439,71 @@ def test_S3_staged_meseta():
     assert r9["show_t"] is not None and r9["staged_causa"] == "a_tiro", r9
     print(f"  [S3b] staged mejor-esfuerzo: seed 14 muestra por MESETA (t={r14['show_t']}, "
           f"stalls 0); seed 9 conserva a_tiro (t={r9['show_t']})")
+
+
+def test_V2_senuelo_directo():
+    """SEÑUELO v2 (Encargo 2, opción A del dueño): aproximación RECTA al centroide con ESPERA en
+    el borde de merodeo — sin bordeo perimetral. Dirigido (CEBO d180 en S, pre-show): el señuelo
+    se ACERCA (>60 m o hasta el borde), NO orbita (barrido angular < 45°; decoy_prowl orbitaba
+    por diseño) y jamás baja del anillo de expulsión pre-show. spawn ≡ script queda en [2]."""
+    seed = _seeds_by_groups("lobos", 1, 1, min_wolves=3)[0]
+    layer = WolfOptionLayer(option=("CEBO", {"delta_deg": 180.0, "hold": 50.0}))
+    w = build_world(seed, "lobos", wolf_controller=layer)
+    coord = SyncedReactiveCoordinator(w)
+    w.reset()
+    def herd_c():
+        return w.cows[w.cow_alive].mean(axis=0)
+    d0 = float(np.linalg.norm(w.wolves[0] - herd_c()))
+    angs, dmins, dcs = [], [], []
+    for _ in range(4000):
+        _o, _r, t, tr, _i = w.step(coord.act(w.get_observation()))
+        if w.wolf_decoy_released or t or tr:
+            break
+        v = w.wolves[0] - herd_c()
+        angs.append(float(np.arctan2(v[1], v[0])))
+        dcs.append(float(np.linalg.norm(v)))
+        act = w.drones[w.drone_state == ACTIVE]
+        if act.shape[0]:
+            dmins.append(float(np.linalg.norm(act - w.wolves[0], axis=1).min()))
+    assert len(angs) > 50, "ventana pre-show demasiado corta"
+    barrido = float(np.rad2deg(np.abs(np.unwrap(np.asarray(angs)) - angs[0]).max()))
+    acercamiento = d0 - min(dcs)
+    borde = bool(dmins) and min(dmins) <= w.decoy_hold_dist + DECOY_V2_WAIT_BAND + 5.0
+    assert acercamiento > 60.0 or borde, (acercamiento, min(dmins) if dmins else None)
+    assert barrido < 45.0, f"el señuelo v2 no debe bordear: barrido {barrido:.0f}°"
+    # Los PICOS transitorios bajo el hold con drones EN MOVIMIENTO (flyby de un relevo, barrera
+    # que avanza) son física — el mismo caso del blindaje v3.1; el anillo de huida los resuelve.
+    # Cota laxa: jamás una penetración PROFUNDA (cerca de la expulsión a <=20).
+    assert not dmins or min(dmins) > 60.0, \
+        f"penetración profunda pre-show: dmin {min(dmins):.1f}"
+
+    # Unidades de la POLÍTICA del señuelo v2 (estado sintético, dron QUIETO): lejos => carga
+    # RECTA al centroide; en la banda de espera => desired 0 EXACTO; dentro del hold => huida
+    # radial pura del dron.
+    class _WS:
+        pass
+    ws = _WS()
+    ws.decoy_hold_dist = 130.0
+    ws.cows = np.array([[300.0, 300.0]])
+    ws.cow_alive = np.array([True])
+    ws.W = ws.H = 600.0
+    ws.drones = np.array([[250.0, 300.0]])
+    ws.drone_state = np.array([0])                       # ACTIVE
+    lay2 = WolfOptionLayer(option=("CEBO", {}))
+    sel = np.array([0])
+    des = np.zeros((1, 2))
+    ws.wolves = np.array([[20.0, 300.0]])                # dmin=230: carga recta (+x)
+    lay2._decoy_direct(ws, sel, des)
+    assert des[0, 0] > 0.9 and abs(des[0, 1]) < 1e-9, des
+    ws.wolves = np.array([[115.0, 300.0]])               # dmin=135 en [130,140): ESPERA (0 exacto)
+    des = np.zeros((1, 2)); lay2._decoy_direct(ws, sel, des)
+    assert np.allclose(des, 0.0), des
+    ws.wolves = np.array([[130.0, 300.0]])               # dmin=120 < 130: HUIDA radial (-x)
+    des = np.zeros((1, 2)); lay2._decoy_direct(ws, sel, des)
+    assert des[0, 0] < -0.9 and abs(des[0, 1]) < 1e-9, des
+    print(f"  [V2] señuelo directo: se acercó {acercamiento:.0f} m (d0 {d0:.0f}), barrido "
+          f"{barrido:.0f}° (<45), dmin {min(dmins) if dmins else None:.1f} (picos por drones en "
+          f"movimiento tolerados) — unidades carga/espera/huida OK")
 
 
 class _RotatingManager:
