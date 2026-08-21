@@ -90,6 +90,7 @@ STATIC_DETER_GAIN = 0.6      # peso del empuje saliente de frenado de la pared (
 # =600 s y DRONE_MOVE_DRAIN=1.5: drenaje pleno = 2.5/600/s, carga = 3.75/600/s -> ~160 s a full (recupera 1.5x lo
 # que gasta volando a tope). Reemplaza el charge_full FIJO (300 s) de v2.3 -> el param charge_full pasa a DEPRECATED.
 CHARGE_TO_FLIGHT_RATIO = 1.5
+PLAZA_TOL = 1.5  # m (v3.7.1, Commit T): llegada del RETURNING a SU plaza (aparca exacto). TUNE
 
 # --- EVITACIÓN de lobos al HUIR (ESCOLTA): una vaca NO-fijada que huye al establo RODEA a los lobos en vez
 # de atravesar la pelea (una vaca real da un rodeo). El rumbo objetivo MEZCLA "hacia el establo" (DOMINA el
@@ -554,6 +555,14 @@ class World:
         half = 0.7 * sr  # radio del rombo (margen para no salirse de la región central)
         ang = np.pi / 2 - 2 * np.pi * np.arange(self.n_reserve) / max(self.n_reserve, 1)  # arriba, sentido horario
         reserve = np.column_stack([scx + half * np.cos(ang), scy + half * np.sin(ang)])
+        # v3.7.1 (Commit T, PLAZAS FIJAS — decisión del dueño): los vértices del rombo son PLAZAS
+        # fijas de la estación. Cada dron estacionado OCUPA una; cuando un READY sale a relevar,
+        # su plaza queda RESERVADA para el saliente al que sustituye (transferencia en el
+        # despacho, #7) y el RETURNING vuela a ESA plaza (no "a la estación" genérica): uno sale,
+        # uno entra, MISMA plaza — cero amontonamientos. Determinista, sin RNG.
+        self.plaza_pos = reserve.copy()                     # (n_reserve, 2) coordenadas fijas
+        self.plaza_of = np.full(self.n_drones, -1, dtype=int)
+        self.plaza_of[self.n_active:] = np.arange(self.n_reserve)
         self.drones = np.vstack([active, reserve])  # filas [0:n_active] activos, resto reserva
         self.drone_vel = np.zeros((self.n_drones, 2))      # parados al inicio
         self.drone_waypoint = self.drones.copy()           # destino = posición actual (mantener/hold)
@@ -861,14 +870,23 @@ class World:
             if float(np.linalg.norm(self.drones[j] - self.drones[i])) <= self.relay_handoff_tol:
                 st[j] = ACTIVE                                  # el relevo cubre el puesto
                 st[i] = RETURNING                              # el bajo (o el tirado) se retira a cargar
-                self.drone_waypoint[i] = cc.copy()             # vuela a la central
+                pz = int(self.plaza_of[i])                     # v3.7.1: vuela a SU plaza reservada
+                self.drone_waypoint[i] = (self.plaza_pos[pz].copy() if pz >= 0 else cc.copy())
                 self.relief_target[j] = -1
                 self.drone_relief_hold[i] = False
                 self.drone_stranded[i] = False
 
-        # 5) RETURNING que entra en la central -> CHARGING (aparca donde entra; empieza a cargar).
+        # 5) RETURNING que llega a SU PLAZA -> CHARGING (v3.7.1: aparca EN la plaza reservada,
+        #    no "donde entra" — el aparcamiento libre amontonaba drones en la estación).
+        #    Fallback sin plaza (no debería ocurrir): el criterio antiguo (entrar en la central).
         for i in np.where(st == RETURNING)[0]:
-            if float(np.linalg.norm(self.drones[i] - cc)) <= cr:
+            pz = int(self.plaza_of[i])
+            if pz >= 0:
+                if float(np.linalg.norm(self.drones[i] - self.plaza_pos[pz])) <= PLAZA_TOL:
+                    st[i] = CHARGING
+                    self.drone_waypoint[i] = self.plaza_pos[pz].copy()
+                    self.drone_vel[i] = 0.0
+            elif float(np.linalg.norm(self.drones[i] - cc)) <= cr:
                 st[i] = CHARGING
                 self.drone_waypoint[i] = self.drones[i].copy()
                 self.drone_vel[i] = 0.0
@@ -898,6 +916,10 @@ class World:
             st[j] = INCOMING
             self.relief_target[j] = int(i)
             self.drone_waypoint[j] = self.drones[i].copy()     # despega hacia el puesto
+            # v3.7.1 (Commit T): su plaza queda RESERVADA para el saliente al que sustituye.
+            if self.plaza_of[j] >= 0:
+                self.plaza_of[int(i)] = int(self.plaza_of[j])
+                self.plaza_of[j] = -1
 
         # 8) STRANDED: un ACTIVE anunciado que se queda a ~0 antes del relevo -> tirado (deja de ser ACTIVE ->
         #    ya NO disuade/detecta; se CONGELA donde esté —sin batería no se vuela: waypoint = posición,

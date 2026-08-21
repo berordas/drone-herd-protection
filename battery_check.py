@@ -110,6 +110,7 @@ def main():
     test_charge_ratio()
     test_relevo_centinela()
     test_relevo_centinela_stack()
+    test_plazas_estacion()
     print("\nbattery_check: TODO OK.")
 
 
@@ -322,6 +323,50 @@ def test_relevo_centinela_stack():
         if handoff and wa.drone_state[low] == CHARGING:
             break
     assert handoff, "FALLO: no hubo hand-off en la ventana"
+    print("  OK")
+
+
+def test_plazas_estacion():
+    """v3.7.1 (Commit T, decisión del dueño): PLAZAS FIJAS EN LA ESTACIÓN — (b) el RETURNING
+    termina CHARGING en la plaza del READY que lo relevó (transferida en el despacho); (a) nunca
+    dos drones no-volando a < 3 m dentro de la estación (cero amontonamientos); (c) el traspaso
+    en campo (<= 2 m) queda INTACTO — lo cubre test_relevo_centinela, que sigue en la verja.
+    Tres ciclos de relevo encadenados."""
+    print("\n=== Plazas fijas en la estación (v3.7.1, Commit T) ===")
+    w = World(seed=3)
+    w._init_battery(stagger=False)
+    na = w.n_active
+    w.battery[na:] = 1.0
+    min_park = 1e9
+    for ciclo in range(3):
+        low = int(np.where((w.drone_state == ACTIVE) & ~w.drone_relief_hold)[0][0])
+        w.battery[low] = w.announce_threshold - 0.01
+        plaza_reliever = None
+        done_charge = False
+        for t in range(8000):
+            w._apply_drone_actions(None)
+            w._step_battery()
+            inc = np.where(w.drone_state == INCOMING)[0]
+            if plaza_reliever is None and inc.size and int(w.relief_target[int(inc[0])]) == low:
+                plaza_reliever = int(w.plaza_of[low])      # transferida en el despacho (#7)
+            parked = np.where((w.drone_state == CHARGING) | (w.drone_state == READY))[0]
+            if parked.size >= 2:
+                dd = np.linalg.norm(w.drones[parked][:, None, :] - w.drones[parked][None, :, :],
+                                    axis=2)
+                np.fill_diagonal(dd, 1e9)
+                min_park = min(min_park, float(dd.min()))
+            if w.drone_state[low] == CHARGING:
+                assert plaza_reliever is not None and plaza_reliever >= 0
+                d_pl = float(np.linalg.norm(w.drones[low] - w.plaza_pos[plaza_reliever]))
+                assert d_pl <= 2.0, f"ciclo {ciclo}: aparcó a {d_pl:.2f} m de la plaza reservada"
+                done_charge = True
+                break
+        assert done_charge, f"ciclo {ciclo}: el saliente no llegó a CHARGING"
+        w.battery[np.where(w.drone_state == CHARGING)[0]] = 1.0   # recarga exprés: siguiente ciclo
+        w._step_battery()
+    print(f"  3 ciclos: cada saliente aparcó EN la plaza de su relevo; dist mínima entre "
+          f"aparcados {min_park:.1f} m (>3 exigido)")
+    assert min_park > 3.0, f"amontonamiento en la estación: {min_park:.2f} m"
     print("  OK")
 
 
