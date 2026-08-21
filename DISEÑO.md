@@ -5,7 +5,39 @@
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
 >
-> **Última actualización: 2026-08-18** · ***v3.5 "REGLA DEL SONIDO" (tag `v3.5-sonido`) — ENMIENDA DE FÍSICA
+> **Última actualización: 2026-08-21** · ***ETAPA 1 CERRADA — RESULTADO PRINCIPAL: RUN-M1'''' (manager
+> jerárquico de lobos) es el PRIMER run del proyecto que CUMPLE su criterio de éxito PRE-REGISTRADO***
+> (PREREGISTRO_v3 congelado antes del retrain; firma 2 del dueño 2026-08-21). **Números**: manager final
+> **1.76/1.75/1.76** vs Reactive-estática/run02/run09 (100 semillas emparejadas) · **supera al ORÁCULO SANO
+> (1.66) en +0.10 [+0.03, +0.19]** (estrella: IC excluye 0; no-inferioridad δ=0.15 trivial) · Δ vs B_spawn
+> +0.81 · gaps de transferencia ≈ oráculo · **ESTRUCTURA COMPLETA por primera vez: P(keep|G,n≥3)=0.931,
+> P(Δ90|S)=1.000, P(Δ180)=0.000** — y respaldada por el paisaje MEDIDO (celdas S limpias: MASA 0.30 / Δ90
+> 1.71 / Δ180 1.42) · jugada completa 1.00 · ABORTs/ep 45→0.28 · canal B=0 · 0 CRITICAL. El camino fue el
+> resultado: (i) el +0.42 de M1 era exploit de interfaz (re-fijación de presa por churn → Commit K la
+> legaliza REGULADA para todos); (ii) el +1.26 de M1'' era en parte MOLINILLO DE RUMBO sobre celdas
+> CONTAMINADAS (VERIF-0: el gate duro ±25° interbloqueaba 9/20 episodios del oráculo en S — Estructura
+> re-adjudicada como NO ADJUDICABLE); (iii) el paquete M1'''' cerró las DOS raíces con la MISMA plantilla
+> mejor-esfuerzo (S1 alineación: tolerancia/sin-progreso/techo · S3 meseta de d_prey — ambos umbrales
+> geométricos ABSOLUTOS que la defensa podía negar), quitó el falso terminal (S2: ABORT solo pre-show,
+> el metrónomo post-show de 50 ticks muere), añadió CENSURA estándar (staged/show/suelta/strike + tasa de
+> jugada completa: sev 0 sin jugar ≠ sev 0 jugando y fallando), cerró la decisión por INCENTIVOS (Q: coste
+> de deliberación 0.05 — el manager SOSTIENE la opción tras ABORTs en vez de molinillear, coste pagado ≈0),
+> watchdog degradado a tripwire (Q-bis), **física v3.7-relevo-centinela** (R: el bajo se CLAVA, el fresco
+> vuela DIRECTO al puesto y HEREDA la ranura — destapando el bug silencioso v3.0-v3.6 de la ROTACIÓN de
+> ranuras por hand-off, bandera 14) y señuelo v2 directo (Encargo 2). **Tres arcos para la memoria**: la
+> TRILOGÍA del seed 21 (sev 7 con exploit de presa → 6 con molinillo → **0 limpio**: sin churn que explotar,
+> el episodio malo es simplemente malo); el ARCO del seed 77 (de LIMITACIÓN de la clásica —entradas no
+> detectadas, despertar tardío— a DEMOSTRACIÓN: bajo v3.7 el despertar tardío es **0 episodios** en 200 y el
+> propio seed 77 es ahora el GIF de la jugada entera en G, keep sostenido, sev 7 = oráculo); y los **9
+> STALLs EXONERADOS** (los 9 episodios con tripwire del manager son EXACTAMENTE los 9 del oráculo — solape
+> 100%, todos S: la alineación lenta del brazo Δ90-en-S es propiedad del BRAZO, no de la política;
+> pre-registrado como decisión humana, adjudicado por el dueño en la firma 2). Artefactos:
+> `/data/hrl_m1/m1pppp/` (STOP_M1PPPP_INFORME.md · TABLA · PREREGISTRO_v3 · visionado 6 GIFs + relevo ·
+> celdas/sanity/metro v3.7 · canal). **Cola firmada**: RUN-M2 (K=1000 fijo — ablación de la
+> terminación-por-evento; predicción pre-registrada: colapso o degradación fuerte de la emergencia) →
+> 1 RÉPLICA de M1'''' (semilla nueva, barra de error del resultado principal). Nada más sin firma.
+>
+> *(2026-08-18)* ***v3.5 "REGLA DEL SONIDO" (tag `v3.5-sonido`) — ENMIENDA DE FÍSICA
 > tras el FORENSE de la Etapa 0 del jerárquico + CORRECCIÓN de la entrada de "agujeros deliberados".** El visionado
 > humano de STOP-1/2 (E0.1, GIF 2 = seed 398 mixto, MASA vs Reactive) mostró lobos cruzando la línea rígida por el
 > PUNTO MEDIO entre dos drones y drones apilados; el forense (replay determinista, `/data/hrl_e0/forense/FORENSE.md`)
