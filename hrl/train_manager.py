@@ -49,15 +49,17 @@ NET_ARCH = [64, 64]
 EVAL_SEEDS = tuple((s, "lobos") for s in range(20)) + tuple((s, "mixto") for s in range(20))
 
 
-def make_env(seed, opponent, fixed_k, ablate=False, g_over=None, wolves_min=None):
+def make_env(seed, opponent, fixed_k, ablate=False, g_over=None, wolves_min=None,
+             delib_cost=None):
     def _f():
         config = None
         if wolves_min is not None:
             from baseline import CONFIG_V2
             config = dict(CONFIG_V2)
             config["wolves_min"] = int(wolves_min)   # RUN-M1'': train n ~ U{wolves_min..wolves_max}
+        kw = {} if delib_cost is None else {"delib_cost": float(delib_cost)}
         return ManagerEnv(kinds=("lobos",), seed=seed, opponent=opponent, fixed_k=fixed_k,
-                          obs_ablate_progress=ablate, g_oversample=g_over, config=config)
+                          obs_ablate_progress=ablate, g_oversample=g_over, config=config, **kw)
     return _f
 
 
@@ -93,7 +95,8 @@ def _light_eval_one(job):
     return {"stratum": stratum, "n": n, "a0": a0, "acts": acts, "sev": info["ep_sev"],
             "dec": info["ep_decisions"], "pen": info["penetrado_ticks"], "kind": kind,
             "probs": probs, "ents": ents, "hunt": info.get("hunt", {}),
-            "jugada": info.get("jugada")}
+            "jugada": info.get("jugada"), "aborts": info.get("aborts", 0),
+            "delib": info.get("delib_pagado", 0.0)}
 
 
 def light_eval(model, opponent: str, fixed_k, ablate: bool = False, procs: int = 20) -> dict:
@@ -150,6 +153,8 @@ def light_eval(model, opponent: str, fixed_k, ablate: bool = False, procs: int =
             "Pstoch_cebo_G_n3": (float(np.mean(st_g3)) if st_g3 else None),
             "entropia_media": float(np.mean([e for r in res for e in r["ents"]])) if any(r["ents"] for r in res) else None,
             "caza_por_ep": hunt,
+            "aborts_por_ep": float(np.mean([r["aborts"] for r in res])),
+            "delib_por_ep": float(np.mean([r["delib"] for r in res])),
             "jugada_completa_frac": (lambda js: (round(float(np.mean([j["completa"] for j in js])), 3)
                                                  if js else None))(
                 [r["jugada"] for r in res if r.get("jugada") and r["n"] >= 3
@@ -171,6 +176,9 @@ def main():
     ap.add_argument("--g-oversample-steps", type=int, default=30_000)
     ap.add_argument("--eval-every", type=int, default=10_000)
     ap.add_argument("--ckpt-every", type=int, default=5_000)
+    ap.add_argument("--delib-cost", type=float, default=None,
+                    help="Commit Q: coste de deliberación (None = DELIB_COST=0.05 del env; "
+                         "0.1 = fallback único pre-registrado si ABORTs/ep>10 en la ligera de 40k)")
     ap.add_argument("--wolves-min", type=int, default=None,
                     help="RUN-M1'': wolves_min del TRAIN (n ~ U{min..5}); la EVAL sigue natural U{1..5}")
     ap.add_argument("--smoke", action="store_true", help="1k macro-pasos, 8 envs, eval cada 500")
@@ -192,7 +200,8 @@ def main():
 
     g_over = args.g_oversample
     venv = SubprocVecEnv([make_env(args.seed * 1000 + i, args.opponent, args.fixed_k,
-                                   args.ablate_progress, g_over, args.wolves_min)
+                                   args.ablate_progress, g_over, args.wolves_min,
+                                   args.delib_cost)
                           for i in range(args.n_envs)],
                          start_method="fork")
 

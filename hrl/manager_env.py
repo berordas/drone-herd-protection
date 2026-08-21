@@ -67,6 +67,19 @@ ABORT_MIN_ACTIVE = 3               # >= 3 de 4 ACTIVE en el cono del asalto, con
 ABORT_GRACE_TICKS = 50             # ticks de gracia al arrancar una opción CEBO antes de evaluar el aborto
                                    # (sin gracia, una re-decisión CEBO con la condición aún cierta termina
                                    # en 1 tick y produce macro-pasos vacíos en cadena — medido en el smoke)
+DELIB_COST = 0.05                  # Commit Q (plan M1'''', dueño): COSTE DE DELIBERACIÓN pre-registrado
+                                   # — una decisión tomada tras INTERRUPCIÓN (ABORT) que CAMBIA de opción
+                                   # (con acciones discretas, "re-arrancar con parámetros nuevos" = otra
+                                   # acción) resta esto a la recompensa del tramo nuevo. Decisiones tras
+                                   # terminal NATURAL (MUERTE/HERD_SAFE/techo/FIN) = GRATIS; re-elegir la
+                                   # MISMA opción tras ABORT = GRATIS (la capa no re-arranca). Motivo:
+                                   # degeneración de opciones (cf. option-critic) — el manager conserva
+                                   # TODA la libertad; molinillear se paga, no se prohíbe. FALLBACK ÚNICO
+                                   # pre-registrado en PREREGISTRO_v3 (escrito ANTES de entrenar): 0.1 si
+                                   # en la ligera de 40k los ABORTs/ep siguen > 10. Los baselines no
+                                   # interrumpen => pagan 0 (escalera justa). La SEV de todas las tablas
+                                   # es SIEMPRE sin coste (n_depredadas); el coste solo da forma al
+                                   # RETORNO de entrenamiento (telemetría: aborts / delib_pagado).
 OPTION_SPECS = (                   # acción -> (nombre, params) de WolfOptionLayer
     ("MASA", {}),
     ("CEBO", {"membership": "keep", "hold": 50.0}),
@@ -94,7 +107,8 @@ class ManagerEnv(gym.Env):
     def __init__(self, kinds: tuple[str, ...] = ("lobos",), seed: int | None = None,
                  frame_skip: int = 5, k_max: int = K_MAX, fixed_k: int | None = None,
                  config: dict | None = None, opponent: str = "reactive",
-                 g_oversample: float | None = None, obs_ablate_progress: bool = False):
+                 g_oversample: float | None = None, obs_ablate_progress: bool = False,
+                 delib_cost: float = DELIB_COST):
         """`opponent`: 'reactive' (v3.5 congelado; el de RUN-M1) | 'run02' | 'run09'
         (ResidualDroneCoordinator con el modelo congelado; solo EVALUACIÓN/tabla-escalera) |
         'mix' (adenda 4 §4, RUN-M3: uniforme por episodio entre reactive y run09).
@@ -111,6 +125,7 @@ class ManagerEnv(gym.Env):
         self._g_over = g_oversample
         self._g_rng = np.random.default_rng((seed or 0) + 11_000_003)   # mismo patrón que la dieta run08
         self._ablate = bool(obs_ablate_progress)
+        self._delib_cost = float(delib_cost)             # Commit Q (0.0 = apagado)
         self._kinds = tuple(kinds)
         self._frame_skip = int(frame_skip)
         self._k_max = int(k_max)
@@ -128,6 +143,9 @@ class ManagerEnv(gym.Env):
         self._decision_idx = 0
         self._log: list[dict] = []
         self._penetrado_ticks = 0
+        self._last_action: int | None = None             # Commit Q: para detectar el CAMBIO tras ABORT
+        self._n_aborts = 0
+        self._delib_paid = 0.0
         self._info_reset: dict = {}
         self.on_tick = None                       # gancho de SOLO LECTURA (render/visionado): f(world, coord, layer) tras cada step
         self.on_boundary = None                   # gancho de SOLO LECTURA (auditoría): f(world, coord, layer) ANTES de coord.act()
@@ -168,6 +186,9 @@ class ManagerEnv(gym.Env):
         self._decision_idx = 0
         self._log = []
         self._penetrado_ticks = 0
+        self._last_action = None
+        self._n_aborts = 0
+        self._delib_paid = 0.0
         self._hunt = {"option_starts": 0, "retargets": 0, "retargets_blocked": 0,
                       "refix_muerte": 0, "refix_refugio": 0, "refix_otro": 0}
         self._patrol = PatrolCoverageTracker(self._world)
@@ -264,6 +285,9 @@ class ManagerEnv(gym.Env):
     def step(self, action):
         a = int(action)
         assert 0 <= a < N_OPTIONS, a
+        # Commit Q: ¿decisión tras INTERRUPCIÓN (ABORT) que cambia de opción? => coste.
+        delib = bool(self._last_event == EV_ABORT and self._last_action is not None
+                     and a != self._last_action)
         w, coord, layer = self._world, self._coord, self._layer
         name, params = OPTION_SPECS[a]
         self._mgr.current = (name, dict(params))
@@ -319,11 +343,17 @@ class ManagerEnv(gym.Env):
                 # HERD_SAFE / techo / FIN.
                 event = EV_ABORT
                 break
-        reward = float(w.n_depredadas - deaths0)
+        reward = float(w.n_depredadas - deaths0) - (self._delib_cost if delib else 0.0)
+        if delib:
+            self._delib_paid += self._delib_cost
+        if event == EV_ABORT:
+            self._n_aborts += 1
+        self._last_action = a
         self._decision_idx += 1
         self._last_event = event
         self._log.append({"decision": self._decision_idx, "action": a, "option": OPTION_NAMES[a],
                           "t0": t0, "ticks": ticks, "event": EVENT_NAMES[event], "reward": reward,
+                          "delib": delib,
                           "n_wolves": int(w.n_wolves), "two_front": self._info_reset["two_front"]})
         self._ctx = {"option": a, "last_event": event, "decision_idx": self._decision_idx,
                      "decoy_idx": (layer.decoy_indices() if a != 0 else None),
@@ -332,7 +362,9 @@ class ManagerEnv(gym.Env):
         info = {"event": EVENT_NAMES[event], "ticks": ticks, "option": OPTION_NAMES[a],
                 "decision_idx": self._decision_idx, **self._info_reset}
         if terminated or truncated:
-            info["ep_sev"] = int(w.n_depredadas)
+            info["ep_sev"] = int(w.n_depredadas)     # SIEMPRE sin coste (la sev de las tablas)
+            info["aborts"] = int(self._n_aborts)
+            info["delib_pagado"] = round(float(self._delib_paid), 4)
             info["ep_decisions"] = self._decision_idx
             info["ep_log"] = list(self._log)
             info["penetrado_ticks"] = int(self._penetrado_ticks)

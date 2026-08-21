@@ -82,7 +82,8 @@ def run_one(job):
             "two_front": info["two_front"], "status": info["status"], "decisions": info["ep_decisions"],
             "penetrado_ticks": info["penetrado_ticks"], "actions": acts,
             "events": [d["event"] for d in info["ep_log"]], "log": info["ep_log"],
-            "hunt": info.get("hunt", {}), "jugada": info.get("jugada")}
+            "hunt": info.get("hunt", {}), "jugada": info.get("jugada"),
+            "aborts": info.get("aborts"), "delib_pagado": info.get("delib_pagado")}
 
 
 def boot_ci(vals, n_boot=10_000, seed=20_260_819):
@@ -136,6 +137,7 @@ def summarize(recs):
             # acción CEBO y n>=3 (el fallback de quórum absorbe n<=2). Jugada COMPLETA = show y
             # asalto SUELTO. sev 0 sin jugar != sev 0 jugando y fallando.
             "censura": _censura(recs),
+            "aborts_por_ep": float(np.mean([r.get("aborts") or 0 for r in recs])),
             "eventos": dict(ev), "success": sum(1 for r in recs if r["status"] == "success")}
 
 

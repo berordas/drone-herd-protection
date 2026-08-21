@@ -366,6 +366,33 @@ def test_S3_censura():
           f"sev {info['ep_sev']})")
 
 
+def test_QC_coste_deliberacion():
+    """Commit Q (plan M1'''' del dueño): COSTE DE DELIBERACIÓN — una decisión tomada tras
+    INTERRUPCIÓN (ABORT) que CAMBIA de opción paga DELIB_COST; re-elegir la misma opción tras
+    ABORT o cambiar tras terminal NATURAL (K_MAX) es gratis. Los baselines re-eligen la misma
+    accion => pagan 0 (escalera justa). Dirigido con la condición del ABORT forzada (pre-show).
+    La sev (n_depredadas) queda SIEMPRE sin coste."""
+    from hrl.manager_env import ManagerEnv, DELIB_COST
+    s = _seeds_by_groups("lobos", 1, 1, min_wolves=3)[0]
+    env = ManagerEnv(kinds=("lobos",), seed=0, k_max=200)
+    env.reset_to(s, "lobos")
+    env._bait_failed = lambda: True
+    _o, r1, _t, _tr, i1 = env.step(2)                    # 1ª decisión: sin previo => sin coste
+    assert i1["event"] == "ABORT_BAIT_FAILED" and abs(r1 - round(r1)) < 1e-9, (r1, i1)
+    _o, r2, _t, _tr, i2 = env.step(2)                    # MISMA opción tras ABORT: gratis
+    assert i2["event"] == "ABORT_BAIT_FAILED" and abs(r2 - round(r2)) < 1e-9, (r2, i2)
+    _o, r3, _t, _tr, i3 = env.step(3)                    # CAMBIO tras ABORT: paga DELIB_COST
+    assert abs((r3 - round(r3)) + DELIB_COST) < 1e-9, r3
+    env2 = ManagerEnv(kinds=("lobos",), seed=0, fixed_k=60)
+    env2.reset_to(s, "lobos")
+    _o, q1, _t, _tr, j1 = env2.step(2)
+    assert j1["event"] == "K_MAX", j1
+    _o, q2, _t, _tr, j2 = env2.step(3)                   # cambio tras terminal NATURAL: gratis
+    assert abs(q2 - round(q2)) < 1e-9, q2
+    print(f"  [QC] coste de deliberación {DELIB_COST}: cambio tras ABORT paga; misma opción tras "
+          f"ABORT y cambio tras K_MAX gratis")
+
+
 class _RotatingManager:
     """Re-arranca la opción cada `period` ticks rotando la secuencia (todas distintas entre sí =>
     cada cambio es un re-arranque real de la capa)."""
@@ -894,6 +921,7 @@ if __name__ == "__main__":
     test_S1_gate_mejor_esfuerzo()
     test_S2_abort_solo_preshow()
     test_S3_censura()
+    test_QC_coste_deliberacion()
     test_K1_persistencia_sin_proteccion()
     test_K2_retarget_protegida_y_cooldown()
     test_K3_protegida_sin_alternativa()
