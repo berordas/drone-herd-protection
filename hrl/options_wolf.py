@@ -127,6 +127,13 @@ ALIGN_NO_PROGRESS_DEG = 2.0      # °: mejora mínima del error para contar como
 ALIGN_NO_PROGRESS_TICKS = 300    # ticks sin progreso => fin de la fase de alineación (causa b)
 ALIGN_T_MAX = 2500               # ticks: techo absoluto de la fase de alineación (causa c)
 
+SHOW_STALL_TICKS = 400           # Q-bis (plan M1'''' del dueño; DEGRADADO a TRIPWIRE tras S1): asalto
+                                 # STAGED este nº de ticks ACUMULADOS sin show => show FORZADO + evento
+                                 # STALL. Cierre de GUION, no de decisión (la opción ejecuta el cebo
+                                 # entero; decidir es del manager, ejecutar es de la opción). Tras S1
+                                 # debe disparar ~0: n_stalls es métrica de SALUD y su disparo en eval
+                                 # = DECISIÓN HUMANA PENDIENTE (pre-registrado en PREREGISTRO_v3).
+
 
 def freest_prey_for(w, sel: np.ndarray) -> tuple[str | None, int]:
     """RÉPLICA CONDUCTA-FIEL de `World._freest_prey_for_sector2` (world.py:1391, mundo
@@ -221,6 +228,8 @@ class WolfOptionLayer(WolfController):
         self.t_show: int | None = None
         self.t_suelta: int | None = None
         self.t_strike: int | None = None
+        self._staged_noshow = 0                          # Q-bis: ticks staged acumulados sin show
+        self.n_stalls = 0                                # Q-bis: disparos del tripwire (salud)
 
     # ------------------------------------------------------------------ #
     # Eventos propios (los integra hrl/events.EventTracker vía pop_events).
@@ -259,6 +268,8 @@ class WolfOptionLayer(WolfController):
             self._blocked_logged = False
             self.n_retargets = self.n_retarget_blocked = self.n_option_starts = 0
             self.t_staged = self.t_show = self.t_suelta = self.t_strike = None   # censura
+            self._staged_noshow = 0
+            self.n_stalls = 0
         self._last_step = step
         if self._countdown <= 0:
             self._countdown = self.frame_skip
@@ -380,6 +391,7 @@ class WolfOptionLayer(WolfController):
                 name, params = "MASA", {}
         self._opt_name, self._opt_params = name, dict(params)
         self._align_done = True                          # (Commit S1) default: sin fase de alineación
+        self._staged_noshow = 0                          # (Q-bis) el reloj del tripwire es POR JUGADA
         self.n_option_starts += 1
         self.push_event("OPTION_START", tick=int(w.step_count), option=name, **params)
         if name == "MASA":
@@ -557,6 +569,20 @@ class WolfOptionLayer(WolfController):
         desired = np.zeros((w.n_wolves, 2))
 
         released_before = bool(w.wolf_decoy_released)
+        # Censura (hito staged) + TRIPWIRE del show (Q-bis): asalto ESTACIONADO pre-show.
+        if not w.wolf_decoy_released and w.pack_prey2 >= 0 and s1.size > 0 and s2.size > 0 \
+                and assault_staged(w, s2, w._prey_pos_of(w.pack_prey2, w.pack_prey2_kind),
+                                   stage_hold=self._hold):
+            if self.t_staged is None:
+                self.t_staged = int(w.step_count)
+            self._staged_noshow += 1
+            if self._staged_noshow >= SHOW_STALL_TICKS:
+                w.wolf_decoy_released = True             # TRIPWIRE: show forzado
+                self.n_stalls += 1
+                self._staged_noshow = 0
+                self.push_event("STALL", tick=int(w.step_count) + 1,
+                                ticks_staged=SHOW_STALL_TICKS, mode=self._mode,
+                                align_done=self._align_done)
         if self._mode == "spawn":
             decoy_prowling, assault_hold = decoy_timing(
                 w, s1, s2, stage_hold=self._hold, creep_hold=min(25.0, self._hold))
@@ -576,13 +602,6 @@ class WolfOptionLayer(WolfController):
                                            round(float(np.rad2deg(self._bearing_err(w, s2))), 1)),
                             delta_pretendida_deg=(None if self._theta_asa is None else
                                                   round(float(np.rad2deg(self._delta)), 0)))
-
-        # Hito de censura: primer tick con el asalto ESTACIONADO pre-show (cualquier membership).
-        if self.t_staged is None and not w.wolf_decoy_released and w.pack_prey2 >= 0 \
-                and s1.size > 0 and s2.size > 0:
-            if assault_staged(w, s2, w._prey_pos_of(w.pack_prey2, w.pack_prey2_kind),
-                              stage_hold=self._hold):
-                self.t_staged = int(w.step_count)
 
         atk1 = atk2 = False
         if decoy_prowling:

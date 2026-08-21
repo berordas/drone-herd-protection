@@ -83,7 +83,8 @@ def run_one(job):
             "penetrado_ticks": info["penetrado_ticks"], "actions": acts,
             "events": [d["event"] for d in info["ep_log"]], "log": info["ep_log"],
             "hunt": info.get("hunt", {}), "jugada": info.get("jugada"),
-            "aborts": info.get("aborts"), "delib_pagado": info.get("delib_pagado")}
+            "aborts": info.get("aborts"), "delib_pagado": info.get("delib_pagado"),
+            "stalls": info.get("stalls")}
 
 
 def boot_ci(vals, n_boot=10_000, seed=20_260_819):
@@ -138,6 +139,7 @@ def summarize(recs):
             # asalto SUELTO. sev 0 sin jugar != sev 0 jugando y fallando.
             "censura": _censura(recs),
             "aborts_por_ep": float(np.mean([r.get("aborts") or 0 for r in recs])),
+            "stalls_total": int(sum(r.get("stalls") or 0 for r in recs)),
             "eventos": dict(ev), "success": sum(1 for r in recs if r["status"] == "success")}
 
 

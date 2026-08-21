@@ -393,6 +393,33 @@ def test_QC_coste_deliberacion():
           f"ABORT y cambio tras K_MAX gratis")
 
 
+def test_QB_tripwire_show():
+    """Q-bis (plan M1''''; DEGRADADO a TRIPWIRE tras S1): asalto STAGED 400 ticks acumulados sin
+    show => show FORZADO + evento STALL (cierre de GUION, no de decisión). Dirigido: la fase de
+    alineación se bloquea artificialmente (parche de instancia) para que el gate jamás termine;
+    el tripwire debe disparar a los 400 ticks staged y la jugada continuar por el flanco
+    SHOW_START de siempre."""
+    seed = _seeds_by_groups("lobos", 1, 1, min_wolves=3)[0]
+    layer = WolfOptionLayer(option=("CEBO", {"delta_deg": 90.0, "hold": 50.0}))
+    layer._align_update = lambda w, s2: None             # la alineación JAMÁS termina (dirigido)
+    w = build_world(seed, "lobos", wolf_controller=layer)
+    coord = SyncedReactiveCoordinator(w)
+    w.reset()
+    evs = []
+    for _ in range(8000):
+        _o, _r, t, tr, _i = w.step(coord.act(w.get_observation()))
+        evs += layer.pop_events()
+        if w.wolf_decoy_released or t or tr:
+            break
+    stall = [e for e in evs if e["ev"] == "STALL"]
+    show = [e for e in evs if e["ev"] == "SHOW_START"]
+    assert stall and show, (stall, show, int(w.step_count))
+    assert layer.n_stalls == 1 and stall[0]["t"] >= 400, (layer.n_stalls, stall)
+    assert not stall[0]["align_done"], stall
+    print(f"  [QB] tripwire del show: STALL a t={stall[0]['t']} (400 staged, alineación "
+          f"bloqueada) y show forzado a t={show[0]['t']}")
+
+
 class _RotatingManager:
     """Re-arranca la opción cada `period` ticks rotando la secuencia (todas distintas entre sí =>
     cada cambio es un re-arranque real de la capa)."""
@@ -922,6 +949,7 @@ if __name__ == "__main__":
     test_S2_abort_solo_preshow()
     test_S3_censura()
     test_QC_coste_deliberacion()
+    test_QB_tripwire_show()
     test_K1_persistencia_sin_proteccion()
     test_K2_retarget_protegida_y_cooldown()
     test_K3_protegida_sin_alternativa()

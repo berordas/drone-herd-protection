@@ -96,7 +96,7 @@ def _light_eval_one(job):
             "dec": info["ep_decisions"], "pen": info["penetrado_ticks"], "kind": kind,
             "probs": probs, "ents": ents, "hunt": info.get("hunt", {}),
             "jugada": info.get("jugada"), "aborts": info.get("aborts", 0),
-            "delib": info.get("delib_pagado", 0.0)}
+            "delib": info.get("delib_pagado", 0.0), "stalls": info.get("stalls", 0)}
 
 
 def light_eval(model, opponent: str, fixed_k, ablate: bool = False, procs: int = 20) -> dict:
@@ -155,6 +155,7 @@ def light_eval(model, opponent: str, fixed_k, ablate: bool = False, procs: int =
             "caza_por_ep": hunt,
             "aborts_por_ep": float(np.mean([r["aborts"] for r in res])),
             "delib_por_ep": float(np.mean([r["delib"] for r in res])),
+            "stalls_total": int(sum(r["stalls"] for r in res)),
             "jugada_completa_frac": (lambda js: (round(float(np.mean([j["completa"] for j in js])), 3)
                                                  if js else None))(
                 [r["jugada"] for r in res if r.get("jugada") and r["n"] >= 3

@@ -364,6 +364,7 @@ class ManagerEnv(gym.Env):
         if terminated or truncated:
             info["ep_sev"] = int(w.n_depredadas)     # SIEMPRE sin coste (la sev de las tablas)
             info["aborts"] = int(self._n_aborts)
+            info["stalls"] = int(layer.n_stalls)         # Q-bis: tripwire (salud; ~0 esperado)
             info["delib_pagado"] = round(float(self._delib_paid), 4)
             info["ep_decisions"] = self._decision_idx
             info["ep_log"] = list(self._log)
