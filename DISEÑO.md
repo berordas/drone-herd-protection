@@ -51,6 +51,20 @@
 > marcha**: v3.7.1-plazas-estacion oficial (inocuidad Δsev = 0.000), E0.4 con la PROPORCIONAL como
 > listón duro (0.85 vs cebo-2f, **0.61 contra el manager lobo entrenado**, KNC = 0.0, guardia gana la
 > carrera 78-82%; PENETRADO sube — flag reportado sin arreglar), GO firmado, PREREGISTRO_D2 congelado.
+> **RUN-D2 COMPLETADO (2026-08-23; 122.880 macro-pasos, 2 h 58, sin NaN; manager lobo M1'''' congelado
+> reproducido BIT A BIT como atacante de train)** — STOP-D2 adjudicado contra el preregistro: **Competencia
+> vs Reactive 4-0 APLASTANTE en las 3 celdas** (natural 0.21 vs 0.74 · cebo-2f 1.03 vs 2.61 · manager lobo
+> 0.67 vs 1.76; Δ con IC excluyendo 0: −0.53 / −1.58 / −1.09) · **vs la PROPORCIONAL (δ=0.15): no-inferior
+> en natural (−0.04 [−0.13, +0.05]) y contra el manager lobo entrenado (+0.06 [−0.04, +0.17]), pero FALLA en
+> cebo-2f (+0.18 [+0.01, +0.37])** ⇒ criterio de éxito PARCIAL (2 de 3 celdas) · **Estructura emerge**:
+> P(4-0 | 1 clúster) 0.756, P(guardia | 2º clúster) 1.000 — y elige **2-2, no 3-1** · KNC 0.0 (canal trasero
+> muerto, como la proporcional) · guardia gana la carrera 84-89% · reasignaciones MENORES que la proporcional
+> (1.2 vs 22 en cebo-2f: sin parpadeo) · dos FLAGS pre-registrados a decisión humana: STALLs 189/300 eps
+> (guardias ociosos aceptando el coste) y PENETRADO por encima de la proporcional en las 3 celdas
+> (42/529/146 vs 32/434/72: la línea de 2 se penetra más). Lectura: el manager aprendido iguala a la regla
+> fija donde el atacante es adaptativo (manager lobo) y la supera a la Reactive por −1.1, pero no mejora
+> a la proporcional contra el cebo scriptado. Artefactos: /data/hrl_d2/ (STOP_D2_INFORME.md, TABLA_D2.md,
+> PREREGISTRO_D2.md, visionado/).
 >
 > *(2026-08-18)* ***v3.5 "REGLA DEL SONIDO" (tag `v3.5-sonido`) — ENMIENDA DE FÍSICA
 > tras el FORENSE de la Etapa 0 del jerárquico + CORRECCIÓN de la entrada de "agujeros deliberados".** El visionado
