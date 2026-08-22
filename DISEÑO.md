@@ -36,6 +36,21 @@
 > celdas/sanity/metro v3.7 · canal). **Cola firmada**: RUN-M2 (K=1000 fijo — ablación de la
 > terminación-por-evento; predicción pre-registrada: colapso o degradación fuerte de la emergencia) →
 > 1 RÉPLICA de M1'''' (semilla nueva, barra de error del resultado principal). Nada más sin firma.
+> **(2026-08-23, firmas 3) CLAIM PRINCIPAL DEL TFG re-formulado tras RUN-M2 y la RÉPLICA:
+> "estructura-en-S (P(Δ90|S) = 1.000 en 3/3 runs: M1'''', M2, réplica) + no-inferioridad al oráculo
+> sano (δ=0.15), REPRODUCIDO en réplica (seed 1, mundo v3.7 pineado: sev 1.69 [1.38, 2.01], Δ vs
+> M1'''' −0.075 [−0.20, +0.045], Δ vs oráculo +0.03 [−0.12, +0.18])."** La estrella (+0.10) y keep|G
+> (0.931) son PROPIEDADES DEL RUN PRINCIPAL, reportadas junto a la réplica (Δ180|G 0.931). Celdas G
+> (keep vs Δ180 vs Δ90, 100 pares): Δ(Δ180−keep) = +0.08 [−0.22, +0.38] ⇒ **paisaje G PLANO — la
+> política converge donde el paisaje decide (S) y varía por semilla donde no distingue (G)**.
+> **RUN-M2 (K=1000 fijo, ablación firmada "ingrediente del MARGEN, no del MECANISMO")**: la
+> predicción fuerte (colapso) FALLÓ — la jugada cabe en un tramo de 1000 (S1/S3 sacan el show a
+> ~300) y el mecanismo sobrevive (jugada completa 1.00, Δ90|S 1.000); lo que la terminación-por-
+> evento compra es el margen: Δ(M2−M1'''') = −0.145 [−0.265, −0.04], estrella perdida (−0.04 ≈ 0),
+> keep|G perdido; cómputo ×3.3 más barato (fps 19.4 vs 6.0). **D2 (manager del bando DRON) en
+> marcha**: v3.7.1-plazas-estacion oficial (inocuidad Δsev = 0.000), E0.4 con la PROPORCIONAL como
+> listón duro (0.85 vs cebo-2f, **0.61 contra el manager lobo entrenado**, KNC = 0.0, guardia gana la
+> carrera 78-82%; PENETRADO sube — flag reportado sin arreglar), GO firmado, PREREGISTRO_D2 congelado.
 >
 > *(2026-08-18)* ***v3.5 "REGLA DEL SONIDO" (tag `v3.5-sonido`) — ENMIENDA DE FÍSICA
 > tras el FORENSE de la Etapa 0 del jerárquico + CORRECCIÓN de la entrada de "agujeros deliberados".** El visionado

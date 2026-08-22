@@ -1070,6 +1070,124 @@ def test_D2a_guardia_sonido():
           f"burbuja alcanzada (d_min {d_min_obj:.1f} <= {DETER_RADIUS + 2:.0f}); conducta REVALIDADA")
 
 
+def _h_managerenv(seed, kind, ckpt):
+    from hrl.manager_env import ManagerEnv
+    from hrl.eval_manager import policy_fn
+    env = ManagerEnv(kinds=(kind,), seed=0, opponent="reactive")
+    h = hashlib.sha256()
+    env.on_tick = lambda w, c, l: h.update(_blob(w))
+    obs, info = env.reset_to(seed, kind)
+    pol = policy_fn("manager:" + ckpt)
+    first, done = True, False
+    while not done:
+        a = int(pol(obs, info, first)); first = False
+        obs, r, term, trunc, info = env.step(a)
+        done = term or trunc
+    return h.hexdigest(), int(env.world.n_depredadas)
+
+
+def _h_frozen(seed, kind, ckpt):
+    from hrl.manager_drone import FrozenWolfManager
+    fm = FrozenWolfManager(ckpt)
+    layer = WolfOptionLayer(manager=fm, frame_skip=5)
+    w = build_world(seed, kind, wolf_controller=layer)
+    coord = ReactiveCoordinator(w)
+    w.reset()
+    h = hashlib.sha256()
+    while True:
+        layer.refresh(w)
+        _o, _r, t, tr, _i = w.step(coord.act(w.get_observation()))
+        fm.on_tick(w, layer)
+        h.update(_blob(w))
+        if t or tr:
+            break
+    return h.hexdigest(), int(w.n_depredadas)
+
+
+def test_D2_frozen_wolf_manager():
+    """D2-Fase-2 [D2-1]: el manager lobo CONGELADO reproducido dentro de otro arnés
+    (FrozenWolfManager: misma lógica de eventos que ManagerEnv + argmax) es BIT A BIT el
+    ManagerEnv — el atacante de train/eval de D2 es exactamente el resultado principal."""
+    from hrl.manager_drone import WOLF_MANAGER_CKPT
+    import os
+    if not os.path.exists(WOLF_MANAGER_CKPT):
+        print("  [D2-1] SALTADO: sin ckpt del manager lobo en este entorno"); return
+    for seed, kind in ((21, "lobos"), (2, "mixto")):
+        a = _h_managerenv(seed, kind, WOLF_MANAGER_CKPT)
+        b = _h_frozen(seed, kind, WOLF_MANAGER_CKPT)
+        assert a == b, f"D2-1: frozen != ManagerEnv (seed {seed} {kind}): {a[1]} vs {b[1]}"
+    print("  [D2-1] FrozenWolfManager ≡ ManagerEnv BIT A BIT: 2 episodios OK")
+
+
+def test_D2_env_4_0_y_determinismo():
+    """[D2-2] DroneManagerEnv con partición 4-0 fija y atacante natural ≡ ReactiveCoordinator
+    en bucle plano BIT A BIT (el env no perturba el mundo; AllocatorCoordinator 4-0 ≡ Reactive
+    por [4]); [D2-3] reset_to determinista; coste de deliberación DIRIGIDO (decisión tras
+    CLUSTER_CHANGE que cambia de partición paga DELIB_COST_D2; mantener es gratis)."""
+    from hrl.manager_drone import (DroneManagerEnv, DELIB_COST_D2, EVD_CLUSTER, EVD_NAMES,
+                                   DroneDecisionCore)
+    seed = _seeds_by_groups("lobos", 1, 1, min_wolves=3)[0]
+    ha = _run_hashed(seed, "lobos")
+    env = DroneManagerEnv(seed=0)
+    h = hashlib.sha256()
+    env.on_tick = lambda w, c, l: h.update(_blob(w))
+    obs, info = env.reset_to(seed, "lobos", "natural")
+    h.update(_blob(env.world))
+    done = False
+    while not done:
+        obs, r, term, trunc, info = env.step(0)
+        done = term or trunc
+    assert h.hexdigest() == ha, "D2-2: env 4-0 != Reactive bit a bit"
+    h2 = hashlib.sha256()
+    env.on_tick = lambda w, c, l: h2.update(_blob(w))
+    obs, info = env.reset_to(seed, "lobos", "natural")
+    h2.update(_blob(env.world))
+    done = False
+    while not done:
+        obs, r, term, trunc, info = env.step(0)
+        done = term or trunc
+    assert h2.hexdigest() == ha, "D2-3: reset_to no determinista"
+    # coste DIRIGIDO: forzar un CLUSTER_CHANGE parcheando el conteo de clústeres del núcleo
+    env3 = DroneManagerEnv(seed=0, k_max=300)
+    env3.reset_to(seed, "lobos", "natural")
+    flip = {"n": 0}
+    orig = env3._core.n_clusters
+    env3._core.n_clusters = lambda: orig() + (flip["n"] % 2)          # alterna => CLUSTER_CHANGE
+    _o, r1, _t, _tr, i1 = env3.step(0)
+    assert i1["event"] == "CLUSTER_CHANGE", i1
+    flip["n"] += 1
+    _o, r2, _t, _tr, i2 = env3.step(0)                     # misma partición tras interrupción: gratis
+    assert abs(r2 - round(r2)) < 1e-9, r2
+    flip["n"] += 1
+    _o, r3, _t, _tr, i3 = env3.step(1)                     # cambio tras interrupción: paga
+    assert abs((r3 - round(r3)) + DELIB_COST_D2) < 1e-9, (r3, i2, i3)
+    print(f"  [D2-2/3] env 4-0 ≡ Reactive bit a bit · determinista · coste {DELIB_COST_D2} "
+          f"pagado solo al cambiar tras CLUSTER_CHANGE")
+
+
+def test_D2_tripwire_guardia():
+    """[D2-4] TRIPWIRE D2 (espejo de Q-bis): guardias asignados >= 400 ticks SIN 2º clúster
+    percibido => vuelta FORZADA a 4-0 + evento STALL. Dirigido: partición 3-1 en un mundo donde
+    los lobos aún no se perciben (inicio de episodio, lejos)."""
+    from hrl.manager_drone import DroneManagerEnv, GUARD_STALL_TICKS
+    seed = _seeds_by_groups("lobos", 1, 1, min_wolves=3)[0]
+    env = DroneManagerEnv(seed=0)
+    env.reset_to(seed, "lobos", "natural")
+    _o, r, _t, _tr, info = env.step(0)                      # 4-0 hasta que el conteo se asiente
+    assert info["event"] == "CLUSTER_CHANGE", info          # 0 -> 1 clúster percibido (legítimo)
+    stall = None
+    for _ in range(4):                                      # 3-1 con UN solo clúster (sin 2º)
+        _o, r, _t, _tr, info = env.step(1)
+        if info["event"] == "STALL":
+            stall = info
+            break
+        assert info["event"] == "CLUSTER_CHANGE", info      # cualquier otro terminal = escenario inválido
+    assert stall is not None and stall["ticks"] == GUARD_STALL_TICKS, stall
+    assert env._coord.particion == (4, 0), env._coord.particion
+    print(f"  [D2-4] tripwire de guardia: STALL a los {GUARD_STALL_TICKS} ticks sin 2º clúster y "
+          f"4-0 forzado")
+
+
 if __name__ == "__main__":
     test_0_unidades()
     test_1_masa_bit_a_bit()
@@ -1090,6 +1208,9 @@ if __name__ == "__main__":
     test_3b_cebo_keep_y_prematura()
     test_4_allocator_4_0()
     test_D2a_guardia_sonido()
+    test_D2_frozen_wolf_manager()
+    test_D2_env_4_0_y_determinismo()
+    test_D2_tripwire_guardia()
     test_5_manager_obs()
     test_6_manager_env()
     print("hrl_check: TODO OK.")
