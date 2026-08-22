@@ -5,7 +5,7 @@
 > "banderas levantadas" (cosas aparcadas para más adelante). Sirve como borrador de la
 > memoria final (70% de la nota) y como contexto para retomar el trabajo en un chat nuevo.
 >
-> **Última actualización: 2026-08-21** · ***ETAPA 1 CERRADA — RESULTADO PRINCIPAL: RUN-M1'''' (manager
+> **Última actualización: 2026-08-23 — PROYECTO CERRADO (KILL-DATE del dueño): ver §0 justo debajo de este bloque.** · ***ETAPA 1 CERRADA — RESULTADO PRINCIPAL: RUN-M1'''' (manager
 > jerárquico de lobos) es el PRIMER run del proyecto que CUMPLE su criterio de éxito PRE-REGISTRADO***
 > (PREREGISTRO_v3 congelado antes del retrain; firma 2 del dueño 2026-08-21). **Números**: manager final
 > **1.76/1.75/1.76** vs Reactive-estática/run02/run09 (100 semillas emparejadas) · **supera al ORÁCULO SANO
@@ -36,7 +36,7 @@
 > celdas/sanity/metro v3.7 · canal). **Cola firmada**: RUN-M2 (K=1000 fijo — ablación de la
 > terminación-por-evento; predicción pre-registrada: colapso o degradación fuerte de la emergencia) →
 > 1 RÉPLICA de M1'''' (semilla nueva, barra de error del resultado principal). Nada más sin firma.
-> **(2026-08-23, firmas 3) CLAIM PRINCIPAL DEL TFG re-formulado tras RUN-M2 y la RÉPLICA:
+> **(2026-08-22, firmas 3) CLAIM PRINCIPAL DEL TFG re-formulado tras RUN-M2 y la RÉPLICA:
 > "estructura-en-S (P(Δ90|S) = 1.000 en 3/3 runs: M1'''', M2, réplica) + no-inferioridad al oráculo
 > sano (δ=0.15), REPRODUCIDO en réplica (seed 1, mundo v3.7 pineado: sev 1.69 [1.38, 2.01], Δ vs
 > M1'''' −0.075 [−0.20, +0.045], Δ vs oráculo +0.03 [−0.12, +0.18])."** La estrella (+0.10) y keep|G
@@ -51,7 +51,7 @@
 > marcha**: v3.7.1-plazas-estacion oficial (inocuidad Δsev = 0.000), E0.4 con la PROPORCIONAL como
 > listón duro (0.85 vs cebo-2f, **0.61 contra el manager lobo entrenado**, KNC = 0.0, guardia gana la
 > carrera 78-82%; PENETRADO sube — flag reportado sin arreglar), GO firmado, PREREGISTRO_D2 congelado.
-> **RUN-D2 COMPLETADO (2026-08-23; 122.880 macro-pasos, 2 h 58, sin NaN; manager lobo M1'''' congelado
+> **RUN-D2 COMPLETADO (2026-08-22; 122.880 macro-pasos, 2 h 58, sin NaN; manager lobo M1'''' congelado
 > reproducido BIT A BIT como atacante de train)** — STOP-D2 adjudicado contra el preregistro: **Competencia
 > vs Reactive 4-0 APLASTANTE en las 3 celdas** (natural 0.21 vs 0.74 · cebo-2f 1.03 vs 2.61 · manager lobo
 > 0.67 vs 1.76; Δ con IC excluyendo 0: −0.53 / −1.58 / −1.09) · **vs la PROPORCIONAL (δ=0.15): no-inferior
@@ -59,12 +59,100 @@
 > cebo-2f (+0.18 [+0.01, +0.37])** ⇒ criterio de éxito PARCIAL (2 de 3 celdas) · **Estructura emerge**:
 > P(4-0 | 1 clúster) 0.756, P(guardia | 2º clúster) 1.000 — y elige **2-2, no 3-1** · KNC 0.0 (canal trasero
 > muerto, como la proporcional) · guardia gana la carrera 84-89% · reasignaciones MENORES que la proporcional
-> (1.2 vs 22 en cebo-2f: sin parpadeo) · dos FLAGS pre-registrados a decisión humana: STALLs 189/300 eps
+> (1.2 vs 22 en cebo-2f: sin parpadeo) · dos FLAGS pre-registrados a decisión humana: STALLs 189/400 eps
 > (guardias ociosos aceptando el coste) y PENETRADO por encima de la proporcional en las 3 celdas
 > (42/529/146 vs 32/434/72: la línea de 2 se penetra más). Lectura: el manager aprendido iguala a la regla
 > fija donde el atacante es adaptativo (manager lobo) y la supera a la Reactive por −1.1, pero no mejora
 > a la proporcional contra el cebo scriptado. Artefactos: /data/hrl_d2/ (STOP_D2_INFORME.md, TABLA_D2.md,
 > PREREGISTRO_D2.md, visionado/).
+
+## 0. CIERRE TOTAL DEL PROYECTO (2026-08-23) — KILL-DATE absoluto firmado por el dueño en el STOP-D2
+
+**Qué se cierra.** Con la réplica D2 terminada se ejecuta el CIERRE TOTAL firmado: último commit, esta entrada, la
+**tabla maestra de todos los runs y celdas** (`/data/TABLA_MAESTRA.md`, copia condensada abajo) y el contenedor
+parado. **Desde aquí no arranca ningún run nuevo por ningún hallazgo: todo lo que aparezca es future work.**
+
+### 0.1 Réplica D2 (seed 1, receta y mundo v3.7.1 idénticos, pre-registro congelado antes; 3 h 20, fps 10.3, sin NaN)
+
+| | natural | cebo 2f | manager lobo M1'''' |
+|---|---|---|---|
+| RUN-D2 (seed 0) | 0.21 | 1.03 | 0.67 |
+| **réplica (seed 1)** | **0.21** | **1.06** | **0.76** |
+| Δ réplica − Reactive 4-0 | −0.53 [−0.86, −0.22] | −1.55 [−1.98, −1.13] | −1.01 [−1.26, −0.77] |
+| Δ réplica − proporcional (δ=0.15) | −0.04 [−0.12, +0.03] ✔ | **+0.21 [+0.03, +0.40] ✗** | +0.14 [+0.02, +0.28] ✔ (marginal) |
+| **Δ conjunto, 2 aprendices (200 pares; SOLO barra de error)** | **−0.04 [−0.10, +0.01]** | **+0.20 [+0.07, +0.33]** | **+0.10 [+0.02, +0.19]** |
+
+Estructura reproducida: P(guardia | 2º clúster) 0.943, 2-2 0.925, 3-1 0.019, P(4-0 | 1 clúster) 0.897. Las 4 predicciones
+del pre-registro de la réplica CUMPLIDAS; sin anomalía ⇒ sin visionado. Lo que **no** se reproduce: "penetra MENOS que la
+proporcional en el 2f contra el manager lobo" (36 vs 49 en RUN-D2; **185 vs 49** en la réplica) — propiedad del seed 0. Lo
+que varía por semilla: el CUÁNDO (latencia de reparto 35/18/104 ticks vs 10/10/12; gana_guardia 0.78-0.86 vs 0.84-0.89);
+STALLs 147 (vs 189), mismo patrón (guardias ociosos en episodios tranquilos de sev 0).
+
+### 0.2 Claims finales del TFG (tal como quedan, con su réplica al lado)
+
+- **Bando LOBO (Etapa 1)**: el manager jerárquico aprende **estructura-en-S** (P(Δ90 | S) = 1.000 en 3/3 runs: M1'''',
+  M2, réplica) y es **no-inferior al oráculo sano** (δ=0.15), **reproducido** en réplica (1.69 [1.38, 2.01]; Δ vs M1''''
+  −0.075 [−0.20, +0.045]). La estrella (+0.10 [+0.03, +0.19]) y keep|G (0.931) son propiedades del run principal
+  (paisaje G plano: Δ(Δ180−keep) +0.08 [−0.22, +0.38]). La terminación-por-evento es ingrediente del MARGEN, no del
+  MECANISMO (M2: −0.145 [−0.265, −0.04], mecanismo intacto).
+- **Bando DRON (D2)**: el manager aprende **estructura** (guardias ante el 2º clúster ≥ 0.94 y siempre **2-2** — una
+  preferencia que ninguna regla nuestra contenía) en **2/2 runs**; **aplasta a la Reactive 4-0 en 3/3 celdas × 2 runs**
+  (IC excluye 0); **no-inferior a la proporcional** en natural (2/2) y contra el manager lobo entrenado (2/2 en puntual,
+  marginal en la réplica); **FALLA contra el cebo scriptado 2f en 2/2** (+0.18, +0.21; conjunto +0.20 [+0.07, +0.33]):
+  contra un atacante rígido la regla de 30 líneas sigue siendo mejor. Coste: PENETRADO sube con la línea de dos
+  (trade-off cobertura/reparto, graficado en `/data/hrl_d2/penetrado_tradeoff*.png`, no arreglado).
+- **Camino como resultado**: el cebo (2 frentes) NO emerge por PPO puro en 5 runs de lobos (run05-run08; la dieta lo
+  EROSIONA: KNC 26.6 → 13 %), y el MARL de drones bate la barrera pero NO reparte (run01/02/09: reparto 5-6 %). La
+  jerarquía (capa de opciones + manager por eventos) es lo que hace emerger ambas conductas — y las medidas de
+  higiene (pre-registro congelado, gates, censura, coste de deliberación, verificación del instrumento) son lo que
+  permitió distinguir aprendizaje de exploit (M1 +0.42 = churn de presa; M1'' +1.26 = molinillo sobre celdas
+  contaminadas).
+
+### 0.3 Tabla maestra condensada (completa con artefactos: `/data/TABLA_MAESTRA.md`)
+
+| bloque | run / celda | física | resultado clave | veredicto |
+|---|---|---|---|---|
+| MARL drones | run01 (07-18) | v2.6 | 2.35/0/2.34 vs 2.74/0/2.82 | histórico (v2.7) |
+| | **run02_v34** (08-03) | v3.4 | **2.40/0/2.27** vs 2.68/0/2.77; gotera −32 %; reparto NO emerge | bate la barrera v3.4 |
+| | run09_v35 (08-19) | v3.5 | defensa de transferencia: E0.4 0.69 / 2.53 / 1.78 | listón en E0.4 |
+| Lobos PPO | run01-04 (07-14/16) | v2.4.1 | rala 0 → shaping 0.57/0.60 → cuna 0.65/0.72 → residual ≈ suelo (2.82/2.81) | cierre "lobos aprendidos" |
+| | run05-07 (07-17/22) | v2.6-2.8 | cebo 0.0 % en todos los ckpts; currículo agotado | cebo NO emerge ×3 |
+| | **run08_dieta50** (08-04) | v3.4 | KNC 26.6 → 13.0 %, sev-2f 3.50 → 2.65 | ESTRUCTURAL ⇒ jerárquico |
+| Etapa 0 | E0.A / E0.1 / E0.2 (08-17/18) | v3.4 | impuesto 0; Δ(keep−MASA | G) **+0.43 [+0.25, +0.62]**; p75 2.316/4.126 | G0, G1 PASAN |
+| | forense s398 → **v3.5 sonido** | v3.5 | Reactive 2.68 → **0.88/0/0.76**; E0.1' **+0.85 [+0.60, +1.09]**, Δ90|S +0.32 | G1 PASA (4/4 predicciones) |
+| Etapa 1 | re-nivelados v3.5 / v3.6 / **v3.7** | — | B_oracle 0.885 → 1.00 → **1.66 [1.36, 1.97]**; celdas S limpias MASA 0.30 / Δ90 1.71 / Δ180 1.42 | instrumento verificado |
+| | M1 (08-19) | v3.5 | 1.31; +0.42 vs oráculo; P(keep)=1.0 | exploit de interfaz ⇒ Commit K |
+| | M1'' (08-20) | v3.6 | 2.26; +1.26 vs oráculo | NO ADJUDICABLE (VERIF-0) |
+| | **M1'''' (08-21)** | v3.7 | **1.76/1.75/1.76; +0.10 [+0.03, +0.19]; keep|G 0.931 · Δ90|S 1.000** | **CUMPLE (resultado principal)** |
+| | M2 K=1000 (08-22) | v3.7 | 1.62; −0.145 [−0.265, −0.04] | margen, no mecanismo |
+| | réplica M1pppp_r1 (08-22) | v3.7 @4bf5024 | 1.69; −0.075 [−0.20, +0.045]; Δ90|S 1.0 | reproducido |
+| | celdas G (08-22) | v3.7 | keep 2.76 / Δ180 2.84 / Δ90 2.51 | paisaje G plano |
+| D2 | E0.4 listones (08-22) | v3.7.1 | proporcional **0.25 / 0.85 / 0.61**; Reactive 0.74 / 2.61 / 1.76 | GO |
+| | **RUN-D2 (08-22)** | v3.7.1 | **0.21 / 1.03 / 0.67**; vs prop −0.04 / **+0.18** / +0.06; guardia|2cl 1.0 (2-2) | éxito PARCIAL (firmado) |
+| | **réplica D2_r1 (08-23)** | v3.7.1 | **0.21 / 1.06 / 0.76**; vs prop −0.04 / **+0.21** / +0.14; guardia|2cl 0.943 | barra de error; fallo 2f reproducido |
+
+### 0.4 Future work (anotado, NO ejecutado)
+
+proporcional-2-2 (la regla destilada de D2; no se mide para no contaminar el listón) · término de coste por guardia
+ocioso (STALLs) · latencia del reparto como métrica de Estructura · trade-off cobertura/reparto (PENETRADO) ·
+apilamiento de lobos en PENETRADO (forense s398, pendiente desde Etapa 0) · E0.3/E0.5 nunca corridos · run09 nunca
+medido contra M1 · bandera 14 cerrada pero la regla "ningún comportamiento se apoya en movimiento no ordenado" queda
+como principio de diseño para cualquier versión futura.
+
+### 0.5 Fe de erratas del cierre
+
+STALLs de RUN-D2: 189 en **400** episodios (no 300) · varios hechos del 2026-08-22 estaban fechados 08-23 en esta
+cabecera y en la memoria (corregidos) · redondeos (Reactive vs manager lobo 1.76/1.77 = 1.765; run09 1.77/1.78 =
+1.775) · `PIN_REPLICA.txt` copiado a `/data/hrl_m1/M1pppp_r1/`.
+
+### 0.6 Estado final
+
+Código = `313cb51` (último commit con conducta; D2b) + commits de docs; tags `v3.4-baseline` … `v3.7.1-plazas-estacion`;
+worktree `wt_v37_replica` @ `4bf5024` conservado (pin de la réplica M1''''); artefactos en `/data` (`hrl_e0/`,
+`hrl_m1/`, `hrl_d2/`, `drones/`, `wolves/`, `metro_v35/`, `gifs/`, `TABLA_MAESTRA.md`); verja 8/8 verde en el commit
+de cierre; contenedor `202214793-wolves` parado. **No hay siguiente paso ejecutable** (§11 queda como histórico).
+
+
 >
 > *(2026-08-18)* ***v3.5 "REGLA DEL SONIDO" (tag `v3.5-sonido`) — ENMIENDA DE FÍSICA
 > tras el FORENSE de la Etapa 0 del jerárquico + CORRECCIÓN de la entrada de "agujeros deliberados".** El visionado
@@ -2015,6 +2103,8 @@ Ver §4.3.
 ---
 
 ## 11. SIGUIENTE PASO
+
+**(2026-08-23) CIERRE TOTAL: no hay siguiente paso ejecutable — KILL-DATE absoluto del dueño. Lo que sigue es el histórico de pasos; el future work está en §0.4 y en `/data/TABLA_MAESTRA.md` §6.**
 
 **Adversario vaca+lobo CERRADO ("dar la cara" + presa común + terneros/defensoras, pulido).** Las
 adultas plantan cara y pastan **casi quietas y repartidas**; los lobos entran **agrupados por un sector**
