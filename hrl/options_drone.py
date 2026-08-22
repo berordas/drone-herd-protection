@@ -10,11 +10,16 @@ entre:
            paramétrica en k: offsets centrados (i−(k−1)/2)·spacing, gobernador incluido).
            Con partición 4-0 y todos los asientos, BIT A BIT ReactiveCoordinator
            (hrl_check 4).
-  GUARDIA  persecución ACTIVA del lobo más cercano del clúster objetivo — la expulsión
-           exige aproximación > 1 m/s (SCARE_APPROACH_MIN): un guardia quieto es solo pared
-           de 10 m, así que el waypoint es LA POSICIÓN VIVA de la amenaza (cerrar sobre
-           ella = expulsar). Sin 2º clúster: cubrir el OCTANTE MÁS ABIERTO (el de rumbo más
-           lejano de toda amenaza percibida y del resto de drones), a radio de patrulla.
+  GUARDIA  persecución ACTIVA del lobo más cercano del clúster objetivo — REVALIDADA bajo
+           v3.5+/v3.7.1 (Commit D2a): con la REGLA DEL SONIDO la expulsión ya NO exige
+           aproximación (SCARE_APPROACH_MIN deprecated desde v3.5; un dron QUIETO expulsa a
+           <= DETER_RADIUS=20), pero un guardia quieto solo cubre SU burbuja de 20 m — el
+           waypoint sigue siendo LA POSICIÓN VIVA de la amenaza porque PERSEGUIR lleva la
+           burbuja HASTA el lobo del 2º frente y lo intercepta ANTES del rebaño (a 15 vs
+           4 m/s el alcance está garantizado): la CONDUCTA se mantiene, la justificación
+           cambia (test [D2a] de hrl_check). Sin 2º clúster: cubrir el OCTANTE MÁS ABIERTO
+           (el de rumbo más lejano de toda amenaza percibida y del resto de drones), a
+           radio de patrulla.
 
 PERCEPCIÓN HONESTA del reparto: los clústeres se forman con amenazas =
 CONTACTOS ∪ CONFIRMADOS — el bando dron NO ve verdad-terreno. Contacto = cuerpo NO

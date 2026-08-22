@@ -1027,6 +1027,49 @@ def test_4_allocator_4_0():
     print(f"  [4] AllocatorCoordinator 4-0 ≡ ReactiveCoordinator BIT A BIT: {n} episodios OK")
 
 
+def test_D2a_guardia_sonido():
+    """Commit D2a (adenda D2-Fase-1; SOLO docs/tests): el GUARDIA-QUE-PERSIGUE sigue siendo la
+    conducta correcta con el sonido SIEMPRE-ACTIVO (v3.5+) — perseguir lleva la burbuja de 20 m
+    hasta el lobo del 2º frente (un guardia quieto solo cubre la suya). Dirigido en G real:
+    AllocatorCoordinator(3,1): (i) el waypoint del guardia es la POSICIÓN VIVA de una amenaza del
+    clúster SECUNDARIO (unidad de conducta); (ii) en dinámica, el guardia llega a <= DETER del
+    lobo objetivo (la burbuja ALCANZA) y el frente mantiene su línea de 3 sin comandar al
+    guardia. Si esta conducta dejara de ser la correcta => PARAR y avisar (orden del dueño)."""
+    from hrl.options_drone import AllocatorCoordinator, analyze_threats
+    from world import DETER_RADIUS
+    seed = _seeds_by_groups("lobos", 2, 1, min_wolves=3)[0]
+    w = build_world(seed, "lobos")
+    coord = AllocatorCoordinator(w, particion=(3, 1))
+    w.reset()
+    d_min_obj = 1e9
+    unidad_ok = False
+    for t in range(6000):
+        wp = coord.act(w.get_observation())
+        seats = coord._seats.seats()
+        guard = int(seats[3]) if seats[3] >= 0 else -1
+        if guard >= 0:
+            info = analyze_threats(w, coord.inner)
+            if info["secundario"] is not None and (w.drone_state[guard] == ACTIVE) \
+                    and not w.drone_investigating[guard]:
+                pts = info["clusters"][info["secundario"]]
+                d_wp = np.linalg.norm(info["pts"][pts] - wp[guard], axis=1).min()
+                if d_wp < 1e-6:
+                    unidad_ok = True                     # waypoint = amenaza VIVA del 2º clúster
+                    wolves_sec = info["wolf_idx"][pts]
+                    wolves_sec = wolves_sec[wolves_sec >= 0]
+                    if wolves_sec.size:
+                        d_min_obj = min(d_min_obj, float(np.linalg.norm(
+                            w.wolves[wolves_sec] - w.drones[guard], axis=1).min()))
+        _o, _r, term, trunc, _i = w.step(wp)
+        if term or trunc:
+            break
+    assert unidad_ok, "el guardia no persiguió una amenaza VIVA del clúster secundario"
+    assert d_min_obj <= DETER_RADIUS + 2.0, \
+        f"la burbuja del guardia no alcanzó al 2º frente (d_min {d_min_obj:.1f})"
+    print(f"  [D2a] guardia-que-persigue bajo sonido siempre-activo: waypoint = amenaza viva y "
+          f"burbuja alcanzada (d_min {d_min_obj:.1f} <= {DETER_RADIUS + 2:.0f}); conducta REVALIDADA")
+
+
 if __name__ == "__main__":
     test_0_unidades()
     test_1_masa_bit_a_bit()
@@ -1046,6 +1089,7 @@ if __name__ == "__main__":
     test_3_aserciones_y_determinismo()
     test_3b_cebo_keep_y_prematura()
     test_4_allocator_4_0()
+    test_D2a_guardia_sonido()
     test_5_manager_obs()
     test_6_manager_env()
     print("hrl_check: TODO OK.")
