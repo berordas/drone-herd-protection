@@ -8,7 +8,7 @@ drone-based livestock-protection game.**
 > learned it from pure reward — after eight flat-RL campaigns failed. Then
 > the defending side learned to split its forces and stopped it.
 
-![Full play learned by the wolf manager](media/seed98_full_play.gif)
+![The defense learns not to take the bait: 2-2 split against a two-front attack](media/seed43_split_2-2.gif)
 
 📄 **Paper**: [English (PDF)](results/paper/OrdasCernadas_HRL_two_front_coordination_EN.pdf) · [Español (PDF)](results/paper/OrdasCernadas_HRL_coordinacion_dos_frentes_ES.pdf)
 
