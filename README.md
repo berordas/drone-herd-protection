@@ -12,9 +12,9 @@ drone-based livestock-protection game.**
 
 📄 **Paper**: [English (PDF)](results/paper/OrdasCernadas_HRL_two_front_coordination_EN.pdf) · [Español (PDF)](results/paper/OrdasCernadas_HRL_coordinacion_dos_frentes_ES.pdf)
 
-*Course project — Laboratorio de IA, B.Sc. in Mathematical Engineering and
-Artificial Intelligence, Universidad Pontificia Comillas (Madrid). Code and
-internal docs are in Spanish.*
+*Personal project developed during the B.Sc. in Mathematical Engineering
+and Artificial Intelligence, Universidad Pontificia Comillas (Madrid).
+Code and internal docs are in Spanish.*
 
 ---
 
@@ -79,4 +79,52 @@ episodes, checkpoints) are archived with a manifest and SHA-256 hashes.
 
 ## Repository layout
 
-[PENDIENTE — el encargo del README llegó truncado en este punto: falta el contenido de esta sección y la tarea 2 (bloques [PENDIENTE]). Reenviar el resto.]
+```
+world.py               # frozen, versioned physics (v3.7.1)
+wolf_controllers.py    # scripted pack behaviors (mass hunt, two-front bait)
+coordinators.py        # classical defenses (patrol/barrier, proportional allocator)
+baseline.py            # scripted-vs-scripted harness and configs
+render.py              # episode renderer (GIF)
+rl/                    # flat MARL campaigns (PPO wolves, MAPPO drones)
+hrl/                   # options layer + semi-MDP managers (both sides)
+docker/                # reproducible environment
+results/               # evaluations, verification report, paper + figures
+media/                 # cover GIF and LinkedIn clip
+DISEÑO.md              # full design & decision log (Spanish)
+BIBLIOGRAFIA.md        # annotated bibliography
+```
+
+## Quickstart
+
+```bash
+# Install
+mkdir -p ~/rl_data && cd docker && docker compose up -d --build && ./conectar.sh   # bash inside the container, at /workspace
+# (the compose file expects an external Docker network named "alumnos" — `docker network create alumnos` —
+#  and reserves one NVIDIA GPU; everything in the paper runs on CPU, so the `deploy:` block can be dropped)
+
+# Run the 8-check regression gate
+for c in face_check.py battery_check.py escort_check.py drone_check.py reactive_check.py wolf_controller_check.py rl_env_check.py hrl/hrl_check.py; do python3 $c || break; done
+
+# Watch a scripted two-front bait episode (renders a GIF)
+python3 -c "
+from baseline import build_world; from coordinators import ReactiveCoordinator
+from main import run_episode; from render import render_episode
+w = build_world(42, 'lobos'); hist, m = run_episode(w, ReactiveCoordinator(w))   # seed 42: 1 decoy + 4 assault
+print(m['outcome'], 'kills:', m['n_depredadas'], 'wolf groups:', w.wolf_group_sizes)
+render_episode(w, hist[::3], save_path='bait_seed42.gif')"
+
+# Evaluate the trained managers (paired seeds vs. the classical barrier)
+# (checkpoints are not in the repo: extract archivo_tfg_modelos.tar.gz — SHA-256 in results/MANIFEST.md — under /data)
+python3 hrl/eval_manager.py --policy manager:/data/hrl_m1/M1pppp/model.zip --opponent reactive --procs 16   # wolf manager, 100 seeds × {wolves, mixed}
+```
+
+## Acknowledgments
+
+Developed with thanks to **Universidad Pontificia Comillas** and the B.Sc.
+in Mathematical Engineering and Artificial Intelligence for the tools to
+take a project like this all the way: mistakes, findings and retrainings
+included.
+
+## License
+
+Code under the MIT License (see LICENSE). The paper PDFs remain © the author.

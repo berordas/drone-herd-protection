@@ -25,3 +25,4 @@ events.out.tfevents.*
 # Excepción: GIF de portada del README (el resto de GIFs viven en /data, ver results/MANIFEST.md)
 !media/seed98_full_play.gif
 !media/seed43_linkedin.mp4
+!media/seed43_split_2-2.gif
