@@ -1,4 +1,4 @@
-# MANIFEST del archivo del TFG — árbol completo de `/data` (1571 archivos, 2.26 GB), generado 2026-08-23T12:48:24
+# MANIFEST del archivo del TFG — árbol completo de `/data` (1597 archivos, 2.26 GB), generado 2026-08-23T13:48:02
 
 Estado por archivo: **R** = copiado al repo en `results/` (Capa 1) · **M/G/E** = dentro de `archivo_tfg_modelos` / `_gifs` /
 `_evals_raw.tar.gz` (Capa 2) · **—** = NO empaquetado (Capa 3: regenerable desde el repo + semillas). El sha256 es del
@@ -21,7 +21,7 @@ Contenido de `archivo_tfg_evals_raw.tar.gz` (evals crudas por episodio > 1 MB, e
 
 ## 1. Capa 1 — qué se copió al repo (`results/`, espejo del árbol de `/data`)
 
-517 archivos: todos los `.md` (pre-registros con sus marcas de tiempo en el texto, informes STOP, auditorías, forenses, tablas, INDEX), 
+542 archivos: todos los `.md` (pre-registros con sus marcas de tiempo en el texto, informes STOP, auditorías, forenses, tablas, INDEX), 
 todos los `.json` ≤ 1 MB fuera de `checkpoints/` y `tb/` (evals, celdas, config/summary de cada run, flags), `.jsonl` (curvas de la ligera), 
 `.png` (gráficas), `.txt` (timelines de los visionados, evals en texto, pins), y los scripts `.py`/`.sh` de evaluación/verja/visionado que viven en `/data`.
 NO se copian: GIFs (tarball), checkpoints, `tb/`, logs, `.npz`, JSON > 1 MB (tarball).
@@ -43,7 +43,7 @@ NO se copian: GIFs (tarball), checkpoints, `tb/`, logs, `.npz`, JSON > 1 MB (tar
 | GIFs restantes | 84 | 951.2 MB |
 | checkpoints intermedios | 547 | 911.3 MB |
 | arrays intermedios (.npz) | 6 | 89.1 MB |
-| model.zip no seleccionados | 20 | 29.1 MB |
+| model.zip no seleccionados | 21 | 30.5 MB |
 | logs de train/eval y pids | 272 | 5.5 MB |
 | tensorboard (tb/) | 51 | 3.4 MB |
 | otros | 23 | 0.1 MB |
@@ -1134,6 +1134,32 @@ Nota: los checkpoints intermedios, los GIFs restantes y los logs de train son **
 | `metro_v35/gifs/v35_masa_reactive_gemelo_gif2_seed398_mixto_sev3.gif` | 13993551 | 2026-08-19T00:28:56 | `9caab05f8f5f3b0e7c6c82af0534424a8d0eddf4c0b75db51526578738e6e89b` | — |
 | `metro_v35/timelines/v35_cebo_keep_gemelo_gif1_seed398_mixto_sev7.txt` | 1930 | 2026-08-19T00:30:23 | `c61e3df08d8299fc23ca7ecf6e2ba71a627f372ae44fb4df5a443897a5418e3f` | R |
 | `metro_v35/timelines/v35_masa_reactive_gemelo_gif2_seed398_mixto_sev3.txt` | 844 | 2026-08-19T00:28:56 | `aa2a4856335f447fa124ca8e930d96feaa87dc09e769d80fc97ab090a3974442` | R |
+| `paper/VERIFICACION_PAPER.md` | 45896 | 2026-08-23T13:46:39 | `6939e4ffea95ee67303e1701fdba0822beb7557e8c9156fce7b88d5bc1913d32` | R |
+| `paper/figs_en.zip` | 1418651 | 2026-08-23T13:46:39 | `279e50d9ad045e86722d64ad5d19e9ea9c70ccfbc045ec527218d681c967614f` | — |
+| `paper/figs_paper.py` | 19151 | 2026-08-23T13:45:30 | `345377891aff11dabb6037ed238395877a75044dfb8a5acd7fab753ce3f415b0` | R |
+| `paper/rerender_seed98.py` | 3979 | 2026-08-23T13:43:20 | `5de92d10e9daf00cdcd2cc077d55b058bb59be03cd1f6710ae61342840731f3a` | R |
+| `paper/figs/fig_cebo_frames.png` | 237600 | 2026-08-23T13:45:36 | `2255f18fed864789ac26a8a05e6a8a447cc7b81890ef3d1ef036300a5680a019` | R |
+| `paper/figs/fig_cebo_frames_col.png` | 390584 | 2026-08-23T13:45:40 | `c8c8a3e64591323b72912aa565856b355743238fd9d9504e3da113491dcc29c7` | R |
+| `paper/figs/fig_heatmap.png` | 201197 | 2026-08-23T13:45:40 | `b6fda6dc1181ed6376316ddf50d0a8193a099a74ba3c17aa8400465d08f735db` | R |
+| `paper/figs/fig_mundo.png` | 107893 | 2026-08-23T13:45:40 | `95476271de28c52639745037c57ffe682ae765b1f9e3e2badfc400ea60589164` | R |
+| `paper/figs/fig_tradeoff.png` | 95537 | 2026-08-23T13:45:32 | `3fa36b85023fda8f31d94d6ce1747741a734dbffda2c9b78d24811b2fa3f8ad5` | R |
+| `paper/figs/fig_tradeoff_ancho.png` | 87600 | 2026-08-23T13:45:32 | `d39567ce2cf09f1c1fa5efd215f5bcc560900c3a75a65ca94bb59196dab909e8` | R |
+| `paper/figs/fig_valle.png` | 109372 | 2026-08-23T13:45:31 | `95a5e7fae19756f760949c481bb55223c6fe187a114ac7bfda5f4617af11a21c` | R |
+| `paper/figs/figs_notas.json` | 10372 | 2026-08-23T13:45:44 | `7354bb7133c6cf1ad6cc7bafcba30a98ec1b23c7e9d32da21a7d4e9f5eb136b7` | R |
+| `paper/figs_en/_frame_show_en.png` | 56763 | 2026-08-23T13:43:25 | `fcff60c55ce9cee86b00f587f7ec1c165a7d7b369d81bc6aae1e734d3203514b` | R |
+| `paper/figs_en/_frame_show_es.png` | 57499 | 2026-08-23T13:43:25 | `3037d42683dfde2bc89991b652df00b61bbd423fa8259e9fb9c31c3dd56134e4` | R |
+| `paper/figs_en/_frame_strike_en.png` | 52876 | 2026-08-23T13:43:25 | `e27cb9f4642ec8b772a55f36fa5430694061cae35efda2f48098dd4d6b6772e7` | R |
+| `paper/figs_en/_frame_strike_es.png` | 53317 | 2026-08-23T13:43:25 | `23e2f1adfbda088ef8167736f5b5d92e0921a332c99b87061e7d0b1749294741` | R |
+| `paper/figs_en/_frame_suelta_en.png` | 56746 | 2026-08-23T13:43:25 | `3020ee648d26c45d0541ceb253eaef05c1d5cce27eff046123180a56049db85a` | R |
+| `paper/figs_en/_frame_suelta_es.png` | 57175 | 2026-08-23T13:43:25 | `d657967e138c13a41f4387b22f83c8dee652871323b8a1c41610086636ef2faa` | R |
+| `paper/figs_en/_rerender_seed98_hitos.json` | 156 | 2026-08-23T13:43:25 | `40354668ab04c0ae3f01032e9c971c86065dcfe72fe2b9135d6cb1ce8a5f64d5` | R |
+| `paper/figs_en/fig_cebo_frames.png` | 219671 | 2026-08-23T13:45:43 | `c85e36c3f71274196cb2724be9d322e2c84591c31253f76f59474cddfd0a3bec` | R |
+| `paper/figs_en/fig_cebo_frames_col.png` | 383875 | 2026-08-23T13:45:44 | `b435e290a90d981eb23c134ee57a004337b94bfcefe6d0e978d607c5a8b0e7c1` | R |
+| `paper/figs_en/fig_heatmap.png` | 202308 | 2026-08-23T13:45:44 | `ea4d988bbae12850ecb58d94aa207fff45b0cd56212d0ee3e59744ceed50bf21` | R |
+| `paper/figs_en/fig_mundo.png` | 103776 | 2026-08-23T13:45:44 | `7efc769140f2a7516620c82dfa305862376bc40425c9433a45c6e1370c2b7c32` | R |
+| `paper/figs_en/fig_tradeoff.png` | 95377 | 2026-08-23T13:45:42 | `f71a2420e1f59b2dbb257ce3609256f1ad30778b6afa56ac8479a1c16f560fb1` | R |
+| `paper/figs_en/fig_tradeoff_ancho.png` | 87956 | 2026-08-23T13:45:43 | `bfbf152e79d925c0d6c9411e0b544b215d755e8e73310dc153c9762edc7b3f61` | R |
+| `paper/figs_en/fig_valle.png` | 109544 | 2026-08-23T13:45:42 | `34097d283c6588d2066137e07e22edb86627eab4f46908bc9732fb7713a81951` | R |
 | `tmp_recon/verif_determinismo_perf.py` | 1925 | 2026-08-05T13:43:48 | `257084a9b2d57ebd35a5e623cec0b5ddf4cccea89977906b46aac33fc784e2ed` | R |
 | `wolves/cebo_floor.json` | 62859 | 2026-07-17T21:06:43 | `e9bc46a28f6fe9316b72eab8092cb49fe60afb086c12017c1c1e4b29da395f65` | R |
 | `wolves/cebo_ppo_wolves_3499944_steps.json` | 61703 | 2026-07-18T00:14:05 | `068e48c57ad71eee419341b071fa17ce01457155cda6aadd66dcf0a0e48af70e` | R |
