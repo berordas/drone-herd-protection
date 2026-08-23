@@ -1,0 +1,480 @@
+{
+ "es": {
+  "valle": {
+   "v35_cruce": 2057,
+   "v35_pares": 375,
+   "v34_cruce": 4686,
+   "v34_pares": 346,
+   "v35_t1000": [
+    0.28,
+    0.55
+   ],
+   "v35_t2000": [
+    1.47,
+    1.5
+   ],
+   "v35_final": [
+    2.42,
+    1.57
+   ],
+   "v34_final": [
+    3.42,
+    2.99
+   ]
+  },
+  "tradeoff": {
+   "reactive|natural": {
+    "pen": 24.6,
+    "sev": 0.74
+   },
+   "proporcional|natural": {
+    "pen": 32.1,
+    "sev": 0.25
+   },
+   "dronemgr|natural": {
+    "pen": 41.7,
+    "sev": 0.21
+   },
+   "dronemgr_r1|natural": {
+    "pen": 91.8,
+    "sev": 0.21
+   },
+   "reactive|cebo2f": {
+    "pen": 5.8,
+    "sev": 2.61
+   },
+   "proporcional|cebo2f": {
+    "pen": 433.6,
+    "sev": 0.85
+   },
+   "dronemgr|cebo2f": {
+    "pen": 529.0,
+    "sev": 1.03
+   },
+   "dronemgr_r1|cebo2f": {
+    "pen": 514.1,
+    "sev": 1.06
+   },
+   "reactive|manager": {
+    "pen": 19.7,
+    "sev": 1.76
+   },
+   "proporcional|manager": {
+    "pen": 71.5,
+    "sev": 0.61
+   },
+   "dronemgr|manager": {
+    "pen": 146.5,
+    "sev": 0.67
+   },
+   "dronemgr_r1|manager": {
+    "pen": 107.9,
+    "sev": 0.76
+   }
+  },
+  "cebo_frames": {
+   "fuente": "GIF original",
+   "cabecera": "original",
+   "crop_px": [
+    88,
+    84,
+    631,
+    492
+   ],
+   "frames": [
+    [
+     "show",
+     1230
+    ],
+    [
+     "suelta",
+     1419
+    ],
+    [
+     "strike",
+     2373
+    ]
+   ]
+  },
+  "heatmap": {
+   "P_a_first": {
+    "G_n3": {
+     "MASA": 0.0,
+     "CEBO_keep": 0.889,
+     "CEBO_d90": 0.111,
+     "CEBO_d180": 0.0
+    },
+    "G_n4": {
+     "MASA": 0.0,
+     "CEBO_keep": 0.929,
+     "CEBO_d90": 0.071,
+     "CEBO_d180": 0.0
+    },
+    "G_n5": {
+     "MASA": 0.0,
+     "CEBO_keep": 1.0,
+     "CEBO_d90": 0.0,
+     "CEBO_d180": 0.0
+    },
+    "S_n1": {
+     "MASA": 0.0,
+     "CEBO_keep": 0.0,
+     "CEBO_d90": 1.0,
+     "CEBO_d180": 0.0
+    },
+    "S_n2": {
+     "MASA": 0.0,
+     "CEBO_keep": 0.0,
+     "CEBO_d90": 1.0,
+     "CEBO_d180": 0.0
+    },
+    "S_n3": {
+     "MASA": 0.0,
+     "CEBO_keep": 0.0,
+     "CEBO_d90": 1.0,
+     "CEBO_d180": 0.0
+    },
+    "S_n4": {
+     "MASA": 0.0,
+     "CEBO_keep": 0.0,
+     "CEBO_d90": 1.0,
+     "CEBO_d180": 0.0
+    },
+    "S_n5": {
+     "MASA": 0.0,
+     "CEBO_keep": 0.0,
+     "CEBO_d90": 1.0,
+     "CEBO_d180": 0.0
+    }
+   },
+   "ligera_final": {
+    "pasos": 122880,
+    "P_cebo_G_n3": 1.0,
+    "aborts_por_ep": 0.4,
+    "sev_media": 1.175
+   }
+  },
+  "dir": "/data/paper/figs",
+  "labels": {
+   "valle_cebo": "CEBO_keep ({v})",
+   "valle_masa": "MASA ({v})",
+   "valle_cruce": "cruce {v}: t≈{t}",
+   "valle_x": "tick del episodio",
+   "valle_y": "muertes acumuladas (media por episodio)",
+   "valle_title": "Valle del cebo (estrato G, vs Reactive): {n5} pares v3.5 · {n4} pares v3.4",
+   "atk": {
+    "natural": "mezcla natural",
+    "cebo2f": "cebo scriptado 2f",
+    "manager": "manager lobo"
+   },
+   "def": {
+    "reactive": "Reactive 4-0",
+    "proporcional": "proporcional",
+    "dronemgr": "manager dron (seed 0)",
+    "dronemgr_r1": "manager dron (seed 1)"
+   },
+   "to_x": "PENETRADO (ticks con lobo dentro de la línea; escala log)",
+   "to_y": "severidad (muertes/episodio)",
+   "to_title": "Trade-off cobertura/reparto (100 pares por celda; IC 95 %)",
+   "to_ancho_title": "atacante: {a}",
+   "to_ancho_x": "PENETRADO (ticks)",
+   "to_ancho_y": "severidad",
+   "fr_panels": [
+    "(a) show — t = 1231",
+    "(b) suelta — t = 1419",
+    "(c) golpe — t = 2375"
+   ],
+   "fr_ann": {
+    "decoy_show": "señuelo (show)",
+    "assault_ready": "asalto a tiro",
+    "herd": "rebaño",
+    "patrol": "patrulla (4 drones)",
+    "shelter": "establo",
+    "station": "estación",
+    "decoy_released": "señuelo suelto",
+    "assault_detected": "asalto detectado",
+    "drone_invest": "dron investiga",
+    "assault_confirmed": "asalto confirmado",
+    "wolves_in_herd": "lobos en el rebaño",
+    "barrier": "drones (barrera)"
+   },
+   "fr_sup": "Jugada entera del manager lobo (seed 98, mixto, estrato S, opción Δ90): staged 901 → show 1231 → suelta 1419 → golpe 2375; sev 2",
+   "hm_rows": [
+    "G, n=3",
+    "G, n=4",
+    "G, n=5",
+    "S, n=1",
+    "S, n=2",
+    "S, n=3",
+    "S, n=4",
+    "S, n=5"
+   ],
+   "hm_acts": [
+    "MASA",
+    "CEBO keep",
+    "CEBO Δ90",
+    "CEBO Δ180"
+   ],
+   "hm_title": "(a) P(1ª opción | estrato, n lobos), manager final",
+   "hm_row_n": "{l} (n={n})",
+   "lig_cebo": "P(CEBO | G, n≥3)",
+   "lig_d90": "P(Δ90 | S)",
+   "lig_keep": "P(keep | G)",
+   "lig_sev": "severidad (ligera)",
+   "lig_x": "macro-pasos de PPO",
+   "lig_y": "probabilidad (ligera, 40 semillas)",
+   "lig_y2": "severidad media (ligera)",
+   "lig_title": "(b) emergencia en la ligera (RUN-M1'''', 40 semillas)",
+   "mu_shelter": "establo\n(zona segura, r = 60 m)",
+   "mu_station": "estación de carga\n(r = 25 m, plazas fijas)",
+   "mu_herd": "rebaño (pasto, ±40 m)",
+   "mu_drone": "dron",
+   "mu_exp": "expulsión 20 m",
+   "mu_conf": "confirmación 40 m",
+   "mu_det": "detección 100 m",
+   "mu_wolves": "lobos\n(4 m/s)",
+   "mu_flee": "huida al establo\n(vacas 1,2 m/s)",
+   "mu_head": "parcela 500 × 500 m · dt = 0,1 s · drones 15 m/s",
+   "mu_axis": "m"
+  }
+ },
+ "en": {
+  "valle": {
+   "v35_cruce": 2057,
+   "v35_pares": 375,
+   "v34_cruce": 4686,
+   "v34_pares": 346,
+   "v35_t1000": [
+    0.28,
+    0.55
+   ],
+   "v35_t2000": [
+    1.47,
+    1.5
+   ],
+   "v35_final": [
+    2.42,
+    1.57
+   ],
+   "v34_final": [
+    3.42,
+    2.99
+   ]
+  },
+  "tradeoff": {
+   "reactive|natural": {
+    "pen": 24.6,
+    "sev": 0.74
+   },
+   "proporcional|natural": {
+    "pen": 32.1,
+    "sev": 0.25
+   },
+   "dronemgr|natural": {
+    "pen": 41.7,
+    "sev": 0.21
+   },
+   "dronemgr_r1|natural": {
+    "pen": 91.8,
+    "sev": 0.21
+   },
+   "reactive|cebo2f": {
+    "pen": 5.8,
+    "sev": 2.61
+   },
+   "proporcional|cebo2f": {
+    "pen": 433.6,
+    "sev": 0.85
+   },
+   "dronemgr|cebo2f": {
+    "pen": 529.0,
+    "sev": 1.03
+   },
+   "dronemgr_r1|cebo2f": {
+    "pen": 514.1,
+    "sev": 1.06
+   },
+   "reactive|manager": {
+    "pen": 19.7,
+    "sev": 1.76
+   },
+   "proporcional|manager": {
+    "pen": 71.5,
+    "sev": 0.61
+   },
+   "dronemgr|manager": {
+    "pen": 146.5,
+    "sev": 0.67
+   },
+   "dronemgr_r1|manager": {
+    "pen": 107.9,
+    "sev": 0.76
+   }
+  },
+  "cebo_frames": {
+   "fuente": "re-render (rerender_seed98.py, código v3.7 pineado, textos traducidos en la figura)",
+   "cabecera": "re-render",
+   "crop_px": [
+    88,
+    84,
+    631,
+    492
+   ],
+   "frames": [
+    [
+     "show",
+     1230
+    ],
+    [
+     "suelta",
+     1419
+    ],
+    [
+     "strike",
+     2373
+    ]
+   ]
+  },
+  "heatmap": {
+   "P_a_first": {
+    "G_n3": {
+     "MASA": 0.0,
+     "CEBO_keep": 0.889,
+     "CEBO_d90": 0.111,
+     "CEBO_d180": 0.0
+    },
+    "G_n4": {
+     "MASA": 0.0,
+     "CEBO_keep": 0.929,
+     "CEBO_d90": 0.071,
+     "CEBO_d180": 0.0
+    },
+    "G_n5": {
+     "MASA": 0.0,
+     "CEBO_keep": 1.0,
+     "CEBO_d90": 0.0,
+     "CEBO_d180": 0.0
+    },
+    "S_n1": {
+     "MASA": 0.0,
+     "CEBO_keep": 0.0,
+     "CEBO_d90": 1.0,
+     "CEBO_d180": 0.0
+    },
+    "S_n2": {
+     "MASA": 0.0,
+     "CEBO_keep": 0.0,
+     "CEBO_d90": 1.0,
+     "CEBO_d180": 0.0
+    },
+    "S_n3": {
+     "MASA": 0.0,
+     "CEBO_keep": 0.0,
+     "CEBO_d90": 1.0,
+     "CEBO_d180": 0.0
+    },
+    "S_n4": {
+     "MASA": 0.0,
+     "CEBO_keep": 0.0,
+     "CEBO_d90": 1.0,
+     "CEBO_d180": 0.0
+    },
+    "S_n5": {
+     "MASA": 0.0,
+     "CEBO_keep": 0.0,
+     "CEBO_d90": 1.0,
+     "CEBO_d180": 0.0
+    }
+   },
+   "ligera_final": {
+    "pasos": 122880,
+    "P_cebo_G_n3": 1.0,
+    "aborts_por_ep": 0.4,
+    "sev_media": 1.175
+   }
+  },
+  "dir": "/data/paper/figs_en",
+  "labels": {
+   "valle_cebo": "DECOY_keep ({v})",
+   "valle_masa": "MASS ({v})",
+   "valle_cruce": "crossing {v}: t≈{t}",
+   "valle_x": "episode tick",
+   "valle_y": "cumulative kills (mean per episode)",
+   "valle_title": "Decoy valley (stratum G, vs Reactive): {n5} pairs v3.5 · {n4} pairs v3.4",
+   "atk": {
+    "natural": "natural mix",
+    "cebo2f": "scripted 2-front decoy",
+    "manager": "wolf manager"
+   },
+   "def": {
+    "reactive": "Reactive 4-0",
+    "proporcional": "proportional",
+    "dronemgr": "drone manager (seed 0)",
+    "dronemgr_r1": "drone manager (seed 1)"
+   },
+   "to_x": "line penetrations (ticks with a wolf inside the line; log scale)",
+   "to_y": "severity (livestock lost/episode)",
+   "to_title": "Coverage/split trade-off (100 pairs per cell; 95 % CI)",
+   "to_ancho_title": "attacker: {a}",
+   "to_ancho_x": "line penetrations (ticks)",
+   "to_ancho_y": "severity",
+   "fr_panels": [
+    "(a) show — t = 1231",
+    "(b) release — t = 1419",
+    "(c) strike — t = 2375"
+   ],
+   "fr_ann": {
+    "decoy_show": "decoy (show)",
+    "assault_ready": "assault in range",
+    "herd": "herd",
+    "patrol": "patrol (4 drones)",
+    "shelter": "shelter",
+    "station": "charging station",
+    "decoy_released": "decoy released",
+    "assault_detected": "assault detected",
+    "drone_invest": "drone investigating",
+    "assault_confirmed": "assault confirmed",
+    "wolves_in_herd": "wolves in the herd",
+    "barrier": "drones (barrier)"
+   },
+   "fr_sup": "Full play of the wolf manager (seed 98, mixed, stratum S, option Δ90): staged 901 → show 1231 → release 1419 → strike 2375; severity 2",
+   "hm_rows": [
+    "G, n=3",
+    "G, n=4",
+    "G, n=5",
+    "S, n=1",
+    "S, n=2",
+    "S, n=3",
+    "S, n=4",
+    "S, n=5"
+   ],
+   "hm_acts": [
+    "MASS",
+    "DECOY keep",
+    "DECOY Δ90",
+    "DECOY Δ180"
+   ],
+   "hm_title": "(a) P(first option | stratum, n wolves), final manager",
+   "hm_row_n": "{l} (n={n})",
+   "lig_cebo": "P(DECOY | G, n≥3)",
+   "lig_d90": "P(Δ90 | S)",
+   "lig_keep": "P(keep | G)",
+   "lig_sev": "severity (light eval)",
+   "lig_x": "PPO macro-steps",
+   "lig_y": "probability (light eval, 40 seeds)",
+   "lig_y2": "mean severity (light eval)",
+   "lig_title": "(b) emergence during training (RUN-M1'''', 40 seeds)",
+   "mu_shelter": "shelter\n(safe zone, r = 60 m)",
+   "mu_station": "charging station\n(r = 25 m, fixed slots)",
+   "mu_herd": "herd (grazing, ±40 m)",
+   "mu_drone": "drone",
+   "mu_exp": "expulsion 20 m",
+   "mu_conf": "confirmation 40 m",
+   "mu_det": "detection 100 m",
+   "mu_wolves": "wolves\n(4 m/s)",
+   "mu_flee": "flight to shelter\n(cows 1.2 m/s)",
+   "mu_head": "plot 500 × 500 m · dt = 0.1 s · drones 15 m/s",
+   "mu_axis": "m"
+  }
+ }
+}
