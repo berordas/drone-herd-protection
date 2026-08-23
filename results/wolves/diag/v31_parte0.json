@@ -1,0 +1,755 @@
+[
+ {
+  "seed": 2,
+  "n": 3,
+  "reparto": "1+2",
+  "sev": 1,
+  "nacim_dist_vaca_min": 329.1,
+  "nacim_dist_dron_min": 329.1,
+  "paso_deteccion": 505,
+  "paso_sospecha": 636,
+  "paso_escolta": 670,
+  "primera_confirmacion": {
+   "paso": 671,
+   "lobo": 1,
+   "sector": "asalto",
+   "dist_rebano": 93.8,
+   "confirmador_investigador": false
+  },
+  "escolta_con_asalto_a": 75.7,
+  "paso_release": 475,
+  "decoy_dist_min_dron_pre_release": 277.9,
+  "decoy_detectado_pre_release": false,
+  "viraje_investigador_asalto_a_cebo": false,
+  "confirmaciones": [
+   {
+    "paso": 671,
+    "lobo": 1,
+    "sector": "asalto",
+    "dist_rebano": 93.8,
+    "confirmador_investigador": false
+   },
+   {
+    "paso": 671,
+    "lobo": 2,
+    "sector": "asalto",
+    "dist_rebano": 93.8,
+    "confirmador_investigador": false
+   },
+   {
+    "paso": 1145,
+    "lobo": 0,
+    "sector": "cebo",
+    "dist_rebano": 50.3,
+    "confirmador_investigador": false
+   }
+  ]
+ },
+ {
+  "seed": 12,
+  "n": 4,
+  "reparto": "1+3",
+  "sev": 3,
+  "nacim_dist_vaca_min": 139.6,
+  "nacim_dist_dron_min": 135.3,
+  "paso_deteccion": 46,
+  "paso_sospecha": 45,
+  "paso_escolta": 79,
+  "primera_confirmacion": {
+   "paso": 80,
+   "lobo": 3,
+   "sector": "asalto",
+   "dist_rebano": 128.6,
+   "confirmador_investigador": false
+  },
+  "escolta_con_asalto_a": 149.4,
+  "paso_release": 79,
+  "decoy_dist_min_dron_pre_release": 294.7,
+  "decoy_detectado_pre_release": false,
+  "viraje_investigador_asalto_a_cebo": false,
+  "confirmaciones": [
+   {
+    "paso": 80,
+    "lobo": 3,
+    "sector": "asalto",
+    "dist_rebano": 128.6,
+    "confirmador_investigador": false
+   },
+   {
+    "paso": 81,
+    "lobo": 1,
+    "sector": "asalto",
+    "dist_rebano": 129.6,
+    "confirmador_investigador": false
+   },
+   {
+    "paso": 82,
+    "lobo": 2,
+    "sector": "asalto",
+    "dist_rebano": 127.7,
+    "confirmador_investigador": false
+   },
+   {
+    "paso": 946,
+    "lobo": 0,
+    "sector": "cebo",
+    "dist_rebano": 68.7,
+    "confirmador_investigador": false
+   }
+  ]
+ },
+ {
+  "seed": 19,
+  "n": 4,
+  "reparto": "1+3",
+  "sev": 2,
+  "nacim_dist_vaca_min": 211.1,
+  "nacim_dist_dron_min": 182.0,
+  "paso_deteccion": 170,
+  "paso_sospecha": 169,
+  "paso_escolta": 215,
+  "primera_confirmacion": {
+   "paso": 216,
+   "lobo": 1,
+   "sector": "asalto",
+   "dist_rebano": 141.9,
+   "confirmador_investigador": false
+  },
+  "escolta_con_asalto_a": 157.0,
+  "paso_release": 238,
+  "decoy_dist_min_dron_pre_release": 390.7,
+  "decoy_detectado_pre_release": false,
+  "viraje_investigador_asalto_a_cebo": false,
+  "confirmaciones": [
+   {
+    "paso": 216,
+    "lobo": 1,
+    "sector": "asalto",
+    "dist_rebano": 141.9,
+    "confirmador_investigador": false
+   },
+   {
+    "paso": 218,
+    "lobo": 3,
+    "sector": "asalto",
+    "dist_rebano": 146.4,
+    "confirmador_investigador": false
+   },
+   {
+    "paso": 221,
+    "lobo": 2,
+    "sector": "asalto",
+    "dist_rebano": 147.9,
+    "confirmador_investigador": false
+   }
+  ]
+ },
+ {
+  "seed": 26,
+  "n": 4,
+  "reparto": "1+3",
+  "sev": 0,
+  "nacim_dist_vaca_min": 130.4,
+  "nacim_dist_dron_min": 130.7,
+  "paso_deteccion": 39,
+  "paso_sospecha": 38,
+  "paso_escolta": 73,
+  "primera_confirmacion": {
+   "paso": 74,
+   "lobo": 3,
+   "sector": "asalto",
+   "dist_rebano": 131.4,
+   "confirmador_investigador": false
+  },
+  "escolta_con_asalto_a": 133.2,
+  "paso_release": 30,
+  "decoy_dist_min_dron_pre_release": 316.1,
+  "decoy_detectado_pre_release": false,
+  "viraje_investigador_asalto_a_cebo": false,
+  "confirmaciones": [
+   {
+    "paso": 74,
+    "lobo": 3,
+    "sector": "asalto",
+    "dist_rebano": 131.4,
+    "confirmador_investigador": false
+   },
+   {
+    "paso": 76,
+    "lobo": 2,
+    "sector": "asalto",
+    "dist_rebano": 131.0,
+    "confirmador_investigador": false
+   },
+   {
+    "paso": 78,
+    "lobo": 1,
+    "sector": "asalto",
+    "dist_rebano": 131.3,
+    "confirmador_investigador": false
+   },
+   {
+    "paso": 836,
+    "lobo": 0,
+    "sector": "cebo",
+    "dist_rebano": 35.7,
+    "confirmador_investigador": false
+   }
+  ]
+ },
+ {
+  "seed": 29,
+  "n": 3,
+  "reparto": "1+2",
+  "sev": 0,
+  "nacim_dist_vaca_min": 137.5,
+  "nacim_dist_dron_min": 136.5,
+  "paso_deteccion": 40,
+  "paso_sospecha": 39,
+  "paso_escolta": 77,
+  "primera_confirmacion": {
+   "paso": 78,
+   "lobo": 1,
+   "sector": "asalto",
+   "dist_rebano": 144.1,
+   "confirmador_investigador": false
+  },
+  "escolta_con_asalto_a": 158.7,
+  "paso_release": 136,
+  "decoy_dist_min_dron_pre_release": 334.7,
+  "decoy_detectado_pre_release": false,
+  "viraje_investigador_asalto_a_cebo": false,
+  "confirmaciones": [
+   {
+    "paso": 78,
+    "lobo": 1,
+    "sector": "asalto",
+    "dist_rebano": 144.1,
+    "confirmador_investigador": false
+   },
+   {
+    "paso": 79,
+    "lobo": 2,
+    "sector": "asalto",
+    "dist_rebano": 145.0,
+    "confirmador_investigador": false
+   },
+   {
+    "paso": 1208,
+    "lobo": 0,
+    "sector": "cebo",
+    "dist_rebano": 10.9,
+    "confirmador_investigador": false
+   }
+  ]
+ },
+ {
+  "seed": 37,
+  "n": 4,
+  "reparto": "1+3",
+  "sev": 2,
+  "nacim_dist_vaca_min": 141.5,
+  "nacim_dist_dron_min": 131.8,
+  "paso_deteccion": 696,
+  "paso_sospecha": 695,
+  "paso_escolta": 744,
+  "primera_confirmacion": {
+   "paso": 745,
+   "lobo": 2,
+   "sector": "asalto",
+   "dist_rebano": 149.5,
+   "confirmador_investigador": false
+  },
+  "escolta_con_asalto_a": 157.8,
+  "paso_release": 784,
+  "decoy_dist_min_dron_pre_release": 101.9,
+  "decoy_detectado_pre_release": false,
+  "viraje_investigador_asalto_a_cebo": false,
+  "confirmaciones": [
+   {
+    "paso": 745,
+    "lobo": 2,
+    "sector": "asalto",
+    "dist_rebano": 149.5,
+    "confirmador_investigador": false
+   },
+   {
+    "paso": 746,
+    "lobo": 1,
+    "sector": "asalto",
+    "dist_rebano": 151.1,
+    "confirmador_investigador": false
+   },
+   {
+    "paso": 746,
+    "lobo": 3,
+    "sector": "asalto",
+    "dist_rebano": 153.2,
+    "confirmador_investigador": false
+   },
+   {
+    "paso": 1164,
+    "lobo": 0,
+    "sector": "cebo",
+    "dist_rebano": 59.2,
+    "confirmador_investigador": false
+   }
+  ]
+ },
+ {
+  "seed": 40,
+  "n": 3,
+  "reparto": "1+2",
+  "sev": 2,
+  "nacim_dist_vaca_min": 173.3,
+  "nacim_dist_dron_min": 173.3,
+  "paso_deteccion": 570,
+  "paso_sospecha": 569,
+  "paso_escolta": 606,
+  "primera_confirmacion": {
+   "paso": 607,
+   "lobo": 2,
+   "sector": "asalto",
+   "dist_rebano": 142.0,
+   "confirmador_investigador": false
+  },
+  "escolta_con_asalto_a": 138.9,
+  "paso_release": 579,
+  "decoy_dist_min_dron_pre_release": 123.5,
+  "decoy_detectado_pre_release": false,
+  "viraje_investigador_asalto_a_cebo": false,
+  "confirmaciones": [
+   {
+    "paso": 607,
+    "lobo": 2,
+    "sector": "asalto",
+    "dist_rebano": 142.0,
+    "confirmador_investigador": false
+   },
+   {
+    "paso": 614,
+    "lobo": 1,
+    "sector": "asalto",
+    "dist_rebano": 151.2,
+    "confirmador_investigador": false
+   },
+   {
+    "paso": 828,
+    "lobo": 0,
+    "sector": "cebo",
+    "dist_rebano": 103.0,
+    "confirmador_investigador": false
+   }
+  ]
+ },
+ {
+  "seed": 42,
+  "n": 5,
+  "reparto": "1+4",
+  "sev": 2,
+  "nacim_dist_vaca_min": 124.2,
+  "nacim_dist_dron_min": 120.2,
+  "paso_deteccion": 70,
+  "paso_sospecha": 68,
+  "paso_escolta": 117,
+  "primera_confirmacion": {
+   "paso": 118,
+   "lobo": 0,
+   "sector": "cebo",
+   "dist_rebano": 169.5,
+   "confirmador_investigador": false
+  },
+  "escolta_con_asalto_a": 323.3,
+  "paso_release": 499,
+  "decoy_dist_min_dron_pre_release": 16.1,
+  "decoy_detectado_pre_release": true,
+  "viraje_investigador_asalto_a_cebo": false,
+  "confirmaciones": [
+   {
+    "paso": 118,
+    "lobo": 0,
+    "sector": "cebo",
+    "dist_rebano": 169.5,
+    "confirmador_investigador": false
+   },
+   {
+    "paso": 892,
+    "lobo": 4,
+    "sector": "asalto",
+    "dist_rebano": 7.5,
+    "confirmador_investigador": false
+   },
+   {
+    "paso": 896,
+    "lobo": 2,
+    "sector": "asalto",
+    "dist_rebano": 5.3,
+    "confirmador_investigador": false
+   },
+   {
+    "paso": 900,
+    "lobo": 1,
+    "sector": "asalto",
+    "dist_rebano": 6.2,
+    "confirmador_investigador": false
+   }
+  ]
+ },
+ {
+  "seed": 43,
+  "n": 4,
+  "reparto": "1+3",
+  "sev": 2,
+  "nacim_dist_vaca_min": 135.4,
+  "nacim_dist_dron_min": 130.0,
+  "paso_deteccion": 39,
+  "paso_sospecha": 38,
+  "paso_escolta": 76,
+  "primera_confirmacion": {
+   "paso": 77,
+   "lobo": 1,
+   "sector": "asalto",
+   "dist_rebano": 130.4,
+   "confirmador_investigador": false
+  },
+  "escolta_con_asalto_a": 152.1,
+  "paso_release": 93,
+  "decoy_dist_min_dron_pre_release": 267.3,
+  "decoy_detectado_pre_release": false,
+  "viraje_investigador_asalto_a_cebo": false,
+  "confirmaciones": [
+   {
+    "paso": 77,
+    "lobo": 1,
+    "sector": "asalto",
+    "dist_rebano": 130.4,
+    "confirmador_investigador": false
+   },
+   {
+    "paso": 78,
+    "lobo": 2,
+    "sector": "asalto",
+    "dist_rebano": 132.5,
+    "confirmador_investigador": false
+   },
+   {
+    "paso": 82,
+    "lobo": 3,
+    "sector": "asalto",
+    "dist_rebano": 137.8,
+    "confirmador_investigador": false
+   },
+   {
+    "paso": 924,
+    "lobo": 0,
+    "sector": "cebo",
+    "dist_rebano": 24.1,
+    "confirmador_investigador": false
+   }
+  ]
+ },
+ {
+  "seed": 45,
+  "n": 3,
+  "reparto": "1+2",
+  "sev": 4,
+  "nacim_dist_vaca_min": 187.7,
+  "nacim_dist_dron_min": 174.2,
+  "paso_deteccion": 98,
+  "paso_sospecha": 97,
+  "paso_escolta": 135,
+  "primera_confirmacion": {
+   "paso": 136,
+   "lobo": 1,
+   "sector": "asalto",
+   "dist_rebano": 148.9,
+   "confirmador_investigador": false
+  },
+  "escolta_con_asalto_a": 148.7,
+  "paso_release": 133,
+  "decoy_dist_min_dron_pre_release": 159.9,
+  "decoy_detectado_pre_release": false,
+  "viraje_investigador_asalto_a_cebo": false,
+  "confirmaciones": [
+   {
+    "paso": 136,
+    "lobo": 1,
+    "sector": "asalto",
+    "dist_rebano": 148.9,
+    "confirmador_investigador": false
+   },
+   {
+    "paso": 138,
+    "lobo": 2,
+    "sector": "asalto",
+    "dist_rebano": 151.0,
+    "confirmador_investigador": false
+   },
+   {
+    "paso": 744,
+    "lobo": 0,
+    "sector": "cebo",
+    "dist_rebano": 44.6,
+    "confirmador_investigador": false
+   }
+  ]
+ },
+ {
+  "seed": 46,
+  "n": 4,
+  "reparto": "1+3",
+  "sev": 2,
+  "nacim_dist_vaca_min": 265.4,
+  "nacim_dist_dron_min": 243.2,
+  "paso_deteccion": 484,
+  "paso_sospecha": 483,
+  "paso_escolta": 517,
+  "primera_confirmacion": {
+   "paso": 518,
+   "lobo": 3,
+   "sector": "asalto",
+   "dist_rebano": 144.7,
+   "confirmador_investigador": false
+  },
+  "escolta_con_asalto_a": 140.2,
+  "paso_release": 494,
+  "decoy_dist_min_dron_pre_release": 129.9,
+  "decoy_detectado_pre_release": false,
+  "viraje_investigador_asalto_a_cebo": false,
+  "confirmaciones": [
+   {
+    "paso": 518,
+    "lobo": 3,
+    "sector": "asalto",
+    "dist_rebano": 144.7,
+    "confirmador_investigador": false
+   },
+   {
+    "paso": 519,
+    "lobo": 1,
+    "sector": "asalto",
+    "dist_rebano": 146.6,
+    "confirmador_investigador": false
+   },
+   {
+    "paso": 520,
+    "lobo": 2,
+    "sector": "asalto",
+    "dist_rebano": 147.4,
+    "confirmador_investigador": false
+   },
+   {
+    "paso": 923,
+    "lobo": 0,
+    "sector": "cebo",
+    "dist_rebano": 58.8,
+    "confirmador_investigador": false
+   }
+  ]
+ },
+ {
+  "seed": 48,
+  "n": 3,
+  "reparto": "1+2",
+  "sev": 3,
+  "nacim_dist_vaca_min": 121.2,
+  "nacim_dist_dron_min": 114.1,
+  "paso_deteccion": 34,
+  "paso_sospecha": 33,
+  "paso_escolta": 77,
+  "primera_confirmacion": {
+   "paso": 78,
+   "lobo": 0,
+   "sector": "cebo",
+   "dist_rebano": 147.8,
+   "confirmador_investigador": false
+  },
+  "escolta_con_asalto_a": 439.6,
+  "paso_release": 818,
+  "decoy_dist_min_dron_pre_release": 14.7,
+  "decoy_detectado_pre_release": true,
+  "viraje_investigador_asalto_a_cebo": false,
+  "confirmaciones": [
+   {
+    "paso": 78,
+    "lobo": 0,
+    "sector": "cebo",
+    "dist_rebano": 147.8,
+    "confirmador_investigador": false
+   },
+   {
+    "paso": 1131,
+    "lobo": 1,
+    "sector": "asalto",
+    "dist_rebano": 18.6,
+    "confirmador_investigador": false
+   },
+   {
+    "paso": 1158,
+    "lobo": 2,
+    "sector": "asalto",
+    "dist_rebano": 16.2,
+    "confirmador_investigador": false
+   }
+  ]
+ },
+ {
+  "seed": 49,
+  "n": 4,
+  "reparto": "1+3",
+  "sev": 5,
+  "nacim_dist_vaca_min": 211.5,
+  "nacim_dist_dron_min": 192.9,
+  "paso_deteccion": 176,
+  "paso_sospecha": 176,
+  "paso_escolta": 226,
+  "primera_confirmacion": {
+   "paso": 227,
+   "lobo": 2,
+   "sector": "asalto",
+   "dist_rebano": 146.8,
+   "confirmador_investigador": false
+  },
+  "escolta_con_asalto_a": 138.9,
+  "paso_release": 200,
+  "decoy_dist_min_dron_pre_release": 287.3,
+  "decoy_detectado_pre_release": false,
+  "viraje_investigador_asalto_a_cebo": false,
+  "confirmaciones": [
+   {
+    "paso": 227,
+    "lobo": 2,
+    "sector": "asalto",
+    "dist_rebano": 146.8,
+    "confirmador_investigador": false
+   },
+   {
+    "paso": 228,
+    "lobo": 1,
+    "sector": "asalto",
+    "dist_rebano": 147.0,
+    "confirmador_investigador": false
+   },
+   {
+    "paso": 228,
+    "lobo": 3,
+    "sector": "asalto",
+    "dist_rebano": 142.9,
+    "confirmador_investigador": false
+   },
+   {
+    "paso": 1135,
+    "lobo": 0,
+    "sector": "cebo",
+    "dist_rebano": 38.1,
+    "confirmador_investigador": false
+   }
+  ]
+ },
+ {
+  "seed": 52,
+  "n": 4,
+  "reparto": "1+3",
+  "sev": 3,
+  "nacim_dist_vaca_min": 187.4,
+  "nacim_dist_dron_min": 157.7,
+  "paso_deteccion": 521,
+  "paso_sospecha": 520,
+  "paso_escolta": 557,
+  "primera_confirmacion": {
+   "paso": 558,
+   "lobo": 1,
+   "sector": "asalto",
+   "dist_rebano": 143.5,
+   "confirmador_investigador": false
+  },
+  "escolta_con_asalto_a": 140.3,
+  "paso_release": 534,
+  "decoy_dist_min_dron_pre_release": 124.7,
+  "decoy_detectado_pre_release": false,
+  "viraje_investigador_asalto_a_cebo": false,
+  "confirmaciones": [
+   {
+    "paso": 558,
+    "lobo": 1,
+    "sector": "asalto",
+    "dist_rebano": 143.5,
+    "confirmador_investigador": false
+   },
+   {
+    "paso": 558,
+    "lobo": 2,
+    "sector": "asalto",
+    "dist_rebano": 141.9,
+    "confirmador_investigador": false
+   },
+   {
+    "paso": 559,
+    "lobo": 3,
+    "sector": "asalto",
+    "dist_rebano": 144.0,
+    "confirmador_investigador": false
+   },
+   {
+    "paso": 992,
+    "lobo": 0,
+    "sector": "cebo",
+    "dist_rebano": 60.7,
+    "confirmador_investigador": false
+   }
+  ]
+ },
+ {
+  "seed": 58,
+  "n": 4,
+  "reparto": "1+3",
+  "sev": 1,
+  "nacim_dist_vaca_min": 255.3,
+  "nacim_dist_dron_min": 250.0,
+  "paso_deteccion": 387,
+  "paso_sospecha": 387,
+  "paso_escolta": 441,
+  "primera_confirmacion": {
+   "paso": 442,
+   "lobo": 1,
+   "sector": "asalto",
+   "dist_rebano": 155.0,
+   "confirmador_investigador": false
+  },
+  "escolta_con_asalto_a": 183.2,
+  "paso_release": 565,
+  "decoy_dist_min_dron_pre_release": 297.1,
+  "decoy_detectado_pre_release": false,
+  "viraje_investigador_asalto_a_cebo": false,
+  "confirmaciones": [
+   {
+    "paso": 442,
+    "lobo": 1,
+    "sector": "asalto",
+    "dist_rebano": 155.0,
+    "confirmador_investigador": false
+   },
+   {
+    "paso": 446,
+    "lobo": 2,
+    "sector": "asalto",
+    "dist_rebano": 165.0,
+    "confirmador_investigador": false
+   },
+   {
+    "paso": 450,
+    "lobo": 3,
+    "sector": "asalto",
+    "dist_rebano": 171.0,
+    "confirmador_investigador": false
+   },
+   {
+    "paso": 1536,
+    "lobo": 0,
+    "sector": "cebo",
+    "dist_rebano": 65.9,
+    "confirmador_investigador": false
+   }
+  ]
+ }
+]

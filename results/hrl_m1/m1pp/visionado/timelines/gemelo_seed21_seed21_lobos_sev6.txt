@@ -1,0 +1,9 @@
+gemelo_seed21 | seed=21 lobos n=4 G=False sev_eval=6 | oracle sev=0
+t=     0  DECISION #1   CEBO_d180  -> MUERTE            ticks= 2879 r=1
+t=  2879  DECISION #2   CEBO_keep  -> MUERTE            ticks=   79 r=1
+t=  2958  DECISION #3   CEBO_d90   -> MUERTE            ticks=  161 r=1
+t=  3119  DECISION #4   CEBO_keep  -> MUERTE            ticks=  103 r=1
+t=  3222  DECISION #5   CEBO_keep  -> MUERTE            ticks=   76 r=1
+t=  3298  DECISION #6   CEBO_keep  -> ABORT_BAIT_FAILED ticks=   60 r=0
+t=  3358  DECISION #7   CEBO_keep  -> FIN_EPISODIO      ticks=    7 r=1
+t=  2226  capa SHOW_START mode=manager

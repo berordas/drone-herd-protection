@@ -1,0 +1,19 @@
+episodios de 2 grupos: lobos 29/100 · mixto 29/100 (idéntico v3.2/v3.4: spawn intacto)
+
+=== REACTIVE: severidad media±SEM por nº de FRENTES ===
+                      v3.2 (1 fr)            v3.4 (1 fr)    Δ1fr |            v3.2 (2 fr)            v3.4 (2 fr)    Δ2fr
+lobos            1.85±0.16 (n=71)       2.37±0.18 (n=71)   +0.52 |       2.07±0.24 (n=29)       3.45±0.31 (n=29)   +1.38
+mixto            1.87±0.20 (n=71)       2.45±0.19 (n=71)   +0.58 |       2.17±0.23 (n=29)       3.55±0.31 (n=29)   +1.38
+
+  Δ1fr = efecto PURO de la defensa nueva (trinquete + línea rígida; lobo idéntico)
+  Δ2fr − Δ1fr ≈ premio del CEBO INVERTIDO (sobre la misma defensa)
+
+=== dentro de v3.4: premio del cebo = 2fr − 1fr (misma versión) ===
+  lobos: 2fr 3.45 − 1fr 2.37 = +1.08 (SEM comb 0.36)
+    (v3.2 era: 2fr 2.07 − 1fr 1.85 = +0.22, SEM 0.29)
+  mixto: 2fr 3.55 − 1fr 2.45 = +1.10 (SEM comb 0.36)
+    (v3.2 era: 2fr 2.17 − 1fr 1.87 = +0.30, SEM 0.31)
+
+=== DUMMY (control): mismo desglose ===
+  lobos: 1fr 3.52->3.52 (+0.00) | 2fr 4.38->4.55 (+0.17)
+  mixto: 1fr 3.58->3.58 (+0.00) | 2fr 4.14->4.48 (+0.34)

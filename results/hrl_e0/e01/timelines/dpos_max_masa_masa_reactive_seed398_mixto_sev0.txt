@@ -1,0 +1,4 @@
+dpos_max_masa_masa_reactive_seed398_mixto_sev0 | arm=masa_reactive status=timeout sev=0 steps=23570 grupos=[1, 2] | muertes con procedencia al final
+t=     0  OPTION_START     option=MASA
+t=   230  ESCOLTA_LATCH
+t=   231  ANCHOR_FLIP      frm=None to=0

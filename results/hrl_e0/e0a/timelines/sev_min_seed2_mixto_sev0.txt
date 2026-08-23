@@ -1,0 +1,2 @@
+sev_min_seed2_mixto_sev0 | arm=cebo_capa_manager status=timeout sev=0 steps=23570 grupos=[1, 2] | muertes con procedencia al final
+t=     0  OPTION_START     option=CEBO delta_deg=180.0

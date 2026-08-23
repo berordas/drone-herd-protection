@@ -1,0 +1,1 @@
+{"spacing": 18.0, "lobos": {"sev": 2.64, "std": 1.6219, "n_safe": 4.14, "terminals": {"success": 5, "predation": 89, "timeout": 6}}, "corzos": {"sev": 0.0, "std": 0.0, "n_safe": 0.0, "terminals": {"success": 0, "predation": 0, "timeout": 100}}, "mixto": {"sev": 2.71, "std": 1.5511, "n_safe": 4.16, "terminals": {"success": 6, "predation": 89, "timeout": 5}}, "aggregate": 1.7833}

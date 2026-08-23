@@ -1,0 +1,105 @@
+{
+ "jobs": 600,
+ "orbita": {
+  "total": {
+   "n": 300,
+   "sev": 0.5466666666666666,
+   "handoffs_ep": 17.913333333333334,
+   "espera_media": 297.80350123225975,
+   "espera_max": 777,
+   "stranded_ep": 2.95,
+   "relevos_escolta_ep": 2.84,
+   "relevos_patrulla_ep": 15.073333333333334
+  },
+  "lobos": {
+   "n": 100,
+   "sev": 0.88,
+   "handoffs_ep": 4.72,
+   "espera_media": 208.21114908834616,
+   "espera_max": 542,
+   "stranded_ep": 0.41,
+   "relevos_escolta_ep": 4.18,
+   "relevos_patrulla_ep": 0.54
+  },
+  "corzos": {
+   "n": 100,
+   "sev": 0.0,
+   "handoffs_ep": 43.97,
+   "espera_media": 475.99375510923187,
+   "espera_max": 777,
+   "stranded_ep": 8.0,
+   "relevos_escolta_ep": 0.0,
+   "relevos_patrulla_ep": 43.97
+  },
+  "mixto": {
+   "n": 100,
+   "sev": 0.76,
+   "handoffs_ep": 5.05,
+   "espera_media": 197.83175350705415,
+   "espera_max": 550,
+   "stranded_ep": 0.44,
+   "relevos_escolta_ep": 4.34,
+   "relevos_patrulla_ep": 0.71
+  }
+ },
+ "estatica": {
+  "total": {
+   "n": 300,
+   "sev": 0.6233333333333333,
+   "handoffs_ep": 9.78,
+   "espera_media": 102.1642117798989,
+   "espera_max": 408,
+   "stranded_ep": 0.0,
+   "relevos_escolta_ep": 2.0866666666666664,
+   "relevos_patrulla_ep": 7.693333333333333
+  },
+  "lobos": {
+   "n": 100,
+   "sev": 0.94,
+   "handoffs_ep": 4.08,
+   "espera_media": 104.59955557935317,
+   "espera_max": 408,
+   "stranded_ep": 0.0,
+   "relevos_escolta_ep": 3.13,
+   "relevos_patrulla_ep": 0.95
+  },
+  "corzos": {
+   "n": 100,
+   "sev": 0.0,
+   "handoffs_ep": 21.2,
+   "espera_media": 100.8424346884999,
+   "espera_max": 309,
+   "stranded_ep": 0.0,
+   "relevos_escolta_ep": 0.0,
+   "relevos_patrulla_ep": 21.2
+  },
+  "mixto": {
+   "n": 100,
+   "sev": 0.93,
+   "handoffs_ep": 4.06,
+   "espera_media": 101.25856176384637,
+   "espera_max": 365,
+   "stranded_ep": 0.0,
+   "relevos_escolta_ep": 3.13,
+   "relevos_patrulla_ep": 0.93
+  }
+ },
+ "delta_sev_estatica_menos_orbita": [
+  0.07666666666666666,
+  -0.06333333333333334,
+  0.22
+ ],
+ "peor_handoff_orbita": {
+  "seed": 50,
+  "kind": "corzos",
+  "sev": 0,
+  "status": "timeout",
+  "handoffs": 44,
+  "espera_media": 477.72727272727275,
+  "espera_max": 777,
+  "stranded": 8,
+  "relevos_escolta": 0,
+  "relevos_patrulla": 44
+ },
+ "gemelo_estatica": 0
+}

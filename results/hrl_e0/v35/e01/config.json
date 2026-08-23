@@ -1,0 +1,10 @@
+{
+ "fecha": "2026-08-19T01:37:47",
+ "estratos": {
+  "G": 400,
+  "S": 100
+ },
+ "n_confirmatoria": 375,
+ "n_exploratoria": 100,
+ "procs": 32
+}

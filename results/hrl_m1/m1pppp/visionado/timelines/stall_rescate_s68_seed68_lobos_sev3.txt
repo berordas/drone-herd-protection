@@ -1,0 +1,13 @@
+stall_rescate_s68 | seed=68 lobos n=3 G=False sev_eval=3 jugada={'t_staged': 0, 't_show': 400, 't_suelta': 399, 't_strike': None, 'completa': True} stalls=1 | oracle sev=3
+t=     0  DECISION #1   CEBO_d90   -> ABORT_BAIT_FAILED ticks=  121 r=0.00
+t=   121  DECISION #2   CEBO_d90   -> ABORT_BAIT_FAILED ticks=   50 r=0.00
+t=   171  DECISION #3   CEBO_d90   -> ABORT_BAIT_FAILED ticks=   50 r=0.00
+t=   221  DECISION #4   CEBO_d90   -> ABORT_BAIT_FAILED ticks=   50 r=0.00
+t=   271  DECISION #5   CEBO_d90   -> ABORT_BAIT_FAILED ticks=   50 r=0.00
+t=   321  DECISION #6   CEBO_d90   -> ABORT_BAIT_FAILED ticks=   50 r=0.00
+t=   371  DECISION #7   CEBO_d90   -> MUERTE            ticks=  624 r=1.00
+t=   995  DECISION #8   MASA       -> MUERTE            ticks=   15 r=1.00
+t=  1010  DECISION #9   MASA       -> FIN_EPISODIO      ticks=  102 r=1.00
+t=   400  capa STALL ticks_staged=400 mode=manager align_done=False
+t=   400  capa SHOW_START mode=manager staged_causa=a_tiro err_rumbo_deg=63.7 delta_pretendida_deg=90.0
+t=   614  capa ALIGN_END causa=tolerancia err_deg=25.0 ticks=614

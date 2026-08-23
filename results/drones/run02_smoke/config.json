@@ -1,0 +1,55 @@
+{
+  "args": {
+    "total_steps": 60000,
+    "n_envs": 3,
+    "seed": 0,
+    "outdir": "/data/drones/run02_smoke",
+    "kinds": [
+      "lobos",
+      "mixto",
+      "corzos"
+    ],
+    "device": "cpu",
+    "frame_skip": 5,
+    "eval_every": 15000,
+    "lr": null,
+    "residual_scale": null,
+    "local_coef": 0.01,
+    "phase1_steps": 20000,
+    "smoke": true
+  },
+  "hyper": {
+    "n_steps": 2048,
+    "batch_size": 512,
+    "gamma": 0.999,
+    "gae_lambda": 0.95,
+    "learning_rate": 0.0003,
+    "ent_coef": 0.01,
+    "clip_range": 0.2,
+    "n_epochs": 10
+  },
+  "net_arch": [
+    256,
+    256
+  ],
+  "algo": "PPO(MAPPOPolicy) = MAPPO parameter-sharing",
+  "mappo": {
+    "actor": "compartido, DESCENTRALIZADO (obs local 162)",
+    "critic": "CENTRALIZADO (obs global privilegiada 122 = rl.obs.build_obs, CTDE)",
+    "agente": "PUESTO de barrera (k-ésimo dron EN ESTACIÓN); N_SEATS=4"
+  },
+  "reward": {
+    "global": "-1 por res matada (compartida) — LA métrica con signo",
+    "local": "+local_coef por (lobo,paso) expulsado atribuido al dron del puesto (regla del mundo recomputada; determinista)",
+    "local_coef": 0.01,
+    "anti_proxy": "ep_sev y ep_deter POR SEPARADO en el log; la vara = severidad del arnés"
+  },
+  "residual": {
+    "scale_m": 20.0,
+    "phase1_steps": 20000,
+    "log_std_init": -2.0,
+    "nota": "run02: δ sobre el waypoint de la barrera v3.4 SIN RIGIDEZ (NonRigidBarrier viva dentro; autoridad plena por dron); obs con contactos+confirmados; máscara ACTIVE&~investigating (v3.0); δ≡0 = suelo re-medido de esta variante (NO la Reactive rígida)"
+  },
+  "abort": "PACTO run02 sobre v3.4 (guardias INVERTIDAS — MENOS severidad = MEJOR, ¡signo contrario a los lobos!): el SUELO es la barrera v3.4 SIN RIGIDEZ (NonRigidBarrier, δ=0) RE-MEDIDO — arnés 100 semillas 2.74±1.68/0/2.63±1.67 (vs Reactive RÍGIDA 2.68/0/2.77, la nota a batir: Δ +0.06/−0.14, dentro del ruido — quitar el gobernador ni ayuda ni estropea a la barrera scriptada; la rigidez afectaba al comportamiento, por eso se re-midió); eval ligera 10 eps 5 lobos+5 mixto con δ=0 = 3.00 EXACTO, detalle [3,0,5,4,5 | 2,0,2,4,5]. FASE 1 (solo-crítico, δ medio 0): las ligeras deben CLAVARSE en ese suelo. GUARDIA DE EROSIÓN: ligera SOSTENIDA por encima de ~3.2 en fase 2 durante ≥1,5M pasos-agente → PARAR y reportar (la red estropea la barrera; palancas —bajar lr / alargar fase 1— = decisión del usuario). GUARDIA ANTI-PROXY (el riesgo asumido con la recompensa local): si ep_deter SUBE pero ep_sev NO baja (o empeora) de forma sostenida ≥2M pasos-agente → PARAR y avisar (la política cultiva el proxy: perseguir lobos rompiendo la barrera; mitigación —quitar la componente local y seguir con recompensa global pura— = decisión del usuario); cada eval ligera imprime el buffer (ep_sev, ep_deter) para esta vigilancia. SIN aborto por estancamiento: el suelo es útil (δ≈0 = la barrera sin rigidez); no bajar del suelo NO es fracaso catastrófico. ÉXITO = bajar la severidad de forma CLARA y SOSTENIDA — la cifra estrella es vs Reactive 2.68/0/2.77; la vara final es el arnés de 100 semillas (rl/drone_eval.py), no la recompensa.",
+  "fecha": "2026-08-03T14:04:43"
+}

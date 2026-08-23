@@ -1,0 +1,76 @@
+{
+ "defensa": "proporcional",
+ "atacante": "cebo2f",
+ "n": 3,
+ "sev": 0.0,
+ "sev_2f": 0.0,
+ "n_2f": 3,
+ "knc_frac": 0.0,
+ "jugada_completa_frac": 0.667,
+ "penetrado_medio": 0.0,
+ "carrera": {
+  "latencia_media": 3.0,
+  "reasignaciones_media": 3.0,
+  "gana_guardia_frac": 1.0,
+  "n_carreras": 2
+ },
+ "episodes": [
+  {
+   "seed": 2,
+   "kind": "lobos",
+   "sev": 0,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 0,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": 877,
+    "t_guard": 881,
+    "latencia": 4,
+    "t_llegada_guardia": 989,
+    "t_llegada_asalto": null,
+    "gana_guardia": true,
+    "reasignaciones": 2
+   }
+  },
+  {
+   "seed": 12,
+   "kind": "lobos",
+   "sev": 0,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 0,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": 589,
+    "t_guard": 591,
+    "latencia": 2,
+    "t_llegada_guardia": 749,
+    "t_llegada_asalto": 1354,
+    "gana_guardia": true,
+    "reasignaciones": 7
+   }
+  },
+  {
+   "seed": 19,
+   "kind": "lobos",
+   "sev": 0,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 0,
+   "jugada_completa": false,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  }
+ ]
+}

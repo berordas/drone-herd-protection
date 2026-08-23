@@ -1,0 +1,48 @@
+{
+  "args": {
+    "total_steps": 10000000,
+    "n_envs": 12,
+    "seed": 0,
+    "outdir": "/data/wolves/run03",
+    "kinds": [
+      "lobos",
+      "mixto"
+    ],
+    "device": "cpu",
+    "frame_skip": 5,
+    "smoke": false,
+    "resume": null,
+    "eval_every": 250000,
+    "shaping": "on",
+    "shaping_beta": 1.0,
+    "init_from": "/data/wolves/demos/bc_model.zip",
+    "lr": 0.0001,
+    "abort_ref": 0.2
+  },
+  "hyper": {
+    "n_steps": 2048,
+    "batch_size": 512,
+    "gamma": 0.999,
+    "gae_lambda": 0.95,
+    "learning_rate": 0.0001,
+    "ent_coef": 0.01,
+    "clip_range": 0.2,
+    "n_epochs": 10
+  },
+  "net_arch": [
+    256,
+    256
+  ],
+  "algo": "PPO(MlpPolicy)",
+  "reward": "+1 por res matada (rala, compartida); sin castigo por tiempo ni por a-salvo; + shaping por potencial (plan B, Ng et al.)",
+  "shaping": {
+    "on": true,
+    "beta": 1.0,
+    "gamma": 0.999,
+    "phi": "-beta * mean_i dist(lobo_i, presa ternero-primero) / diagonal_campo; 0 si coasting",
+    "nota": "gamma EXACTAMENTE el del PPO (inocuidad de Ng et al.); la eval NUNCA ve el shaping"
+  },
+  "init_from": "/data/wolves/demos/bc_model.zip",
+  "abort": "CRITERIO DE ABORTO (pactado, warm-start/--init-from, run03): si a ~3.000.000 de pasos ni ep_kills_mean ni las evals ligeras superan CON CLARIDAD el nivel del clon (0.20 muertes_media en las 10 semillas de la eval ligera), PARAR el run y reportar — estancamiento y colapso del warm-start (el crítico fresco desaprendiendo el prior) quedan cubiertos con el mismo umbral. Las mitigaciones las decide el usuario — NO aplicarlas por cuenta propia.",
+  "fecha": "2026-07-15T21:02:06"
+}

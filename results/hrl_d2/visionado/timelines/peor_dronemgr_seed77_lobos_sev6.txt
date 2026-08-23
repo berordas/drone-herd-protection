@@ -1,0 +1,3 @@
+peor_dronemgr | seed=77 lobos sev_eval=6 cambios=1 carrera={'t_sec': 1494, 't_guard': 1495, 't_guard_post': 1495, 'guardias_antes_2cl': False, 'latencia': 1, 't_llegada_guardia': 1623, 't_llegada_asalto': 1875, 'gana_guardia': True, 'reasignaciones': 1}
+t=     0  PARTICION (4, 0) (evento previo INICIO)
+t=  1494  PARTICION (2, 2) (evento previo CLUSTER_CHANGE)

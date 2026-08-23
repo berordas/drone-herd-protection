@@ -1,0 +1,13 @@
+primer_cebo_G | seed=2 lobos n=3 G=True | manager=model sev_eval=5 | oracle sev=5
+t=     0  DECISION #1   CEBO_keep  -> MUERTE            ticks= 1331 r=1
+t=  1331  DECISION #2   CEBO_d90   -> MUERTE            ticks=  124 r=1
+t=  1455  DECISION #3   CEBO_d180  -> MUERTE            ticks=  107 r=1
+t=  1562  DECISION #4   CEBO_keep  -> MUERTE            ticks=   54 r=1
+t=  1616  DECISION #5   CEBO_d90   -> ABORT_BAIT_FAILED ticks=   79 r=0
+t=  1695  DECISION #6   CEBO_d90   -> FIN_EPISODIO      ticks=    9 r=1
+t=     0  capa OPTION_START {'t': 0, 'ev': 'OPTION_START', 'option': 'CEBO', 'membership': 'keep', 'hold': 50.0}
+t=   341  capa SHOW_START {'t': 341, 'ev': 'SHOW_START', 'mode': 'keep'}
+t=  1331  capa OPTION_START {'t': 1331, 'ev': 'OPTION_START', 'option': 'CEBO', 'delta_deg': 90.0, 'hold': 50.0}
+t=  1455  capa OPTION_START {'t': 1455, 'ev': 'OPTION_START', 'option': 'CEBO', 'delta_deg': 180.0, 'hold': 50.0}
+t=  1562  capa OPTION_START {'t': 1562, 'ev': 'OPTION_START', 'option': 'CEBO', 'membership': 'keep', 'hold': 50.0}
+t=  1616  capa OPTION_START {'t': 1616, 'ev': 'OPTION_START', 'option': 'CEBO', 'delta_deg': 90.0, 'hold': 50.0}

@@ -1,0 +1,1474 @@
+{
+  "fecha": "2026-07-15T19:16:36",
+  "n_pairs": 122208,
+  "n_episodes": 181,
+  "seeds": [
+    10000,
+    10180
+  ],
+  "seeds_disjuntas_de_eval": true,
+  "kinds": {
+    "lobos": 91,
+    "mixto": 90
+  },
+  "frame_skip": 5,
+  "accion": "v_target del scriptado en el 1er paso de la ventana, ÷ wolf_speed (=[-1,1]); slots ausentes a 0",
+  "obs": "rl/obs.py build_obs en la frontera del env (misma convención que WolfPackEnv/test 7)",
+  "experto_muertes_media": 2.5248618784530388,
+  "experto_muertes_std": 1.6030670216650527,
+  "experto_terminales": {
+    "success": 10,
+    "predation": 148,
+    "timeout": 23
+  },
+  "episodes": [
+    {
+      "seed": 10000,
+      "kind": "lobos",
+      "status": "timeout",
+      "steps": 14142,
+      "n_depredadas": 0,
+      "n_pairs": 2829
+    },
+    {
+      "seed": 10001,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1060,
+      "n_depredadas": 3,
+      "n_pairs": 212
+    },
+    {
+      "seed": 10002,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1235,
+      "n_depredadas": 3,
+      "n_pairs": 247
+    },
+    {
+      "seed": 10003,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1111,
+      "n_depredadas": 2,
+      "n_pairs": 223
+    },
+    {
+      "seed": 10004,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1299,
+      "n_depredadas": 3,
+      "n_pairs": 260
+    },
+    {
+      "seed": 10005,
+      "kind": "mixto",
+      "status": "timeout",
+      "steps": 14142,
+      "n_depredadas": 0,
+      "n_pairs": 2829
+    },
+    {
+      "seed": 10006,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1423,
+      "n_depredadas": 2,
+      "n_pairs": 285
+    },
+    {
+      "seed": 10007,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1204,
+      "n_depredadas": 4,
+      "n_pairs": 241
+    },
+    {
+      "seed": 10008,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1617,
+      "n_depredadas": 2,
+      "n_pairs": 324
+    },
+    {
+      "seed": 10009,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1210,
+      "n_depredadas": 1,
+      "n_pairs": 242
+    },
+    {
+      "seed": 10010,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1075,
+      "n_depredadas": 4,
+      "n_pairs": 215
+    },
+    {
+      "seed": 10011,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1418,
+      "n_depredadas": 3,
+      "n_pairs": 284
+    },
+    {
+      "seed": 10012,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1022,
+      "n_depredadas": 3,
+      "n_pairs": 205
+    },
+    {
+      "seed": 10013,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1101,
+      "n_depredadas": 4,
+      "n_pairs": 221
+    },
+    {
+      "seed": 10014,
+      "kind": "lobos",
+      "status": "timeout",
+      "steps": 14142,
+      "n_depredadas": 0,
+      "n_pairs": 2829
+    },
+    {
+      "seed": 10015,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1731,
+      "n_depredadas": 2,
+      "n_pairs": 347
+    },
+    {
+      "seed": 10016,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1707,
+      "n_depredadas": 5,
+      "n_pairs": 342
+    },
+    {
+      "seed": 10017,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1872,
+      "n_depredadas": 2,
+      "n_pairs": 375
+    },
+    {
+      "seed": 10018,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1462,
+      "n_depredadas": 1,
+      "n_pairs": 293
+    },
+    {
+      "seed": 10019,
+      "kind": "mixto",
+      "status": "timeout",
+      "steps": 14142,
+      "n_depredadas": 0,
+      "n_pairs": 2829
+    },
+    {
+      "seed": 10020,
+      "kind": "lobos",
+      "status": "timeout",
+      "steps": 14142,
+      "n_depredadas": 0,
+      "n_pairs": 2829
+    },
+    {
+      "seed": 10021,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 858,
+      "n_depredadas": 3,
+      "n_pairs": 172
+    },
+    {
+      "seed": 10022,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1189,
+      "n_depredadas": 3,
+      "n_pairs": 238
+    },
+    {
+      "seed": 10023,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1228,
+      "n_depredadas": 1,
+      "n_pairs": 246
+    },
+    {
+      "seed": 10024,
+      "kind": "lobos",
+      "status": "timeout",
+      "steps": 14142,
+      "n_depredadas": 0,
+      "n_pairs": 2829
+    },
+    {
+      "seed": 10025,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1206,
+      "n_depredadas": 4,
+      "n_pairs": 242
+    },
+    {
+      "seed": 10026,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 743,
+      "n_depredadas": 3,
+      "n_pairs": 149
+    },
+    {
+      "seed": 10027,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1337,
+      "n_depredadas": 2,
+      "n_pairs": 268
+    },
+    {
+      "seed": 10028,
+      "kind": "lobos",
+      "status": "timeout",
+      "steps": 14142,
+      "n_depredadas": 0,
+      "n_pairs": 2829
+    },
+    {
+      "seed": 10029,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 796,
+      "n_depredadas": 2,
+      "n_pairs": 160
+    },
+    {
+      "seed": 10030,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 861,
+      "n_depredadas": 4,
+      "n_pairs": 173
+    },
+    {
+      "seed": 10031,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1086,
+      "n_depredadas": 3,
+      "n_pairs": 218
+    },
+    {
+      "seed": 10032,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1333,
+      "n_depredadas": 5,
+      "n_pairs": 267
+    },
+    {
+      "seed": 10033,
+      "kind": "mixto",
+      "status": "success",
+      "steps": 1423,
+      "n_depredadas": 0,
+      "n_pairs": 285
+    },
+    {
+      "seed": 10034,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 787,
+      "n_depredadas": 3,
+      "n_pairs": 158
+    },
+    {
+      "seed": 10035,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1015,
+      "n_depredadas": 2,
+      "n_pairs": 203
+    },
+    {
+      "seed": 10036,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1476,
+      "n_depredadas": 2,
+      "n_pairs": 296
+    },
+    {
+      "seed": 10037,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 730,
+      "n_depredadas": 2,
+      "n_pairs": 146
+    },
+    {
+      "seed": 10038,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 814,
+      "n_depredadas": 4,
+      "n_pairs": 163
+    },
+    {
+      "seed": 10039,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1445,
+      "n_depredadas": 4,
+      "n_pairs": 289
+    },
+    {
+      "seed": 10040,
+      "kind": "lobos",
+      "status": "success",
+      "steps": 1472,
+      "n_depredadas": 0,
+      "n_pairs": 295
+    },
+    {
+      "seed": 10041,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1858,
+      "n_depredadas": 5,
+      "n_pairs": 372
+    },
+    {
+      "seed": 10042,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1620,
+      "n_depredadas": 4,
+      "n_pairs": 324
+    },
+    {
+      "seed": 10043,
+      "kind": "mixto",
+      "status": "success",
+      "steps": 1004,
+      "n_depredadas": 0,
+      "n_pairs": 201
+    },
+    {
+      "seed": 10044,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 14142,
+      "n_depredadas": 2,
+      "n_pairs": 2829
+    },
+    {
+      "seed": 10045,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 930,
+      "n_depredadas": 1,
+      "n_pairs": 186
+    },
+    {
+      "seed": 10046,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1077,
+      "n_depredadas": 1,
+      "n_pairs": 216
+    },
+    {
+      "seed": 10047,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1230,
+      "n_depredadas": 2,
+      "n_pairs": 246
+    },
+    {
+      "seed": 10048,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1228,
+      "n_depredadas": 6,
+      "n_pairs": 246
+    },
+    {
+      "seed": 10049,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 844,
+      "n_depredadas": 5,
+      "n_pairs": 169
+    },
+    {
+      "seed": 10050,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1438,
+      "n_depredadas": 2,
+      "n_pairs": 288
+    },
+    {
+      "seed": 10051,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1220,
+      "n_depredadas": 2,
+      "n_pairs": 244
+    },
+    {
+      "seed": 10052,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1276,
+      "n_depredadas": 4,
+      "n_pairs": 256
+    },
+    {
+      "seed": 10053,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1234,
+      "n_depredadas": 2,
+      "n_pairs": 247
+    },
+    {
+      "seed": 10054,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1435,
+      "n_depredadas": 2,
+      "n_pairs": 287
+    },
+    {
+      "seed": 10055,
+      "kind": "mixto",
+      "status": "timeout",
+      "steps": 14142,
+      "n_depredadas": 0,
+      "n_pairs": 2829
+    },
+    {
+      "seed": 10056,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1270,
+      "n_depredadas": 3,
+      "n_pairs": 254
+    },
+    {
+      "seed": 10057,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 14142,
+      "n_depredadas": 4,
+      "n_pairs": 2829
+    },
+    {
+      "seed": 10058,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1160,
+      "n_depredadas": 4,
+      "n_pairs": 232
+    },
+    {
+      "seed": 10059,
+      "kind": "mixto",
+      "status": "success",
+      "steps": 876,
+      "n_depredadas": 0,
+      "n_pairs": 176
+    },
+    {
+      "seed": 10060,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1251,
+      "n_depredadas": 4,
+      "n_pairs": 251
+    },
+    {
+      "seed": 10061,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1720,
+      "n_depredadas": 6,
+      "n_pairs": 344
+    },
+    {
+      "seed": 10062,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1065,
+      "n_depredadas": 3,
+      "n_pairs": 213
+    },
+    {
+      "seed": 10063,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 895,
+      "n_depredadas": 2,
+      "n_pairs": 179
+    },
+    {
+      "seed": 10064,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1546,
+      "n_depredadas": 3,
+      "n_pairs": 310
+    },
+    {
+      "seed": 10065,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1164,
+      "n_depredadas": 1,
+      "n_pairs": 233
+    },
+    {
+      "seed": 10066,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1385,
+      "n_depredadas": 2,
+      "n_pairs": 277
+    },
+    {
+      "seed": 10067,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1020,
+      "n_depredadas": 3,
+      "n_pairs": 204
+    },
+    {
+      "seed": 10068,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 14142,
+      "n_depredadas": 2,
+      "n_pairs": 2829
+    },
+    {
+      "seed": 10069,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1486,
+      "n_depredadas": 4,
+      "n_pairs": 298
+    },
+    {
+      "seed": 10070,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1599,
+      "n_depredadas": 4,
+      "n_pairs": 320
+    },
+    {
+      "seed": 10071,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 2164,
+      "n_depredadas": 4,
+      "n_pairs": 433
+    },
+    {
+      "seed": 10072,
+      "kind": "lobos",
+      "status": "success",
+      "steps": 1615,
+      "n_depredadas": 0,
+      "n_pairs": 323
+    },
+    {
+      "seed": 10073,
+      "kind": "mixto",
+      "status": "timeout",
+      "steps": 14142,
+      "n_depredadas": 0,
+      "n_pairs": 2829
+    },
+    {
+      "seed": 10074,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1324,
+      "n_depredadas": 4,
+      "n_pairs": 265
+    },
+    {
+      "seed": 10075,
+      "kind": "mixto",
+      "status": "timeout",
+      "steps": 14142,
+      "n_depredadas": 0,
+      "n_pairs": 2829
+    },
+    {
+      "seed": 10076,
+      "kind": "lobos",
+      "status": "timeout",
+      "steps": 14142,
+      "n_depredadas": 0,
+      "n_pairs": 2829
+    },
+    {
+      "seed": 10077,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1131,
+      "n_depredadas": 4,
+      "n_pairs": 227
+    },
+    {
+      "seed": 10078,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 14142,
+      "n_depredadas": 3,
+      "n_pairs": 2829
+    },
+    {
+      "seed": 10079,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1773,
+      "n_depredadas": 5,
+      "n_pairs": 355
+    },
+    {
+      "seed": 10080,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 842,
+      "n_depredadas": 5,
+      "n_pairs": 169
+    },
+    {
+      "seed": 10081,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1424,
+      "n_depredadas": 3,
+      "n_pairs": 285
+    },
+    {
+      "seed": 10082,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1275,
+      "n_depredadas": 3,
+      "n_pairs": 255
+    },
+    {
+      "seed": 10083,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 753,
+      "n_depredadas": 4,
+      "n_pairs": 151
+    },
+    {
+      "seed": 10084,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1031,
+      "n_depredadas": 2,
+      "n_pairs": 207
+    },
+    {
+      "seed": 10085,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1365,
+      "n_depredadas": 3,
+      "n_pairs": 273
+    },
+    {
+      "seed": 10086,
+      "kind": "lobos",
+      "status": "success",
+      "steps": 1150,
+      "n_depredadas": 0,
+      "n_pairs": 230
+    },
+    {
+      "seed": 10087,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1307,
+      "n_depredadas": 4,
+      "n_pairs": 262
+    },
+    {
+      "seed": 10088,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1087,
+      "n_depredadas": 4,
+      "n_pairs": 218
+    },
+    {
+      "seed": 10089,
+      "kind": "mixto",
+      "status": "timeout",
+      "steps": 14142,
+      "n_depredadas": 0,
+      "n_pairs": 2829
+    },
+    {
+      "seed": 10090,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1248,
+      "n_depredadas": 3,
+      "n_pairs": 250
+    },
+    {
+      "seed": 10091,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1107,
+      "n_depredadas": 2,
+      "n_pairs": 222
+    },
+    {
+      "seed": 10092,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 14142,
+      "n_depredadas": 2,
+      "n_pairs": 2829
+    },
+    {
+      "seed": 10093,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1114,
+      "n_depredadas": 4,
+      "n_pairs": 223
+    },
+    {
+      "seed": 10094,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1305,
+      "n_depredadas": 4,
+      "n_pairs": 261
+    },
+    {
+      "seed": 10095,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1017,
+      "n_depredadas": 2,
+      "n_pairs": 204
+    },
+    {
+      "seed": 10096,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 827,
+      "n_depredadas": 3,
+      "n_pairs": 166
+    },
+    {
+      "seed": 10097,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 680,
+      "n_depredadas": 4,
+      "n_pairs": 136
+    },
+    {
+      "seed": 10098,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1359,
+      "n_depredadas": 2,
+      "n_pairs": 272
+    },
+    {
+      "seed": 10099,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 885,
+      "n_depredadas": 3,
+      "n_pairs": 177
+    },
+    {
+      "seed": 10100,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1239,
+      "n_depredadas": 4,
+      "n_pairs": 248
+    },
+    {
+      "seed": 10101,
+      "kind": "mixto",
+      "status": "timeout",
+      "steps": 14142,
+      "n_depredadas": 0,
+      "n_pairs": 2829
+    },
+    {
+      "seed": 10102,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1285,
+      "n_depredadas": 6,
+      "n_pairs": 257
+    },
+    {
+      "seed": 10103,
+      "kind": "mixto",
+      "status": "success",
+      "steps": 1420,
+      "n_depredadas": 0,
+      "n_pairs": 284
+    },
+    {
+      "seed": 10104,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 2086,
+      "n_depredadas": 4,
+      "n_pairs": 418
+    },
+    {
+      "seed": 10105,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1515,
+      "n_depredadas": 3,
+      "n_pairs": 303
+    },
+    {
+      "seed": 10106,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1218,
+      "n_depredadas": 1,
+      "n_pairs": 244
+    },
+    {
+      "seed": 10107,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 808,
+      "n_depredadas": 3,
+      "n_pairs": 162
+    },
+    {
+      "seed": 10108,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 855,
+      "n_depredadas": 2,
+      "n_pairs": 171
+    },
+    {
+      "seed": 10109,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1536,
+      "n_depredadas": 4,
+      "n_pairs": 308
+    },
+    {
+      "seed": 10110,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 540,
+      "n_depredadas": 2,
+      "n_pairs": 108
+    },
+    {
+      "seed": 10111,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1798,
+      "n_depredadas": 5,
+      "n_pairs": 360
+    },
+    {
+      "seed": 10112,
+      "kind": "lobos",
+      "status": "timeout",
+      "steps": 14142,
+      "n_depredadas": 0,
+      "n_pairs": 2829
+    },
+    {
+      "seed": 10113,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1619,
+      "n_depredadas": 3,
+      "n_pairs": 324
+    },
+    {
+      "seed": 10114,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 460,
+      "n_depredadas": 4,
+      "n_pairs": 92
+    },
+    {
+      "seed": 10115,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 14142,
+      "n_depredadas": 1,
+      "n_pairs": 2829
+    },
+    {
+      "seed": 10116,
+      "kind": "lobos",
+      "status": "timeout",
+      "steps": 14142,
+      "n_depredadas": 0,
+      "n_pairs": 2829
+    },
+    {
+      "seed": 10117,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1549,
+      "n_depredadas": 1,
+      "n_pairs": 310
+    },
+    {
+      "seed": 10118,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1149,
+      "n_depredadas": 2,
+      "n_pairs": 230
+    },
+    {
+      "seed": 10119,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1008,
+      "n_depredadas": 3,
+      "n_pairs": 202
+    },
+    {
+      "seed": 10120,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1681,
+      "n_depredadas": 3,
+      "n_pairs": 337
+    },
+    {
+      "seed": 10121,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1085,
+      "n_depredadas": 2,
+      "n_pairs": 217
+    },
+    {
+      "seed": 10122,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 936,
+      "n_depredadas": 4,
+      "n_pairs": 188
+    },
+    {
+      "seed": 10123,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1115,
+      "n_depredadas": 4,
+      "n_pairs": 223
+    },
+    {
+      "seed": 10124,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1265,
+      "n_depredadas": 2,
+      "n_pairs": 253
+    },
+    {
+      "seed": 10125,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 14142,
+      "n_depredadas": 2,
+      "n_pairs": 2829
+    },
+    {
+      "seed": 10126,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1852,
+      "n_depredadas": 3,
+      "n_pairs": 371
+    },
+    {
+      "seed": 10127,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1362,
+      "n_depredadas": 4,
+      "n_pairs": 273
+    },
+    {
+      "seed": 10128,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 893,
+      "n_depredadas": 3,
+      "n_pairs": 179
+    },
+    {
+      "seed": 10129,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 766,
+      "n_depredadas": 3,
+      "n_pairs": 154
+    },
+    {
+      "seed": 10130,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 985,
+      "n_depredadas": 1,
+      "n_pairs": 197
+    },
+    {
+      "seed": 10131,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 836,
+      "n_depredadas": 3,
+      "n_pairs": 168
+    },
+    {
+      "seed": 10132,
+      "kind": "lobos",
+      "status": "success",
+      "steps": 1442,
+      "n_depredadas": 0,
+      "n_pairs": 289
+    },
+    {
+      "seed": 10133,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1646,
+      "n_depredadas": 3,
+      "n_pairs": 330
+    },
+    {
+      "seed": 10134,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 3615,
+      "n_depredadas": 1,
+      "n_pairs": 723
+    },
+    {
+      "seed": 10135,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1552,
+      "n_depredadas": 5,
+      "n_pairs": 311
+    },
+    {
+      "seed": 10136,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 802,
+      "n_depredadas": 5,
+      "n_pairs": 161
+    },
+    {
+      "seed": 10137,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1524,
+      "n_depredadas": 3,
+      "n_pairs": 305
+    },
+    {
+      "seed": 10138,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 963,
+      "n_depredadas": 4,
+      "n_pairs": 193
+    },
+    {
+      "seed": 10139,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1544,
+      "n_depredadas": 4,
+      "n_pairs": 309
+    },
+    {
+      "seed": 10140,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 971,
+      "n_depredadas": 4,
+      "n_pairs": 195
+    },
+    {
+      "seed": 10141,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1098,
+      "n_depredadas": 2,
+      "n_pairs": 220
+    },
+    {
+      "seed": 10142,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 991,
+      "n_depredadas": 3,
+      "n_pairs": 199
+    },
+    {
+      "seed": 10143,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 983,
+      "n_depredadas": 3,
+      "n_pairs": 197
+    },
+    {
+      "seed": 10144,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 956,
+      "n_depredadas": 3,
+      "n_pairs": 192
+    },
+    {
+      "seed": 10145,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1156,
+      "n_depredadas": 2,
+      "n_pairs": 232
+    },
+    {
+      "seed": 10146,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1315,
+      "n_depredadas": 3,
+      "n_pairs": 263
+    },
+    {
+      "seed": 10147,
+      "kind": "mixto",
+      "status": "timeout",
+      "steps": 14142,
+      "n_depredadas": 0,
+      "n_pairs": 2829
+    },
+    {
+      "seed": 10148,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1667,
+      "n_depredadas": 3,
+      "n_pairs": 334
+    },
+    {
+      "seed": 10149,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1049,
+      "n_depredadas": 5,
+      "n_pairs": 210
+    },
+    {
+      "seed": 10150,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1111,
+      "n_depredadas": 3,
+      "n_pairs": 223
+    },
+    {
+      "seed": 10151,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 904,
+      "n_depredadas": 5,
+      "n_pairs": 181
+    },
+    {
+      "seed": 10152,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1202,
+      "n_depredadas": 2,
+      "n_pairs": 241
+    },
+    {
+      "seed": 10153,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1305,
+      "n_depredadas": 4,
+      "n_pairs": 261
+    },
+    {
+      "seed": 10154,
+      "kind": "lobos",
+      "status": "timeout",
+      "steps": 14142,
+      "n_depredadas": 0,
+      "n_pairs": 2829
+    },
+    {
+      "seed": 10155,
+      "kind": "mixto",
+      "status": "timeout",
+      "steps": 14142,
+      "n_depredadas": 0,
+      "n_pairs": 2829
+    },
+    {
+      "seed": 10156,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 982,
+      "n_depredadas": 2,
+      "n_pairs": 197
+    },
+    {
+      "seed": 10157,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1308,
+      "n_depredadas": 2,
+      "n_pairs": 262
+    },
+    {
+      "seed": 10158,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1714,
+      "n_depredadas": 2,
+      "n_pairs": 343
+    },
+    {
+      "seed": 10159,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1183,
+      "n_depredadas": 3,
+      "n_pairs": 237
+    },
+    {
+      "seed": 10160,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1270,
+      "n_depredadas": 4,
+      "n_pairs": 254
+    },
+    {
+      "seed": 10161,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1826,
+      "n_depredadas": 2,
+      "n_pairs": 366
+    },
+    {
+      "seed": 10162,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 790,
+      "n_depredadas": 6,
+      "n_pairs": 158
+    },
+    {
+      "seed": 10163,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1046,
+      "n_depredadas": 3,
+      "n_pairs": 210
+    },
+    {
+      "seed": 10164,
+      "kind": "lobos",
+      "status": "success",
+      "steps": 930,
+      "n_depredadas": 0,
+      "n_pairs": 186
+    },
+    {
+      "seed": 10165,
+      "kind": "mixto",
+      "status": "success",
+      "steps": 1093,
+      "n_depredadas": 0,
+      "n_pairs": 219
+    },
+    {
+      "seed": 10166,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1198,
+      "n_depredadas": 3,
+      "n_pairs": 240
+    },
+    {
+      "seed": 10167,
+      "kind": "mixto",
+      "status": "timeout",
+      "steps": 14142,
+      "n_depredadas": 0,
+      "n_pairs": 2829
+    },
+    {
+      "seed": 10168,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1225,
+      "n_depredadas": 2,
+      "n_pairs": 245
+    },
+    {
+      "seed": 10169,
+      "kind": "mixto",
+      "status": "timeout",
+      "steps": 14142,
+      "n_depredadas": 0,
+      "n_pairs": 2829
+    },
+    {
+      "seed": 10170,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 837,
+      "n_depredadas": 3,
+      "n_pairs": 168
+    },
+    {
+      "seed": 10171,
+      "kind": "mixto",
+      "status": "timeout",
+      "steps": 14142,
+      "n_depredadas": 0,
+      "n_pairs": 2829
+    },
+    {
+      "seed": 10172,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 673,
+      "n_depredadas": 4,
+      "n_pairs": 135
+    },
+    {
+      "seed": 10173,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 800,
+      "n_depredadas": 5,
+      "n_pairs": 160
+    },
+    {
+      "seed": 10174,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1561,
+      "n_depredadas": 2,
+      "n_pairs": 313
+    },
+    {
+      "seed": 10175,
+      "kind": "mixto",
+      "status": "timeout",
+      "steps": 14142,
+      "n_depredadas": 0,
+      "n_pairs": 2829
+    },
+    {
+      "seed": 10176,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1291,
+      "n_depredadas": 3,
+      "n_pairs": 259
+    },
+    {
+      "seed": 10177,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1346,
+      "n_depredadas": 4,
+      "n_pairs": 270
+    },
+    {
+      "seed": 10178,
+      "kind": "lobos",
+      "status": "predation",
+      "steps": 1550,
+      "n_depredadas": 2,
+      "n_pairs": 310
+    },
+    {
+      "seed": 10179,
+      "kind": "mixto",
+      "status": "predation",
+      "steps": 1175,
+      "n_depredadas": 5,
+      "n_pairs": 235
+    },
+    {
+      "seed": 10180,
+      "kind": "lobos",
+      "status": "timeout",
+      "steps": 14142,
+      "n_depredadas": 0,
+      "n_pairs": 2829
+    }
+  ]
+}

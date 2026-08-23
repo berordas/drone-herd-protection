@@ -1,0 +1,9 @@
+despertar_tardio_mgr | seed=8 mixto n=4 G=False sev_eval=2 | oracle sev=0
+t=     0  DECISION #1   CEBO_d180  -> K_MAX             ticks= 4500 r=0
+t=  4500  DECISION #2   CEBO_d90   -> K_MAX             ticks= 4500 r=0
+t=  9000  DECISION #3   CEBO_d180  -> K_MAX             ticks= 4500 r=0
+t= 13500  DECISION #4   CEBO_keep  -> MUERTE            ticks=  990 r=1
+t= 14490  DECISION #5   CEBO_d90   -> MUERTE            ticks=  148 r=1
+t= 14638  DECISION #6   CEBO_keep  -> K_MAX             ticks= 4500 r=0
+t= 19138  DECISION #7   CEBO_keep  -> FIN_EPISODIO      ticks= 4432 r=0
+t= 13828  capa SHOW_START mode=keep

@@ -1,0 +1,59 @@
+{
+  "args": {
+    "total_steps": 10000000,
+    "n_envs": 12,
+    "seed": 0,
+    "outdir": "/data/wolves/run04",
+    "kinds": [
+      "lobos",
+      "mixto"
+    ],
+    "device": "cpu",
+    "frame_skip": 5,
+    "smoke": false,
+    "resume": null,
+    "eval_every": 250000,
+    "shaping": "off",
+    "shaping_beta": 1.0,
+    "init_from": null,
+    "lr": 0.0001,
+    "abort_ref": null,
+    "residual": true,
+    "residual_scale": null,
+    "phase1_steps": 1000000
+  },
+  "hyper": {
+    "n_steps": 2048,
+    "batch_size": 512,
+    "gamma": 0.999,
+    "gae_lambda": 0.95,
+    "learning_rate": 0.0001,
+    "ent_coef": 0.01,
+    "clip_range": 0.2,
+    "n_epochs": 10
+  },
+  "net_arch": [
+    256,
+    256
+  ],
+  "algo": "PPO(MlpPolicy)",
+  "reward": "+1 por res matada (rala, compartida); sin castigo por tiempo ni por a-salvo",
+  "shaping": {
+    "on": false,
+    "beta": 1.0,
+    "gamma": 0.999,
+    "phi": "-beta * mean_i dist(lobo_i, presa ternero-primero) / diagonal_campo; 0 si coasting",
+    "nota": "gamma EXACTAMENTE el del PPO (inocuidad de Ng et al.); la eval NUNCA ve el shaping"
+  },
+  "init_from": null,
+  "residual": {
+    "on": true,
+    "scale": "wolf_speed",
+    "phase1_steps": 1000000,
+    "log_std_init": -2.0,
+    "obs": "132 = 122 + accion del script normalizada (pista del estado oculto)",
+    "nota": "RPL (Silver et al. 2018): v_final = clip_norma(v_script + delta); el script entero vive dentro (su presa/histéresis/coasting)"
+  },
+  "abort": "CRITERIO DE ABORTO (pactado, run04/residual — GUARDIA DEL SUELO): el suelo es el scriptado (~2.7 en la eval ligera; en la FASE 1, con la política congelada y δ=0, las evals deben CLAVARSE ahí). Si en la FASE 2 la eval ligera cae por debajo de 2.3 (suelo − margen) de forma SOSTENIDA (>=1.000.000 de pasos), PARAR y reportar — PPO estaría EROSIONANDO al script en vez de mejorarlo (palancas: bajar lr / alargar la fase 1 — decisión del usuario).",
+  "fecha": "2026-07-16T12:27:47"
+}

@@ -1,0 +1,4345 @@
+{
+ "catalogo": [
+  {
+   "seed": 2,
+   "n1": 2,
+   "n2": 1,
+   "n": 3,
+   "n_calves": 0
+  },
+  {
+   "seed": 12,
+   "n1": 2,
+   "n2": 2,
+   "n": 4,
+   "n_calves": 2
+  },
+  {
+   "seed": 19,
+   "n1": 2,
+   "n2": 2,
+   "n": 4,
+   "n_calves": 1
+  },
+  {
+   "seed": 26,
+   "n1": 1,
+   "n2": 3,
+   "n": 4,
+   "n_calves": 2
+  },
+  {
+   "seed": 29,
+   "n1": 1,
+   "n2": 2,
+   "n": 3,
+   "n_calves": 2
+  },
+  {
+   "seed": 37,
+   "n1": 2,
+   "n2": 2,
+   "n": 4,
+   "n_calves": 1
+  },
+  {
+   "seed": 40,
+   "n1": 2,
+   "n2": 1,
+   "n": 3,
+   "n_calves": 1
+  },
+  {
+   "seed": 42,
+   "n1": 4,
+   "n2": 1,
+   "n": 5,
+   "n_calves": 0
+  },
+  {
+   "seed": 43,
+   "n1": 3,
+   "n2": 1,
+   "n": 4,
+   "n_calves": 0
+  },
+  {
+   "seed": 45,
+   "n1": 2,
+   "n2": 1,
+   "n": 3,
+   "n_calves": 2
+  },
+  {
+   "seed": 46,
+   "n1": 3,
+   "n2": 1,
+   "n": 4,
+   "n_calves": 1
+  },
+  {
+   "seed": 48,
+   "n1": 1,
+   "n2": 2,
+   "n": 3,
+   "n_calves": 2
+  },
+  {
+   "seed": 49,
+   "n1": 2,
+   "n2": 2,
+   "n": 4,
+   "n_calves": 2
+  },
+  {
+   "seed": 52,
+   "n1": 3,
+   "n2": 1,
+   "n": 4,
+   "n_calves": 0
+  },
+  {
+   "seed": 58,
+   "n1": 1,
+   "n2": 3,
+   "n": 4,
+   "n_calves": 0
+  },
+  {
+   "seed": 60,
+   "n1": 2,
+   "n2": 1,
+   "n": 3,
+   "n_calves": 0
+  },
+  {
+   "seed": 64,
+   "n1": 1,
+   "n2": 2,
+   "n": 3,
+   "n_calves": 1
+  },
+  {
+   "seed": 76,
+   "n1": 1,
+   "n2": 3,
+   "n": 4,
+   "n_calves": 0
+  },
+  {
+   "seed": 77,
+   "n1": 4,
+   "n2": 1,
+   "n": 5,
+   "n_calves": 2
+  },
+  {
+   "seed": 78,
+   "n1": 1,
+   "n2": 2,
+   "n": 3,
+   "n_calves": 2
+  },
+  {
+   "seed": 81,
+   "n1": 3,
+   "n2": 1,
+   "n": 4,
+   "n_calves": 0
+  },
+  {
+   "seed": 82,
+   "n1": 2,
+   "n2": 2,
+   "n": 4,
+   "n_calves": 0
+  },
+  {
+   "seed": 83,
+   "n1": 1,
+   "n2": 3,
+   "n": 4,
+   "n_calves": 1
+  },
+  {
+   "seed": 84,
+   "n1": 1,
+   "n2": 2,
+   "n": 3,
+   "n_calves": 2
+  },
+  {
+   "seed": 88,
+   "n1": 2,
+   "n2": 3,
+   "n": 5,
+   "n_calves": 1
+  },
+  {
+   "seed": 91,
+   "n1": 1,
+   "n2": 4,
+   "n": 5,
+   "n_calves": 1
+  },
+  {
+   "seed": 94,
+   "n1": 1,
+   "n2": 4,
+   "n": 5,
+   "n_calves": 2
+  },
+  {
+   "seed": 95,
+   "n1": 1,
+   "n2": 3,
+   "n": 4,
+   "n_calves": 1
+  },
+  {
+   "seed": 96,
+   "n1": 4,
+   "n2": 1,
+   "n": 5,
+   "n_calves": 0
+  },
+  {
+   "seed": 100,
+   "n1": 1,
+   "n2": 4,
+   "n": 5,
+   "n_calves": 0
+  },
+  {
+   "seed": 106,
+   "n1": 1,
+   "n2": 2,
+   "n": 3,
+   "n_calves": 2
+  },
+  {
+   "seed": 107,
+   "n1": 1,
+   "n2": 2,
+   "n": 3,
+   "n_calves": 0
+  },
+  {
+   "seed": 110,
+   "n1": 2,
+   "n2": 1,
+   "n": 3,
+   "n_calves": 0
+  },
+  {
+   "seed": 113,
+   "n1": 2,
+   "n2": 3,
+   "n": 5,
+   "n_calves": 2
+  },
+  {
+   "seed": 116,
+   "n1": 2,
+   "n2": 2,
+   "n": 4,
+   "n_calves": 2
+  },
+  {
+   "seed": 127,
+   "n1": 2,
+   "n2": 2,
+   "n": 4,
+   "n_calves": 1
+  },
+  {
+   "seed": 129,
+   "n1": 2,
+   "n2": 1,
+   "n": 3,
+   "n_calves": 0
+  },
+  {
+   "seed": 131,
+   "n1": 3,
+   "n2": 1,
+   "n": 4,
+   "n_calves": 1
+  },
+  {
+   "seed": 136,
+   "n1": 2,
+   "n2": 1,
+   "n": 3,
+   "n_calves": 1
+  },
+  {
+   "seed": 137,
+   "n1": 4,
+   "n2": 1,
+   "n": 5,
+   "n_calves": 1
+  },
+  {
+   "seed": 139,
+   "n1": 3,
+   "n2": 2,
+   "n": 5,
+   "n_calves": 2
+  },
+  {
+   "seed": 140,
+   "n1": 1,
+   "n2": 2,
+   "n": 3,
+   "n_calves": 0
+  },
+  {
+   "seed": 142,
+   "n1": 1,
+   "n2": 4,
+   "n": 5,
+   "n_calves": 2
+  },
+  {
+   "seed": 147,
+   "n1": 2,
+   "n2": 2,
+   "n": 4,
+   "n_calves": 0
+  },
+  {
+   "seed": 150,
+   "n1": 1,
+   "n2": 4,
+   "n": 5,
+   "n_calves": 1
+  },
+  {
+   "seed": 151,
+   "n1": 3,
+   "n2": 1,
+   "n": 4,
+   "n_calves": 1
+  },
+  {
+   "seed": 153,
+   "n1": 2,
+   "n2": 2,
+   "n": 4,
+   "n_calves": 0
+  },
+  {
+   "seed": 160,
+   "n1": 3,
+   "n2": 2,
+   "n": 5,
+   "n_calves": 1
+  },
+  {
+   "seed": 168,
+   "n1": 3,
+   "n2": 2,
+   "n": 5,
+   "n_calves": 1
+  },
+  {
+   "seed": 171,
+   "n1": 2,
+   "n2": 1,
+   "n": 3,
+   "n_calves": 2
+  },
+  {
+   "seed": 175,
+   "n1": 3,
+   "n2": 1,
+   "n": 4,
+   "n_calves": 0
+  },
+  {
+   "seed": 177,
+   "n1": 2,
+   "n2": 3,
+   "n": 5,
+   "n_calves": 0
+  },
+  {
+   "seed": 179,
+   "n1": 1,
+   "n2": 2,
+   "n": 3,
+   "n_calves": 1
+  },
+  {
+   "seed": 182,
+   "n1": 2,
+   "n2": 3,
+   "n": 5,
+   "n_calves": 1
+  },
+  {
+   "seed": 183,
+   "n1": 1,
+   "n2": 2,
+   "n": 3,
+   "n_calves": 2
+  },
+  {
+   "seed": 190,
+   "n1": 1,
+   "n2": 2,
+   "n": 3,
+   "n_calves": 2
+  },
+  {
+   "seed": 194,
+   "n1": 1,
+   "n2": 4,
+   "n": 5,
+   "n_calves": 1
+  },
+  {
+   "seed": 199,
+   "n1": 1,
+   "n2": 3,
+   "n": 4,
+   "n_calves": 0
+  },
+  {
+   "seed": 203,
+   "n1": 1,
+   "n2": 2,
+   "n": 3,
+   "n_calves": 2
+  },
+  {
+   "seed": 209,
+   "n1": 2,
+   "n2": 1,
+   "n": 3,
+   "n_calves": 2
+  },
+  {
+   "seed": 210,
+   "n1": 2,
+   "n2": 1,
+   "n": 3,
+   "n_calves": 0
+  },
+  {
+   "seed": 212,
+   "n1": 2,
+   "n2": 2,
+   "n": 4,
+   "n_calves": 0
+  },
+  {
+   "seed": 213,
+   "n1": 1,
+   "n2": 2,
+   "n": 3,
+   "n_calves": 0
+  },
+  {
+   "seed": 217,
+   "n1": 2,
+   "n2": 3,
+   "n": 5,
+   "n_calves": 2
+  },
+  {
+   "seed": 220,
+   "n1": 2,
+   "n2": 2,
+   "n": 4,
+   "n_calves": 0
+  },
+  {
+   "seed": 226,
+   "n1": 3,
+   "n2": 1,
+   "n": 4,
+   "n_calves": 2
+  },
+  {
+   "seed": 230,
+   "n1": 3,
+   "n2": 2,
+   "n": 5,
+   "n_calves": 0
+  },
+  {
+   "seed": 234,
+   "n1": 3,
+   "n2": 1,
+   "n": 4,
+   "n_calves": 2
+  },
+  {
+   "seed": 250,
+   "n1": 2,
+   "n2": 3,
+   "n": 5,
+   "n_calves": 2
+  },
+  {
+   "seed": 263,
+   "n1": 3,
+   "n2": 2,
+   "n": 5,
+   "n_calves": 2
+  },
+  {
+   "seed": 272,
+   "n1": 3,
+   "n2": 2,
+   "n": 5,
+   "n_calves": 1
+  },
+  {
+   "seed": 276,
+   "n1": 2,
+   "n2": 2,
+   "n": 4,
+   "n_calves": 2
+  },
+  {
+   "seed": 280,
+   "n1": 4,
+   "n2": 1,
+   "n": 5,
+   "n_calves": 0
+  },
+  {
+   "seed": 284,
+   "n1": 3,
+   "n2": 2,
+   "n": 5,
+   "n_calves": 2
+  },
+  {
+   "seed": 286,
+   "n1": 4,
+   "n2": 1,
+   "n": 5,
+   "n_calves": 0
+  },
+  {
+   "seed": 294,
+   "n1": 2,
+   "n2": 2,
+   "n": 4,
+   "n_calves": 0
+  },
+  {
+   "seed": 296,
+   "n1": 2,
+   "n2": 1,
+   "n": 3,
+   "n_calves": 2
+  },
+  {
+   "seed": 299,
+   "n1": 1,
+   "n2": 3,
+   "n": 4,
+   "n_calves": 2
+  },
+  {
+   "seed": 301,
+   "n1": 3,
+   "n2": 2,
+   "n": 5,
+   "n_calves": 1
+  },
+  {
+   "seed": 306,
+   "n1": 1,
+   "n2": 4,
+   "n": 5,
+   "n_calves": 2
+  },
+  {
+   "seed": 310,
+   "n1": 2,
+   "n2": 1,
+   "n": 3,
+   "n_calves": 1
+  },
+  {
+   "seed": 321,
+   "n1": 2,
+   "n2": 1,
+   "n": 3,
+   "n_calves": 1
+  },
+  {
+   "seed": 322,
+   "n1": 1,
+   "n2": 4,
+   "n": 5,
+   "n_calves": 0
+  },
+  {
+   "seed": 324,
+   "n1": 2,
+   "n2": 1,
+   "n": 3,
+   "n_calves": 2
+  },
+  {
+   "seed": 326,
+   "n1": 1,
+   "n2": 3,
+   "n": 4,
+   "n_calves": 2
+  },
+  {
+   "seed": 327,
+   "n1": 1,
+   "n2": 4,
+   "n": 5,
+   "n_calves": 2
+  },
+  {
+   "seed": 334,
+   "n1": 1,
+   "n2": 2,
+   "n": 3,
+   "n_calves": 0
+  },
+  {
+   "seed": 336,
+   "n1": 4,
+   "n2": 1,
+   "n": 5,
+   "n_calves": 2
+  },
+  {
+   "seed": 339,
+   "n1": 3,
+   "n2": 1,
+   "n": 4,
+   "n_calves": 2
+  },
+  {
+   "seed": 340,
+   "n1": 1,
+   "n2": 4,
+   "n": 5,
+   "n_calves": 1
+  },
+  {
+   "seed": 352,
+   "n1": 4,
+   "n2": 1,
+   "n": 5,
+   "n_calves": 0
+  },
+  {
+   "seed": 355,
+   "n1": 3,
+   "n2": 1,
+   "n": 4,
+   "n_calves": 0
+  },
+  {
+   "seed": 358,
+   "n1": 2,
+   "n2": 3,
+   "n": 5,
+   "n_calves": 2
+  },
+  {
+   "seed": 365,
+   "n1": 2,
+   "n2": 1,
+   "n": 3,
+   "n_calves": 0
+  },
+  {
+   "seed": 367,
+   "n1": 3,
+   "n2": 2,
+   "n": 5,
+   "n_calves": 2
+  },
+  {
+   "seed": 368,
+   "n1": 1,
+   "n2": 2,
+   "n": 3,
+   "n_calves": 0
+  },
+  {
+   "seed": 369,
+   "n1": 1,
+   "n2": 3,
+   "n": 4,
+   "n_calves": 2
+  },
+  {
+   "seed": 371,
+   "n1": 2,
+   "n2": 1,
+   "n": 3,
+   "n_calves": 1
+  },
+  {
+   "seed": 373,
+   "n1": 1,
+   "n2": 2,
+   "n": 3,
+   "n_calves": 0
+  },
+  {
+   "seed": 375,
+   "n1": 1,
+   "n2": 2,
+   "n": 3,
+   "n_calves": 0
+  },
+  {
+   "seed": 376,
+   "n1": 2,
+   "n2": 2,
+   "n": 4,
+   "n_calves": 1
+  },
+  {
+   "seed": 377,
+   "n1": 1,
+   "n2": 3,
+   "n": 4,
+   "n_calves": 1
+  },
+  {
+   "seed": 382,
+   "n1": 2,
+   "n2": 3,
+   "n": 5,
+   "n_calves": 0
+  },
+  {
+   "seed": 385,
+   "n1": 1,
+   "n2": 2,
+   "n": 3,
+   "n_calves": 0
+  },
+  {
+   "seed": 386,
+   "n1": 2,
+   "n2": 1,
+   "n": 3,
+   "n_calves": 2
+  },
+  {
+   "seed": 388,
+   "n1": 1,
+   "n2": 2,
+   "n": 3,
+   "n_calves": 0
+  },
+  {
+   "seed": 390,
+   "n1": 2,
+   "n2": 3,
+   "n": 5,
+   "n_calves": 1
+  },
+  {
+   "seed": 393,
+   "n1": 1,
+   "n2": 2,
+   "n": 3,
+   "n_calves": 0
+  },
+  {
+   "seed": 398,
+   "n1": 1,
+   "n2": 2,
+   "n": 3,
+   "n_calves": 1
+  }
+ ],
+ "episodios": [
+  {
+   "seed": 91,
+   "n": 5,
+   "n1": 1,
+   "n2": 4,
+   "reparto": "1+4",
+   "n_calves": 1,
+   "sev": 4,
+   "status": "predation",
+   "steps": 583,
+   "esc_steps": 583,
+   "kills_prey2": 2,
+   "kills_s2": 3,
+   "kills_s1": 0,
+   "kills_mix": 1,
+   "cundio": true,
+   "anchor_s1_frac": 0.0,
+   "s2_free_frac_esc": 0.0,
+   "conf_first_s1": 470,
+   "conf_first_s2": 1,
+   "err_line_s1_deg": 131.6,
+   "err_line_s2_deg": 14.6,
+   "d_drone_s2_min": 2.1,
+   "s2_scared_frac": 0.451,
+   "prey2_commits": [
+    {
+     "step": 1,
+     "kind": "calf",
+     "idx": 0,
+     "libertad_fijar": 9.29160947771537
+    },
+    {
+     "step": 302,
+     "kind": "adult",
+     "idx": 5,
+     "libertad_fijar": 67.60015241772248
+    },
+    {
+     "step": 385,
+     "kind": "adult",
+     "idx": 0,
+     "libertad_fijar": 11.176378604473875
+    }
+   ],
+   "dmin_s2": [
+    0.6,
+    1.2,
+    2.1,
+    1.6
+   ],
+   "n_llegan6": 4,
+   "n_llegan3": 4,
+   "paso_llegada6": 163,
+   "paso_llegada3": 297,
+   "quorum_max": 2,
+   "libertad_al_llegar": 8.576104795664962,
+   "captures": [
+    {
+     "step": 301,
+     "kind": "calf",
+     "prey_idx": 0,
+     "flankers": [
+      1
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 304,
+     "kind": "adult",
+     "prey_idx": 4,
+     "flankers": [
+      1,
+      4
+     ],
+     "is_pack_prey": false,
+     "is_pack_prey2": false
+    },
+    {
+     "step": 582,
+     "kind": "adult",
+     "prey_idx": 3,
+     "flankers": [
+      0,
+      1
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": false
+    },
+    {
+     "step": 583,
+     "kind": "adult",
+     "prey_idx": 0,
+     "flankers": [
+      2,
+      3
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    }
+   ]
+  },
+  {
+   "seed": 94,
+   "n": 5,
+   "n1": 1,
+   "n2": 4,
+   "reparto": "1+4",
+   "n_calves": 2,
+   "sev": 4,
+   "status": "predation",
+   "steps": 1462,
+   "esc_steps": 1446,
+   "kills_prey2": 4,
+   "kills_s2": 3,
+   "kills_s1": 0,
+   "kills_mix": 1,
+   "cundio": true,
+   "anchor_s1_frac": 0.0,
+   "s2_free_frac_esc": 0.0,
+   "conf_first_s1": 163,
+   "conf_first_s2": 18,
+   "err_line_s1_deg": 54.8,
+   "err_line_s2_deg": 19.2,
+   "d_drone_s2_min": 0.4,
+   "s2_scared_frac": 0.628,
+   "prey2_commits": [
+    {
+     "step": 1,
+     "kind": "calf",
+     "idx": 1,
+     "libertad_fijar": 16.932979826185637
+    },
+    {
+     "step": 541,
+     "kind": "calf",
+     "idx": 0,
+     "libertad_fijar": 39.924120533947686
+    },
+    {
+     "step": 856,
+     "kind": "adult",
+     "idx": 4,
+     "libertad_fijar": 14.714237726658338
+    },
+    {
+     "step": 1428,
+     "kind": "adult",
+     "idx": 5,
+     "libertad_fijar": 19.010793243239128
+    }
+   ],
+   "dmin_s2": [
+    2.8,
+    0.8,
+    2.6,
+    2.1
+   ],
+   "n_llegan6": 4,
+   "n_llegan3": 4,
+   "paso_llegada6": 446,
+   "paso_llegada3": 537,
+   "quorum_max": 2,
+   "libertad_al_llegar": 10.963780133841821,
+   "captures": [
+    {
+     "step": 540,
+     "kind": "calf",
+     "prey_idx": 1,
+     "flankers": [
+      4
+     ],
+     "is_pack_prey": false,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 855,
+     "kind": "calf",
+     "prey_idx": 0,
+     "flankers": [
+      2
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 1427,
+     "kind": "adult",
+     "prey_idx": 4,
+     "flankers": [
+      1,
+      4
+     ],
+     "is_pack_prey": false,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 1462,
+     "kind": "adult",
+     "prey_idx": 5,
+     "flankers": [
+      0,
+      2
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    }
+   ]
+  },
+  {
+   "seed": 100,
+   "n": 5,
+   "n1": 1,
+   "n2": 4,
+   "reparto": "1+4",
+   "n_calves": 0,
+   "sev": 5,
+   "status": "predation",
+   "steps": 1466,
+   "esc_steps": 1247,
+   "kills_prey2": 5,
+   "kills_s2": 4,
+   "kills_s1": 0,
+   "kills_mix": 1,
+   "cundio": true,
+   "anchor_s1_frac": 1.0,
+   "s2_free_frac_esc": 0.239,
+   "conf_first_s1": 221,
+   "conf_first_s2": 519,
+   "err_line_s1_deg": 39.4,
+   "err_line_s2_deg": 76.0,
+   "d_drone_s2_min": 0.7,
+   "s2_scared_frac": 0.439,
+   "prey2_commits": [
+    {
+     "step": 1,
+     "kind": "adult",
+     "idx": 4,
+     "libertad_fijar": 25.34843428398878
+    },
+    {
+     "step": 858,
+     "kind": "adult",
+     "idx": 1,
+     "libertad_fijar": 30.835396727664897
+    },
+    {
+     "step": 1098,
+     "kind": "adult",
+     "idx": 5,
+     "libertad_fijar": 27.27971469634089
+    },
+    {
+     "step": 1300,
+     "kind": "adult",
+     "idx": 3,
+     "libertad_fijar": 15.918252829883386
+    },
+    {
+     "step": 1369,
+     "kind": "adult",
+     "idx": 2,
+     "libertad_fijar": 12.806761072524022
+    }
+   ],
+   "dmin_s2": [
+    0.4,
+    1.1,
+    2.4,
+    0.4
+   ],
+   "n_llegan6": 4,
+   "n_llegan3": 4,
+   "paso_llegada6": 663,
+   "paso_llegada3": 828,
+   "quorum_max": 2,
+   "libertad_al_llegar": 10.894280353655459,
+   "captures": [
+    {
+     "step": 857,
+     "kind": "adult",
+     "prey_idx": 4,
+     "flankers": [
+      2,
+      4
+     ],
+     "is_pack_prey": false,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 1097,
+     "kind": "adult",
+     "prey_idx": 1,
+     "flankers": [
+      2,
+      3
+     ],
+     "is_pack_prey": false,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 1299,
+     "kind": "adult",
+     "prey_idx": 5,
+     "flankers": [
+      2,
+      4
+     ],
+     "is_pack_prey": false,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 1368,
+     "kind": "adult",
+     "prey_idx": 3,
+     "flankers": [
+      1,
+      4
+     ],
+     "is_pack_prey": false,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 1466,
+     "kind": "adult",
+     "prey_idx": 2,
+     "flankers": [
+      0,
+      2
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    }
+   ]
+  },
+  {
+   "seed": 142,
+   "n": 5,
+   "n1": 1,
+   "n2": 4,
+   "reparto": "1+4",
+   "n_calves": 2,
+   "sev": 3,
+   "status": "predation",
+   "steps": 1137,
+   "esc_steps": 1082,
+   "kills_prey2": 2,
+   "kills_s2": 2,
+   "kills_s1": 1,
+   "kills_mix": 0,
+   "cundio": true,
+   "anchor_s1_frac": 0.0,
+   "s2_free_frac_esc": 0.0,
+   "conf_first_s1": 341,
+   "conf_first_s2": 57,
+   "err_line_s1_deg": 82.2,
+   "err_line_s2_deg": 14.6,
+   "d_drone_s2_min": 3.1,
+   "s2_scared_frac": 0.598,
+   "prey2_commits": [
+    {
+     "step": 1,
+     "kind": "calf",
+     "idx": 0,
+     "libertad_fijar": 20.383141706177938
+    }
+   ],
+   "dmin_s2": [
+    17.3,
+    0.6,
+    3.0,
+    2.8
+   ],
+   "n_llegan6": 3,
+   "n_llegan3": 2,
+   "paso_llegada6": 1091,
+   "paso_llegada3": 1101,
+   "quorum_max": 2,
+   "libertad_al_llegar": 20.081170970005548,
+   "captures": [
+    {
+     "step": 756,
+     "kind": "calf",
+     "prey_idx": 1,
+     "flankers": [
+      0
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": false
+    },
+    {
+     "step": 1101,
+     "kind": "calf",
+     "prey_idx": 0,
+     "flankers": [
+      2
+     ],
+     "is_pack_prey": false,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 1137,
+     "kind": "adult",
+     "prey_idx": 0,
+     "flankers": [
+      2,
+      4
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    }
+   ]
+  },
+  {
+   "seed": 150,
+   "n": 5,
+   "n1": 1,
+   "n2": 4,
+   "reparto": "1+4",
+   "n_calves": 1,
+   "sev": 2,
+   "status": "predation",
+   "steps": 1378,
+   "esc_steps": 1166,
+   "kills_prey2": 2,
+   "kills_s2": 2,
+   "kills_s1": 0,
+   "kills_mix": 0,
+   "cundio": true,
+   "anchor_s1_frac": 0.0,
+   "s2_free_frac_esc": 0.0,
+   "conf_first_s1": 397,
+   "conf_first_s2": 214,
+   "err_line_s1_deg": 33.2,
+   "err_line_s2_deg": 22.0,
+   "d_drone_s2_min": 0.3,
+   "s2_scared_frac": 0.608,
+   "prey2_commits": [
+    {
+     "step": 1,
+     "kind": "calf",
+     "idx": 0,
+     "libertad_fijar": 13.963054281680677
+    },
+    {
+     "step": 1192,
+     "kind": "adult",
+     "idx": 4,
+     "libertad_fijar": 22.413458023333934
+    },
+    {
+     "step": 1322,
+     "kind": "adult",
+     "idx": 2,
+     "libertad_fijar": 4.381369123195429
+    }
+   ],
+   "dmin_s2": [
+    2.9,
+    1.5,
+    1.4,
+    2.9
+   ],
+   "n_llegan6": 4,
+   "n_llegan3": 4,
+   "paso_llegada6": 1152,
+   "paso_llegada3": 1174,
+   "quorum_max": 2,
+   "libertad_al_llegar": 11.76591438508824,
+   "captures": [
+    {
+     "step": 1191,
+     "kind": "calf",
+     "prey_idx": 0,
+     "flankers": [
+      4
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 1378,
+     "kind": "adult",
+     "prey_idx": 2,
+     "flankers": [
+      1,
+      3
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    }
+   ]
+  },
+  {
+   "seed": 194,
+   "n": 5,
+   "n1": 1,
+   "n2": 4,
+   "reparto": "1+4",
+   "n_calves": 1,
+   "sev": 2,
+   "status": "predation",
+   "steps": 1323,
+   "esc_steps": 1105,
+   "kills_prey2": 2,
+   "kills_s2": 1,
+   "kills_s1": 0,
+   "kills_mix": 1,
+   "cundio": true,
+   "anchor_s1_frac": 0.0,
+   "s2_free_frac_esc": 0.0,
+   "conf_first_s1": 469,
+   "conf_first_s2": 220,
+   "err_line_s1_deg": 51.3,
+   "err_line_s2_deg": 14.8,
+   "d_drone_s2_min": 0.2,
+   "s2_scared_frac": 0.595,
+   "prey2_commits": [
+    {
+     "step": 1,
+     "kind": "calf",
+     "idx": 0,
+     "libertad_fijar": 20.898117408815594
+    },
+    {
+     "step": 957,
+     "kind": "adult",
+     "idx": 5,
+     "libertad_fijar": 47.33338053997959
+    },
+    {
+     "step": 1127,
+     "kind": "adult",
+     "idx": 1,
+     "libertad_fijar": 56.192574570495836
+    },
+    {
+     "step": 1260,
+     "kind": "adult",
+     "idx": 2,
+     "libertad_fijar": 11.997793461009639
+    }
+   ],
+   "dmin_s2": [
+    4.0,
+    1.3,
+    1.4,
+    2.0
+   ],
+   "n_llegan6": 4,
+   "n_llegan3": 3,
+   "paso_llegada6": 751,
+   "paso_llegada3": 805,
+   "quorum_max": 1,
+   "libertad_al_llegar": 13.919266501410524,
+   "captures": [
+    {
+     "step": 956,
+     "kind": "calf",
+     "prey_idx": 0,
+     "flankers": [
+      4
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 1323,
+     "kind": "adult",
+     "prey_idx": 2,
+     "flankers": [
+      0,
+      3
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    }
+   ]
+  },
+  {
+   "seed": 306,
+   "n": 5,
+   "n1": 1,
+   "n2": 4,
+   "reparto": "1+4",
+   "n_calves": 2,
+   "sev": 4,
+   "status": "predation",
+   "steps": 983,
+   "esc_steps": 983,
+   "kills_prey2": 4,
+   "kills_s2": 3,
+   "kills_s1": 0,
+   "kills_mix": 1,
+   "cundio": true,
+   "anchor_s1_frac": 0.0,
+   "s2_free_frac_esc": 0.0,
+   "conf_first_s1": 502,
+   "conf_first_s2": 1,
+   "err_line_s1_deg": 113.2,
+   "err_line_s2_deg": 14.6,
+   "d_drone_s2_min": 0.3,
+   "s2_scared_frac": 0.496,
+   "prey2_commits": [
+    {
+     "step": 1,
+     "kind": "calf",
+     "idx": 0,
+     "libertad_fijar": 1.4630565083709863
+    },
+    {
+     "step": 219,
+     "kind": "calf",
+     "idx": 1,
+     "libertad_fijar": 26.87046153543772
+    },
+    {
+     "step": 464,
+     "kind": "adult",
+     "idx": 3,
+     "libertad_fijar": 44.70921237055997
+    },
+    {
+     "step": 776,
+     "kind": "adult",
+     "idx": 1,
+     "libertad_fijar": 11.917019369159464
+    },
+    {
+     "step": 896,
+     "kind": "adult",
+     "idx": 5,
+     "libertad_fijar": 25.99733709977418
+    }
+   ],
+   "dmin_s2": [
+    2.8,
+    2.0,
+    3.0,
+    2.9
+   ],
+   "n_llegan6": 4,
+   "n_llegan3": 3,
+   "paso_llegada6": 207,
+   "paso_llegada3": 218,
+   "quorum_max": 2,
+   "libertad_al_llegar": 11.67409108606623,
+   "captures": [
+    {
+     "step": 218,
+     "kind": "calf",
+     "prey_idx": 0,
+     "flankers": [
+      2
+     ],
+     "is_pack_prey": false,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 463,
+     "kind": "calf",
+     "prey_idx": 1,
+     "flankers": [
+      4
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 895,
+     "kind": "adult",
+     "prey_idx": 1,
+     "flankers": [
+      1,
+      2
+     ],
+     "is_pack_prey": false,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 983,
+     "kind": "adult",
+     "prey_idx": 5,
+     "flankers": [
+      0,
+      2
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    }
+   ]
+  },
+  {
+   "seed": 322,
+   "n": 5,
+   "n1": 1,
+   "n2": 4,
+   "reparto": "1+4",
+   "n_calves": 0,
+   "sev": 2,
+   "status": "predation",
+   "steps": 10844,
+   "esc_steps": 10838,
+   "kills_prey2": 2,
+   "kills_s2": 1,
+   "kills_s1": 0,
+   "kills_mix": 1,
+   "cundio": true,
+   "anchor_s1_frac": 0.0,
+   "s2_free_frac_esc": 0.0,
+   "conf_first_s1": 927,
+   "conf_first_s2": 8,
+   "err_line_s1_deg": 145.7,
+   "err_line_s2_deg": 19.0,
+   "d_drone_s2_min": 0.1,
+   "s2_scared_frac": 0.79,
+   "prey2_commits": [
+    {
+     "step": 1,
+     "kind": "adult",
+     "idx": 5,
+     "libertad_fijar": 29.510963207300474
+    },
+    {
+     "step": 10749,
+     "kind": "adult",
+     "idx": 4,
+     "libertad_fijar": 33.36508556380085
+    }
+   ],
+   "dmin_s2": [
+    0.5,
+    2.5,
+    2.4,
+    1.2
+   ],
+   "n_llegan6": 4,
+   "n_llegan3": 4,
+   "paso_llegada6": 253,
+   "paso_llegada3": 7510,
+   "quorum_max": 2,
+   "libertad_al_llegar": 11.941374219757472,
+   "captures": [
+    {
+     "step": 10748,
+     "kind": "adult",
+     "prey_idx": 5,
+     "flankers": [
+      1,
+      3
+     ],
+     "is_pack_prey": false,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 10844,
+     "kind": "adult",
+     "prey_idx": 4,
+     "flankers": [
+      0,
+      4
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    }
+   ]
+  },
+  {
+   "seed": 327,
+   "n": 5,
+   "n1": 1,
+   "n2": 4,
+   "reparto": "1+4",
+   "n_calves": 2,
+   "sev": 4,
+   "status": "predation",
+   "steps": 1676,
+   "esc_steps": 1577,
+   "kills_prey2": 4,
+   "kills_s2": 3,
+   "kills_s1": 1,
+   "kills_mix": 0,
+   "cundio": true,
+   "anchor_s1_frac": 0.0,
+   "s2_free_frac_esc": 0.0,
+   "conf_first_s1": 887,
+   "conf_first_s2": 101,
+   "err_line_s1_deg": 134.0,
+   "err_line_s2_deg": 19.1,
+   "d_drone_s2_min": 0.3,
+   "s2_scared_frac": 0.514,
+   "prey2_commits": [
+    {
+     "step": 1,
+     "kind": "calf",
+     "idx": 0,
+     "libertad_fijar": 0.8409203525740868
+    },
+    {
+     "step": 1184,
+     "kind": "calf",
+     "idx": 1,
+     "libertad_fijar": 11.88638902596574
+    },
+    {
+     "step": 1346,
+     "kind": "adult",
+     "idx": 3,
+     "libertad_fijar": 15.719200234681358
+    },
+    {
+     "step": 1608,
+     "kind": "adult",
+     "idx": 5,
+     "libertad_fijar": 29.152568540799116
+    }
+   ],
+   "dmin_s2": [
+    2.1,
+    1.6,
+    5.7,
+    2.9
+   ],
+   "n_llegan6": 4,
+   "n_llegan3": 3,
+   "paso_llegada6": 882,
+   "paso_llegada3": 1183,
+   "quorum_max": 2,
+   "libertad_al_llegar": 11.9589403707305,
+   "captures": [
+    {
+     "step": 1183,
+     "kind": "calf",
+     "prey_idx": 0,
+     "flankers": [
+      2
+     ],
+     "is_pack_prey": false,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 1345,
+     "kind": "calf",
+     "prey_idx": 1,
+     "flankers": [
+      0
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 1607,
+     "kind": "adult",
+     "prey_idx": 3,
+     "flankers": [
+      2,
+      4
+     ],
+     "is_pack_prey": false,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 1676,
+     "kind": "adult",
+     "prey_idx": 5,
+     "flankers": [
+      1,
+      2
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    }
+   ]
+  },
+  {
+   "seed": 340,
+   "n": 5,
+   "n1": 1,
+   "n2": 4,
+   "reparto": "1+4",
+   "n_calves": 1,
+   "sev": 1,
+   "status": "predation",
+   "steps": 2115,
+   "esc_steps": 2060,
+   "kills_prey2": 1,
+   "kills_s2": 1,
+   "kills_s1": 0,
+   "kills_mix": 0,
+   "cundio": true,
+   "anchor_s1_frac": 0.0,
+   "s2_free_frac_esc": 0.0,
+   "conf_first_s1": 742,
+   "conf_first_s2": 57,
+   "err_line_s1_deg": 101.4,
+   "err_line_s2_deg": 24.3,
+   "d_drone_s2_min": 0.1,
+   "s2_scared_frac": 0.554,
+   "prey2_commits": [
+    {
+     "step": 1,
+     "kind": "calf",
+     "idx": 0,
+     "libertad_fijar": 11.023039254889314
+    }
+   ],
+   "dmin_s2": [
+    3.8,
+    3.6,
+    3.7,
+    2.9
+   ],
+   "n_llegan6": 4,
+   "n_llegan3": 1,
+   "paso_llegada6": 948,
+   "paso_llegada3": 2090,
+   "quorum_max": 1,
+   "libertad_al_llegar": 10.269039421587424,
+   "captures": [
+    {
+     "step": 2090,
+     "kind": "calf",
+     "prey_idx": 0,
+     "flankers": [
+      4
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    }
+   ]
+  },
+  {
+   "seed": 88,
+   "n": 5,
+   "n1": 2,
+   "n2": 3,
+   "reparto": "2+3",
+   "n_calves": 1,
+   "sev": 5,
+   "status": "predation",
+   "steps": 998,
+   "esc_steps": 992,
+   "kills_prey2": 3,
+   "kills_s2": 1,
+   "kills_s1": 3,
+   "kills_mix": 1,
+   "cundio": true,
+   "anchor_s1_frac": 1.0,
+   "s2_free_frac_esc": 0.397,
+   "conf_first_s1": 8,
+   "conf_first_s2": 402,
+   "err_line_s1_deg": 9.9,
+   "err_line_s2_deg": 76.6,
+   "d_drone_s2_min": 1.6,
+   "s2_scared_frac": 0.304,
+   "prey2_commits": [
+    {
+     "step": 1,
+     "kind": "calf",
+     "idx": 0,
+     "libertad_fijar": 2.4874121694233917
+    },
+    {
+     "step": 431,
+     "kind": "adult",
+     "idx": 4,
+     "libertad_fijar": 65.18371858447559
+    },
+    {
+     "step": 622,
+     "kind": "adult",
+     "idx": 2,
+     "libertad_fijar": 42.97445602893283
+    },
+    {
+     "step": 853,
+     "kind": "adult",
+     "idx": 5,
+     "libertad_fijar": 4.303633203383822
+    }
+   ],
+   "dmin_s2": [
+    2.1,
+    1.2,
+    0.8
+   ],
+   "n_llegan6": 3,
+   "n_llegan3": 3,
+   "paso_llegada6": 684,
+   "paso_llegada3": 769,
+   "quorum_max": 2,
+   "libertad_al_llegar": 20.208083060738613,
+   "captures": [
+    {
+     "step": 430,
+     "kind": "calf",
+     "prey_idx": 0,
+     "flankers": [
+      1
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 560,
+     "kind": "adult",
+     "prey_idx": 0,
+     "flankers": [
+      0,
+      1
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": false
+    },
+    {
+     "step": 852,
+     "kind": "adult",
+     "prey_idx": 2,
+     "flankers": [
+      2,
+      3
+     ],
+     "is_pack_prey": false,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 904,
+     "kind": "adult",
+     "prey_idx": 3,
+     "flankers": [
+      0,
+      1
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": false
+    },
+    {
+     "step": 998,
+     "kind": "adult",
+     "prey_idx": 5,
+     "flankers": [
+      1,
+      4
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    }
+   ]
+  },
+  {
+   "seed": 113,
+   "n": 5,
+   "n1": 2,
+   "n2": 3,
+   "reparto": "2+3",
+   "n_calves": 2,
+   "sev": 5,
+   "status": "predation",
+   "steps": 1480,
+   "esc_steps": 1253,
+   "kills_prey2": 3,
+   "kills_s2": 2,
+   "kills_s1": 2,
+   "kills_mix": 1,
+   "cundio": true,
+   "anchor_s1_frac": 1.0,
+   "s2_free_frac_esc": 0.091,
+   "conf_first_s1": 229,
+   "conf_first_s2": 343,
+   "err_line_s1_deg": 22.7,
+   "err_line_s2_deg": 39.0,
+   "d_drone_s2_min": 4.1,
+   "s2_scared_frac": 0.495,
+   "prey2_commits": [
+    {
+     "step": 1,
+     "kind": "calf",
+     "idx": 0,
+     "libertad_fijar": 20.04644615180918
+    },
+    {
+     "step": 1313,
+     "kind": "adult",
+     "idx": 1,
+     "libertad_fijar": 24.625128421525588
+    },
+    {
+     "step": 1416,
+     "kind": "adult",
+     "idx": 0,
+     "libertad_fijar": 13.860797864646695
+    }
+   ],
+   "dmin_s2": [
+    1.0,
+    1.3,
+    0.8
+   ],
+   "n_llegan6": 3,
+   "n_llegan3": 3,
+   "paso_llegada6": 1279,
+   "paso_llegada3": 1312,
+   "quorum_max": 2,
+   "libertad_al_llegar": 17.246809936490568,
+   "captures": [
+    {
+     "step": 601,
+     "kind": "calf",
+     "prey_idx": 1,
+     "flankers": [
+      0
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": false
+    },
+    {
+     "step": 613,
+     "kind": "adult",
+     "prey_idx": 4,
+     "flankers": [
+      0,
+      1
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": false
+    },
+    {
+     "step": 1312,
+     "kind": "calf",
+     "prey_idx": 0,
+     "flankers": [
+      4
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 1415,
+     "kind": "adult",
+     "prey_idx": 1,
+     "flankers": [
+      3,
+      4
+     ],
+     "is_pack_prey": false,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 1480,
+     "kind": "adult",
+     "prey_idx": 0,
+     "flankers": [
+      1,
+      2
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    }
+   ]
+  },
+  {
+   "seed": 177,
+   "n": 5,
+   "n1": 2,
+   "n2": 3,
+   "reparto": "2+3",
+   "n_calves": 0,
+   "sev": 4,
+   "status": "predation",
+   "steps": 999,
+   "esc_steps": 770,
+   "kills_prey2": 3,
+   "kills_s2": 2,
+   "kills_s1": 2,
+   "kills_mix": 0,
+   "cundio": true,
+   "anchor_s1_frac": 1.0,
+   "s2_free_frac_esc": 0.149,
+   "conf_first_s1": 231,
+   "conf_first_s2": 346,
+   "err_line_s1_deg": 16.4,
+   "err_line_s2_deg": 86.2,
+   "d_drone_s2_min": 1.6,
+   "s2_scared_frac": 0.291,
+   "prey2_commits": [
+    {
+     "step": 1,
+     "kind": "adult",
+     "idx": 2,
+     "libertad_fijar": 29.438208493094706
+    },
+    {
+     "step": 573,
+     "kind": "adult",
+     "idx": 1,
+     "libertad_fijar": 40.48732184174676
+    },
+    {
+     "step": 769,
+     "kind": "adult",
+     "idx": 5,
+     "libertad_fijar": 21.82158159076536
+    },
+    {
+     "step": 936,
+     "kind": "adult",
+     "idx": 0,
+     "libertad_fijar": 9.272825079497295
+    }
+   ],
+   "dmin_s2": [
+    1.8,
+    1.0,
+    1.0
+   ],
+   "n_llegan6": 3,
+   "n_llegan3": 3,
+   "paso_llegada6": 535,
+   "paso_llegada3": 548,
+   "quorum_max": 2,
+   "libertad_al_llegar": 27.650586535177453,
+   "captures": [
+    {
+     "step": 572,
+     "kind": "adult",
+     "prey_idx": 2,
+     "flankers": [
+      2,
+      3
+     ],
+     "is_pack_prey": false,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 768,
+     "kind": "adult",
+     "prey_idx": 1,
+     "flankers": [
+      2,
+      3
+     ],
+     "is_pack_prey": false,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 768,
+     "kind": "adult",
+     "prey_idx": 4,
+     "flankers": [
+      0,
+      1
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": false
+    },
+    {
+     "step": 999,
+     "kind": "adult",
+     "prey_idx": 0,
+     "flankers": [
+      0,
+      1
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    }
+   ]
+  },
+  {
+   "seed": 182,
+   "n": 5,
+   "n1": 2,
+   "n2": 3,
+   "reparto": "2+3",
+   "n_calves": 1,
+   "sev": 3,
+   "status": "predation",
+   "steps": 2128,
+   "esc_steps": 2109,
+   "kills_prey2": 3,
+   "kills_s2": 1,
+   "kills_s1": 0,
+   "kills_mix": 2,
+   "cundio": true,
+   "anchor_s1_frac": 0.0,
+   "s2_free_frac_esc": 0.0,
+   "conf_first_s1": 715,
+   "conf_first_s2": 21,
+   "err_line_s1_deg": 71.8,
+   "err_line_s2_deg": 44.2,
+   "d_drone_s2_min": 0.2,
+   "s2_scared_frac": 0.681,
+   "prey2_commits": [
+    {
+     "step": 1,
+     "kind": "calf",
+     "idx": 0,
+     "libertad_fijar": 24.658553879278895
+    },
+    {
+     "step": 1996,
+     "kind": "adult",
+     "idx": 1,
+     "libertad_fijar": 28.12445990101918
+    }
+   ],
+   "dmin_s2": [
+    1.4,
+    0.8,
+    0.5
+   ],
+   "n_llegan6": 3,
+   "n_llegan3": 3,
+   "paso_llegada6": 258,
+   "paso_llegada3": 314,
+   "quorum_max": 1,
+   "libertad_al_llegar": 12.294202842207778,
+   "captures": [
+    {
+     "step": 437,
+     "kind": "calf",
+     "prey_idx": 0,
+     "flankers": [
+      3
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 1995,
+     "kind": "adult",
+     "prey_idx": 0,
+     "flankers": [
+      1,
+      3
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 2128,
+     "kind": "adult",
+     "prey_idx": 1,
+     "flankers": [
+      1,
+      3
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    }
+   ]
+  },
+  {
+   "seed": 217,
+   "n": 5,
+   "n1": 2,
+   "n2": 3,
+   "reparto": "2+3",
+   "n_calves": 2,
+   "sev": 5,
+   "status": "predation",
+   "steps": 1486,
+   "esc_steps": 1468,
+   "kills_prey2": 4,
+   "kills_s2": 2,
+   "kills_s1": 3,
+   "kills_mix": 0,
+   "cundio": true,
+   "anchor_s1_frac": 0.0,
+   "s2_free_frac_esc": 0.0,
+   "conf_first_s1": 369,
+   "conf_first_s2": 20,
+   "err_line_s1_deg": 79.5,
+   "err_line_s2_deg": 22.8,
+   "d_drone_s2_min": 0.2,
+   "s2_scared_frac": 0.671,
+   "prey2_commits": [
+    {
+     "step": 1,
+     "kind": "calf",
+     "idx": 1,
+     "libertad_fijar": 6.520689037227271
+    },
+    {
+     "step": 565,
+     "kind": "calf",
+     "idx": 0,
+     "libertad_fijar": 10.588278101261368
+    },
+    {
+     "step": 644,
+     "kind": "adult",
+     "idx": 2,
+     "libertad_fijar": 23.831365496300517
+    },
+    {
+     "step": 1340,
+     "kind": "adult",
+     "idx": 3,
+     "libertad_fijar": 38.22123637205866
+    }
+   ],
+   "dmin_s2": [
+    0.1,
+    0.8,
+    2.4
+   ],
+   "n_llegan6": 3,
+   "n_llegan3": 3,
+   "paso_llegada6": 471,
+   "paso_llegada3": 515,
+   "quorum_max": 2,
+   "libertad_al_llegar": 11.666534285607243,
+   "captures": [
+    {
+     "step": 564,
+     "kind": "calf",
+     "prey_idx": 1,
+     "flankers": [
+      2
+     ],
+     "is_pack_prey": false,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 643,
+     "kind": "calf",
+     "prey_idx": 0,
+     "flankers": [
+      0
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 1256,
+     "kind": "adult",
+     "prey_idx": 1,
+     "flankers": [
+      0,
+      1
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": false
+    },
+    {
+     "step": 1339,
+     "kind": "adult",
+     "prey_idx": 2,
+     "flankers": [
+      2,
+      3
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 1486,
+     "kind": "adult",
+     "prey_idx": 3,
+     "flankers": [
+      0,
+      1
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    }
+   ]
+  },
+  {
+   "seed": 250,
+   "n": 5,
+   "n1": 2,
+   "n2": 3,
+   "reparto": "2+3",
+   "n_calves": 2,
+   "sev": 5,
+   "status": "predation",
+   "steps": 1182,
+   "esc_steps": 1174,
+   "kills_prey2": 3,
+   "kills_s2": 2,
+   "kills_s1": 3,
+   "kills_mix": 0,
+   "cundio": true,
+   "anchor_s1_frac": 0.0,
+   "s2_free_frac_esc": 0.0,
+   "conf_first_s1": 558,
+   "conf_first_s2": 10,
+   "err_line_s1_deg": 100.8,
+   "err_line_s2_deg": 31.3,
+   "d_drone_s2_min": 0.2,
+   "s2_scared_frac": 0.627,
+   "prey2_commits": [
+    {
+     "step": 1,
+     "kind": "calf",
+     "idx": 0,
+     "libertad_fijar": 14.400537613809316
+    },
+    {
+     "step": 368,
+     "kind": "calf",
+     "idx": 1,
+     "libertad_fijar": 33.71175720655056
+    },
+    {
+     "step": 723,
+     "kind": "adult",
+     "idx": 0,
+     "libertad_fijar": 39.40275173613448
+    }
+   ],
+   "dmin_s2": [
+    2.2,
+    0.6,
+    1.9
+   ],
+   "n_llegan6": 3,
+   "n_llegan3": 3,
+   "paso_llegada6": 156,
+   "paso_llegada3": 282,
+   "quorum_max": 2,
+   "libertad_al_llegar": 8.16534578749525,
+   "captures": [
+    {
+     "step": 367,
+     "kind": "calf",
+     "prey_idx": 0,
+     "flankers": [
+      2
+     ],
+     "is_pack_prey": false,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 722,
+     "kind": "calf",
+     "prey_idx": 1,
+     "flankers": [
+      1
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 740,
+     "kind": "adult",
+     "prey_idx": 1,
+     "flankers": [
+      0,
+      1
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": false
+    },
+    {
+     "step": 1146,
+     "kind": "adult",
+     "prey_idx": 4,
+     "flankers": [
+      0,
+      1
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": false
+    },
+    {
+     "step": 1182,
+     "kind": "adult",
+     "prey_idx": 0,
+     "flankers": [
+      2,
+      3
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    }
+   ]
+  },
+  {
+   "seed": 358,
+   "n": 5,
+   "n1": 2,
+   "n2": 3,
+   "reparto": "2+3",
+   "n_calves": 2,
+   "sev": 3,
+   "status": "predation",
+   "steps": 1311,
+   "esc_steps": 1112,
+   "kills_prey2": 2,
+   "kills_s2": 0,
+   "kills_s1": 3,
+   "kills_mix": 0,
+   "cundio": true,
+   "anchor_s1_frac": 1.0,
+   "s2_free_frac_esc": 0.29,
+   "conf_first_s1": 201,
+   "conf_first_s2": 524,
+   "err_line_s1_deg": 32.6,
+   "err_line_s2_deg": 30.4,
+   "d_drone_s2_min": 1.4,
+   "s2_scared_frac": 0.503,
+   "prey2_commits": [
+    {
+     "step": 1,
+     "kind": "calf",
+     "idx": 0,
+     "libertad_fijar": 6.233072623224018
+    },
+    {
+     "step": 1074,
+     "kind": "adult",
+     "idx": 1,
+     "libertad_fijar": 17.378131618470793
+    }
+   ],
+   "dmin_s2": [
+    1.8,
+    12.5,
+    1.1
+   ],
+   "n_llegan6": 2,
+   "n_llegan3": 2,
+   "paso_llegada6": 1062,
+   "paso_llegada3": 1247,
+   "quorum_max": 1,
+   "libertad_al_llegar": 11.30617796188732,
+   "captures": [
+    {
+     "step": 1073,
+     "kind": "calf",
+     "prey_idx": 0,
+     "flankers": [
+      1
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 1223,
+     "kind": "adult",
+     "prey_idx": 0,
+     "flankers": [
+      0,
+      1
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": false
+    },
+    {
+     "step": 1311,
+     "kind": "adult",
+     "prey_idx": 1,
+     "flankers": [
+      0,
+      1
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    }
+   ]
+  },
+  {
+   "seed": 382,
+   "n": 5,
+   "n1": 2,
+   "n2": 3,
+   "reparto": "2+3",
+   "n_calves": 0,
+   "sev": 3,
+   "status": "predation",
+   "steps": 1141,
+   "esc_steps": 1105,
+   "kills_prey2": 3,
+   "kills_s2": 2,
+   "kills_s1": 1,
+   "kills_mix": 0,
+   "cundio": true,
+   "anchor_s1_frac": 1.0,
+   "s2_free_frac_esc": 0.246,
+   "conf_first_s1": 38,
+   "conf_first_s2": 310,
+   "err_line_s1_deg": 74.8,
+   "err_line_s2_deg": 91.6,
+   "d_drone_s2_min": 0.4,
+   "s2_scared_frac": 0.41,
+   "prey2_commits": [
+    {
+     "step": 1,
+     "kind": "adult",
+     "idx": 2,
+     "libertad_fijar": 29.866561096571733
+    },
+    {
+     "step": 506,
+     "kind": "adult",
+     "idx": 0,
+     "libertad_fijar": 25.42015290093493
+    },
+    {
+     "step": 975,
+     "kind": "adult",
+     "idx": 1,
+     "libertad_fijar": 22.458836123941133
+    }
+   ],
+   "dmin_s2": [
+    1.0,
+    0.9,
+    0.6
+   ],
+   "n_llegan6": 3,
+   "n_llegan3": 3,
+   "paso_llegada6": 319,
+   "paso_llegada3": 333,
+   "quorum_max": 2,
+   "libertad_al_llegar": 37.94236896812441,
+   "captures": [
+    {
+     "step": 505,
+     "kind": "adult",
+     "prey_idx": 2,
+     "flankers": [
+      3,
+      4
+     ],
+     "is_pack_prey": false,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 974,
+     "kind": "adult",
+     "prey_idx": 0,
+     "flankers": [
+      3,
+      4
+     ],
+     "is_pack_prey": false,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 1141,
+     "kind": "adult",
+     "prey_idx": 1,
+     "flankers": [
+      0,
+      1
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    }
+   ]
+  },
+  {
+   "seed": 390,
+   "n": 5,
+   "n1": 2,
+   "n2": 3,
+   "reparto": "2+3",
+   "n_calves": 1,
+   "sev": 2,
+   "status": "predation",
+   "steps": 1437,
+   "esc_steps": 1420,
+   "kills_prey2": 2,
+   "kills_s2": 0,
+   "kills_s1": 2,
+   "kills_mix": 0,
+   "cundio": true,
+   "anchor_s1_frac": 0.0,
+   "s2_free_frac_esc": 0.0,
+   "conf_first_s1": 419,
+   "conf_first_s2": 19,
+   "err_line_s1_deg": 27.1,
+   "err_line_s2_deg": 15.5,
+   "d_drone_s2_min": 5.9,
+   "s2_scared_frac": 0.688,
+   "prey2_commits": [
+    {
+     "step": 1,
+     "kind": "calf",
+     "idx": 0,
+     "libertad_fijar": 23.043935889154888
+    },
+    {
+     "step": 1424,
+     "kind": "adult",
+     "idx": 1,
+     "libertad_fijar": 19.655515004272843
+    }
+   ],
+   "dmin_s2": [
+    16.1,
+    14.8,
+    15.3
+   ],
+   "n_llegan6": 0,
+   "n_llegan3": 0,
+   "paso_llegada6": null,
+   "paso_llegada3": null,
+   "quorum_max": 0,
+   "libertad_al_llegar": null,
+   "captures": [
+    {
+     "step": 1423,
+     "kind": "calf",
+     "prey_idx": 0,
+     "flankers": [
+      1
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 1437,
+     "kind": "adult",
+     "prey_idx": 1,
+     "flankers": [
+      0,
+      1
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    }
+   ]
+  },
+  {
+   "seed": 139,
+   "n": 5,
+   "n1": 3,
+   "n2": 2,
+   "reparto": "3+2",
+   "n_calves": 2,
+   "sev": 5,
+   "status": "predation",
+   "steps": 1437,
+   "esc_steps": 1188,
+   "kills_prey2": 3,
+   "kills_s2": 2,
+   "kills_s1": 2,
+   "kills_mix": 1,
+   "cundio": true,
+   "anchor_s1_frac": 0.0,
+   "s2_free_frac_esc": 0.0,
+   "conf_first_s1": 489,
+   "conf_first_s2": 251,
+   "err_line_s1_deg": 77.2,
+   "err_line_s2_deg": 22.2,
+   "d_drone_s2_min": 2.9,
+   "s2_scared_frac": 0.363,
+   "prey2_commits": [
+    {
+     "step": 1,
+     "kind": "calf",
+     "idx": 0,
+     "libertad_fijar": 14.270023606428891
+    },
+    {
+     "step": 804,
+     "kind": "adult",
+     "idx": 3,
+     "libertad_fijar": 31.286825478339257
+    },
+    {
+     "step": 1253,
+     "kind": "adult",
+     "idx": 0,
+     "libertad_fijar": 24.499859368199367
+    }
+   ],
+   "dmin_s2": [
+    0.7,
+    2.8
+   ],
+   "n_llegan6": 2,
+   "n_llegan3": 2,
+   "paso_llegada6": 761,
+   "paso_llegada3": 803,
+   "quorum_max": 2,
+   "libertad_al_llegar": 13.959732362662917,
+   "captures": [
+    {
+     "step": 682,
+     "kind": "calf",
+     "prey_idx": 1,
+     "flankers": [
+      2
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": false
+    },
+    {
+     "step": 803,
+     "kind": "calf",
+     "prey_idx": 0,
+     "flankers": [
+      3
+     ],
+     "is_pack_prey": false,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 1252,
+     "kind": "adult",
+     "prey_idx": 3,
+     "flankers": [
+      3,
+      4
+     ],
+     "is_pack_prey": false,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 1259,
+     "kind": "adult",
+     "prey_idx": 1,
+     "flankers": [
+      0,
+      1
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": false
+    },
+    {
+     "step": 1437,
+     "kind": "adult",
+     "prey_idx": 0,
+     "flankers": [
+      2,
+      4
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    }
+   ]
+  },
+  {
+   "seed": 160,
+   "n": 5,
+   "n1": 3,
+   "n2": 2,
+   "reparto": "3+2",
+   "n_calves": 1,
+   "sev": 3,
+   "status": "predation",
+   "steps": 2204,
+   "esc_steps": 2193,
+   "kills_prey2": 3,
+   "kills_s2": 2,
+   "kills_s1": 1,
+   "kills_mix": 0,
+   "cundio": true,
+   "anchor_s1_frac": 0.0,
+   "s2_free_frac_esc": 0.0,
+   "conf_first_s1": 693,
+   "conf_first_s2": 13,
+   "err_line_s1_deg": 59.8,
+   "err_line_s2_deg": 53.4,
+   "d_drone_s2_min": 0.7,
+   "s2_scared_frac": 0.808,
+   "prey2_commits": [
+    {
+     "step": 1,
+     "kind": "calf",
+     "idx": 0,
+     "libertad_fijar": 20.566696064659943
+    },
+    {
+     "step": 657,
+     "kind": "adult",
+     "idx": 2,
+     "libertad_fijar": 63.22211296501578
+    },
+    {
+     "step": 778,
+     "kind": "adult",
+     "idx": 5,
+     "libertad_fijar": 63.660903677352294
+    },
+    {
+     "step": 933,
+     "kind": "adult",
+     "idx": 1,
+     "libertad_fijar": 50.44938365632699
+    },
+    {
+     "step": 2095,
+     "kind": "adult",
+     "idx": 4,
+     "libertad_fijar": 11.881759384798253
+    }
+   ],
+   "dmin_s2": [
+    0.7,
+    1.7
+   ],
+   "n_llegan6": 2,
+   "n_llegan3": 2,
+   "paso_llegada6": 273,
+   "paso_llegada3": 579,
+   "quorum_max": 2,
+   "libertad_al_llegar": 9.565693051741409,
+   "captures": [
+    {
+     "step": 656,
+     "kind": "calf",
+     "prey_idx": 0,
+     "flankers": [
+      3
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 2094,
+     "kind": "adult",
+     "prey_idx": 1,
+     "flankers": [
+      3,
+      4
+     ],
+     "is_pack_prey": false,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 2204,
+     "kind": "adult",
+     "prey_idx": 4,
+     "flankers": [
+      0,
+      2
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    }
+   ]
+  },
+  {
+   "seed": 168,
+   "n": 5,
+   "n1": 3,
+   "n2": 2,
+   "reparto": "3+2",
+   "n_calves": 1,
+   "sev": 2,
+   "status": "predation",
+   "steps": 846,
+   "esc_steps": 766,
+   "kills_prey2": 2,
+   "kills_s2": 1,
+   "kills_s1": 1,
+   "kills_mix": 0,
+   "cundio": true,
+   "anchor_s1_frac": 1.0,
+   "s2_free_frac_esc": 0.423,
+   "conf_first_s1": 82,
+   "conf_first_s2": 406,
+   "err_line_s1_deg": 3.7,
+   "err_line_s2_deg": 60.0,
+   "d_drone_s2_min": 7.5,
+   "s2_scared_frac": 0.163,
+   "prey2_commits": [
+    {
+     "step": 1,
+     "kind": "calf",
+     "idx": 0,
+     "libertad_fijar": 13.607973478786633
+    },
+    {
+     "step": 725,
+     "kind": "adult",
+     "idx": 2,
+     "libertad_fijar": 13.661553973831516
+    },
+    {
+     "step": 779,
+     "kind": "adult",
+     "idx": 3,
+     "libertad_fijar": 5.624933267950832
+    }
+   ],
+   "dmin_s2": [
+    0.9,
+    2.0
+   ],
+   "n_llegan6": 2,
+   "n_llegan3": 2,
+   "paso_llegada6": 697,
+   "paso_llegada3": 724,
+   "quorum_max": 2,
+   "libertad_al_llegar": 20.02119576456682,
+   "captures": [
+    {
+     "step": 724,
+     "kind": "calf",
+     "prey_idx": 0,
+     "flankers": [
+      3
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 846,
+     "kind": "adult",
+     "prey_idx": 3,
+     "flankers": [
+      0,
+      1
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    }
+   ]
+  },
+  {
+   "seed": 230,
+   "n": 5,
+   "n1": 3,
+   "n2": 2,
+   "reparto": "3+2",
+   "n_calves": 0,
+   "sev": 2,
+   "status": "predation",
+   "steps": 671,
+   "esc_steps": 671,
+   "kills_prey2": 1,
+   "kills_s2": 0,
+   "kills_s1": 2,
+   "kills_mix": 0,
+   "cundio": true,
+   "anchor_s1_frac": 0.0,
+   "s2_free_frac_esc": 0.0,
+   "conf_first_s1": 650,
+   "conf_first_s2": 1,
+   "err_line_s1_deg": 134.7,
+   "err_line_s2_deg": 16.3,
+   "d_drone_s2_min": 2.0,
+   "s2_scared_frac": 0.573,
+   "prey2_commits": [
+    {
+     "step": 1,
+     "kind": "adult",
+     "idx": 5,
+     "libertad_fijar": 35.13363876597553
+    },
+    {
+     "step": 623,
+     "kind": "adult",
+     "idx": 4,
+     "libertad_fijar": 59.24032910057486
+    }
+   ],
+   "dmin_s2": [
+    18.2,
+    17.9
+   ],
+   "n_llegan6": 0,
+   "n_llegan3": 0,
+   "paso_llegada6": null,
+   "paso_llegada3": null,
+   "quorum_max": 0,
+   "libertad_al_llegar": null,
+   "captures": [
+    {
+     "step": 647,
+     "kind": "adult",
+     "prey_idx": 2,
+     "flankers": [
+      0,
+      2
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": false
+    },
+    {
+     "step": 671,
+     "kind": "adult",
+     "prey_idx": 4,
+     "flankers": [
+      0,
+      2
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    }
+   ]
+  },
+  {
+   "seed": 263,
+   "n": 5,
+   "n1": 3,
+   "n2": 2,
+   "reparto": "3+2",
+   "n_calves": 2,
+   "sev": 4,
+   "status": "predation",
+   "steps": 1761,
+   "esc_steps": 1737,
+   "kills_prey2": 2,
+   "kills_s2": 1,
+   "kills_s1": 2,
+   "kills_mix": 1,
+   "cundio": true,
+   "anchor_s1_frac": 0.0,
+   "s2_free_frac_esc": 0.0,
+   "conf_first_s1": 599,
+   "conf_first_s2": 26,
+   "err_line_s1_deg": 70.9,
+   "err_line_s2_deg": 28.0,
+   "d_drone_s2_min": 0.7,
+   "s2_scared_frac": 0.739,
+   "prey2_commits": [
+    {
+     "step": 1,
+     "kind": "calf",
+     "idx": 1,
+     "libertad_fijar": 28.014717119414016
+    },
+    {
+     "step": 988,
+     "kind": "adult",
+     "idx": 0,
+     "libertad_fijar": 16.554860035713208
+    }
+   ],
+   "dmin_s2": [
+    3.8,
+    1.4
+   ],
+   "n_llegan6": 2,
+   "n_llegan3": 1,
+   "paso_llegada6": 920,
+   "paso_llegada3": 987,
+   "quorum_max": 1,
+   "libertad_al_llegar": 18.070671482127896,
+   "captures": [
+    {
+     "step": 841,
+     "kind": "calf",
+     "prey_idx": 0,
+     "flankers": [
+      0
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": false
+    },
+    {
+     "step": 987,
+     "kind": "calf",
+     "prey_idx": 1,
+     "flankers": [
+      4
+     ],
+     "is_pack_prey": false,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 1105,
+     "kind": "adult",
+     "prey_idx": 4,
+     "flankers": [
+      0,
+      2
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": false
+    },
+    {
+     "step": 1761,
+     "kind": "adult",
+     "prey_idx": 0,
+     "flankers": [
+      2,
+      4
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    }
+   ]
+  },
+  {
+   "seed": 272,
+   "n": 5,
+   "n1": 3,
+   "n2": 2,
+   "reparto": "3+2",
+   "n_calves": 1,
+   "sev": 3,
+   "status": "predation",
+   "steps": 1740,
+   "esc_steps": 1731,
+   "kills_prey2": 2,
+   "kills_s2": 0,
+   "kills_s1": 2,
+   "kills_mix": 1,
+   "cundio": true,
+   "anchor_s1_frac": 1.0,
+   "s2_free_frac_esc": 0.264,
+   "conf_first_s1": 11,
+   "conf_first_s2": 468,
+   "err_line_s1_deg": 22.9,
+   "err_line_s2_deg": 56.1,
+   "d_drone_s2_min": 0.6,
+   "s2_scared_frac": 0.527,
+   "prey2_commits": [
+    {
+     "step": 1,
+     "kind": "calf",
+     "idx": 0,
+     "libertad_fijar": 12.211556240884647
+    },
+    {
+     "step": 919,
+     "kind": "adult",
+     "idx": 2,
+     "libertad_fijar": 32.55051488861908
+    }
+   ],
+   "dmin_s2": [
+    3.0,
+    0.6
+   ],
+   "n_llegan6": 2,
+   "n_llegan3": 2,
+   "paso_llegada6": 874,
+   "paso_llegada3": 1042,
+   "quorum_max": 1,
+   "libertad_al_llegar": 10.892308036260953,
+   "captures": [
+    {
+     "step": 918,
+     "kind": "calf",
+     "prey_idx": 0,
+     "flankers": [
+      1
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 1009,
+     "kind": "adult",
+     "prey_idx": 4,
+     "flankers": [
+      0,
+      1,
+      2
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": false
+    },
+    {
+     "step": 1740,
+     "kind": "adult",
+     "prey_idx": 2,
+     "flankers": [
+      0,
+      4
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    }
+   ]
+  },
+  {
+   "seed": 284,
+   "n": 5,
+   "n1": 3,
+   "n2": 2,
+   "reparto": "3+2",
+   "n_calves": 2,
+   "sev": 5,
+   "status": "predation",
+   "steps": 1235,
+   "esc_steps": 1209,
+   "kills_prey2": 4,
+   "kills_s2": 2,
+   "kills_s1": 2,
+   "kills_mix": 1,
+   "cundio": true,
+   "anchor_s1_frac": 0.0,
+   "s2_free_frac_esc": 0.0,
+   "conf_first_s1": 535,
+   "conf_first_s2": 28,
+   "err_line_s1_deg": 86.1,
+   "err_line_s2_deg": 13.8,
+   "d_drone_s2_min": 5.9,
+   "s2_scared_frac": 0.522,
+   "prey2_commits": [
+    {
+     "step": 1,
+     "kind": "calf",
+     "idx": 1,
+     "libertad_fijar": 12.325390155409893
+    },
+    {
+     "step": 506,
+     "kind": "calf",
+     "idx": 0,
+     "libertad_fijar": 41.53336549529073
+    },
+    {
+     "step": 614,
+     "kind": "adult",
+     "idx": 1,
+     "libertad_fijar": 26.09557199688125
+    },
+    {
+     "step": 1074,
+     "kind": "adult",
+     "idx": 2,
+     "libertad_fijar": 17.41581441929768
+    }
+   ],
+   "dmin_s2": [
+    2.0,
+    0.5
+   ],
+   "n_llegan6": 2,
+   "n_llegan3": 2,
+   "paso_llegada6": 371,
+   "paso_llegada3": 503,
+   "quorum_max": 2,
+   "libertad_al_llegar": 15.862486131059207,
+   "captures": [
+    {
+     "step": 505,
+     "kind": "calf",
+     "prey_idx": 1,
+     "flankers": [
+      3
+     ],
+     "is_pack_prey": false,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 613,
+     "kind": "calf",
+     "prey_idx": 0,
+     "flankers": [
+      0
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 1073,
+     "kind": "adult",
+     "prey_idx": 1,
+     "flankers": [
+      3,
+      4
+     ],
+     "is_pack_prey": false,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 1111,
+     "kind": "adult",
+     "prey_idx": 0,
+     "flankers": [
+      0,
+      1
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": false
+    },
+    {
+     "step": 1235,
+     "kind": "adult",
+     "prey_idx": 2,
+     "flankers": [
+      1,
+      4
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    }
+   ]
+  },
+  {
+   "seed": 301,
+   "n": 5,
+   "n1": 3,
+   "n2": 2,
+   "reparto": "3+2",
+   "n_calves": 1,
+   "sev": 3,
+   "status": "predation",
+   "steps": 1603,
+   "esc_steps": 1584,
+   "kills_prey2": 3,
+   "kills_s2": 2,
+   "kills_s1": 1,
+   "kills_mix": 0,
+   "cundio": true,
+   "anchor_s1_frac": 0.0,
+   "s2_free_frac_esc": 0.0,
+   "conf_first_s1": 885,
+   "conf_first_s2": 21,
+   "err_line_s1_deg": 117.2,
+   "err_line_s2_deg": 20.4,
+   "d_drone_s2_min": 3.2,
+   "s2_scared_frac": 0.587,
+   "prey2_commits": [
+    {
+     "step": 1,
+     "kind": "calf",
+     "idx": 0,
+     "libertad_fijar": 35.73036755149736
+    },
+    {
+     "step": 1092,
+     "kind": "adult",
+     "idx": 1,
+     "libertad_fijar": 19.92301282260605
+    },
+    {
+     "step": 1560,
+     "kind": "adult",
+     "idx": 3,
+     "libertad_fijar": 26.55340057074371
+    }
+   ],
+   "dmin_s2": [
+    0.9,
+    0.5
+   ],
+   "n_llegan6": 2,
+   "n_llegan3": 2,
+   "paso_llegada6": 915,
+   "paso_llegada3": 1064,
+   "quorum_max": 2,
+   "libertad_al_llegar": 1.2053836152715118,
+   "captures": [
+    {
+     "step": 1091,
+     "kind": "calf",
+     "prey_idx": 0,
+     "flankers": [
+      3
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 1559,
+     "kind": "adult",
+     "prey_idx": 1,
+     "flankers": [
+      3,
+      4
+     ],
+     "is_pack_prey": false,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 1603,
+     "kind": "adult",
+     "prey_idx": 3,
+     "flankers": [
+      0,
+      1
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    }
+   ]
+  },
+  {
+   "seed": 367,
+   "n": 5,
+   "n1": 3,
+   "n2": 2,
+   "reparto": "3+2",
+   "n_calves": 2,
+   "sev": 3,
+   "status": "predation",
+   "steps": 1028,
+   "esc_steps": 1028,
+   "kills_prey2": 2,
+   "kills_s2": 0,
+   "kills_s1": 3,
+   "kills_mix": 0,
+   "cundio": true,
+   "anchor_s1_frac": 0.0,
+   "s2_free_frac_esc": 0.0,
+   "conf_first_s1": 505,
+   "conf_first_s2": 1,
+   "err_line_s1_deg": 86.0,
+   "err_line_s2_deg": 17.7,
+   "d_drone_s2_min": 0.5,
+   "s2_scared_frac": 0.602,
+   "prey2_commits": [
+    {
+     "step": 1,
+     "kind": "calf",
+     "idx": 0,
+     "libertad_fijar": 32.52502257441193
+    },
+    {
+     "step": 724,
+     "kind": "adult",
+     "idx": 4,
+     "libertad_fijar": 26.560138430050404
+    }
+   ],
+   "dmin_s2": [
+    3.7,
+    5.5
+   ],
+   "n_llegan6": 2,
+   "n_llegan3": 0,
+   "paso_llegada6": 804,
+   "paso_llegada3": null,
+   "quorum_max": 0,
+   "libertad_al_llegar": 6.515646486018132,
+   "captures": [
+    {
+     "step": 723,
+     "kind": "calf",
+     "prey_idx": 0,
+     "flankers": [
+      0
+     ],
+     "is_pack_prey": false,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 743,
+     "kind": "adult",
+     "prey_idx": 1,
+     "flankers": [
+      0,
+      1
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": false
+    },
+    {
+     "step": 1028,
+     "kind": "adult",
+     "prey_idx": 4,
+     "flankers": [
+      0,
+      2
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    }
+   ]
+  },
+  {
+   "seed": 42,
+   "n": 5,
+   "n1": 4,
+   "n2": 1,
+   "reparto": "4+1",
+   "n_calves": 0,
+   "sev": 2,
+   "status": "predation",
+   "steps": 637,
+   "esc_steps": 625,
+   "kills_prey2": 0,
+   "kills_s2": 0,
+   "kills_s1": 2,
+   "kills_mix": 0,
+   "cundio": false,
+   "anchor_s1_frac": 1.0,
+   "s2_free_frac_esc": 0.704,
+   "conf_first_s1": 14,
+   "conf_first_s2": 454,
+   "err_line_s1_deg": 8.2,
+   "err_line_s2_deg": 116.5,
+   "d_drone_s2_min": 8.8,
+   "s2_scared_frac": 0.149,
+   "prey2_commits": [],
+   "dmin_s2": [
+    Infinity
+   ],
+   "n_llegan6": 0,
+   "n_llegan3": 0,
+   "paso_llegada6": null,
+   "paso_llegada3": null,
+   "quorum_max": 0,
+   "libertad_al_llegar": null,
+   "captures": [
+    {
+     "step": 437,
+     "kind": "adult",
+     "prey_idx": 4,
+     "flankers": [
+      0,
+      1
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": false
+    },
+    {
+     "step": 637,
+     "kind": "adult",
+     "prey_idx": 2,
+     "flankers": [
+      2,
+      3
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": false
+    }
+   ]
+  },
+  {
+   "seed": 77,
+   "n": 5,
+   "n1": 4,
+   "n2": 1,
+   "reparto": "4+1",
+   "n_calves": 2,
+   "sev": 3,
+   "status": "predation",
+   "steps": 1846,
+   "esc_steps": 1787,
+   "kills_prey2": 1,
+   "kills_s2": 1,
+   "kills_s1": 2,
+   "kills_mix": 0,
+   "cundio": true,
+   "anchor_s1_frac": 0.0,
+   "s2_free_frac_esc": 0.0,
+   "conf_first_s1": 555,
+   "conf_first_s2": 61,
+   "err_line_s1_deg": 51.0,
+   "err_line_s2_deg": 69.8,
+   "d_drone_s2_min": 2.3,
+   "s2_scared_frac": 0.669,
+   "prey2_commits": [
+    {
+     "step": 1,
+     "kind": "calf",
+     "idx": 1,
+     "libertad_fijar": 15.471152898247563
+    }
+   ],
+   "dmin_s2": [
+    2.7
+   ],
+   "n_llegan6": 1,
+   "n_llegan3": 1,
+   "paso_llegada6": 620,
+   "paso_llegada3": 644,
+   "quorum_max": 1,
+   "libertad_al_llegar": 16.779077351013537,
+   "captures": [
+    {
+     "step": 552,
+     "kind": "calf",
+     "prey_idx": 0,
+     "flankers": [
+      0
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": false
+    },
+    {
+     "step": 644,
+     "kind": "calf",
+     "prey_idx": 1,
+     "flankers": [
+      4
+     ],
+     "is_pack_prey": false,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 1846,
+     "kind": "adult",
+     "prey_idx": 5,
+     "flankers": [
+      0,
+      1
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": false
+    }
+   ]
+  },
+  {
+   "seed": 96,
+   "n": 5,
+   "n1": 4,
+   "n2": 1,
+   "reparto": "4+1",
+   "n_calves": 0,
+   "sev": 1,
+   "status": "predation",
+   "steps": 1290,
+   "esc_steps": 1268,
+   "kills_prey2": 0,
+   "kills_s2": 0,
+   "kills_s1": 1,
+   "kills_mix": 0,
+   "cundio": false,
+   "anchor_s1_frac": 1.0,
+   "s2_free_frac_esc": 0.366,
+   "conf_first_s1": 24,
+   "conf_first_s2": 488,
+   "err_line_s1_deg": 10.1,
+   "err_line_s2_deg": 149.5,
+   "d_drone_s2_min": 11.3,
+   "s2_scared_frac": 0.035,
+   "prey2_commits": [],
+   "dmin_s2": [
+    Infinity
+   ],
+   "n_llegan6": 0,
+   "n_llegan3": 0,
+   "paso_llegada6": null,
+   "paso_llegada3": null,
+   "quorum_max": 0,
+   "libertad_al_llegar": null,
+   "captures": [
+    {
+     "step": 1290,
+     "kind": "adult",
+     "prey_idx": 5,
+     "flankers": [
+      2,
+      3
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": false
+    }
+   ]
+  },
+  {
+   "seed": 137,
+   "n": 5,
+   "n1": 4,
+   "n2": 1,
+   "reparto": "4+1",
+   "n_calves": 1,
+   "sev": 2,
+   "status": "predation",
+   "steps": 1427,
+   "esc_steps": 1412,
+   "kills_prey2": 0,
+   "kills_s2": 0,
+   "kills_s1": 2,
+   "kills_mix": 0,
+   "cundio": false,
+   "anchor_s1_frac": 0.0,
+   "s2_free_frac_esc": 0.0,
+   "conf_first_s1": 391,
+   "conf_first_s2": 17,
+   "err_line_s1_deg": 71.9,
+   "err_line_s2_deg": 26.2,
+   "d_drone_s2_min": 0.8,
+   "s2_scared_frac": 0.63,
+   "prey2_commits": [
+    {
+     "step": 1,
+     "kind": "calf",
+     "idx": 0,
+     "libertad_fijar": 8.296299165323337
+    }
+   ],
+   "dmin_s2": [
+    21.4
+   ],
+   "n_llegan6": 0,
+   "n_llegan3": 0,
+   "paso_llegada6": null,
+   "paso_llegada3": null,
+   "quorum_max": 0,
+   "libertad_al_llegar": null,
+   "captures": [
+    {
+     "step": 1344,
+     "kind": "adult",
+     "prey_idx": 0,
+     "flankers": [
+      0,
+      3
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": false
+    },
+    {
+     "step": 1427,
+     "kind": "adult",
+     "prey_idx": 1,
+     "flankers": [
+      2,
+      3
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": false
+    }
+   ]
+  },
+  {
+   "seed": 280,
+   "n": 5,
+   "n1": 4,
+   "n2": 1,
+   "reparto": "4+1",
+   "n_calves": 0,
+   "sev": 1,
+   "status": "predation",
+   "steps": 1030,
+   "esc_steps": 1005,
+   "kills_prey2": 0,
+   "kills_s2": 0,
+   "kills_s1": 1,
+   "kills_mix": 0,
+   "cundio": false,
+   "anchor_s1_frac": 0.0,
+   "s2_free_frac_esc": 0.0,
+   "conf_first_s1": 441,
+   "conf_first_s2": 27,
+   "err_line_s1_deg": 29.6,
+   "err_line_s2_deg": 5.4,
+   "d_drone_s2_min": 4.4,
+   "s2_scared_frac": 0.498,
+   "prey2_commits": [],
+   "dmin_s2": [
+    Infinity
+   ],
+   "n_llegan6": 0,
+   "n_llegan3": 0,
+   "paso_llegada6": null,
+   "paso_llegada3": null,
+   "quorum_max": 0,
+   "libertad_al_llegar": null,
+   "captures": [
+    {
+     "step": 1030,
+     "kind": "adult",
+     "prey_idx": 5,
+     "flankers": [
+      0,
+      3
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": false
+    }
+   ]
+  },
+  {
+   "seed": 286,
+   "n": 5,
+   "n1": 4,
+   "n2": 1,
+   "reparto": "4+1",
+   "n_calves": 0,
+   "sev": 2,
+   "status": "predation",
+   "steps": 1382,
+   "esc_steps": 1369,
+   "kills_prey2": 0,
+   "kills_s2": 0,
+   "kills_s1": 2,
+   "kills_mix": 0,
+   "cundio": false,
+   "anchor_s1_frac": 1.0,
+   "s2_free_frac_esc": 0.368,
+   "conf_first_s1": 15,
+   "conf_first_s2": 519,
+   "err_line_s1_deg": 7.7,
+   "err_line_s2_deg": 143.7,
+   "d_drone_s2_min": 2.4,
+   "s2_scared_frac": 0.364,
+   "prey2_commits": [],
+   "dmin_s2": [
+    Infinity
+   ],
+   "n_llegan6": 0,
+   "n_llegan3": 0,
+   "paso_llegada6": null,
+   "paso_llegada3": null,
+   "quorum_max": 0,
+   "libertad_al_llegar": null,
+   "captures": [
+    {
+     "step": 1210,
+     "kind": "adult",
+     "prey_idx": 2,
+     "flankers": [
+      1,
+      2
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": false
+    },
+    {
+     "step": 1382,
+     "kind": "adult",
+     "prey_idx": 0,
+     "flankers": [
+      0,
+      3
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": false
+    }
+   ]
+  },
+  {
+   "seed": 336,
+   "n": 5,
+   "n1": 4,
+   "n2": 1,
+   "reparto": "4+1",
+   "n_calves": 2,
+   "sev": 5,
+   "status": "predation",
+   "steps": 887,
+   "esc_steps": 870,
+   "kills_prey2": 1,
+   "kills_s2": 1,
+   "kills_s1": 4,
+   "kills_mix": 0,
+   "cundio": true,
+   "anchor_s1_frac": 1.0,
+   "s2_free_frac_esc": 0.54,
+   "conf_first_s1": 19,
+   "conf_first_s2": 489,
+   "err_line_s1_deg": 11.0,
+   "err_line_s2_deg": 146.2,
+   "d_drone_s2_min": 18.5,
+   "s2_scared_frac": 0.0,
+   "prey2_commits": [
+    {
+     "step": 1,
+     "kind": "calf",
+     "idx": 1,
+     "libertad_fijar": 20.429674858816064
+    }
+   ],
+   "dmin_s2": [
+    2.8
+   ],
+   "n_llegan6": 1,
+   "n_llegan3": 1,
+   "paso_llegada6": 678,
+   "paso_llegada3": 756,
+   "quorum_max": 1,
+   "libertad_al_llegar": 29.550943922458583,
+   "captures": [
+    {
+     "step": 717,
+     "kind": "calf",
+     "prey_idx": 0,
+     "flankers": [
+      0
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": false
+    },
+    {
+     "step": 728,
+     "kind": "adult",
+     "prey_idx": 1,
+     "flankers": [
+      0,
+      1
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": false
+    },
+    {
+     "step": 756,
+     "kind": "calf",
+     "prey_idx": 1,
+     "flankers": [
+      4
+     ],
+     "is_pack_prey": false,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 805,
+     "kind": "adult",
+     "prey_idx": 2,
+     "flankers": [
+      0,
+      3
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": false
+    },
+    {
+     "step": 887,
+     "kind": "adult",
+     "prey_idx": 4,
+     "flankers": [
+      0,
+      2
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": false
+    }
+   ]
+  },
+  {
+   "seed": 352,
+   "n": 5,
+   "n1": 4,
+   "n2": 1,
+   "reparto": "4+1",
+   "n_calves": 0,
+   "sev": 3,
+   "status": "predation",
+   "steps": 945,
+   "esc_steps": 729,
+   "kills_prey2": 0,
+   "kills_s2": 0,
+   "kills_s1": 3,
+   "kills_mix": 0,
+   "cundio": false,
+   "anchor_s1_frac": 0.0,
+   "s2_free_frac_esc": 0.0,
+   "conf_first_s1": 579,
+   "conf_first_s2": 218,
+   "err_line_s1_deg": 104.0,
+   "err_line_s2_deg": 2.9,
+   "d_drone_s2_min": 7.5,
+   "s2_scared_frac": 0.267,
+   "prey2_commits": [],
+   "dmin_s2": [
+    Infinity
+   ],
+   "n_llegan6": 0,
+   "n_llegan3": 0,
+   "paso_llegada6": null,
+   "paso_llegada3": null,
+   "quorum_max": 0,
+   "libertad_al_llegar": null,
+   "captures": [
+    {
+     "step": 676,
+     "kind": "adult",
+     "prey_idx": 0,
+     "flankers": [
+      0,
+      1
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": false
+    },
+    {
+     "step": 753,
+     "kind": "adult",
+     "prey_idx": 4,
+     "flankers": [
+      1,
+      2
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": false
+    },
+    {
+     "step": 945,
+     "kind": "adult",
+     "prey_idx": 5,
+     "flankers": [
+      1,
+      3
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": false
+    }
+   ]
+  },
+  {
+   "seed": 26,
+   "n": 4,
+   "n1": 1,
+   "n2": 3,
+   "reparto": "1+3",
+   "n_calves": 2,
+   "sev": 4,
+   "status": "predation",
+   "steps": 1121,
+   "esc_steps": 1098,
+   "kills_prey2": 4,
+   "kills_s2": 3,
+   "kills_s1": 0,
+   "kills_mix": 1,
+   "cundio": true,
+   "anchor_s1_frac": 0.0,
+   "s2_free_frac_esc": 0.0,
+   "conf_first_s1": 481,
+   "conf_first_s2": 25,
+   "err_line_s1_deg": 102.7,
+   "err_line_s2_deg": 25.9,
+   "d_drone_s2_min": 1.2,
+   "s2_scared_frac": 0.411,
+   "prey2_commits": [
+    {
+     "step": 1,
+     "kind": "calf",
+     "idx": 0,
+     "libertad_fijar": 24.3171230779208
+    },
+    {
+     "step": 319,
+     "kind": "calf",
+     "idx": 1,
+     "libertad_fijar": 45.16926445362469
+    },
+    {
+     "step": 712,
+     "kind": "adult",
+     "idx": 5,
+     "libertad_fijar": 24.332796348764994
+    },
+    {
+     "step": 1044,
+     "kind": "adult",
+     "idx": 2,
+     "libertad_fijar": 29.16224927589813
+    }
+   ],
+   "dmin_s2": [
+    2.7,
+    0.8,
+    0.9
+   ],
+   "n_llegan6": 3,
+   "n_llegan3": 3,
+   "paso_llegada6": 276,
+   "paso_llegada3": 301,
+   "quorum_max": 2,
+   "libertad_al_llegar": 6.567521171061869,
+   "captures": [
+    {
+     "step": 318,
+     "kind": "calf",
+     "prey_idx": 0,
+     "flankers": [
+      3
+     ],
+     "is_pack_prey": false,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 711,
+     "kind": "calf",
+     "prey_idx": 1,
+     "flankers": [
+      2
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 1043,
+     "kind": "adult",
+     "prey_idx": 5,
+     "flankers": [
+      1,
+      3
+     ],
+     "is_pack_prey": false,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 1121,
+     "kind": "adult",
+     "prey_idx": 2,
+     "flankers": [
+      0,
+      3
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    }
+   ]
+  },
+  {
+   "seed": 43,
+   "n": 4,
+   "n1": 3,
+   "n2": 1,
+   "reparto": "3+1",
+   "n_calves": 0,
+   "sev": 1,
+   "status": "predation",
+   "steps": 1019,
+   "esc_steps": 1000,
+   "kills_prey2": 0,
+   "kills_s2": 0,
+   "kills_s1": 1,
+   "kills_mix": 0,
+   "cundio": false,
+   "anchor_s1_frac": 0.0,
+   "s2_free_frac_esc": 0.0,
+   "conf_first_s1": 309,
+   "conf_first_s2": 21,
+   "err_line_s1_deg": 47.9,
+   "err_line_s2_deg": 15.2,
+   "d_drone_s2_min": 4.8,
+   "s2_scared_frac": 0.422,
+   "prey2_commits": [],
+   "dmin_s2": [
+    Infinity
+   ],
+   "n_llegan6": 0,
+   "n_llegan3": 0,
+   "paso_llegada6": null,
+   "paso_llegada3": null,
+   "quorum_max": 0,
+   "libertad_al_llegar": null,
+   "captures": [
+    {
+     "step": 933,
+     "kind": "adult",
+     "prey_idx": 4,
+     "flankers": [
+      0,
+      2
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": false
+    }
+   ]
+  },
+  {
+   "seed": 29,
+   "n": 3,
+   "n1": 1,
+   "n2": 2,
+   "reparto": "1+2",
+   "n_calves": 2,
+   "sev": 3,
+   "status": "predation",
+   "steps": 1181,
+   "esc_steps": 1162,
+   "kills_prey2": 3,
+   "kills_s2": 3,
+   "kills_s1": 0,
+   "kills_mix": 0,
+   "cundio": true,
+   "anchor_s1_frac": 0.0,
+   "s2_free_frac_esc": 0.0,
+   "conf_first_s1": 525,
+   "conf_first_s2": 21,
+   "err_line_s1_deg": 76.0,
+   "err_line_s2_deg": 15.5,
+   "d_drone_s2_min": 0.8,
+   "s2_scared_frac": 0.628,
+   "prey2_commits": [
+    {
+     "step": 1,
+     "kind": "calf",
+     "idx": 0,
+     "libertad_fijar": 10.807085880368696
+    },
+    {
+     "step": 589,
+     "kind": "calf",
+     "idx": 1,
+     "libertad_fijar": 24.420273220951483
+    },
+    {
+     "step": 1179,
+     "kind": "adult",
+     "idx": 2,
+     "libertad_fijar": 14.672850636450688
+    }
+   ],
+   "dmin_s2": [
+    2.6,
+    2.7
+   ],
+   "n_llegan6": 2,
+   "n_llegan3": 2,
+   "paso_llegada6": 563,
+   "paso_llegada3": 588,
+   "quorum_max": 2,
+   "libertad_al_llegar": 10.10525983519447,
+   "captures": [
+    {
+     "step": 588,
+     "kind": "calf",
+     "prey_idx": 0,
+     "flankers": [
+      2
+     ],
+     "is_pack_prey": false,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 1178,
+     "kind": "calf",
+     "prey_idx": 1,
+     "flankers": [
+      2
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 1181,
+     "kind": "adult",
+     "prey_idx": 2,
+     "flankers": [
+      1,
+      2
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    }
+   ]
+  },
+  {
+   "seed": 2,
+   "n": 3,
+   "n1": 2,
+   "n2": 1,
+   "reparto": "2+1",
+   "n_calves": 0,
+   "sev": 3,
+   "status": "predation",
+   "steps": 1435,
+   "esc_steps": 1208,
+   "kills_prey2": 0,
+   "kills_s2": 0,
+   "kills_s1": 3,
+   "kills_mix": 0,
+   "cundio": false,
+   "anchor_s1_frac": 0.0,
+   "s2_free_frac_esc": 0.0,
+   "conf_first_s1": 483,
+   "conf_first_s2": 229,
+   "err_line_s1_deg": 59.1,
+   "err_line_s2_deg": 62.3,
+   "d_drone_s2_min": 4.1,
+   "s2_scared_frac": 0.464,
+   "prey2_commits": [],
+   "dmin_s2": [
+    Infinity
+   ],
+   "n_llegan6": 0,
+   "n_llegan3": 0,
+   "paso_llegada6": null,
+   "paso_llegada3": null,
+   "quorum_max": 0,
+   "libertad_al_llegar": null,
+   "captures": [
+    {
+     "step": 511,
+     "kind": "adult",
+     "prey_idx": 2,
+     "flankers": [
+      0,
+      1
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": false
+    },
+    {
+     "step": 1276,
+     "kind": "adult",
+     "prey_idx": 5,
+     "flankers": [
+      0,
+      1
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": false
+    },
+    {
+     "step": 1435,
+     "kind": "adult",
+     "prey_idx": 4,
+     "flankers": [
+      0,
+      1
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": false
+    }
+   ]
+  },
+  {
+   "seed": 12,
+   "n": 4,
+   "n1": 2,
+   "n2": 2,
+   "reparto": "2+2",
+   "n_calves": 2,
+   "sev": 4,
+   "status": "predation",
+   "steps": 1267,
+   "esc_steps": 1243,
+   "kills_prey2": 2,
+   "kills_s2": 1,
+   "kills_s1": 3,
+   "kills_mix": 0,
+   "cundio": true,
+   "anchor_s1_frac": 0.0,
+   "s2_free_frac_esc": 0.0,
+   "conf_first_s1": 503,
+   "conf_first_s2": 26,
+   "err_line_s1_deg": 83.3,
+   "err_line_s2_deg": 34.3,
+   "d_drone_s2_min": 0.3,
+   "s2_scared_frac": 0.733,
+   "prey2_commits": [
+    {
+     "step": 1,
+     "kind": "calf",
+     "idx": 0,
+     "libertad_fijar": 13.112245495674447
+    }
+   ],
+   "dmin_s2": [
+    0.7,
+    2.0
+   ],
+   "n_llegan6": 2,
+   "n_llegan3": 2,
+   "paso_llegada6": 763,
+   "paso_llegada3": 793,
+   "quorum_max": 2,
+   "libertad_al_llegar": 12.055629033339779,
+   "captures": [
+    {
+     "step": 529,
+     "kind": "calf",
+     "prey_idx": 1,
+     "flankers": [
+      1
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": false
+    },
+    {
+     "step": 818,
+     "kind": "calf",
+     "prey_idx": 0,
+     "flankers": [
+      0
+     ],
+     "is_pack_prey": false,
+     "is_pack_prey2": true
+    },
+    {
+     "step": 1228,
+     "kind": "adult",
+     "prey_idx": 3,
+     "flankers": [
+      0,
+      1
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": false
+    },
+    {
+     "step": 1267,
+     "kind": "adult",
+     "prey_idx": 0,
+     "flankers": [
+      2,
+      3
+     ],
+     "is_pack_prey": true,
+     "is_pack_prey2": true
+    }
+   ]
+  }
+ ]
+}

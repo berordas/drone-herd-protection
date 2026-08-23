@@ -1,0 +1,14 @@
+{
+ "n_pares": 50,
+ "kinds_identicos": true,
+ "sev_v37": 0.8,
+ "sev_v371": 0.8,
+ "delta_v371_menos_v37": [
+  0.0,
+  0.0,
+  0.0
+ ],
+ "pares_distintos": 0,
+ "umbral_parada": 0.1,
+ "VEREDICTO": "INOCUA (v3.7.1 oficial)"
+}

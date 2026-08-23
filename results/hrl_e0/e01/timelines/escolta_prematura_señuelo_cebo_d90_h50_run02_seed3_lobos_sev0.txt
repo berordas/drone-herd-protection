@@ -1,0 +1,14 @@
+escolta_prematura_señuelo_cebo_d90_h50_run02_seed3_lobos_sev0 | arm=cebo_d90_h50_run02 status=timeout sev=0 steps=23570 grupos=[4] | muertes con procedencia al final
+t=     0  OPTION_START     option=CEBO delta_deg=90.0 hold=50.0
+t=    93  ESCOLTA_LATCH
+t=    93  ESCOLTA_PREMATURA primer_confirmado=0 quien=señuelo investigador=2 investigador_hacia_corzo=False asalto_borde_min_m=None pinzamiento_borde=False
+t=    94  CONFIRM_DECOY    wolf=0
+t=    94  ANCHOR_FLIP      frm=None to=0
+t=   871  SHOW_START       mode=manager
+t=   871  STAGED
+t=  2647  LURE_COMMIT      drones_cono=4 puerta_libre_m=60.5
+t=  2733  LURE_COMMIT_END
+t=  2774  LURE_COMMIT      drones_cono=4 puerta_libre_m=60.2
+t= 15029  LURE_COMMIT_END
+t= 15044  LURE_COMMIT      drones_cono=4 puerta_libre_m=60.1
+t= 23570  STRIKE_RESOLVED  outcome=none latencia=22699

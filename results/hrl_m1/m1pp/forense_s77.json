@@ -1,0 +1,84 @@
+{
+ "entradas_detalle": [
+  {
+   "lobo": 1,
+   "t": 994,
+   "detectado": false,
+   "cruzo_arco_aviso": true,
+   "cruzo_arco_violacion": false,
+   "fase": "SOSPECHA",
+   "M_anillo": 3,
+   "n_activos": 4,
+   "investigando": [
+    {
+     "dron": 2,
+     "contacto_lobo": true,
+     "d_contacto": 57.8
+    }
+   ],
+   "corzos_descartados": 1
+  },
+  {
+   "lobo": 2,
+   "t": 994,
+   "detectado": false,
+   "cruzo_arco_aviso": true,
+   "cruzo_arco_violacion": false,
+   "fase": "SOSPECHA",
+   "M_anillo": 3,
+   "n_activos": 4,
+   "investigando": [
+    {
+     "dron": 2,
+     "contacto_lobo": true,
+     "d_contacto": 57.8
+    }
+   ],
+   "corzos_descartados": 1
+  },
+  {
+   "lobo": 3,
+   "t": 994,
+   "detectado": false,
+   "cruzo_arco_aviso": true,
+   "cruzo_arco_violacion": false,
+   "fase": "SOSPECHA",
+   "M_anillo": 3,
+   "n_activos": 4,
+   "investigando": [
+    {
+     "dron": 2,
+     "contacto_lobo": true,
+     "d_contacto": 57.8
+    }
+   ],
+   "corzos_descartados": 1
+  },
+  {
+   "lobo": 4,
+   "t": 994,
+   "detectado": false,
+   "cruzo_arco_aviso": true,
+   "cruzo_arco_violacion": false,
+   "fase": "SOSPECHA",
+   "M_anillo": 3,
+   "n_activos": 4,
+   "investigando": [
+    {
+     "dron": 2,
+     "contacto_lobo": true,
+     "d_contacto": 57.8
+    }
+   ],
+   "corzos_descartados": 1
+  }
+ ],
+ "auditor": {
+  "ticks_patrulla": 1011,
+  "ticks_aviso": 967,
+  "ticks_violacion": 0,
+  "D_max": 168.1,
+  "R_media": 78.8,
+  "R_max": 85.2
+ }
+}

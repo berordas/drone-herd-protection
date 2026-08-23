@@ -1,0 +1,31 @@
+=== RIGIDEZ (rama CLEAN) ===
+  pasos CLEAN 44524 | FORMADA (err_max<=2.0 alcanzado, mismo conjunto) 37768 (85%) | pasos PENETRADO 13593
+  error de ESTACIÓN por dron-paso — TODO CLEAN (incluye vuelo de llegada): p50 0.91  p95 32.6  máx 140.9
+                                  — FORMADA: p50 0.77  p95 1.66  máx 4.71
+  err_MÁX del paso (el rezagado) en FORMADA: p50 1.10  p95 1.83  máx 4.71
+  ESPACIADO contiguo en FORMADA (nominal 20.0): mín 17.2  p5 19.7  p50 20.0  p95 20.3  máx 24.0
+  COLINEALIDAD (residuo rms de recta): TODO CLEAN p95 18.86 máx 60.2 | FORMADA p95 0.20 máx 1.88
+  velocidad de la POSE en FORMADA: p50 1.74  p95 5.60  máx 13.17 m/s (equilibrio analítico ~3.1)
+
+=== M2: cruces de segmento (COSTE de eliminar el cierre; ANTES=v3.3 con cierres: 56 total, 33 hacia-dentro-línea-en-pie) ===
+  TOTAL: 149 en 28 episodios | HACIA DENTRO: 130 | línea en pie (CLEAN): 100 (hacia dentro 92)
+  por sector: {'unico': 106, 'cebo': 3, 'asalto': 40}
+  estado del lobo: walled=104 scared=41 libre=4
+  hueco cruzado: mediana 20.0  p90 23.7  máx 31.1
+
+=== M1 (validada en v3.3 — no debe romperse) ===
+  % pasos que CRECE (lobos acercándose): 49.4% | ventanas 3 s: 57.9%
+    lobos/s0: 9.3 -> 19.5 -> máx 48.3 -> 47.7
+    lobos/s1: 10.3 -> 47.6 -> máx 51.2 -> 50.1
+    lobos/s2: 26.0 -> 28.4 -> máx 38.8 -> 34.0
+    lobos/s3: 18.3 -> 28.5 -> máx 63.0 -> 51.6
+    lobos/s4: 18.7 -> 31.1 -> máx 54.3 -> 35.7
+    lobos/s5: 14.8 -> 30.7 -> máx 60.3 -> 45.1
+    lobos/s6: 15.1 -> 20.0 -> máx 58.8 -> 41.5
+    lobos/s7: 21.6 -> 19.3 -> máx 61.9 -> 59.7
+    lobos/s8: 14.1 -> 20.1 -> máx 65.2 -> 48.9
+    lobos/s9: 8.5 -> 27.1 -> máx 69.2 -> 67.7
+    lobos/s10: 13.2 -> 24.8 -> máx 51.1 -> 41.8
+    lobos/s11: 13.0 -> 36.8 -> máx 67.4 -> 45.4
+    lobos/s12: 15.4 -> 30.2 -> máx 64.5 -> 52.9
+    lobos/s13: 7.4 -> 35.5 -> máx 51.2 -> 50.1

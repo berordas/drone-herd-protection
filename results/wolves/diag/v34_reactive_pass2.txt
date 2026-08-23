@@ -1,0 +1,7 @@
+=== ReactiveCoordinator vs baseline Dummy CONGELADA (N=100/tipo, mismas semillas/CONFIG_V2) ===
+  tipo              Dummy   Reactive     Δsev     n_safe   terminales (Reactive)
+  solo-lobos         3.82   2.68±1.66    -1.14       4.16   success=5 predation=87 timeout=8
+  solo-corzos        0.00   0.00±0.00    +0.00       0.00   success=0 predation=0 timeout=100
+  mixto              3.84   2.77±1.71    -1.07       4.10   success=7 predation=86 timeout=7
+  AGREGADO           2.55   1.82±1.88    -0.74       2.75
+  guardado -> baseline_v2_reactive.json (por episodio) + baseline_v2_reactive.csv (tabla comparada)

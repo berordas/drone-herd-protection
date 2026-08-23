@@ -1,0 +1,44 @@
+[
+ {
+  "tag": "gemelo_seed21",
+  "gif": "/data/hrl_m1/m1pp/visionado/gifs/gemelo_seed21_seed21_lobos_sev6.gif",
+  "sev": 6,
+  "seed": 21,
+  "kind": "lobos"
+ },
+ {
+  "tag": "retarget_masa_puro",
+  "gif": "/data/hrl_m1/m1pp/visionado/gifs/retarget_masa_puro_seed52_lobos_sev2.gif",
+  "sev": 2,
+  "seed": 52,
+  "kind": "lobos"
+ },
+ {
+  "tag": "redecision_tras_muerte",
+  "gif": "/data/hrl_m1/m1pp/visionado/gifs/redecision_tras_muerte_seed6_lobos_sev4.gif",
+  "sev": 4,
+  "seed": 6,
+  "kind": "lobos"
+ },
+ {
+  "tag": "primer_cebo_G",
+  "gif": "/data/hrl_m1/m1pp/visionado/gifs/primer_cebo_G_seed2_lobos_sev0.gif",
+  "sev": 0,
+  "seed": 2,
+  "kind": "lobos"
+ },
+ {
+  "tag": "peor_manager",
+  "gif": "/data/hrl_m1/m1pp/visionado/gifs/peor_manager_seed14_lobos_sev8.gif",
+  "sev": 8,
+  "seed": 14,
+  "kind": "lobos"
+ },
+ {
+  "tag": "despertar_tardio_mgr",
+  "gif": "/data/hrl_m1/m1pp/visionado/gifs/despertar_tardio_mgr_seed8_mixto_sev2.gif",
+  "sev": 2,
+  "seed": 8,
+  "kind": "mixto"
+ }
+]

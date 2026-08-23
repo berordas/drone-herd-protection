@@ -1,0 +1,11 @@
+dneg_max_cebo_keep_cebo_keep_h50_reactive_seed100_lobos_sev1 | arm=cebo_keep_h50_reactive status=predation sev=1 steps=3162 grupos=[1, 4] | muertes con procedencia al final
+t=     0  OPTION_START     option=CEBO hold=50.0 membership=keep
+t=   435  SHOW_START       mode=keep
+t=   435  STAGED
+t=  1001  ESCOLTA_LATCH
+t=  1002  ANCHOR_FLIP      frm=None to=1
+t=  1369  CONFIRM_DECOY    wolf=0
+t=  3162  DEATH            kind=adult prey=2 flankers=[0, 1]
+t=  3162  HERD_SAFE        n_safe=5 n_muertas=1
+t=  3162  STRIKE_RESOLVED  outcome=kill latencia=2727
+t=  3162  MUERTE adult#2 flankers=[0, 1] conf=[True, True] nearest=0(conf=True) grupo=1 octante=4 gotera=False dflip=2160

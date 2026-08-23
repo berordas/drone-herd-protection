@@ -1,0 +1,87 @@
+{
+  "args": {
+    "total_steps": 20000000,
+    "n_envs": 12,
+    "seed": 0,
+    "outdir": "/data/wolves/run07_curric_v28",
+    "kinds": [
+      "lobos",
+      "mixto"
+    ],
+    "device": "cpu",
+    "frame_skip": 5,
+    "smoke": false,
+    "resume": null,
+    "eval_every": 250000,
+    "shaping": "off",
+    "shaping_beta": 1.0,
+    "init_from": null,
+    "lr": 0.0001,
+    "abort_ref": null,
+    "residual": true,
+    "residual_scale": null,
+    "phase1_steps": 1000000,
+    "curriculum": true
+  },
+  "hyper": {
+    "n_steps": 2048,
+    "batch_size": 512,
+    "gamma": 0.999,
+    "gae_lambda": 0.95,
+    "learning_rate": 0.0001,
+    "ent_coef": 0.01,
+    "clip_range": 0.2,
+    "n_epochs": 10
+  },
+  "net_arch": [
+    256,
+    256
+  ],
+  "algo": "PPO(MlpPolicy)",
+  "reward": "+1 por res matada (rala, compartida); sin castigo por tiempo ni por a-salvo",
+  "shaping": {
+    "on": false,
+    "beta": 1.0,
+    "gamma": 0.999,
+    "phi": "-beta * mean_i dist(lobo_i, presa ternero-primero) / diagonal_campo; 0 si coasting",
+    "nota": "gamma EXACTAMENTE el del PPO (inocuidad de Ng et al.); la eval NUNCA ve el shaping"
+  },
+  "init_from": null,
+  "residual": {
+    "on": true,
+    "scale": "wolf_speed",
+    "phase1_steps": 1000000,
+    "log_std_init": -2.0,
+    "obs": "132 = 122 + accion del script normalizada (pista del estado oculto)",
+    "nota": "RPL (Silver et al. 2018): v_final = clip_norma(v_script + delta); el script entero vive dentro (su presa/histéresis/coasting)"
+  },
+  "curriculum": {
+    "on": true,
+    "schedule": [
+      {
+        "hasta_paso": 5000000,
+        "separacion_grados": 180.0,
+        "min_mass": 2
+      },
+      {
+        "hasta_paso": 10000000,
+        "separacion_grados": 135.0,
+        "min_mass": 0
+      },
+      {
+        "hasta_paso": 15000000,
+        "separacion_grados": 90.0,
+        "min_mass": 0
+      },
+      {
+        "hasta_paso": 20000000,
+        "separacion_grados": null,
+        "min_mass": 0
+      }
+    ],
+    "recompensa": "EQUIPO PURA (+1/muerte, shaping OFF, SIN pista de cebo)",
+    "nota": "override SOLO de entrenamiento (WolfPackEnv.set_curriculum); la EVAL es SIEMPRE spawn grouped normal de v2.7 (mide el cebo REAL)"
+  },
+  "abort": "CRITERIOS (pactados, run07: CURRÍCULO del cebo sobre la BARRERA HONESTA v2.8 — residual, recompensa de EQUIPO PURA +1/muerte, shaping OFF, SIN pista de cebo; δ autoridad plena; 4 niveles de separación de spawn de 5M —180°/135°/90°/normal—, override SOLO de entrenamiento, la EVAL es SIEMPRE spawn normal de v2.8). Distinto de run06: la barrera v2.8 reacciona SOLO a lobos CONFIRMADOS (<=r_confirm=40 de un ACTIVE, con memoria) -> el FRENTE CIEGO es REAL (un-solo-grupo-CONFIRMADO el 36.4% de ESCOLTA en el suelo; en v2.7 la barrera-oráculo no dejaba frente ciego y run06 no tenía nada real que aprender). SUELO v2.8 MEDIDO (Paso 0): eval ligera 10 semillas lobos = 2.70 (detalle [2,0,3,3,5,2,3,4,3,2]; en FASE 1, δ=0, se CLAVA ahí); arnés de 100 semillas = 2.56/2.26; suelo SANO en 2 frentes (sev 3.50, amurallado 15.3%, 0 timeouts, no zombi). GUARDIA DEL SUELO: si en fase 2 la eval ligera cae por debajo de ~2.4 (suelo 2.70 − 0.3) de forma SOSTENIDA (>=1.500.000 pasos = 6 evals), PARAR y reportar — PPO EROSIONA al script. MÉTRICA DE CEBO CORREGIDA (cebo_diag): killer-NO-CONFIRMADO leído de la memoria de confirmación de la barrera (NO killer-no-detectado a r_detect=100, que era 0% por construcción); NULA del scriptado sobre v2.8 MEDIDA = 0.0% (no el ~47.6% de la premisa — ese era 'no disuadido' a 20 m; el scriptado converge a la presa común y el matador pasa a ~19-20 m de un dron -> confirmado antes de matar) -> la señal es LÍMPIDA: cualquier killer-no-confirmado > 0 sostenido + subida de severidad = cebo real. ÉXITO PARCIAL POR NIVEL: en el NIVEL 1 (cebo casi servido) deben subir la severidad Y el killer-no-confirmado sobre el suelo; si NI SERVIDO sube, el problema es más profundo que el valle — REPORTAR (no abortar por ello). CRITERIO DE FIN (nivel 4): ¿el cebo aprendido con ayuda SOBREVIVE al spawn normal? Si cae al suelo, el currículo no cruzó el valle -> siguiente vía (curiosidad coordinada EMC/MACE/JIM / control jerárquico) = decisión del usuario, NO implementarla. La vara REAL es eval_wolves 100 semillas (spawn normal, vs 2.56/2.26) + cebo_diag corregido.",
+  "fecha": "2026-07-21T16:13:25"
+}

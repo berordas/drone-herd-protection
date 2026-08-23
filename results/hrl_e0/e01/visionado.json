@@ -1,0 +1,52 @@
+[
+ {
+  "tag": "dpos_max_cebo_keep_cebo_keep_h50_reactive",
+  "gif": "/data/hrl_e0/e01/gifs/dpos_max_cebo_keep_cebo_keep_h50_reactive_seed398_mixto_sev7.gif",
+  "sev": 7
+ },
+ {
+  "tag": "dpos_max_masa_masa_reactive",
+  "gif": "/data/hrl_e0/e01/gifs/dpos_max_masa_masa_reactive_seed398_mixto_sev0.gif",
+  "sev": 0
+ },
+ {
+  "tag": "dneg_max_cebo_keep_cebo_keep_h50_reactive",
+  "gif": "/data/hrl_e0/e01/gifs/dneg_max_cebo_keep_cebo_keep_h50_reactive_seed100_lobos_sev1.gif",
+  "sev": 1
+ },
+ {
+  "tag": "dneg_max_masa_masa_reactive",
+  "gif": "/data/hrl_e0/e01/gifs/dneg_max_masa_masa_reactive_seed100_lobos_sev6.gif",
+  "sev": 6
+ },
+ {
+  "tag": "primer_lure_cebo_keep_h50_reactive",
+  "gif": "/data/hrl_e0/e01/gifs/primer_lure_cebo_keep_h50_reactive_seed2_lobos_sev5.gif",
+  "sev": 5
+ },
+ {
+  "tag": "mediano_a_cebo_keep_h50_reactive",
+  "gif": "/data/hrl_e0/e01/gifs/mediano_a_cebo_keep_h50_reactive_seed618_mixto_sev3.gif",
+  "sev": 3
+ },
+ {
+  "tag": "mediano_b_cebo_keep_h50_reactive",
+  "gif": "/data/hrl_e0/e01/gifs/mediano_b_cebo_keep_h50_reactive_seed616_lobos_sev3.gif",
+  "sev": 3
+ },
+ {
+  "tag": "escolta_prematura_asalto_cebo_d180_h50_reactive",
+  "gif": "/data/hrl_e0/e01/gifs/escolta_prematura_asalto_cebo_d180_h50_reactive_seed2_lobos_sev2.gif",
+  "sev": 2
+ },
+ {
+  "tag": "escolta_prematura_se\u00f1uelo_cebo_d90_h50_run02",
+  "gif": "/data/hrl_e0/e01/gifs/escolta_prematura_se\u00f1uelo_cebo_d90_h50_run02_seed3_lobos_sev0.gif",
+  "sev": 0
+ },
+ {
+  "tag": "sev5mas_cebo_keep_h50_reactive",
+  "gif": "/data/hrl_e0/e01/gifs/sev5mas_cebo_keep_h50_reactive_seed77_mixto_sev7.gif",
+  "sev": 7
+ }
+]

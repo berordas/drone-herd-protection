@@ -1,0 +1,22 @@
+peor_manager | seed=21 lobos n=4 G=False | manager=model sev_eval=7 | oracle sev=0
+t=     0  DECISION #1   CEBO_keep  -> ABORT_BAIT_FAILED ticks= 1356 r=0
+t=  1356  DECISION #2   CEBO_d90   -> MUERTE            ticks=  398 r=1
+t=  1754  DECISION #3   CEBO_keep  -> MUERTE            ticks=   81 r=1
+t=  1835  DECISION #4   CEBO_d90   -> MUERTE            ticks=  195 r=1
+t=  2030  DECISION #5   CEBO_keep  -> MUERTE            ticks=   96 r=1
+t=  2126  DECISION #6   CEBO_d90   -> MUERTE            ticks=  135 r=1
+t=  2261  DECISION #7   CEBO_d180  -> ABORT_BAIT_FAILED ticks=   50 r=0
+t=  2311  DECISION #8   CEBO_keep  -> MUERTE            ticks=   14 r=1
+t=  2325  DECISION #9   CEBO_d90   -> ABORT_BAIT_FAILED ticks=   50 r=0
+t=  2375  DECISION #10  CEBO_d180  -> FIN_EPISODIO      ticks=   17 r=1
+t=     0  capa OPTION_START {'t': 0, 'ev': 'OPTION_START', 'option': 'CEBO', 'membership': 'keep', 'hold': 50.0}
+t=  1085  capa SHOW_START {'t': 1085, 'ev': 'SHOW_START', 'mode': 'keep'}
+t=  1356  capa OPTION_START {'t': 1356, 'ev': 'OPTION_START', 'option': 'CEBO', 'delta_deg': 90.0, 'hold': 50.0}
+t=  1754  capa OPTION_START {'t': 1754, 'ev': 'OPTION_START', 'option': 'CEBO', 'membership': 'keep', 'hold': 50.0}
+t=  1835  capa OPTION_START {'t': 1835, 'ev': 'OPTION_START', 'option': 'CEBO', 'delta_deg': 90.0, 'hold': 50.0}
+t=  2030  capa OPTION_START {'t': 2030, 'ev': 'OPTION_START', 'option': 'CEBO', 'membership': 'keep', 'hold': 50.0}
+t=  2126  capa OPTION_START {'t': 2126, 'ev': 'OPTION_START', 'option': 'CEBO', 'delta_deg': 90.0, 'hold': 50.0}
+t=  2261  capa OPTION_START {'t': 2261, 'ev': 'OPTION_START', 'option': 'CEBO', 'delta_deg': 180.0, 'hold': 50.0}
+t=  2311  capa OPTION_START {'t': 2311, 'ev': 'OPTION_START', 'option': 'CEBO', 'membership': 'keep', 'hold': 50.0}
+t=  2325  capa OPTION_START {'t': 2325, 'ev': 'OPTION_START', 'option': 'CEBO', 'delta_deg': 90.0, 'hold': 50.0}
+t=  2375  capa OPTION_START {'t': 2375, 'ev': 'OPTION_START', 'option': 'CEBO', 'delta_deg': 180.0, 'hold': 50.0}

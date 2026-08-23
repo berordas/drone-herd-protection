@@ -1,0 +1,71 @@
+{
+ "patrulla": "orbita v3.5 (omega=0.02)",
+ "capa": "PRE-S1",
+ "rows": [
+  {
+   "seed": 3,
+   "sev": 0,
+   "staged_noshow_max": 1228,
+   "n_shows": 0,
+   "t_show1": null
+  },
+  {
+   "seed": 5,
+   "sev": 0,
+   "staged_noshow_max": 1302,
+   "n_shows": 0,
+   "t_show1": null
+  },
+  {
+   "seed": 9,
+   "sev": 0,
+   "staged_noshow_max": 16844,
+   "n_shows": 0,
+   "t_show1": null
+  },
+  {
+   "seed": 14,
+   "sev": 0,
+   "staged_noshow_max": 4047,
+   "n_shows": 1,
+   "t_show1": 4788
+  },
+  {
+   "seed": 18,
+   "sev": 0,
+   "staged_noshow_max": 1591,
+   "n_shows": 0,
+   "t_show1": null
+  },
+  {
+   "seed": 24,
+   "sev": 0,
+   "staged_noshow_max": 21849,
+   "n_shows": 0,
+   "t_show1": null
+  },
+  {
+   "seed": 35,
+   "sev": 0,
+   "staged_noshow_max": 1654,
+   "n_shows": 0,
+   "t_show1": null
+  },
+  {
+   "seed": 36,
+   "sev": 0,
+   "staged_noshow_max": 19786,
+   "n_shows": 0,
+   "t_show1": null
+  },
+  {
+   "seed": 55,
+   "sev": 0,
+   "staged_noshow_max": 979,
+   "n_shows": 0,
+   "t_show1": null
+  }
+ ],
+ "stalls_400": 9,
+ "nota": "comparar con 9/9 en estatica (verif0.json)"
+}

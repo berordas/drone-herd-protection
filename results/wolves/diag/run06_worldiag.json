@@ -1,0 +1,678 @@
+{
+  "scripted": [
+    {
+      "seed": 2,
+      "n_wolves": 3,
+      "sizes": [
+        2,
+        1
+      ],
+      "status": "predation",
+      "steps": 1628,
+      "n_depredadas": 2,
+      "dist_spawn_rebano": [
+        229,
+        232
+      ],
+      "sep_media": 67.5,
+      "sep_min": 3.8,
+      "sep_t0": 303.3,
+      "frac_2frentes_escolta": 0.18,
+      "fusion_step": 477,
+      "cobertura_campo_media": 0.409,
+      "frac_2ofrente_no_visto": 0.0,
+      "rachas_no_visto_max": 0,
+      "rachas_no_visto_media": 0,
+      "arrival": {
+        "1": 403,
+        "2": 446
+      },
+      "arrival_safe": {
+        "1": 0.0,
+        "2": 0.0
+      },
+      "arrival_mass": {
+        "1": 0,
+        "2": 0
+      },
+      "kills_by_group": {
+        "1": 2,
+        "2": 0
+      },
+      "per_wolf": [
+        {
+          "grupo": 1,
+          "scared": 603,
+          "walled": 336,
+          "dist_media_dron": 32.9,
+          "frac_detectado": 0.88
+        },
+        {
+          "grupo": 1,
+          "scared": 675,
+          "walled": 262,
+          "dist_media_dron": 33.5,
+          "frac_detectado": 0.88
+        },
+        {
+          "grupo": 2,
+          "scared": 697,
+          "walled": 249,
+          "dist_media_dron": 31.6,
+          "frac_detectado": 0.88
+        }
+      ]
+    },
+    {
+      "seed": 12,
+      "n_wolves": 4,
+      "sizes": [
+        2,
+        2
+      ],
+      "status": "predation",
+      "steps": 1556,
+      "n_depredadas": 2,
+      "dist_spawn_rebano": [
+        254,
+        88
+      ],
+      "sep_media": 61.9,
+      "sep_min": 0.5,
+      "sep_t0": 313.0,
+      "frac_2frentes_escolta": 0.25,
+      "fusion_step": 413,
+      "cobertura_campo_media": 0.437,
+      "frac_2ofrente_no_visto": 0.2,
+      "rachas_no_visto_max": 303,
+      "rachas_no_visto_media": 303.0,
+      "arrival": {
+        "1": 405,
+        "2": 87
+      },
+      "arrival_safe": {
+        "1": 0.0,
+        "2": 0.0
+      },
+      "arrival_mass": {
+        "1": 0,
+        "2": 0
+      },
+      "kills_by_group": {
+        "1": 1,
+        "2": 1
+      },
+      "per_wolf": [
+        {
+          "grupo": 1,
+          "scared": 343,
+          "walled": 341,
+          "dist_media_dron": 44.8,
+          "frac_detectado": 0.79
+        },
+        {
+          "grupo": 1,
+          "scared": 555,
+          "walled": 379,
+          "dist_media_dron": 45.9,
+          "frac_detectado": 0.78
+        },
+        {
+          "grupo": 2,
+          "scared": 839,
+          "walled": 248,
+          "dist_media_dron": 13.7,
+          "frac_detectado": 1.0
+        },
+        {
+          "grupo": 2,
+          "scared": 570,
+          "walled": 315,
+          "dist_media_dron": 12.4,
+          "frac_detectado": 1.0
+        }
+      ]
+    },
+    {
+      "seed": 19,
+      "n_wolves": 4,
+      "sizes": [
+        2,
+        2
+      ],
+      "status": "predation",
+      "steps": 994,
+      "n_depredadas": 3,
+      "dist_spawn_rebano": [
+        296,
+        141
+      ],
+      "sep_media": 141.7,
+      "sep_min": 19.2,
+      "sep_t0": 302.8,
+      "frac_2frentes_escolta": 0.59,
+      "fusion_step": 606,
+      "cobertura_campo_media": 0.423,
+      "frac_2ofrente_no_visto": 0.5,
+      "rachas_no_visto_max": 429,
+      "rachas_no_visto_media": 236.0,
+      "arrival": {
+        "1": 579,
+        "2": 258
+      },
+      "arrival_safe": {
+        "1": 0.16666666666666666,
+        "2": 0.0
+      },
+      "arrival_mass": {
+        "1": 0,
+        "2": 0
+      },
+      "kills_by_group": {
+        "1": 0,
+        "2": 3
+      },
+      "per_wolf": [
+        {
+          "grupo": 1,
+          "scared": 159,
+          "walled": 85,
+          "dist_media_dron": 108.4,
+          "frac_detectado": 0.48
+        },
+        {
+          "grupo": 1,
+          "scared": 149,
+          "walled": 91,
+          "dist_media_dron": 110.8,
+          "frac_detectado": 0.47
+        },
+        {
+          "grupo": 2,
+          "scared": 250,
+          "walled": 65,
+          "dist_media_dron": 22.2,
+          "frac_detectado": 1.0
+        },
+        {
+          "grupo": 2,
+          "scared": 253,
+          "walled": 60,
+          "dist_media_dron": 22.3,
+          "frac_detectado": 0.99
+        }
+      ]
+    },
+    {
+      "seed": 26,
+      "n_wolves": 4,
+      "sizes": [
+        1,
+        3
+      ],
+      "status": "predation",
+      "steps": 1146,
+      "n_depredadas": 4,
+      "dist_spawn_rebano": [
+        218,
+        85
+      ],
+      "sep_media": 83.5,
+      "sep_min": 3.5,
+      "sep_t0": 303.1,
+      "frac_2frentes_escolta": 0.35,
+      "fusion_step": 409,
+      "cobertura_campo_media": 0.466,
+      "frac_2ofrente_no_visto": 0.25,
+      "rachas_no_visto_max": 285,
+      "rachas_no_visto_media": 285.0,
+      "arrival": {
+        "1": 383,
+        "2": 85
+      },
+      "arrival_safe": {
+        "1": 0.0,
+        "2": 0.0
+      },
+      "arrival_mass": {
+        "1": 0,
+        "2": 0
+      },
+      "kills_by_group": {
+        "1": 1,
+        "2": 3
+      },
+      "per_wolf": [
+        {
+          "grupo": 1,
+          "scared": 120,
+          "walled": 299,
+          "dist_media_dron": 59.4,
+          "frac_detectado": 0.73
+        },
+        {
+          "grupo": 2,
+          "scared": 668,
+          "walled": 87,
+          "dist_media_dron": 13.7,
+          "frac_detectado": 1.0
+        },
+        {
+          "grupo": 2,
+          "scared": 534,
+          "walled": 191,
+          "dist_media_dron": 13.0,
+          "frac_detectado": 1.0
+        },
+        {
+          "grupo": 2,
+          "scared": 392,
+          "walled": 270,
+          "dist_media_dron": 14.3,
+          "frac_detectado": 1.0
+        }
+      ]
+    },
+    {
+      "seed": 29,
+      "n_wolves": 3,
+      "sizes": [
+        1,
+        2
+      ],
+      "status": "predation",
+      "steps": 1453,
+      "n_depredadas": 2,
+      "dist_spawn_rebano": [
+        248,
+        83
+      ],
+      "sep_media": 108.5,
+      "sep_min": 5.2,
+      "sep_t0": 310.7,
+      "frac_2frentes_escolta": 0.58,
+      "fusion_step": 855,
+      "cobertura_campo_media": 0.391,
+      "frac_2ofrente_no_visto": 0.4,
+      "rachas_no_visto_max": 569,
+      "rachas_no_visto_media": 569.0,
+      "arrival": {
+        "1": 794,
+        "2": 72
+      },
+      "arrival_safe": {
+        "1": 0.5,
+        "2": 0.0
+      },
+      "arrival_mass": {
+        "1": 0,
+        "2": 0
+      },
+      "kills_by_group": {
+        "1": 1,
+        "2": 1
+      },
+      "per_wolf": [
+        {
+          "grupo": 1,
+          "scared": 264,
+          "walled": 99,
+          "dist_media_dron": 87.8,
+          "frac_detectado": 0.6
+        },
+        {
+          "grupo": 2,
+          "scared": 815,
+          "walled": 220,
+          "dist_media_dron": 11.1,
+          "frac_detectado": 1.0
+        },
+        {
+          "grupo": 2,
+          "scared": 834,
+          "walled": 232,
+          "dist_media_dron": 11.8,
+          "frac_detectado": 1.0
+        }
+      ]
+    }
+  ],
+  "best4m": [
+    {
+      "seed": 2,
+      "n_wolves": 3,
+      "sizes": [
+        2,
+        1
+      ],
+      "status": "predation",
+      "steps": 1232,
+      "n_depredadas": 3,
+      "dist_spawn_rebano": [
+        229,
+        232
+      ],
+      "sep_media": 88.1,
+      "sep_min": 3.2,
+      "sep_t0": 303.3,
+      "frac_2frentes_escolta": 0.27,
+      "fusion_step": 495,
+      "cobertura_campo_media": 0.435,
+      "frac_2ofrente_no_visto": 0.0,
+      "rachas_no_visto_max": 0,
+      "rachas_no_visto_media": 0,
+      "arrival": {
+        "1": 410,
+        "2": 460
+      },
+      "arrival_safe": {
+        "1": 0.0,
+        "2": 0.0
+      },
+      "arrival_mass": {
+        "1": 0,
+        "2": 0
+      },
+      "kills_by_group": {
+        "1": 2,
+        "2": 1
+      },
+      "per_wolf": [
+        {
+          "grupo": 1,
+          "scared": 334,
+          "walled": 143,
+          "dist_media_dron": 44.6,
+          "frac_detectado": 0.84
+        },
+        {
+          "grupo": 1,
+          "scared": 378,
+          "walled": 199,
+          "dist_media_dron": 42.1,
+          "frac_detectado": 0.84
+        },
+        {
+          "grupo": 2,
+          "scared": 317,
+          "walled": 154,
+          "dist_media_dron": 41.2,
+          "frac_detectado": 0.84
+        }
+      ]
+    },
+    {
+      "seed": 12,
+      "n_wolves": 4,
+      "sizes": [
+        2,
+        2
+      ],
+      "status": "predation",
+      "steps": 1109,
+      "n_depredadas": 4,
+      "dist_spawn_rebano": [
+        254,
+        88
+      ],
+      "sep_media": 83.0,
+      "sep_min": 7.5,
+      "sep_t0": 313.0,
+      "frac_2frentes_escolta": 0.36,
+      "fusion_step": 419,
+      "cobertura_campo_media": 0.435,
+      "frac_2ofrente_no_visto": 0.28,
+      "rachas_no_visto_max": 308,
+      "rachas_no_visto_media": 308.0,
+      "arrival": {
+        "1": 407,
+        "2": 102
+      },
+      "arrival_safe": {
+        "1": 0.0,
+        "2": 0.0
+      },
+      "arrival_mass": {
+        "1": 0,
+        "2": 0
+      },
+      "kills_by_group": {
+        "1": 2,
+        "2": 2
+      },
+      "per_wolf": [
+        {
+          "grupo": 1,
+          "scared": 107,
+          "walled": 215,
+          "dist_media_dron": 61.3,
+          "frac_detectado": 0.7
+        },
+        {
+          "grupo": 1,
+          "scared": 202,
+          "walled": 250,
+          "dist_media_dron": 61.4,
+          "frac_detectado": 0.69
+        },
+        {
+          "grupo": 2,
+          "scared": 418,
+          "walled": 182,
+          "dist_media_dron": 15.5,
+          "frac_detectado": 1.0
+        },
+        {
+          "grupo": 2,
+          "scared": 506,
+          "walled": 164,
+          "dist_media_dron": 14.1,
+          "frac_detectado": 1.0
+        }
+      ]
+    },
+    {
+      "seed": 19,
+      "n_wolves": 4,
+      "sizes": [
+        2,
+        2
+      ],
+      "status": "predation",
+      "steps": 1380,
+      "n_depredadas": 3,
+      "dist_spawn_rebano": [
+        296,
+        141
+      ],
+      "sep_media": 112.1,
+      "sep_min": 10.0,
+      "sep_t0": 302.8,
+      "frac_2frentes_escolta": 0.45,
+      "fusion_step": 641,
+      "cobertura_campo_media": 0.433,
+      "frac_2ofrente_no_visto": 0.32,
+      "rachas_no_visto_max": 424,
+      "rachas_no_visto_media": 216.0,
+      "arrival": {
+        "1": 584,
+        "2": 281
+      },
+      "arrival_safe": {
+        "1": 0.16666666666666666,
+        "2": 0.0
+      },
+      "arrival_mass": {
+        "1": 0,
+        "2": 0
+      },
+      "kills_by_group": {
+        "1": 2,
+        "2": 1
+      },
+      "per_wolf": [
+        {
+          "grupo": 1,
+          "scared": 308,
+          "walled": 180,
+          "dist_media_dron": 84.6,
+          "frac_detectado": 0.62
+        },
+        {
+          "grupo": 1,
+          "scared": 308,
+          "walled": 200,
+          "dist_media_dron": 81.0,
+          "frac_detectado": 0.65
+        },
+        {
+          "grupo": 2,
+          "scared": 500,
+          "walled": 128,
+          "dist_media_dron": 20.4,
+          "frac_detectado": 1.0
+        },
+        {
+          "grupo": 2,
+          "scared": 432,
+          "walled": 148,
+          "dist_media_dron": 20.1,
+          "frac_detectado": 0.99
+        }
+      ]
+    },
+    {
+      "seed": 26,
+      "n_wolves": 4,
+      "sizes": [
+        1,
+        3
+      ],
+      "status": "predation",
+      "steps": 2038,
+      "n_depredadas": 5,
+      "dist_spawn_rebano": [
+        218,
+        85
+      ],
+      "sep_media": 46.2,
+      "sep_min": 0.4,
+      "sep_t0": 303.1,
+      "frac_2frentes_escolta": 0.2,
+      "fusion_step": 422,
+      "cobertura_campo_media": 0.463,
+      "frac_2ofrente_no_visto": 0.14,
+      "rachas_no_visto_max": 292,
+      "rachas_no_visto_media": 292.0,
+      "arrival": {
+        "1": 384,
+        "2": 99
+      },
+      "arrival_safe": {
+        "1": 0.0,
+        "2": 0.0
+      },
+      "arrival_mass": {
+        "1": 0,
+        "2": 0
+      },
+      "kills_by_group": {
+        "1": 1,
+        "2": 4
+      },
+      "per_wolf": [
+        {
+          "grupo": 1,
+          "scared": 599,
+          "walled": 252,
+          "dist_media_dron": 39.6,
+          "frac_detectado": 0.85
+        },
+        {
+          "grupo": 2,
+          "scared": 1022,
+          "walled": 319,
+          "dist_media_dron": 13.9,
+          "frac_detectado": 1.0
+        },
+        {
+          "grupo": 2,
+          "scared": 791,
+          "walled": 185,
+          "dist_media_dron": 14.9,
+          "frac_detectado": 1.0
+        },
+        {
+          "grupo": 2,
+          "scared": 943,
+          "walled": 213,
+          "dist_media_dron": 14.3,
+          "frac_detectado": 1.0
+        }
+      ]
+    },
+    {
+      "seed": 29,
+      "n_wolves": 3,
+      "sizes": [
+        1,
+        2
+      ],
+      "status": "predation",
+      "steps": 1329,
+      "n_depredadas": 2,
+      "dist_spawn_rebano": [
+        248,
+        83
+      ],
+      "sep_media": 110.5,
+      "sep_min": 8.5,
+      "sep_t0": 310.7,
+      "frac_2frentes_escolta": 0.52,
+      "fusion_step": 704,
+      "cobertura_campo_media": 0.376,
+      "frac_2ofrente_no_visto": 0.42,
+      "rachas_no_visto_max": 547,
+      "rachas_no_visto_media": 547.0,
+      "arrival": {
+        "1": 667,
+        "2": 87
+      },
+      "arrival_safe": {
+        "1": 0.3333333333333333,
+        "2": 0.0
+      },
+      "arrival_mass": {
+        "1": 0,
+        "2": 0
+      },
+      "kills_by_group": {
+        "1": 0,
+        "2": 2
+      },
+      "per_wolf": [
+        {
+          "grupo": 1,
+          "scared": 49,
+          "walled": 390,
+          "dist_media_dron": 86.2,
+          "frac_detectado": 0.57
+        },
+        {
+          "grupo": 2,
+          "scared": 571,
+          "walled": 442,
+          "dist_media_dron": 11.2,
+          "frac_detectado": 1.0
+        },
+        {
+          "grupo": 2,
+          "scared": 372,
+          "walled": 597,
+          "dist_media_dron": 12.5,
+          "frac_detectado": 1.0
+        }
+      ]
+    }
+  ]
+}

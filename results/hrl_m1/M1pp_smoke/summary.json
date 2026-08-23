@@ -1,0 +1,108 @@
+{
+ "macro_pasos": 6144,
+ "segundos": 1070.1,
+ "fps": 5.74,
+ "nan": false,
+ "eval_final": {
+  "sev_media": 0.55,
+  "sev_lobos": 0.55,
+  "sev_mixto": 0.55,
+  "P_cebo_G_n3": 1.0,
+  "n_G_n3": 6,
+  "P_a_G_first": {
+   "MASA": 0.0,
+   "CEBO_keep": 1.0,
+   "CEBO_d90": 0.0,
+   "CEBO_d180": 0.0
+  },
+  "P_a_S_first": {
+   "MASA": 0.0,
+   "CEBO_keep": 1.0,
+   "CEBO_d90": 0.0,
+   "CEBO_d180": 0.0
+  },
+  "P_a_n": {
+   "n2": {
+    "MASA": 0.0,
+    "CEBO_keep": 1.0,
+    "CEBO_d90": 0.0,
+    "CEBO_d180": 0.0
+   },
+   "n1": {
+    "MASA": 0.0,
+    "CEBO_keep": 1.0,
+    "CEBO_d90": 0.0,
+    "CEBO_d180": 0.0
+   },
+   "n3": {
+    "MASA": 0.0,
+    "CEBO_keep": 1.0,
+    "CEBO_d90": 0.0,
+    "CEBO_d180": 0.0
+   },
+   "n4": {
+    "MASA": 0.0,
+    "CEBO_keep": 1.0,
+    "CEBO_d90": 0.0,
+    "CEBO_d180": 0.0
+   },
+   "n5": {
+    "MASA": 0.0,
+    "CEBO_keep": 1.0,
+    "CEBO_d90": 0.0,
+    "CEBO_d180": 0.0
+   }
+  },
+  "P_a_G_all": {
+   "MASA": 0.404,
+   "CEBO_keep": 0.421,
+   "CEBO_d90": 0.0,
+   "CEBO_d180": 0.175
+  },
+  "P_a_S_all": {
+   "MASA": 0.105,
+   "CEBO_keep": 0.148,
+   "CEBO_d90": 0.0,
+   "CEBO_d180": 0.747
+  },
+  "Pstoch_a_G_first": {
+   "MASA": 0.201,
+   "CEBO_keep": 0.297,
+   "CEBO_d90": 0.24,
+   "CEBO_d180": 0.262
+  },
+  "Pstoch_a_S_first": {
+   "MASA": 0.181,
+   "CEBO_keep": 0.293,
+   "CEBO_d90": 0.242,
+   "CEBO_d180": 0.285
+  },
+  "Pstoch_a_G_all": {
+   "MASA": 0.258,
+   "CEBO_keep": 0.258,
+   "CEBO_d90": 0.229,
+   "CEBO_d180": 0.255
+  },
+  "Pstoch_a_S_all": {
+   "MASA": 0.24,
+   "CEBO_keep": 0.254,
+   "CEBO_d90": 0.244,
+   "CEBO_d180": 0.262
+  },
+  "Pstoch_cebo_G_n3": 0.799256627758344,
+  "entropia_media": 1.3828408480524184,
+  "caza_por_ep": {
+   "option_starts": 1.9,
+   "retargets": 0.1,
+   "retargets_blocked": 0.0,
+   "refix_muerte": 0.35,
+   "refix_refugio": 0.7,
+   "refix_otro": 0.0
+  },
+  "decisiones_media": 7.15,
+  "penetrado_ticks_media": 4.175,
+  "pasos": 6144,
+  "final": true
+ },
+ "curriculum_used": false
+}

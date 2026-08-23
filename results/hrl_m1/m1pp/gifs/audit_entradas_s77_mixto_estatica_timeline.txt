@@ -1,0 +1,14 @@
+t=933 FASE VIGILANCIA->SOSPECHA
+t=933 DETECTADO lobo 0
+t=1011 FASE SOSPECHA->ESCOLTA
+t=1382 MUERTE (total 1)
+t=1437 MUERTE (total 2)
+t=1502 MUERTE (total 3)
+t=1669 MUERTE (total 4)
+t=1758 MUERTE (total 5)
+t=1868 MUERTE (total 6)
+t=1940 MUERTE (total 7)
+t=2010 MUERTE (total 8)
+-- auditor: [('ticks_patrulla', 1011), ('ticks_aviso', 967), ('ticks_violacion', 0), ('D_max', 168.1), ('R_media', 78.8)]
+ventanas_top: [{'estado': 'aviso', 't0': 44, 'd_max': 168.1, 'r': 84.0, 'm': 3, 't1': 1011}]
+sev=8 status=predation stride=1

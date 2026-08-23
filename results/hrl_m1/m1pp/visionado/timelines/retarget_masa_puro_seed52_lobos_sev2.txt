@@ -1,0 +1,7 @@
+retarget_masa_puro | seed=52 lobos n=4 G=True sev_eval=2 | oracle sev=5
+t=     0  DECISION #1   MASA       -> MUERTE            ticks=  855 r=1
+t=   855  DECISION #2   MASA       -> MUERTE            ticks=  143 r=1
+t=   998  DECISION #3   MASA       -> FIN_EPISODIO      ticks=   13 r=0
+t=   375  capa RETARGET causa=protegida quien=paquete option=MASA de=['adult', 3] a=['adult', 4] d_cur=20.62 d_cand=89.86 guard_ticks=50
+t=   545  capa RETARGET_BLOCKED causa=cooldown quien=paquete de=['adult', 3] a=['adult', 0] restante=80
+t=   625  capa RETARGET causa=protegida quien=paquete option=MASA de=['adult', 3] a=['adult', 0] d_cur=19.71 d_cand=78.98 guard_ticks=130

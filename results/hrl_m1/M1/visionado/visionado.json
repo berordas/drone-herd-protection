@@ -1,0 +1,37 @@
+[
+ {
+  "tag": "primer_cebo_G",
+  "gif": "/data/hrl_m1/M1/visionado/gifs/primer_cebo_G_seed2_lobos_sev5.gif",
+  "sev": 5,
+  "seed": 2,
+  "kind": "lobos"
+ },
+ {
+  "tag": "abort_en_accion",
+  "gif": "/data/hrl_m1/M1/visionado/gifs/abort_en_accion_seed88_lobos_sev1.gif",
+  "sev": 1,
+  "seed": 88,
+  "kind": "lobos"
+ },
+ {
+  "tag": "S_d90",
+  "gif": "/data/hrl_m1/M1/visionado/gifs/S_d90_seed0_lobos_sev0.gif",
+  "sev": 0,
+  "seed": 0,
+  "kind": "lobos"
+ },
+ {
+  "tag": "peor_manager",
+  "gif": "/data/hrl_m1/M1/visionado/gifs/peor_manager_seed21_lobos_sev7.gif",
+  "sev": 7,
+  "seed": 21,
+  "kind": "lobos"
+ },
+ {
+  "tag": "peor_vs_oracle",
+  "gif": "/data/hrl_m1/M1/visionado/gifs/peor_vs_oracle_seed57_lobos_sev0.gif",
+  "sev": 0,
+  "seed": 57,
+  "kind": "lobos"
+ }
+]

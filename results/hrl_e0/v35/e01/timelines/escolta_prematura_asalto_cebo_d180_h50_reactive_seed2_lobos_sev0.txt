@@ -1,0 +1,10 @@
+escolta_prematura_asalto_cebo_d180_h50_reactive_seed2_lobos_sev0 | arm=cebo_d180_h50_reactive status=success sev=0 steps=18529 grupos=[1, 2] | muertes con procedencia al final
+t=     0  OPTION_START     option=CEBO delta_deg=180.0 hold=50.0
+t= 17333  ESCOLTA_LATCH
+t= 17333  ESCOLTA_PREMATURA primer_confirmado=1 quien=asalto investigador=2 investigador_hacia_corzo=False asalto_borde_min_m=0.0 pinzamiento_borde=True
+t= 17334  ANCHOR_FLIP      frm=None to=1
+t= 17342  CONFIRM_DECOY    wolf=0
+t= 18478  SHOW_START       mode=manager
+t= 18478  STAGED
+t= 18529  HERD_SAFE        n_safe=6 n_muertas=0
+t= 18529  STRIKE_RESOLVED  outcome=none latencia=51

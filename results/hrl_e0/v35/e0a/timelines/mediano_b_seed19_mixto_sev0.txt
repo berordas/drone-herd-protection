@@ -1,0 +1,6 @@
+mediano_b_seed19_mixto_sev0 | arm=cebo_capa_manager status=success sev=0 steps=15595 grupos=[1, 3] | muertes con procedencia al final
+t=     0  OPTION_START     option=CEBO delta_deg=180.0
+t= 14277  ESCOLTA_LATCH
+t= 14277  ESCOLTA_PREMATURA primer_confirmado=1 quien=asalto investigador=7 investigador_hacia_corzo=True asalto_borde_min_m=0.0 pinzamiento_borde=True
+t= 14278  ANCHOR_FLIP      frm=None to=1
+t= 15595  HERD_SAFE        n_safe=7 n_muertas=0

@@ -1,0 +1,1919 @@
+{
+ "defensa": "reactive",
+ "atacante": "cebo2f",
+ "n": 100,
+ "sev": 2.61,
+ "sev_2f": 2.61,
+ "n_2f": 100,
+ "knc_frac": 0.414,
+ "jugada_completa_frac": 0.89,
+ "penetrado_medio": 5.8,
+ "carrera": {
+  "latencia_media": null,
+  "reasignaciones_media": 0.0,
+  "gana_guardia_frac": null,
+  "n_carreras": 0
+ },
+ "episodes": [
+  {
+   "seed": 2,
+   "kind": "lobos",
+   "sev": 5,
+   "two_front": true,
+   "knc": 2,
+   "deaths": 5,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 12,
+   "kind": "lobos",
+   "sev": 5,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 5,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 19,
+   "kind": "lobos",
+   "sev": 0,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 0,
+   "jugada_completa": false,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 26,
+   "kind": "lobos",
+   "sev": 5,
+   "two_front": true,
+   "knc": 4,
+   "deaths": 5,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 29,
+   "kind": "lobos",
+   "sev": 6,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 6,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 37,
+   "kind": "lobos",
+   "sev": 5,
+   "two_front": true,
+   "knc": 2,
+   "deaths": 5,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 40,
+   "kind": "lobos",
+   "sev": 5,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 5,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 42,
+   "kind": "lobos",
+   "sev": 2,
+   "two_front": true,
+   "knc": 2,
+   "deaths": 2,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 43,
+   "kind": "lobos",
+   "sev": 0,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 0,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 45,
+   "kind": "lobos",
+   "sev": 6,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 6,
+   "jugada_completa": true,
+   "penetrado": 256,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 46,
+   "kind": "lobos",
+   "sev": 3,
+   "two_front": true,
+   "knc": 3,
+   "deaths": 3,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 48,
+   "kind": "lobos",
+   "sev": 3,
+   "two_front": true,
+   "knc": 3,
+   "deaths": 3,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 49,
+   "kind": "lobos",
+   "sev": 7,
+   "two_front": true,
+   "knc": 7,
+   "deaths": 7,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 52,
+   "kind": "lobos",
+   "sev": 5,
+   "two_front": true,
+   "knc": 5,
+   "deaths": 5,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 58,
+   "kind": "lobos",
+   "sev": 0,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 0,
+   "jugada_completa": false,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 60,
+   "kind": "lobos",
+   "sev": 0,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 0,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 64,
+   "kind": "lobos",
+   "sev": 0,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 0,
+   "jugada_completa": false,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 76,
+   "kind": "lobos",
+   "sev": 0,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 0,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 77,
+   "kind": "lobos",
+   "sev": 8,
+   "two_front": true,
+   "knc": 1,
+   "deaths": 8,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 78,
+   "kind": "lobos",
+   "sev": 6,
+   "two_front": true,
+   "knc": 6,
+   "deaths": 6,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 81,
+   "kind": "lobos",
+   "sev": 0,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 0,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 82,
+   "kind": "lobos",
+   "sev": 3,
+   "two_front": true,
+   "knc": 3,
+   "deaths": 3,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 83,
+   "kind": "lobos",
+   "sev": 0,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 0,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 84,
+   "kind": "lobos",
+   "sev": 0,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 0,
+   "jugada_completa": false,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 88,
+   "kind": "lobos",
+   "sev": 4,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 4,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 91,
+   "kind": "lobos",
+   "sev": 0,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 0,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 94,
+   "kind": "lobos",
+   "sev": 0,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 0,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 95,
+   "kind": "lobos",
+   "sev": 1,
+   "two_front": true,
+   "knc": 1,
+   "deaths": 1,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 96,
+   "kind": "lobos",
+   "sev": 3,
+   "two_front": true,
+   "knc": 1,
+   "deaths": 3,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 100,
+   "kind": "lobos",
+   "sev": 5,
+   "two_front": true,
+   "knc": 5,
+   "deaths": 5,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 106,
+   "kind": "lobos",
+   "sev": 0,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 0,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 107,
+   "kind": "lobos",
+   "sev": 0,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 0,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 110,
+   "kind": "lobos",
+   "sev": 0,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 0,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 113,
+   "kind": "lobos",
+   "sev": 7,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 7,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 116,
+   "kind": "lobos",
+   "sev": 3,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 3,
+   "jugada_completa": true,
+   "penetrado": 249,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 127,
+   "kind": "lobos",
+   "sev": 6,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 6,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 129,
+   "kind": "lobos",
+   "sev": 5,
+   "two_front": true,
+   "knc": 3,
+   "deaths": 5,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 131,
+   "kind": "lobos",
+   "sev": 0,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 0,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 136,
+   "kind": "lobos",
+   "sev": 0,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 0,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 137,
+   "kind": "lobos",
+   "sev": 0,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 0,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 139,
+   "kind": "lobos",
+   "sev": 0,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 0,
+   "jugada_completa": false,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 140,
+   "kind": "lobos",
+   "sev": 0,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 0,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 142,
+   "kind": "lobos",
+   "sev": 2,
+   "two_front": true,
+   "knc": 1,
+   "deaths": 2,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 147,
+   "kind": "lobos",
+   "sev": 4,
+   "two_front": true,
+   "knc": 3,
+   "deaths": 4,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 150,
+   "kind": "lobos",
+   "sev": 5,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 5,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 151,
+   "kind": "lobos",
+   "sev": 0,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 0,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 153,
+   "kind": "lobos",
+   "sev": 0,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 0,
+   "jugada_completa": false,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 160,
+   "kind": "lobos",
+   "sev": 5,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 5,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 168,
+   "kind": "lobos",
+   "sev": 4,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 4,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 171,
+   "kind": "lobos",
+   "sev": 0,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 0,
+   "jugada_completa": false,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 175,
+   "kind": "lobos",
+   "sev": 1,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 1,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 177,
+   "kind": "lobos",
+   "sev": 5,
+   "two_front": true,
+   "knc": 5,
+   "deaths": 5,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 179,
+   "kind": "lobos",
+   "sev": 4,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 4,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 182,
+   "kind": "lobos",
+   "sev": 0,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 0,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 183,
+   "kind": "lobos",
+   "sev": 5,
+   "two_front": true,
+   "knc": 1,
+   "deaths": 5,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 190,
+   "kind": "lobos",
+   "sev": 4,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 4,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 194,
+   "kind": "lobos",
+   "sev": 5,
+   "two_front": true,
+   "knc": 3,
+   "deaths": 5,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 199,
+   "kind": "lobos",
+   "sev": 0,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 0,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 203,
+   "kind": "lobos",
+   "sev": 6,
+   "two_front": true,
+   "knc": 2,
+   "deaths": 6,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 209,
+   "kind": "lobos",
+   "sev": 0,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 0,
+   "jugada_completa": false,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 210,
+   "kind": "lobos",
+   "sev": 5,
+   "two_front": true,
+   "knc": 2,
+   "deaths": 5,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 212,
+   "kind": "lobos",
+   "sev": 2,
+   "two_front": true,
+   "knc": 2,
+   "deaths": 2,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 213,
+   "kind": "lobos",
+   "sev": 5,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 5,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 217,
+   "kind": "lobos",
+   "sev": 2,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 2,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 220,
+   "kind": "lobos",
+   "sev": 0,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 0,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 226,
+   "kind": "lobos",
+   "sev": 4,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 4,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 230,
+   "kind": "lobos",
+   "sev": 2,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 2,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 234,
+   "kind": "lobos",
+   "sev": 0,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 0,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 250,
+   "kind": "lobos",
+   "sev": 0,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 0,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 263,
+   "kind": "lobos",
+   "sev": 0,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 0,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 272,
+   "kind": "lobos",
+   "sev": 4,
+   "two_front": true,
+   "knc": 4,
+   "deaths": 4,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 276,
+   "kind": "lobos",
+   "sev": 8,
+   "two_front": true,
+   "knc": 1,
+   "deaths": 8,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 280,
+   "kind": "lobos",
+   "sev": 0,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 0,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 284,
+   "kind": "lobos",
+   "sev": 0,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 0,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 286,
+   "kind": "lobos",
+   "sev": 6,
+   "two_front": true,
+   "knc": 4,
+   "deaths": 6,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 294,
+   "kind": "lobos",
+   "sev": 2,
+   "two_front": true,
+   "knc": 2,
+   "deaths": 2,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 296,
+   "kind": "lobos",
+   "sev": 4,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 4,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 299,
+   "kind": "lobos",
+   "sev": 3,
+   "two_front": true,
+   "knc": 3,
+   "deaths": 3,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 301,
+   "kind": "lobos",
+   "sev": 0,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 0,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 306,
+   "kind": "lobos",
+   "sev": 0,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 0,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 310,
+   "kind": "lobos",
+   "sev": 0,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 0,
+   "jugada_completa": false,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 321,
+   "kind": "lobos",
+   "sev": 0,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 0,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 322,
+   "kind": "lobos",
+   "sev": 6,
+   "two_front": true,
+   "knc": 4,
+   "deaths": 6,
+   "jugada_completa": true,
+   "penetrado": 42,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 324,
+   "kind": "lobos",
+   "sev": 4,
+   "two_front": true,
+   "knc": 1,
+   "deaths": 4,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 326,
+   "kind": "lobos",
+   "sev": 4,
+   "two_front": true,
+   "knc": 4,
+   "deaths": 4,
+   "jugada_completa": true,
+   "penetrado": 36,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 327,
+   "kind": "lobos",
+   "sev": 0,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 0,
+   "jugada_completa": false,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 334,
+   "kind": "lobos",
+   "sev": 0,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 0,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 336,
+   "kind": "lobos",
+   "sev": 6,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 6,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 339,
+   "kind": "lobos",
+   "sev": 0,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 0,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 340,
+   "kind": "lobos",
+   "sev": 4,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 4,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 352,
+   "kind": "lobos",
+   "sev": 3,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 3,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 355,
+   "kind": "lobos",
+   "sev": 4,
+   "two_front": true,
+   "knc": 4,
+   "deaths": 4,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 358,
+   "kind": "lobos",
+   "sev": 4,
+   "two_front": true,
+   "knc": 1,
+   "deaths": 4,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 365,
+   "kind": "lobos",
+   "sev": 6,
+   "two_front": true,
+   "knc": 4,
+   "deaths": 6,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 367,
+   "kind": "lobos",
+   "sev": 0,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 0,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 368,
+   "kind": "lobos",
+   "sev": 1,
+   "two_front": true,
+   "knc": 1,
+   "deaths": 1,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 369,
+   "kind": "lobos",
+   "sev": 5,
+   "two_front": true,
+   "knc": 1,
+   "deaths": 5,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 371,
+   "kind": "lobos",
+   "sev": 0,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 0,
+   "jugada_completa": false,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 373,
+   "kind": "lobos",
+   "sev": 6,
+   "two_front": true,
+   "knc": 5,
+   "deaths": 6,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 375,
+   "kind": "lobos",
+   "sev": 3,
+   "two_front": true,
+   "knc": 2,
+   "deaths": 3,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": null,
+    "t_guard": null,
+    "latencia": null,
+    "t_llegada_guardia": null,
+    "t_llegada_asalto": null,
+    "gana_guardia": false,
+    "reasignaciones": 0
+   }
+  }
+ ]
+}

@@ -1,0 +1,33 @@
+{
+  "total_steps": 65536,
+  "elapsed_s": 168.1,
+  "fps": 389.9,
+  "episodios": 132,
+  "reward_media": 2.3636363636363638,
+  "reward_max": 6.0,
+  "kills_media": 2.3636363636363638,
+  "kills_max": 6.0,
+  "reward_por_tramos": [
+    {
+      "n_episodios": 33,
+      "reward_media": 3.090909090909091,
+      "reward_max": 6.0
+    },
+    {
+      "n_episodios": 33,
+      "reward_media": 2.727272727272727,
+      "reward_max": 5.0
+    },
+    {
+      "n_episodios": 33,
+      "reward_media": 1.7575757575757576,
+      "reward_max": 4.0
+    },
+    {
+      "n_episodios": 33,
+      "reward_media": 1.878787878787879,
+      "reward_max": 5.0
+    }
+  ],
+  "longitud_media_ep": 469.06060606060606
+}

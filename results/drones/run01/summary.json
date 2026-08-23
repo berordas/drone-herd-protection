@@ -1,0 +1,8 @@
+{
+  "total_steps_agente": 20054016,
+  "elapsed_s": 19864.6,
+  "fps_agente": 1009.5,
+  "ep_sev_mean_final": 1.36,
+  "ep_deter_mean_final": 1392.76,
+  "episodios_stream": 14720
+}

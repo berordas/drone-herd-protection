@@ -1,0 +1,2746 @@
+{
+ "config": "v3.7 pineado (wt_v37_replica); G n>=3; 100 pares; Reactive-estatica",
+ "sev": {
+  "KEEP": [
+   2.76,
+   2.33,
+   3.21
+  ],
+  "D180": [
+   2.84,
+   2.4,
+   3.28
+  ],
+  "D90": [
+   2.51,
+   2.08,
+   2.94
+  ]
+ },
+ "delta_d180_menos_keep": [
+  0.08,
+  -0.22,
+  0.38
+ ],
+ "delta_d90_menos_keep": [
+  -0.25,
+  -0.71,
+  0.21
+ ],
+ "censura": {
+  "KEEP": {
+   "completa": 1.0,
+   "stalls": 0
+  },
+  "D180": {
+   "completa": 1.0,
+   "stalls": 20
+  },
+  "D90": {
+   "completa": 1.0,
+   "stalls": 16
+  }
+ },
+ "episodes": [
+  {
+   "seed": 2,
+   "arm": "KEEP",
+   "sev": 5,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 12,
+   "arm": "KEEP",
+   "sev": 5,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 19,
+   "arm": "KEEP",
+   "sev": 2,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 26,
+   "arm": "KEEP",
+   "sev": 5,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 29,
+   "arm": "KEEP",
+   "sev": 6,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 37,
+   "arm": "KEEP",
+   "sev": 5,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 40,
+   "arm": "KEEP",
+   "sev": 5,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 42,
+   "arm": "KEEP",
+   "sev": 0,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 43,
+   "arm": "KEEP",
+   "sev": 0,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 45,
+   "arm": "KEEP",
+   "sev": 6,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 46,
+   "arm": "KEEP",
+   "sev": 3,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 48,
+   "arm": "KEEP",
+   "sev": 3,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 49,
+   "arm": "KEEP",
+   "sev": 5,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 52,
+   "arm": "KEEP",
+   "sev": 5,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 58,
+   "arm": "KEEP",
+   "sev": 4,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 60,
+   "arm": "KEEP",
+   "sev": 0,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 64,
+   "arm": "KEEP",
+   "sev": 5,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 76,
+   "arm": "KEEP",
+   "sev": 1,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 77,
+   "arm": "KEEP",
+   "sev": 7,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 78,
+   "arm": "KEEP",
+   "sev": 0,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 81,
+   "arm": "KEEP",
+   "sev": 0,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 82,
+   "arm": "KEEP",
+   "sev": 4,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 83,
+   "arm": "KEEP",
+   "sev": 0,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 84,
+   "arm": "KEEP",
+   "sev": 3,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 88,
+   "arm": "KEEP",
+   "sev": 4,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 91,
+   "arm": "KEEP",
+   "sev": 0,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 94,
+   "arm": "KEEP",
+   "sev": 0,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 95,
+   "arm": "KEEP",
+   "sev": 1,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 96,
+   "arm": "KEEP",
+   "sev": 3,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 100,
+   "arm": "KEEP",
+   "sev": 5,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 106,
+   "arm": "KEEP",
+   "sev": 0,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 107,
+   "arm": "KEEP",
+   "sev": 0,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 110,
+   "arm": "KEEP",
+   "sev": 0,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 113,
+   "arm": "KEEP",
+   "sev": 6,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 116,
+   "arm": "KEEP",
+   "sev": 3,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 127,
+   "arm": "KEEP",
+   "sev": 6,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 129,
+   "arm": "KEEP",
+   "sev": 5,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 131,
+   "arm": "KEEP",
+   "sev": 0,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 136,
+   "arm": "KEEP",
+   "sev": 0,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 137,
+   "arm": "KEEP",
+   "sev": 0,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 139,
+   "arm": "KEEP",
+   "sev": 4,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 140,
+   "arm": "KEEP",
+   "sev": 0,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 142,
+   "arm": "KEEP",
+   "sev": 6,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 147,
+   "arm": "KEEP",
+   "sev": 4,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 150,
+   "arm": "KEEP",
+   "sev": 0,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 151,
+   "arm": "KEEP",
+   "sev": 0,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 153,
+   "arm": "KEEP",
+   "sev": 2,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 160,
+   "arm": "KEEP",
+   "sev": 5,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 168,
+   "arm": "KEEP",
+   "sev": 5,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 171,
+   "arm": "KEEP",
+   "sev": 5,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 175,
+   "arm": "KEEP",
+   "sev": 4,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 177,
+   "arm": "KEEP",
+   "sev": 5,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 179,
+   "arm": "KEEP",
+   "sev": 4,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 182,
+   "arm": "KEEP",
+   "sev": 0,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 183,
+   "arm": "KEEP",
+   "sev": 2,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 190,
+   "arm": "KEEP",
+   "sev": 4,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 194,
+   "arm": "KEEP",
+   "sev": 4,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 199,
+   "arm": "KEEP",
+   "sev": 0,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 203,
+   "arm": "KEEP",
+   "sev": 6,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 209,
+   "arm": "KEEP",
+   "sev": 5,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 210,
+   "arm": "KEEP",
+   "sev": 3,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 212,
+   "arm": "KEEP",
+   "sev": 3,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 213,
+   "arm": "KEEP",
+   "sev": 5,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 217,
+   "arm": "KEEP",
+   "sev": 2,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 220,
+   "arm": "KEEP",
+   "sev": 2,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 226,
+   "arm": "KEEP",
+   "sev": 3,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 230,
+   "arm": "KEEP",
+   "sev": 2,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 234,
+   "arm": "KEEP",
+   "sev": 0,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 250,
+   "arm": "KEEP",
+   "sev": 0,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 263,
+   "arm": "KEEP",
+   "sev": 0,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 272,
+   "arm": "KEEP",
+   "sev": 4,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 276,
+   "arm": "KEEP",
+   "sev": 6,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 280,
+   "arm": "KEEP",
+   "sev": 0,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 284,
+   "arm": "KEEP",
+   "sev": 0,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 286,
+   "arm": "KEEP",
+   "sev": 6,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 294,
+   "arm": "KEEP",
+   "sev": 0,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 296,
+   "arm": "KEEP",
+   "sev": 4,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 299,
+   "arm": "KEEP",
+   "sev": 2,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 301,
+   "arm": "KEEP",
+   "sev": 0,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 306,
+   "arm": "KEEP",
+   "sev": 0,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 310,
+   "arm": "KEEP",
+   "sev": 4,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 321,
+   "arm": "KEEP",
+   "sev": 0,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 322,
+   "arm": "KEEP",
+   "sev": 6,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 324,
+   "arm": "KEEP",
+   "sev": 4,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 326,
+   "arm": "KEEP",
+   "sev": 4,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 327,
+   "arm": "KEEP",
+   "sev": 5,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 334,
+   "arm": "KEEP",
+   "sev": 0,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 336,
+   "arm": "KEEP",
+   "sev": 6,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 339,
+   "arm": "KEEP",
+   "sev": 0,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 340,
+   "arm": "KEEP",
+   "sev": 4,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 352,
+   "arm": "KEEP",
+   "sev": 3,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 355,
+   "arm": "KEEP",
+   "sev": 4,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 358,
+   "arm": "KEEP",
+   "sev": 0,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 365,
+   "arm": "KEEP",
+   "sev": 6,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 367,
+   "arm": "KEEP",
+   "sev": 0,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 368,
+   "arm": "KEEP",
+   "sev": 1,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 369,
+   "arm": "KEEP",
+   "sev": 0,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 371,
+   "arm": "KEEP",
+   "sev": 2,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 373,
+   "arm": "KEEP",
+   "sev": 5,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 375,
+   "arm": "KEEP",
+   "sev": 3,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 2,
+   "arm": "D180",
+   "sev": 5,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 12,
+   "arm": "D180",
+   "sev": 4,
+   "n": 4,
+   "completa": true,
+   "stalls": 1,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 19,
+   "arm": "D180",
+   "sev": 2,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 26,
+   "arm": "D180",
+   "sev": 4,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 29,
+   "arm": "D180",
+   "sev": 3,
+   "n": 3,
+   "completa": true,
+   "stalls": 1,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 37,
+   "arm": "D180",
+   "sev": 4,
+   "n": 4,
+   "completa": true,
+   "stalls": 1,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 40,
+   "arm": "D180",
+   "sev": 5,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 42,
+   "arm": "D180",
+   "sev": 0,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 43,
+   "arm": "D180",
+   "sev": 0,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 45,
+   "arm": "D180",
+   "sev": 7,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 46,
+   "arm": "D180",
+   "sev": 5,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 48,
+   "arm": "D180",
+   "sev": 4,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 49,
+   "arm": "D180",
+   "sev": 5,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 52,
+   "arm": "D180",
+   "sev": 5,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 58,
+   "arm": "D180",
+   "sev": 5,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 60,
+   "arm": "D180",
+   "sev": 3,
+   "n": 3,
+   "completa": true,
+   "stalls": 1,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 64,
+   "arm": "D180",
+   "sev": 5,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 76,
+   "arm": "D180",
+   "sev": 1,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 77,
+   "arm": "D180",
+   "sev": 7,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 78,
+   "arm": "D180",
+   "sev": 0,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 81,
+   "arm": "D180",
+   "sev": 0,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 82,
+   "arm": "D180",
+   "sev": 2,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 83,
+   "arm": "D180",
+   "sev": 0,
+   "n": 4,
+   "completa": true,
+   "stalls": 1,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 84,
+   "arm": "D180",
+   "sev": 3,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 88,
+   "arm": "D180",
+   "sev": 1,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 91,
+   "arm": "D180",
+   "sev": 0,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 94,
+   "arm": "D180",
+   "sev": 0,
+   "n": 5,
+   "completa": true,
+   "stalls": 1,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 95,
+   "arm": "D180",
+   "sev": 1,
+   "n": 4,
+   "completa": true,
+   "stalls": 1,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 96,
+   "arm": "D180",
+   "sev": 3,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 100,
+   "arm": "D180",
+   "sev": 0,
+   "n": 5,
+   "completa": true,
+   "stalls": 1,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 106,
+   "arm": "D180",
+   "sev": 0,
+   "n": 3,
+   "completa": true,
+   "stalls": 1,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 107,
+   "arm": "D180",
+   "sev": 3,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 110,
+   "arm": "D180",
+   "sev": 0,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 113,
+   "arm": "D180",
+   "sev": 7,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 116,
+   "arm": "D180",
+   "sev": 0,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 127,
+   "arm": "D180",
+   "sev": 6,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 129,
+   "arm": "D180",
+   "sev": 5,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 131,
+   "arm": "D180",
+   "sev": 0,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 136,
+   "arm": "D180",
+   "sev": 0,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 137,
+   "arm": "D180",
+   "sev": 0,
+   "n": 5,
+   "completa": true,
+   "stalls": 1,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 139,
+   "arm": "D180",
+   "sev": 4,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 140,
+   "arm": "D180",
+   "sev": 0,
+   "n": 3,
+   "completa": true,
+   "stalls": 1,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 142,
+   "arm": "D180",
+   "sev": 6,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 147,
+   "arm": "D180",
+   "sev": 4,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 150,
+   "arm": "D180",
+   "sev": 0,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 151,
+   "arm": "D180",
+   "sev": 0,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 153,
+   "arm": "D180",
+   "sev": 4,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 160,
+   "arm": "D180",
+   "sev": 5,
+   "n": 5,
+   "completa": true,
+   "stalls": 1,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 168,
+   "arm": "D180",
+   "sev": 5,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 171,
+   "arm": "D180",
+   "sev": 2,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 175,
+   "arm": "D180",
+   "sev": 1,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 177,
+   "arm": "D180",
+   "sev": 5,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 179,
+   "arm": "D180",
+   "sev": 4,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 182,
+   "arm": "D180",
+   "sev": 0,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 183,
+   "arm": "D180",
+   "sev": 2,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 190,
+   "arm": "D180",
+   "sev": 4,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 194,
+   "arm": "D180",
+   "sev": 4,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 199,
+   "arm": "D180",
+   "sev": 0,
+   "n": 4,
+   "completa": true,
+   "stalls": 1,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 203,
+   "arm": "D180",
+   "sev": 6,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 209,
+   "arm": "D180",
+   "sev": 5,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 210,
+   "arm": "D180",
+   "sev": 3,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 212,
+   "arm": "D180",
+   "sev": 3,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 213,
+   "arm": "D180",
+   "sev": 5,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 217,
+   "arm": "D180",
+   "sev": 2,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 220,
+   "arm": "D180",
+   "sev": 2,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 226,
+   "arm": "D180",
+   "sev": 4,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 230,
+   "arm": "D180",
+   "sev": 2,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 234,
+   "arm": "D180",
+   "sev": 5,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 250,
+   "arm": "D180",
+   "sev": 0,
+   "n": 5,
+   "completa": true,
+   "stalls": 1,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 263,
+   "arm": "D180",
+   "sev": 0,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 272,
+   "arm": "D180",
+   "sev": 4,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 276,
+   "arm": "D180",
+   "sev": 3,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 280,
+   "arm": "D180",
+   "sev": 0,
+   "n": 5,
+   "completa": true,
+   "stalls": 1,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 284,
+   "arm": "D180",
+   "sev": 5,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 286,
+   "arm": "D180",
+   "sev": 6,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 294,
+   "arm": "D180",
+   "sev": 3,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 296,
+   "arm": "D180",
+   "sev": 4,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 299,
+   "arm": "D180",
+   "sev": 2,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 301,
+   "arm": "D180",
+   "sev": 0,
+   "n": 5,
+   "completa": true,
+   "stalls": 1,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 306,
+   "arm": "D180",
+   "sev": 0,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 310,
+   "arm": "D180",
+   "sev": 5,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 321,
+   "arm": "D180",
+   "sev": 4,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 322,
+   "arm": "D180",
+   "sev": 6,
+   "n": 5,
+   "completa": true,
+   "stalls": 1,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 324,
+   "arm": "D180",
+   "sev": 3,
+   "n": 3,
+   "completa": true,
+   "stalls": 1,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 326,
+   "arm": "D180",
+   "sev": 4,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 327,
+   "arm": "D180",
+   "sev": 5,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 334,
+   "arm": "D180",
+   "sev": 0,
+   "n": 3,
+   "completa": true,
+   "stalls": 1,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 336,
+   "arm": "D180",
+   "sev": 6,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 339,
+   "arm": "D180",
+   "sev": 0,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 340,
+   "arm": "D180",
+   "sev": 6,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 352,
+   "arm": "D180",
+   "sev": 3,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 355,
+   "arm": "D180",
+   "sev": 2,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 358,
+   "arm": "D180",
+   "sev": 0,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 365,
+   "arm": "D180",
+   "sev": 6,
+   "n": 3,
+   "completa": true,
+   "stalls": 1,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 367,
+   "arm": "D180",
+   "sev": 0,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 368,
+   "arm": "D180",
+   "sev": 1,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 369,
+   "arm": "D180",
+   "sev": 4,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 371,
+   "arm": "D180",
+   "sev": 2,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 373,
+   "arm": "D180",
+   "sev": 5,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 375,
+   "arm": "D180",
+   "sev": 3,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 2,
+   "arm": "D90",
+   "sev": 5,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 12,
+   "arm": "D90",
+   "sev": 5,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 19,
+   "arm": "D90",
+   "sev": 4,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 26,
+   "arm": "D90",
+   "sev": 4,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 29,
+   "arm": "D90",
+   "sev": 3,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 37,
+   "arm": "D90",
+   "sev": 4,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 40,
+   "arm": "D90",
+   "sev": 0,
+   "n": 3,
+   "completa": true,
+   "stalls": 1,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 42,
+   "arm": "D90",
+   "sev": 2,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 43,
+   "arm": "D90",
+   "sev": 0,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 45,
+   "arm": "D90",
+   "sev": 6,
+   "n": 3,
+   "completa": true,
+   "stalls": 1,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 46,
+   "arm": "D90",
+   "sev": 3,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 48,
+   "arm": "D90",
+   "sev": 3,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 49,
+   "arm": "D90",
+   "sev": 0,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 52,
+   "arm": "D90",
+   "sev": 1,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 58,
+   "arm": "D90",
+   "sev": 0,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 60,
+   "arm": "D90",
+   "sev": 3,
+   "n": 3,
+   "completa": true,
+   "stalls": 1,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 64,
+   "arm": "D90",
+   "sev": 5,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 76,
+   "arm": "D90",
+   "sev": 5,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 77,
+   "arm": "D90",
+   "sev": 0,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 78,
+   "arm": "D90",
+   "sev": 6,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 81,
+   "arm": "D90",
+   "sev": 0,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 82,
+   "arm": "D90",
+   "sev": 3,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 83,
+   "arm": "D90",
+   "sev": 0,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 84,
+   "arm": "D90",
+   "sev": 6,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 88,
+   "arm": "D90",
+   "sev": 4,
+   "n": 5,
+   "completa": true,
+   "stalls": 1,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 91,
+   "arm": "D90",
+   "sev": 0,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 94,
+   "arm": "D90",
+   "sev": 0,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 95,
+   "arm": "D90",
+   "sev": 1,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 96,
+   "arm": "D90",
+   "sev": 3,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 100,
+   "arm": "D90",
+   "sev": 0,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 106,
+   "arm": "D90",
+   "sev": 0,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 107,
+   "arm": "D90",
+   "sev": 0,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 110,
+   "arm": "D90",
+   "sev": 0,
+   "n": 3,
+   "completa": true,
+   "stalls": 1,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 113,
+   "arm": "D90",
+   "sev": 0,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 116,
+   "arm": "D90",
+   "sev": 0,
+   "n": 4,
+   "completa": true,
+   "stalls": 1,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 127,
+   "arm": "D90",
+   "sev": 5,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 129,
+   "arm": "D90",
+   "sev": 5,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 131,
+   "arm": "D90",
+   "sev": 0,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 136,
+   "arm": "D90",
+   "sev": 0,
+   "n": 3,
+   "completa": true,
+   "stalls": 1,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 137,
+   "arm": "D90",
+   "sev": 0,
+   "n": 5,
+   "completa": true,
+   "stalls": 1,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 139,
+   "arm": "D90",
+   "sev": 6,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 140,
+   "arm": "D90",
+   "sev": 0,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 142,
+   "arm": "D90",
+   "sev": 0,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 147,
+   "arm": "D90",
+   "sev": 0,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 150,
+   "arm": "D90",
+   "sev": 0,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 151,
+   "arm": "D90",
+   "sev": 0,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 153,
+   "arm": "D90",
+   "sev": 3,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 160,
+   "arm": "D90",
+   "sev": 5,
+   "n": 5,
+   "completa": true,
+   "stalls": 1,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 168,
+   "arm": "D90",
+   "sev": 5,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 171,
+   "arm": "D90",
+   "sev": 2,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 175,
+   "arm": "D90",
+   "sev": 2,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 177,
+   "arm": "D90",
+   "sev": 3,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 179,
+   "arm": "D90",
+   "sev": 3,
+   "n": 3,
+   "completa": true,
+   "stalls": 1,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 182,
+   "arm": "D90",
+   "sev": 0,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 183,
+   "arm": "D90",
+   "sev": 4,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 190,
+   "arm": "D90",
+   "sev": 3,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 194,
+   "arm": "D90",
+   "sev": 4,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 199,
+   "arm": "D90",
+   "sev": 0,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 203,
+   "arm": "D90",
+   "sev": 6,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 209,
+   "arm": "D90",
+   "sev": 3,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 210,
+   "arm": "D90",
+   "sev": 0,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 212,
+   "arm": "D90",
+   "sev": 3,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 213,
+   "arm": "D90",
+   "sev": 4,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 217,
+   "arm": "D90",
+   "sev": 2,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 220,
+   "arm": "D90",
+   "sev": 3,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 226,
+   "arm": "D90",
+   "sev": 3,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 230,
+   "arm": "D90",
+   "sev": 2,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 234,
+   "arm": "D90",
+   "sev": 4,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 250,
+   "arm": "D90",
+   "sev": 0,
+   "n": 5,
+   "completa": true,
+   "stalls": 1,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 263,
+   "arm": "D90",
+   "sev": 0,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 272,
+   "arm": "D90",
+   "sev": 4,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 276,
+   "arm": "D90",
+   "sev": 0,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 280,
+   "arm": "D90",
+   "sev": 0,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 284,
+   "arm": "D90",
+   "sev": 5,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 286,
+   "arm": "D90",
+   "sev": 6,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 294,
+   "arm": "D90",
+   "sev": 3,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 296,
+   "arm": "D90",
+   "sev": 4,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 299,
+   "arm": "D90",
+   "sev": 4,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 301,
+   "arm": "D90",
+   "sev": 0,
+   "n": 5,
+   "completa": true,
+   "stalls": 1,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 306,
+   "arm": "D90",
+   "sev": 0,
+   "n": 5,
+   "completa": true,
+   "stalls": 1,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 310,
+   "arm": "D90",
+   "sev": 6,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 321,
+   "arm": "D90",
+   "sev": 4,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 322,
+   "arm": "D90",
+   "sev": 6,
+   "n": 5,
+   "completa": true,
+   "stalls": 1,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 324,
+   "arm": "D90",
+   "sev": 3,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 326,
+   "arm": "D90",
+   "sev": 4,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 327,
+   "arm": "D90",
+   "sev": 5,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 334,
+   "arm": "D90",
+   "sev": 0,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 336,
+   "arm": "D90",
+   "sev": 6,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 339,
+   "arm": "D90",
+   "sev": 0,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 340,
+   "arm": "D90",
+   "sev": 6,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 352,
+   "arm": "D90",
+   "sev": 3,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 355,
+   "arm": "D90",
+   "sev": 1,
+   "n": 4,
+   "completa": true,
+   "stalls": 1,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 358,
+   "arm": "D90",
+   "sev": 4,
+   "n": 5,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 365,
+   "arm": "D90",
+   "sev": 5,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 367,
+   "arm": "D90",
+   "sev": 0,
+   "n": 5,
+   "completa": true,
+   "stalls": 1,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 368,
+   "arm": "D90",
+   "sev": 0,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  },
+  {
+   "seed": 369,
+   "arm": "D90",
+   "sev": 4,
+   "n": 4,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 371,
+   "arm": "D90",
+   "sev": 6,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 373,
+   "arm": "D90",
+   "sev": 4,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "meseta"
+  },
+  {
+   "seed": 375,
+   "arm": "D90",
+   "sev": 2,
+   "n": 3,
+   "completa": true,
+   "stalls": 0,
+   "staged_causa": "a_tiro"
+  }
+ ]
+}

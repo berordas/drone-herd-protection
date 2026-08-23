@@ -1,0 +1,3678 @@
+{
+ "policy": "spawn",
+ "opponent": "reactive",
+ "n_eps": 200,
+ "n_deaths": 197,
+ "por_fase": {
+  "PATRULLA": {
+   "n": 0,
+   "frac": 0.0,
+   "knc_frac": null
+  },
+  "VENTANA_INVESTIGACION": {
+   "n": 0,
+   "frac": 0.0,
+   "knc_frac": null
+  },
+  "ESCOLTA-BARRERA": {
+   "n": 197,
+   "frac": 1.0,
+   "knc_frac": 0.3401015228426396
+  }
+ },
+ "canal_A": 197,
+ "canal_B": 0,
+ "frac_canal_B": 0.0,
+ "despertar_tardio": {
+  "episodios": 1,
+  "muertes_en_ellos": 8,
+  "muertes_totales": 197,
+  "lag_medio": 17.0,
+  "lag_max": 17,
+  "d_min_latch_medio_tardios": 92.8,
+  "d_min_latch_medio_resto": 118.02577319587628,
+  "casos": [
+   [
+    77,
+    "mixto",
+    4,
+    17,
+    8
+   ]
+  ]
+ },
+ "eps_con_canal_B": [],
+ "episodes": [
+  {
+   "seed": 0,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 702,
+   "d_min_latch": 119.0,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 1,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 654,
+   "d_min_latch": 97.3,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 2,
+   "kind": "lobos",
+   "sev": 5,
+   "t_escolta": 926,
+   "d_min_latch": 124.1,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 1270,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 1394,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 1510,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 1577,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 1669,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 3,
+   "kind": "lobos",
+   "sev": 4,
+   "t_escolta": 84,
+   "d_min_latch": 95.5,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 676,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 748,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 788,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 877,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 4,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 242,
+   "d_min_latch": 134.8,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 5,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 82,
+   "d_min_latch": 105.9,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 6,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 761,
+   "d_min_latch": 135.3,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 7,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 937,
+   "d_min_latch": 131.5,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 8,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 851,
+   "d_min_latch": 111.8,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 9,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 223,
+   "d_min_latch": 126.2,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 10,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 520,
+   "d_min_latch": 111.9,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 11,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 104,
+   "d_min_latch": 93.1,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 12,
+   "kind": "lobos",
+   "sev": 5,
+   "t_escolta": 649,
+   "d_min_latch": 83.5,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 1060,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1159,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1190,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1375,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1588,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 13,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 551,
+   "d_min_latch": 99.2,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 14,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 394,
+   "d_min_latch": 127.5,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 15,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 587,
+   "d_min_latch": 107.4,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 16,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 588,
+   "d_min_latch": 100.6,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 17,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 90,
+   "d_min_latch": 134.8,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 18,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 61,
+   "d_min_latch": 93.6,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 19,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": null,
+   "d_min_latch": null,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 20,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 86,
+   "d_min_latch": 127.8,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 21,
+   "kind": "lobos",
+   "sev": 2,
+   "t_escolta": 569,
+   "d_min_latch": 108.3,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 2058,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 2080,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 22,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 837,
+   "d_min_latch": 118.0,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 23,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 537,
+   "d_min_latch": 117.7,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 24,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 267,
+   "d_min_latch": 138.6,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 25,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 547,
+   "d_min_latch": 88.7,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 26,
+   "kind": "lobos",
+   "sev": 5,
+   "t_escolta": 557,
+   "d_min_latch": 83.8,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 945,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 1066,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1348,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 1436,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 1571,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 27,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 857,
+   "d_min_latch": 106.3,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 28,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 692,
+   "d_min_latch": 117.0,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 29,
+   "kind": "lobos",
+   "sev": 6,
+   "t_escolta": 1081,
+   "d_min_latch": 135.0,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 1602,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1645,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1775,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1853,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1929,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 2006,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 30,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 533,
+   "d_min_latch": 138.0,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 31,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 559,
+   "d_min_latch": 108.9,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 32,
+   "kind": "lobos",
+   "sev": 2,
+   "t_escolta": 646,
+   "d_min_latch": 117.9,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 2552,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 2567,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 33,
+   "kind": "lobos",
+   "sev": 2,
+   "t_escolta": 747,
+   "d_min_latch": 119.0,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 1926,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1949,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 34,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 480,
+   "d_min_latch": 123.0,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 35,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 53,
+   "d_min_latch": 98.9,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 36,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 587,
+   "d_min_latch": 104.4,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 37,
+   "kind": "lobos",
+   "sev": 5,
+   "t_escolta": 104,
+   "d_min_latch": 144.8,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 1050,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1170,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 1349,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 2051,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 2116,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 38,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 579,
+   "d_min_latch": 137.1,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 39,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 561,
+   "d_min_latch": 102.6,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 40,
+   "kind": "lobos",
+   "sev": 5,
+   "t_escolta": 633,
+   "d_min_latch": 134.0,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 973,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1287,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1351,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1426,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1510,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 41,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 544,
+   "d_min_latch": 105.4,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 42,
+   "kind": "lobos",
+   "sev": 2,
+   "t_escolta": 98,
+   "d_min_latch": 130.8,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 848,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 916,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 43,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 599,
+   "d_min_latch": 130.6,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 44,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 537,
+   "d_min_latch": 123.0,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 45,
+   "kind": "lobos",
+   "sev": 7,
+   "t_escolta": 464,
+   "d_min_latch": 133.7,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 816,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 898,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 990,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1074,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1311,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1451,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1513,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 46,
+   "kind": "lobos",
+   "sev": 4,
+   "t_escolta": 3252,
+   "d_min_latch": 113.9,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 3591,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 3822,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 3887,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 3983,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 47,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 556,
+   "d_min_latch": 128.3,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 48,
+   "kind": "lobos",
+   "sev": 3,
+   "t_escolta": 76,
+   "d_min_latch": 125.1,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 1159,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 1276,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 1358,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 49,
+   "kind": "lobos",
+   "sev": 5,
+   "t_escolta": 1945,
+   "d_min_latch": 109.0,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 2342,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 2433,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 2543,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 2588,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 2751,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 50,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 571,
+   "d_min_latch": 77.7,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 51,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 1054,
+   "d_min_latch": 105.4,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 52,
+   "kind": "lobos",
+   "sev": 5,
+   "t_escolta": 618,
+   "d_min_latch": 127.8,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 1098,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 1248,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 1354,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 1491,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 1558,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 53,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 674,
+   "d_min_latch": 112.2,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 54,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 538,
+   "d_min_latch": 106.1,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 55,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 87,
+   "d_min_latch": 104.5,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 56,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 625,
+   "d_min_latch": 111.5,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 57,
+   "kind": "lobos",
+   "sev": 3,
+   "t_escolta": 592,
+   "d_min_latch": 125.7,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 1466,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1555,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1653,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 58,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": null,
+   "d_min_latch": null,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 59,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 724,
+   "d_min_latch": 121.6,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 60,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 210,
+   "d_min_latch": 123.4,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 61,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 58,
+   "d_min_latch": 105.0,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 62,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 501,
+   "d_min_latch": 124.0,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 63,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 701,
+   "d_min_latch": 136.7,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 64,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": null,
+   "d_min_latch": null,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 65,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 938,
+   "d_min_latch": 117.1,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 66,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 748,
+   "d_min_latch": 153.8,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 67,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 324,
+   "d_min_latch": 115.6,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 68,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 61,
+   "d_min_latch": 101.1,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 69,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 196,
+   "d_min_latch": 141.1,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 70,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 56,
+   "d_min_latch": 102.5,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 71,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 433,
+   "d_min_latch": 144.5,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 72,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 542,
+   "d_min_latch": 122.4,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 73,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 671,
+   "d_min_latch": 114.4,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 74,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 858,
+   "d_min_latch": 138.7,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 75,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 581,
+   "d_min_latch": 117.9,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 76,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 412,
+   "d_min_latch": 153.9,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 77,
+   "kind": "lobos",
+   "sev": 8,
+   "t_escolta": 1492,
+   "d_min_latch": 102.2,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 1870,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 1925,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 2134,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 2196,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 2296,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 2362,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 2486,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 2538,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 78,
+   "kind": "lobos",
+   "sev": 5,
+   "t_escolta": 5719,
+   "d_min_latch": 106.2,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 6084,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 6198,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 6303,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 6469,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 6577,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 79,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 782,
+   "d_min_latch": 113.6,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 80,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 385,
+   "d_min_latch": 121.2,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 81,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 81,
+   "d_min_latch": 121.1,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 82,
+   "kind": "lobos",
+   "sev": 2,
+   "t_escolta": 1214,
+   "d_min_latch": 124.0,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 1703,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 1782,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 83,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 114,
+   "d_min_latch": 109.1,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 84,
+   "kind": "lobos",
+   "sev": 6,
+   "t_escolta": 1897,
+   "d_min_latch": 118.2,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 2442,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 2537,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 2714,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 2812,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 2873,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 2919,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 85,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 529,
+   "d_min_latch": 101.3,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 86,
+   "kind": "lobos",
+   "sev": 4,
+   "t_escolta": 1089,
+   "d_min_latch": 125.7,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 1750,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 2273,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 2281,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 2533,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 87,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 718,
+   "d_min_latch": 125.9,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 88,
+   "kind": "lobos",
+   "sev": 4,
+   "t_escolta": 91,
+   "d_min_latch": 118.0,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 846,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 977,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1052,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1119,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 89,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 419,
+   "d_min_latch": 136.0,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 90,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 77,
+   "d_min_latch": 110.5,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 91,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 73,
+   "d_min_latch": 106.5,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 92,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 258,
+   "d_min_latch": 131.0,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 93,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 758,
+   "d_min_latch": 115.5,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 94,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 68,
+   "d_min_latch": 112.0,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 95,
+   "kind": "lobos",
+   "sev": 1,
+   "t_escolta": 73,
+   "d_min_latch": 120.2,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 1401,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 96,
+   "kind": "lobos",
+   "sev": 3,
+   "t_escolta": 579,
+   "d_min_latch": 116.9,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 952,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1157,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1258,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 97,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 62,
+   "d_min_latch": 115.7,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 98,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 619,
+   "d_min_latch": 110.4,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 99,
+   "kind": "lobos",
+   "sev": 0,
+   "t_escolta": 560,
+   "d_min_latch": 110.5,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 0,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 702,
+   "d_min_latch": 107.5,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 1,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 655,
+   "d_min_latch": 95.9,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 2,
+   "kind": "mixto",
+   "sev": 5,
+   "t_escolta": 943,
+   "d_min_latch": 123.8,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 1253,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 1372,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 1484,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 1537,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 1614,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 3,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 97,
+   "d_min_latch": 90.5,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 4,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 264,
+   "d_min_latch": 126.8,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 5,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 71,
+   "d_min_latch": 110.2,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 6,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 747,
+   "d_min_latch": 136.3,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 7,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 889,
+   "d_min_latch": 138.0,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 8,
+   "kind": "mixto",
+   "sev": 2,
+   "t_escolta": 592,
+   "d_min_latch": 130.2,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 1849,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 2041,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 9,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 213,
+   "d_min_latch": 129.9,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 10,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 518,
+   "d_min_latch": 114.0,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 11,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 113,
+   "d_min_latch": 91.0,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 12,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 626,
+   "d_min_latch": 101.1,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 13,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 527,
+   "d_min_latch": 110.7,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 14,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 383,
+   "d_min_latch": 128.8,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 15,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 581,
+   "d_min_latch": 107.0,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 16,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 586,
+   "d_min_latch": 99.4,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 17,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 91,
+   "d_min_latch": 132.5,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 18,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 61,
+   "d_min_latch": 92.8,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 19,
+   "kind": "mixto",
+   "sev": 6,
+   "t_escolta": 18763,
+   "d_min_latch": 120.0,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 19145,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 19222,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 19226,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 19464,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 19511,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 19599,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 20,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 86,
+   "d_min_latch": 127.5,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 21,
+   "kind": "mixto",
+   "sev": 2,
+   "t_escolta": 621,
+   "d_min_latch": 101.2,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 1913,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1925,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 22,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 824,
+   "d_min_latch": 119.2,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 23,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 537,
+   "d_min_latch": 110.2,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 24,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 258,
+   "d_min_latch": 141.6,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 25,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 573,
+   "d_min_latch": 87.8,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 26,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 72,
+   "d_min_latch": 111.4,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 27,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 788,
+   "d_min_latch": 129.0,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 28,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 668,
+   "d_min_latch": 125.9,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 29,
+   "kind": "mixto",
+   "sev": 5,
+   "t_escolta": 906,
+   "d_min_latch": 133.2,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 1495,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1577,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1715,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1808,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1871,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 30,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 545,
+   "d_min_latch": 141.4,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 31,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 540,
+   "d_min_latch": 112.1,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 32,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 891,
+   "d_min_latch": 138.1,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 33,
+   "kind": "mixto",
+   "sev": 2,
+   "t_escolta": 744,
+   "d_min_latch": 129.2,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 1999,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 2012,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 34,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 488,
+   "d_min_latch": 120.9,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 35,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 52,
+   "d_min_latch": 100.0,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 36,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 578,
+   "d_min_latch": 109.4,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 37,
+   "kind": "mixto",
+   "sev": 5,
+   "t_escolta": 104,
+   "d_min_latch": 145.5,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 1056,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1186,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 1335,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 1407,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1649,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 38,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 588,
+   "d_min_latch": 139.1,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 39,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 555,
+   "d_min_latch": 102.3,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 40,
+   "kind": "mixto",
+   "sev": 6,
+   "t_escolta": 627,
+   "d_min_latch": 136.2,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 961,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1171,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1227,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1316,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1394,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1455,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 41,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 542,
+   "d_min_latch": 101.1,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 42,
+   "kind": "mixto",
+   "sev": 2,
+   "t_escolta": 82,
+   "d_min_latch": 131.5,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 852,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 917,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 43,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 601,
+   "d_min_latch": 128.0,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 44,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 551,
+   "d_min_latch": 122.5,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 45,
+   "kind": "mixto",
+   "sev": 7,
+   "t_escolta": 420,
+   "d_min_latch": 131.2,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 783,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 883,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 986,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1071,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1260,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1465,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1504,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 46,
+   "kind": "mixto",
+   "sev": 5,
+   "t_escolta": 6715,
+   "d_min_latch": 103.8,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 7115,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 7309,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 7501,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 7594,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 7732,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 47,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 532,
+   "d_min_latch": 142.3,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 48,
+   "kind": "mixto",
+   "sev": 3,
+   "t_escolta": 75,
+   "d_min_latch": 123.8,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 1159,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 1269,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 1352,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 49,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": null,
+   "d_min_latch": null,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 50,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 573,
+   "d_min_latch": 76.9,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 51,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 1018,
+   "d_min_latch": 101.2,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 52,
+   "kind": "mixto",
+   "sev": 4,
+   "t_escolta": 639,
+   "d_min_latch": 124.4,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 1207,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 1387,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 1542,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 3325,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 53,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 658,
+   "d_min_latch": 117.5,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 54,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 521,
+   "d_min_latch": 113.6,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 55,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 97,
+   "d_min_latch": 100.4,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 56,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 626,
+   "d_min_latch": 111.8,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 57,
+   "kind": "mixto",
+   "sev": 2,
+   "t_escolta": 615,
+   "d_min_latch": 115.9,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 1261,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1407,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 58,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": null,
+   "d_min_latch": null,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 59,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 744,
+   "d_min_latch": 109.8,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 60,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 96,
+   "d_min_latch": 139.2,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 61,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 58,
+   "d_min_latch": 105.1,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 62,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 448,
+   "d_min_latch": 128.1,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 63,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 705,
+   "d_min_latch": 134.7,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 64,
+   "kind": "mixto",
+   "sev": 5,
+   "t_escolta": 1509,
+   "d_min_latch": 164.7,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 1941,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 2134,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 2241,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 2291,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 2392,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 65,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 959,
+   "d_min_latch": 98.1,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 66,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 822,
+   "d_min_latch": 152.1,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 67,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 312,
+   "d_min_latch": 115.2,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 68,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 64,
+   "d_min_latch": 99.8,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 69,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 196,
+   "d_min_latch": 140.0,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 70,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 84,
+   "d_min_latch": 95.5,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 71,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 460,
+   "d_min_latch": 133.2,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 72,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 557,
+   "d_min_latch": 126.8,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 73,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 694,
+   "d_min_latch": 110.7,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 74,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 835,
+   "d_min_latch": 145.0,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 75,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 601,
+   "d_min_latch": 111.1,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 76,
+   "kind": "mixto",
+   "sev": 2,
+   "t_escolta": 102,
+   "d_min_latch": 145.7,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 824,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 883,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 77,
+   "kind": "mixto",
+   "sev": 8,
+   "t_escolta": 1011,
+   "d_min_latch": 92.8,
+   "entradas_no_detectadas": 4,
+   "despertar_tardio": true,
+   "lag_despertar": 17,
+   "deaths": [
+    {
+     "t": 1382,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1437,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1502,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1669,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1758,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1868,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1940,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 2010,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 78,
+   "kind": "mixto",
+   "sev": 5,
+   "t_escolta": 5696,
+   "d_min_latch": 109.3,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 6059,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 6203,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 6306,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 6489,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 6554,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 79,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 797,
+   "d_min_latch": 113.2,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 80,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 368,
+   "d_min_latch": 124.6,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 81,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 81,
+   "d_min_latch": 119.2,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 82,
+   "kind": "mixto",
+   "sev": 3,
+   "t_escolta": 1243,
+   "d_min_latch": 115.3,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 1724,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 1846,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 2023,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 83,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 114,
+   "d_min_latch": 108.8,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 84,
+   "kind": "mixto",
+   "sev": 6,
+   "t_escolta": 1885,
+   "d_min_latch": 126.3,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 2418,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    },
+    {
+     "t": 2498,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 2692,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 2743,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 2871,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 2962,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 85,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 550,
+   "d_min_latch": 91.4,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 86,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 837,
+   "d_min_latch": 126.4,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 87,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 732,
+   "d_min_latch": 127.1,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 88,
+   "kind": "mixto",
+   "sev": 1,
+   "t_escolta": 90,
+   "d_min_latch": 118.6,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 847,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 89,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 428,
+   "d_min_latch": 130.9,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 90,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 77,
+   "d_min_latch": 109.5,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 91,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 100,
+   "d_min_latch": 108.9,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 92,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 259,
+   "d_min_latch": 128.6,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 93,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 759,
+   "d_min_latch": 124.5,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 94,
+   "kind": "mixto",
+   "sev": 6,
+   "t_escolta": 102,
+   "d_min_latch": 113.6,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 644,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 761,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 935,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1047,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1160,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    },
+    {
+     "t": 1278,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": false
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 95,
+   "kind": "mixto",
+   "sev": 1,
+   "t_escolta": 74,
+   "d_min_latch": 119.0,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 1400,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 96,
+   "kind": "mixto",
+   "sev": 1,
+   "t_escolta": 607,
+   "d_min_latch": 121.5,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [
+    {
+     "t": 980,
+     "fase": "ESCOLTA-BARRERA",
+     "canal": "A",
+     "knc": true
+    }
+   ],
+   "canal_B": 0
+  },
+  {
+   "seed": 97,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 66,
+   "d_min_latch": 114.5,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 98,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 599,
+   "d_min_latch": 115.9,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  },
+  {
+   "seed": 99,
+   "kind": "mixto",
+   "sev": 0,
+   "t_escolta": 568,
+   "d_min_latch": 102.7,
+   "entradas_no_detectadas": 0,
+   "despertar_tardio": false,
+   "lag_despertar": null,
+   "deaths": [],
+   "canal_B": 0
+  }
+ ]
+}

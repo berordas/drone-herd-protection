@@ -1,0 +1,13 @@
+mediano_b_cebo_keep_h50_reactive_seed460_mixto_sev2 | arm=cebo_keep_h50_reactive status=predation sev=2 steps=2730 grupos=[1, 4] | muertes con procedencia al final
+t=     0  OPTION_START     option=CEBO hold=50.0 membership=keep
+t=  1835  SHOW_START       mode=keep
+t=  1835  STAGED
+t=  2093  ESCOLTA_LATCH
+t=  2094  CONFIRM_DECOY    wolf=0
+t=  2094  ANCHOR_FLIP      frm=None to=0
+t=  2656  DEATH            kind=adult prey=3 flankers=[1, 3]
+t=  2656  STRIKE_RESOLVED  outcome=kill latencia=821
+t=  2730  DEATH            kind=adult prey=4 flankers=[2, 4]
+t=  2730  HERD_SAFE        n_safe=4 n_muertas=2
+t=  2656  MUERTE adult#3 flankers=[1, 3] conf=[True, True] nearest=3(conf=True) grupo=2 octante=0 gotera=False dflip=562
+t=  2730  MUERTE adult#4 flankers=[2, 4] conf=[True, True] nearest=2(conf=True) grupo=2 octante=4 gotera=False dflip=636

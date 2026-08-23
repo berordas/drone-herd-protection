@@ -1,0 +1,35 @@
+{
+  "args": {
+    "total_steps": 10000000,
+    "n_envs": 12,
+    "seed": 0,
+    "outdir": "/data/wolves/run01",
+    "kinds": [
+      "lobos",
+      "mixto"
+    ],
+    "device": "cpu",
+    "frame_skip": 5,
+    "smoke": false,
+    "resume": null,
+    "eval_every": 250000
+  },
+  "hyper": {
+    "n_steps": 2048,
+    "batch_size": 512,
+    "gamma": 0.999,
+    "gae_lambda": 0.95,
+    "learning_rate": 0.0003,
+    "ent_coef": 0.01,
+    "clip_range": 0.2,
+    "n_epochs": 10
+  },
+  "net_arch": [
+    128,
+    128
+  ],
+  "algo": "PPO(MlpPolicy)",
+  "reward": "+1 por res matada (rala, compartida); sin castigo por tiempo ni por a-salvo",
+  "abort": "CRITERIO DE ABORTO (pactado): si a ~2.000.000 de pasos ep_rew_mean sigue en 0.00 (ninguna muerte espontánea), parar el run y reportar. El shaping por potencial es plan B y lo decide el usuario — NO implementarlo por cuenta propia.",
+  "fecha": "2026-07-14T11:42:08"
+}

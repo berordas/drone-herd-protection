@@ -1,0 +1,31 @@
+sev_max_seed20_lobos_sev7 | arm=cebo_capa_manager status=predation sev=7 steps=4962 grupos=[4] | muertes con procedencia al final
+t=     0  OPTION_START     option=CEBO delta_deg=180.0
+t=  3264  SHOW_START       mode=manager
+t=  3264  STAGED
+t=  3448  ESCOLTA_LATCH
+t=  3449  CONFIRM_DECOY    wolf=0
+t=  3449  ANCHOR_FLIP      frm=None to=0
+t=  3528  LURE_COMMIT      drones_cono=4 puerta_libre_m=61.3
+t=  3767  DEATH            kind=calf prey=1 flankers=[1]
+t=  3767  STRIKE_RESOLVED  outcome=kill latencia=503
+t=  3790  LURE_COMMIT_END
+t=  3892  DEATH            kind=calf prey=0 flankers=[1]
+t=  4048  LURE_COMMIT      drones_cono=4 puerta_libre_m=60.1
+t=  4179  LURE_COMMIT_END
+t=  4179  DEATH            kind=adult prey=3 flankers=[1, 3]
+t=  4290  LURE_COMMIT      drones_cono=4 puerta_libre_m=61.7
+t=  4313  DEATH            kind=adult prey=2 flankers=[2, 3]
+t=  4405  DEATH            kind=adult prey=4 flankers=[1, 2]
+t=  4413  LURE_COMMIT_END
+t=  4549  LURE_COMMIT      drones_cono=4 puerta_libre_m=60.8
+t=  4575  LURE_COMMIT_END
+t=  4575  DEATH            kind=adult prey=1 flankers=[2, 3]
+t=  4962  DEATH            kind=adult prey=0 flankers=[2, 3]
+t=  4962  HERD_SAFE        n_safe=1 n_muertas=7
+t=  3767  MUERTE calf#1 flankers=[1] conf=[False] nearest=1(conf=False) grupo=None octante=2 gotera=False dflip=318
+t=  3892  MUERTE calf#0 flankers=[1] conf=[True] nearest=1(conf=True) grupo=None octante=0 gotera=False dflip=443
+t=  4179  MUERTE adult#3 flankers=[1, 3] conf=[True, True] nearest=1(conf=True) grupo=None octante=5 gotera=False dflip=730
+t=  4313  MUERTE adult#2 flankers=[2, 3] conf=[True, True] nearest=2(conf=True) grupo=None octante=4 gotera=False dflip=864
+t=  4405  MUERTE adult#4 flankers=[1, 2] conf=[True, True] nearest=1(conf=True) grupo=None octante=3 gotera=False dflip=956
+t=  4575  MUERTE adult#1 flankers=[2, 3] conf=[True, True] nearest=2(conf=True) grupo=None octante=4 gotera=False dflip=1126
+t=  4962  MUERTE adult#0 flankers=[2, 3] conf=[True, True] nearest=2(conf=True) grupo=None octante=6 gotera=False dflip=1513

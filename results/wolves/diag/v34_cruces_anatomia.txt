@@ -1,0 +1,12 @@
+CONSTANTES: STATIC_DETER_RADIUS=10.0 | spacing nominal=2·STATIC=20.0 -> paredes TANGENTES a spacing exacto (solape 0, corredor 0)
+
+CRUCES de segmento: total 149 | HACIA DENTRO con línea en pie (CLEAN): 92
+  segmento: EXTREMO 1 vs INTERIOR 91 (con k=4 hay 2 extremos y 1 interior -> esperado al azar ~2:1)
+  punto de cruce, dist al dron más cercano: p25 9.7  mediana 9.9  p75 10.0 m | fracción del hueco (0.5=centro): mediana 0.49  p25 0.48
+  hueco real: mediana 20.0  p90 20.0  máx 22.8 | con hueco > 2·STATIC (corredor abierto): 27/92
+  estado de la línea: FORMADA 87 vs ensamblaje/incorporación 5
+  pose en el paso del cruce (n=92 con pose): QUIETA (<0.1 m y <0.3°) 54 | |Δc| mediana 0.10 m  p90 0.19 | |Δφ| mediana 0.07°  p90 0.25°
+  lobo al cruzar: walled 80 · scared 10 · libre 2
+
+RODEOS por los EXTREMOS (cruzan la RECTA fuera del tramo de drones, hacia dentro, línea en pie): 13 | dist al dron extremo: mediana 14.8  p90 32.8 m
+(comparar: 92 cruces de segmento vs 13 rodeos)

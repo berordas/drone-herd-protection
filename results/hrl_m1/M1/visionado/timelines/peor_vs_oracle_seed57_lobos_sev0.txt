@@ -1,0 +1,43 @@
+peor_vs_oracle | seed=57 lobos n=5 G=False | manager=model sev_eval=0 | oracle sev=3
+t=     0  DECISION #1   CEBO_keep  -> ABORT_BAIT_FAILED ticks= 3674 r=0
+t=  3674  DECISION #2   CEBO_d90   -> ABORT_BAIT_FAILED ticks=   50 r=0
+t=  3724  DECISION #3   CEBO_d180  -> ABORT_BAIT_FAILED ticks=   50 r=0
+t=  3774  DECISION #4   CEBO_keep  -> ABORT_BAIT_FAILED ticks=   50 r=0
+t=  3824  DECISION #5   CEBO_d90   -> ABORT_BAIT_FAILED ticks=   50 r=0
+t=  3874  DECISION #6   CEBO_d180  -> ABORT_BAIT_FAILED ticks=   50 r=0
+t=  3924  DECISION #7   CEBO_keep  -> ABORT_BAIT_FAILED ticks=   50 r=0
+t=  3974  DECISION #8   CEBO_d90   -> ABORT_BAIT_FAILED ticks=   50 r=0
+t=  4024  DECISION #9   CEBO_d180  -> ABORT_BAIT_FAILED ticks=   50 r=0
+t=  4074  DECISION #10  CEBO_keep  -> ABORT_BAIT_FAILED ticks=   50 r=0
+t=  4124  DECISION #11  CEBO_d90   -> ABORT_BAIT_FAILED ticks=   50 r=0
+t=  4174  DECISION #12  CEBO_d180  -> ABORT_BAIT_FAILED ticks=   50 r=0
+t=  4224  DECISION #13  CEBO_keep  -> ABORT_BAIT_FAILED ticks=   50 r=0
+t=  4274  DECISION #14  CEBO_d90   -> ABORT_BAIT_FAILED ticks=   50 r=0
+t=  4324  DECISION #15  CEBO_d180  -> ABORT_BAIT_FAILED ticks=   50 r=0
+t=  4374  DECISION #16  CEBO_keep  -> ABORT_BAIT_FAILED ticks=   50 r=0
+t=  4424  DECISION #17  CEBO_d90   -> ABORT_BAIT_FAILED ticks=   50 r=0
+t=  4474  DECISION #18  CEBO_d90   -> ABORT_BAIT_FAILED ticks=   50 r=0
+t=  4524  DECISION #19  CEBO_d90   -> ABORT_BAIT_FAILED ticks=   50 r=0
+t=  4574  DECISION #20  CEBO_d90   -> ABORT_BAIT_FAILED ticks=   50 r=0
+t=  4624  DECISION #21  CEBO_d90   -> ABORT_BAIT_FAILED ticks=   50 r=0
+t=  4674  DECISION #22  CEBO_d90   -> ABORT_BAIT_FAILED ticks=   50 r=0
+t=  4724  DECISION #23  CEBO_d90   -> ABORT_BAIT_FAILED ticks=   50 r=0
+t=  4774  DECISION #24  CEBO_d90   -> FIN_EPISODIO      ticks=   20 r=0
+t=     0  capa OPTION_START {'t': 0, 'ev': 'OPTION_START', 'option': 'CEBO', 'membership': 'keep', 'hold': 50.0}
+t=  3440  capa SHOW_START {'t': 3440, 'ev': 'SHOW_START', 'mode': 'keep'}
+t=  3674  capa OPTION_START {'t': 3674, 'ev': 'OPTION_START', 'option': 'CEBO', 'delta_deg': 90.0, 'hold': 50.0}
+t=  3724  capa OPTION_START {'t': 3724, 'ev': 'OPTION_START', 'option': 'CEBO', 'delta_deg': 180.0, 'hold': 50.0}
+t=  3774  capa OPTION_START {'t': 3774, 'ev': 'OPTION_START', 'option': 'CEBO', 'membership': 'keep', 'hold': 50.0}
+t=  3824  capa OPTION_START {'t': 3824, 'ev': 'OPTION_START', 'option': 'CEBO', 'delta_deg': 90.0, 'hold': 50.0}
+t=  3874  capa OPTION_START {'t': 3874, 'ev': 'OPTION_START', 'option': 'CEBO', 'delta_deg': 180.0, 'hold': 50.0}
+t=  3924  capa OPTION_START {'t': 3924, 'ev': 'OPTION_START', 'option': 'CEBO', 'membership': 'keep', 'hold': 50.0}
+t=  3974  capa OPTION_START {'t': 3974, 'ev': 'OPTION_START', 'option': 'CEBO', 'delta_deg': 90.0, 'hold': 50.0}
+t=  4024  capa OPTION_START {'t': 4024, 'ev': 'OPTION_START', 'option': 'CEBO', 'delta_deg': 180.0, 'hold': 50.0}
+t=  4074  capa OPTION_START {'t': 4074, 'ev': 'OPTION_START', 'option': 'CEBO', 'membership': 'keep', 'hold': 50.0}
+t=  4124  capa OPTION_START {'t': 4124, 'ev': 'OPTION_START', 'option': 'CEBO', 'delta_deg': 90.0, 'hold': 50.0}
+t=  4174  capa OPTION_START {'t': 4174, 'ev': 'OPTION_START', 'option': 'CEBO', 'delta_deg': 180.0, 'hold': 50.0}
+t=  4224  capa OPTION_START {'t': 4224, 'ev': 'OPTION_START', 'option': 'CEBO', 'membership': 'keep', 'hold': 50.0}
+t=  4274  capa OPTION_START {'t': 4274, 'ev': 'OPTION_START', 'option': 'CEBO', 'delta_deg': 90.0, 'hold': 50.0}
+t=  4324  capa OPTION_START {'t': 4324, 'ev': 'OPTION_START', 'option': 'CEBO', 'delta_deg': 180.0, 'hold': 50.0}
+t=  4374  capa OPTION_START {'t': 4374, 'ev': 'OPTION_START', 'option': 'CEBO', 'membership': 'keep', 'hold': 50.0}
+t=  4424  capa OPTION_START {'t': 4424, 'ev': 'OPTION_START', 'option': 'CEBO', 'delta_deg': 90.0, 'hold': 50.0}

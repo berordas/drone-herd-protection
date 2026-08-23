@@ -1,0 +1,5 @@
+t=0 OPTION_START option=CEBO membership=keep hold=50.0
+t=1769 SHOW_START mode=keep
+t=1870 FASE VIGILANCIA->SOSPECHA
+t=1916 FASE SOSPECHA->ESCOLTA
+sev=0 status=success stride=1 frames=3500

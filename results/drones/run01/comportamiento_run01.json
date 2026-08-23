@@ -1,0 +1,2011 @@
+{
+  "best_ckpt": "/data/drones/run01/checkpoints/mappo_drones_18998784_steps.zip",
+  "fecha": "2026-07-18T19:07:46",
+  "params": {
+    "sep_dos_frentes_m": 60.0,
+    "atencion_m": 40.0,
+    "kinds": [
+      "lobos",
+      "mixto"
+    ],
+    "n_seeds": 100
+  },
+  "suelo": {
+    "resumen": {
+      "n_episodios_2grupos": 58,
+      "severidad_media_2grupos": 3.31,
+      "frac_pasos_2f": 0.414,
+      "frac_ambos_frentes_atendidos": 0.062,
+      "dist_frente_peor_atendido_m": 118.0,
+      "vel_drones_active_ms": 3.76,
+      "sustos_por_paso_escolta": 1.194
+    },
+    "episodes": [
+      {
+        "seed": 2,
+        "kind": "lobos",
+        "sizes": [
+          2,
+          1
+        ],
+        "n_depredadas": 3,
+        "status": "predation",
+        "steps": 2034,
+        "pasos_escolta": 1807,
+        "pasos_2f": 250,
+        "pasos_2f_ambos": 41,
+        "dist_peor_media": 62.03419969841979,
+        "vel_active_media": 3.7814205773630967,
+        "sustos_por_paso_escolta": 1.6995019369120088
+      },
+      {
+        "seed": 12,
+        "kind": "lobos",
+        "sizes": [
+          2,
+          2
+        ],
+        "n_depredadas": 3,
+        "status": "predation",
+        "steps": 2249,
+        "pasos_escolta": 2224,
+        "pasos_2f": 376,
+        "pasos_2f_ambos": 19,
+        "dist_peor_media": 140.41001966274024,
+        "vel_active_media": 2.9218049317928485,
+        "sustos_por_paso_escolta": 1.5521582733812949
+      },
+      {
+        "seed": 19,
+        "kind": "lobos",
+        "sizes": [
+          2,
+          2
+        ],
+        "n_depredadas": 3,
+        "status": "predation",
+        "steps": 1018,
+        "pasos_escolta": 972,
+        "pasos_2f": 554,
+        "pasos_2f_ambos": 0,
+        "dist_peor_media": 165.67212556178677,
+        "vel_active_media": 5.540061972215942,
+        "sustos_por_paso_escolta": 0.8281893004115226
+      },
+      {
+        "seed": 26,
+        "kind": "lobos",
+        "sizes": [
+          1,
+          3
+        ],
+        "n_depredadas": 6,
+        "status": "predation",
+        "steps": 2122,
+        "pasos_escolta": 2102,
+        "pasos_2f": 389,
+        "pasos_2f_ambos": 0,
+        "dist_peor_media": 140.6168454235592,
+        "vel_active_media": 3.4393142392314804,
+        "sustos_por_paso_escolta": 2.050903901046622
+      },
+      {
+        "seed": 29,
+        "kind": "lobos",
+        "sizes": [
+          1,
+          2
+        ],
+        "n_depredadas": 2,
+        "status": "predation",
+        "steps": 1366,
+        "pasos_escolta": 1348,
+        "pasos_2f": 844,
+        "pasos_2f_ambos": 61,
+        "dist_peor_media": 143.69477023140996,
+        "vel_active_media": 3.6760126276944227,
+        "sustos_por_paso_escolta": 1.218100890207715
+      },
+      {
+        "seed": 37,
+        "kind": "lobos",
+        "sizes": [
+          2,
+          2
+        ],
+        "n_depredadas": 4,
+        "status": "predation",
+        "steps": 1168,
+        "pasos_escolta": 1147,
+        "pasos_2f": 467,
+        "pasos_2f_ambos": 4,
+        "dist_peor_media": 148.32580816104232,
+        "vel_active_media": 3.7806545505277755,
+        "sustos_por_paso_escolta": 1.4455100261551874
+      },
+      {
+        "seed": 40,
+        "kind": "lobos",
+        "sizes": [
+          2,
+          1
+        ],
+        "n_depredadas": 3,
+        "status": "predation",
+        "steps": 731,
+        "pasos_escolta": 687,
+        "pasos_2f": 424,
+        "pasos_2f_ambos": 69,
+        "dist_peor_media": 96.2616180999484,
+        "vel_active_media": 3.8463675814173355,
+        "sustos_por_paso_escolta": 0.8864628820960698
+      },
+      {
+        "seed": 42,
+        "kind": "lobos",
+        "sizes": [
+          4,
+          1
+        ],
+        "n_depredadas": 2,
+        "status": "predation",
+        "steps": 859,
+        "pasos_escolta": 846,
+        "pasos_2f": 435,
+        "pasos_2f_ambos": 0,
+        "dist_peor_media": 133.81286958125722,
+        "vel_active_media": 3.9888377434719637,
+        "sustos_por_paso_escolta": 1.7541371158392436
+      },
+      {
+        "seed": 43,
+        "kind": "lobos",
+        "sizes": [
+          3,
+          1
+        ],
+        "n_depredadas": 2,
+        "status": "predation",
+        "steps": 874,
+        "pasos_escolta": 851,
+        "pasos_2f": 461,
+        "pasos_2f_ambos": 58,
+        "dist_peor_media": 99.27469044425078,
+        "vel_active_media": 2.4384561340799946,
+        "sustos_por_paso_escolta": 0.17861339600470036
+      },
+      {
+        "seed": 45,
+        "kind": "lobos",
+        "sizes": [
+          2,
+          1
+        ],
+        "n_depredadas": 3,
+        "status": "predation",
+        "steps": 1440,
+        "pasos_escolta": 1398,
+        "pasos_2f": 257,
+        "pasos_2f_ambos": 7,
+        "dist_peor_media": 97.96045900958444,
+        "vel_active_media": 3.6334370317095415,
+        "sustos_por_paso_escolta": 1.5743919885550788
+      },
+      {
+        "seed": 46,
+        "kind": "lobos",
+        "sizes": [
+          3,
+          1
+        ],
+        "n_depredadas": 3,
+        "status": "predation",
+        "steps": 944,
+        "pasos_escolta": 835,
+        "pasos_2f": 363,
+        "pasos_2f_ambos": 2,
+        "dist_peor_media": 109.83686427053573,
+        "vel_active_media": 3.2788575733503644,
+        "sustos_por_paso_escolta": 0.9065868263473054
+      },
+      {
+        "seed": 48,
+        "kind": "lobos",
+        "sizes": [
+          1,
+          2
+        ],
+        "n_depredadas": 4,
+        "status": "predation",
+        "steps": 1357,
+        "pasos_escolta": 1356,
+        "pasos_2f": 575,
+        "pasos_2f_ambos": 19,
+        "dist_peor_media": 154.27616029516838,
+        "vel_active_media": 3.1290444226761984,
+        "sustos_por_paso_escolta": 0.9033923303834809
+      },
+      {
+        "seed": 49,
+        "kind": "lobos",
+        "sizes": [
+          2,
+          2
+        ],
+        "n_depredadas": 4,
+        "status": "predation",
+        "steps": 1360,
+        "pasos_escolta": 1310,
+        "pasos_2f": 627,
+        "pasos_2f_ambos": 0,
+        "dist_peor_media": 128.3759634227906,
+        "vel_active_media": 3.8988240943026793,
+        "sustos_por_paso_escolta": 1.3709923664122137
+      },
+      {
+        "seed": 52,
+        "kind": "lobos",
+        "sizes": [
+          3,
+          1
+        ],
+        "n_depredadas": 4,
+        "status": "predation",
+        "steps": 695,
+        "pasos_escolta": 680,
+        "pasos_2f": 336,
+        "pasos_2f_ambos": 41,
+        "dist_peor_media": 100.35102705406938,
+        "vel_active_media": 2.6772155138696987,
+        "sustos_por_paso_escolta": 0.6
+      },
+      {
+        "seed": 58,
+        "kind": "lobos",
+        "sizes": [
+          1,
+          3
+        ],
+        "n_depredadas": 3,
+        "status": "predation",
+        "steps": 1186,
+        "pasos_escolta": 1103,
+        "pasos_2f": 499,
+        "pasos_2f_ambos": 30,
+        "dist_peor_media": 103.40792896246764,
+        "vel_active_media": 4.00011230777344,
+        "sustos_por_paso_escolta": 1.4696282864913872
+      },
+      {
+        "seed": 60,
+        "kind": "lobos",
+        "sizes": [
+          2,
+          1
+        ],
+        "n_depredadas": 1,
+        "status": "predation",
+        "steps": 586,
+        "pasos_escolta": 559,
+        "pasos_2f": 240,
+        "pasos_2f_ambos": 47,
+        "dist_peor_media": 74.42290766272296,
+        "vel_active_media": 4.990603822393243,
+        "sustos_por_paso_escolta": 0.518783542039356
+      },
+      {
+        "seed": 64,
+        "kind": "lobos",
+        "sizes": [
+          1,
+          2
+        ],
+        "n_depredadas": 3,
+        "status": "predation",
+        "steps": 967,
+        "pasos_escolta": 916,
+        "pasos_2f": 278,
+        "pasos_2f_ambos": 0,
+        "dist_peor_media": 92.99733917181521,
+        "vel_active_media": 3.922793666817452,
+        "sustos_por_paso_escolta": 0.9301310043668122
+      },
+      {
+        "seed": 76,
+        "kind": "lobos",
+        "sizes": [
+          1,
+          3
+        ],
+        "n_depredadas": 2,
+        "status": "predation",
+        "steps": 710,
+        "pasos_escolta": 684,
+        "pasos_2f": 387,
+        "pasos_2f_ambos": 74,
+        "dist_peor_media": 110.3955918356966,
+        "vel_active_media": 3.5325785492262973,
+        "sustos_por_paso_escolta": 0.6257309941520468
+      },
+      {
+        "seed": 77,
+        "kind": "lobos",
+        "sizes": [
+          4,
+          1
+        ],
+        "n_depredadas": 6,
+        "status": "predation",
+        "steps": 1030,
+        "pasos_escolta": 969,
+        "pasos_2f": 312,
+        "pasos_2f_ambos": 58,
+        "dist_peor_media": 87.40313138791491,
+        "vel_active_media": 3.5558147595211875,
+        "sustos_por_paso_escolta": 1.3993808049535603
+      },
+      {
+        "seed": 78,
+        "kind": "lobos",
+        "sizes": [
+          1,
+          2
+        ],
+        "n_depredadas": 4,
+        "status": "predation",
+        "steps": 1065,
+        "pasos_escolta": 1028,
+        "pasos_2f": 655,
+        "pasos_2f_ambos": 0,
+        "dist_peor_media": 163.77277247906326,
+        "vel_active_media": 3.323428593502918,
+        "sustos_por_paso_escolta": 0.33073929961089493
+      },
+      {
+        "seed": 81,
+        "kind": "lobos",
+        "sizes": [
+          3,
+          1
+        ],
+        "n_depredadas": 2,
+        "status": "predation",
+        "steps": 1215,
+        "pasos_escolta": 1197,
+        "pasos_2f": 356,
+        "pasos_2f_ambos": 6,
+        "dist_peor_media": 156.45819092784612,
+        "vel_active_media": 3.840426416976048,
+        "sustos_por_paso_escolta": 1.4895572263993317
+      },
+      {
+        "seed": 82,
+        "kind": "lobos",
+        "sizes": [
+          2,
+          2
+        ],
+        "n_depredadas": 4,
+        "status": "predation",
+        "steps": 1223,
+        "pasos_escolta": 1001,
+        "pasos_2f": 202,
+        "pasos_2f_ambos": 25,
+        "dist_peor_media": 59.92345692083371,
+        "vel_active_media": 3.830023891658027,
+        "sustos_por_paso_escolta": 1.6163836163836163
+      },
+      {
+        "seed": 83,
+        "kind": "lobos",
+        "sizes": [
+          1,
+          3
+        ],
+        "n_depredadas": 2,
+        "status": "predation",
+        "steps": 1428,
+        "pasos_escolta": 1427,
+        "pasos_2f": 662,
+        "pasos_2f_ambos": 53,
+        "dist_peor_media": 189.47240136951518,
+        "vel_active_media": 3.7080822199925256,
+        "sustos_por_paso_escolta": 1.8850735809390329
+      },
+      {
+        "seed": 84,
+        "kind": "lobos",
+        "sizes": [
+          1,
+          2
+        ],
+        "n_depredadas": 4,
+        "status": "predation",
+        "steps": 1331,
+        "pasos_escolta": 1112,
+        "pasos_2f": 327,
+        "pasos_2f_ambos": 7,
+        "dist_peor_media": 94.07464288221561,
+        "vel_active_media": 3.967918469785257,
+        "sustos_por_paso_escolta": 1.0872302158273381
+      },
+      {
+        "seed": 88,
+        "kind": "lobos",
+        "sizes": [
+          2,
+          3
+        ],
+        "n_depredadas": 4,
+        "status": "predation",
+        "steps": 762,
+        "pasos_escolta": 755,
+        "pasos_2f": 367,
+        "pasos_2f_ambos": 0,
+        "dist_peor_media": 117.64014127891886,
+        "vel_active_media": 4.005305462194344,
+        "sustos_por_paso_escolta": 1.2158940397350992
+      },
+      {
+        "seed": 91,
+        "kind": "lobos",
+        "sizes": [
+          1,
+          4
+        ],
+        "n_depredadas": 4,
+        "status": "predation",
+        "steps": 690,
+        "pasos_escolta": 689,
+        "pasos_2f": 441,
+        "pasos_2f_ambos": 3,
+        "dist_peor_media": 145.90844784517387,
+        "vel_active_media": 3.67937634726119,
+        "sustos_por_paso_escolta": 1.7968069666182873
+      },
+      {
+        "seed": 94,
+        "kind": "lobos",
+        "sizes": [
+          1,
+          4
+        ],
+        "n_depredadas": 7,
+        "status": "predation",
+        "steps": 782,
+        "pasos_escolta": 767,
+        "pasos_2f": 181,
+        "pasos_2f_ambos": 3,
+        "dist_peor_media": 59.3211762940809,
+        "vel_active_media": 3.3281826886569617,
+        "sustos_por_paso_escolta": 0.9387222946544981
+      },
+      {
+        "seed": 95,
+        "kind": "lobos",
+        "sizes": [
+          1,
+          3
+        ],
+        "n_depredadas": 2,
+        "status": "predation",
+        "steps": 1106,
+        "pasos_escolta": 1105,
+        "pasos_2f": 784,
+        "pasos_2f_ambos": 52,
+        "dist_peor_media": 127.41504274872739,
+        "vel_active_media": 4.27892453243907,
+        "sustos_por_paso_escolta": 0.6579185520361991
+      },
+      {
+        "seed": 96,
+        "kind": "lobos",
+        "sizes": [
+          4,
+          1
+        ],
+        "n_depredadas": 3,
+        "status": "predation",
+        "steps": 795,
+        "pasos_escolta": 772,
+        "pasos_2f": 419,
+        "pasos_2f_ambos": 0,
+        "dist_peor_media": 142.27891656768497,
+        "vel_active_media": 3.569422011202253,
+        "sustos_por_paso_escolta": 1.1994818652849741
+      },
+      {
+        "seed": 2,
+        "kind": "mixto",
+        "sizes": [
+          2,
+          1
+        ],
+        "n_depredadas": 3,
+        "status": "predation",
+        "steps": 1141,
+        "pasos_escolta": 930,
+        "pasos_2f": 272,
+        "pasos_2f_ambos": 80,
+        "dist_peor_media": 52.119909429728224,
+        "vel_active_media": 3.95633233475716,
+        "sustos_por_paso_escolta": 1.2870967741935484
+      },
+      {
+        "seed": 12,
+        "kind": "mixto",
+        "sizes": [
+          2,
+          2
+        ],
+        "n_depredadas": 3,
+        "status": "predation",
+        "steps": 1451,
+        "pasos_escolta": 1407,
+        "pasos_2f": 368,
+        "pasos_2f_ambos": 19,
+        "dist_peor_media": 130.26707945438568,
+        "vel_active_media": 4.094366716032874,
+        "sustos_por_paso_escolta": 1.7867803837953091
+      },
+      {
+        "seed": 19,
+        "kind": "mixto",
+        "sizes": [
+          2,
+          2
+        ],
+        "n_depredadas": 3,
+        "status": "predation",
+        "steps": 1095,
+        "pasos_escolta": 1041,
+        "pasos_2f": 607,
+        "pasos_2f_ambos": 33,
+        "dist_peor_media": 160.30547445499968,
+        "vel_active_media": 4.26189178178095,
+        "sustos_por_paso_escolta": 1.0624399615754083
+      },
+      {
+        "seed": 26,
+        "kind": "mixto",
+        "sizes": [
+          1,
+          3
+        ],
+        "n_depredadas": 5,
+        "status": "predation",
+        "steps": 1570,
+        "pasos_escolta": 1527,
+        "pasos_2f": 375,
+        "pasos_2f_ambos": 0,
+        "dist_peor_media": 129.50713108142713,
+        "vel_active_media": 3.558727324422499,
+        "sustos_por_paso_escolta": 1.9679109364767517
+      },
+      {
+        "seed": 29,
+        "kind": "mixto",
+        "sizes": [
+          1,
+          2
+        ],
+        "n_depredadas": 1,
+        "status": "predation",
+        "steps": 14142,
+        "pasos_escolta": 14123,
+        "pasos_2f": 682,
+        "pasos_2f_ambos": 20,
+        "dist_peor_media": 153.30886682933505,
+        "vel_active_media": 2.43855180293848,
+        "sustos_por_paso_escolta": 0.12292005947744813
+      },
+      {
+        "seed": 37,
+        "kind": "mixto",
+        "sizes": [
+          2,
+          2
+        ],
+        "n_depredadas": 3,
+        "status": "predation",
+        "steps": 1043,
+        "pasos_escolta": 1022,
+        "pasos_2f": 492,
+        "pasos_2f_ambos": 40,
+        "dist_peor_media": 144.318934860632,
+        "vel_active_media": 4.158660711675012,
+        "sustos_por_paso_escolta": 1.3571428571428572
+      },
+      {
+        "seed": 40,
+        "kind": "mixto",
+        "sizes": [
+          2,
+          1
+        ],
+        "n_depredadas": 3,
+        "status": "predation",
+        "steps": 826,
+        "pasos_escolta": 779,
+        "pasos_2f": 424,
+        "pasos_2f_ambos": 72,
+        "dist_peor_media": 92.25578392002353,
+        "vel_active_media": 3.480203996728231,
+        "sustos_por_paso_escolta": 0.7689345314505777
+      },
+      {
+        "seed": 42,
+        "kind": "mixto",
+        "sizes": [
+          4,
+          1
+        ],
+        "n_depredadas": 2,
+        "status": "predation",
+        "steps": 737,
+        "pasos_escolta": 724,
+        "pasos_2f": 420,
+        "pasos_2f_ambos": 0,
+        "dist_peor_media": 135.54658998123853,
+        "vel_active_media": 4.369197860056162,
+        "sustos_por_paso_escolta": 1.2486187845303867
+      },
+      {
+        "seed": 43,
+        "kind": "mixto",
+        "sizes": [
+          3,
+          1
+        ],
+        "n_depredadas": 2,
+        "status": "predation",
+        "steps": 946,
+        "pasos_escolta": 921,
+        "pasos_2f": 460,
+        "pasos_2f_ambos": 68,
+        "dist_peor_media": 99.06371005585002,
+        "vel_active_media": 3.5118162593579147,
+        "sustos_por_paso_escolta": 0.3572204125950054
+      },
+      {
+        "seed": 45,
+        "kind": "mixto",
+        "sizes": [
+          2,
+          1
+        ],
+        "n_depredadas": 2,
+        "status": "predation",
+        "steps": 1585,
+        "pasos_escolta": 1539,
+        "pasos_2f": 259,
+        "pasos_2f_ambos": 5,
+        "dist_peor_media": 83.69211150940241,
+        "vel_active_media": 3.952254724181066,
+        "sustos_por_paso_escolta": 1.636127355425601
+      },
+      {
+        "seed": 46,
+        "kind": "mixto",
+        "sizes": [
+          3,
+          1
+        ],
+        "n_depredadas": 3,
+        "status": "predation",
+        "steps": 886,
+        "pasos_escolta": 777,
+        "pasos_2f": 362,
+        "pasos_2f_ambos": 2,
+        "dist_peor_media": 110.02793285207056,
+        "vel_active_media": 3.4998022767068333,
+        "sustos_por_paso_escolta": 0.8751608751608752
+      },
+      {
+        "seed": 48,
+        "kind": "mixto",
+        "sizes": [
+          1,
+          2
+        ],
+        "n_depredadas": 4,
+        "status": "predation",
+        "steps": 1164,
+        "pasos_escolta": 1163,
+        "pasos_2f": 601,
+        "pasos_2f_ambos": 19,
+        "dist_peor_media": 149.75706250775588,
+        "vel_active_media": 3.5320542278627003,
+        "sustos_por_paso_escolta": 0.8435081685296647
+      },
+      {
+        "seed": 49,
+        "kind": "mixto",
+        "sizes": [
+          2,
+          2
+        ],
+        "n_depredadas": 4,
+        "status": "predation",
+        "steps": 1438,
+        "pasos_escolta": 1388,
+        "pasos_2f": 599,
+        "pasos_2f_ambos": 10,
+        "dist_peor_media": 133.55937238981645,
+        "vel_active_media": 3.7323579248398393,
+        "sustos_por_paso_escolta": 1.4034582132564841
+      },
+      {
+        "seed": 52,
+        "kind": "mixto",
+        "sizes": [
+          3,
+          1
+        ],
+        "n_depredadas": 4,
+        "status": "predation",
+        "steps": 674,
+        "pasos_escolta": 659,
+        "pasos_2f": 339,
+        "pasos_2f_ambos": 0,
+        "dist_peor_media": 101.02020711010564,
+        "vel_active_media": 2.7092586449173384,
+        "sustos_por_paso_escolta": 0.708649468892261
+      },
+      {
+        "seed": 58,
+        "kind": "mixto",
+        "sizes": [
+          1,
+          3
+        ],
+        "n_depredadas": 3,
+        "status": "predation",
+        "steps": 1173,
+        "pasos_escolta": 1084,
+        "pasos_2f": 475,
+        "pasos_2f_ambos": 0,
+        "dist_peor_media": 106.96882444007757,
+        "vel_active_media": 3.7630282170456555,
+        "sustos_por_paso_escolta": 1.382841328413284
+      },
+      {
+        "seed": 60,
+        "kind": "mixto",
+        "sizes": [
+          2,
+          1
+        ],
+        "n_depredadas": 1,
+        "status": "predation",
+        "steps": 586,
+        "pasos_escolta": 559,
+        "pasos_2f": 234,
+        "pasos_2f_ambos": 42,
+        "dist_peor_media": 75.68612277532185,
+        "vel_active_media": 4.972012730405646,
+        "sustos_por_paso_escolta": 0.41323792486583183
+      },
+      {
+        "seed": 64,
+        "kind": "mixto",
+        "sizes": [
+          1,
+          2
+        ],
+        "n_depredadas": 3,
+        "status": "predation",
+        "steps": 942,
+        "pasos_escolta": 889,
+        "pasos_2f": 276,
+        "pasos_2f_ambos": 0,
+        "dist_peor_media": 88.29814384318232,
+        "vel_active_media": 3.7076364040773275,
+        "sustos_por_paso_escolta": 0.9178852643419573
+      },
+      {
+        "seed": 76,
+        "kind": "mixto",
+        "sizes": [
+          1,
+          3
+        ],
+        "n_depredadas": 1,
+        "status": "predation",
+        "steps": 815,
+        "pasos_escolta": 789,
+        "pasos_2f": 388,
+        "pasos_2f_ambos": 74,
+        "dist_peor_media": 110.35508591629102,
+        "vel_active_media": 3.631320380051352,
+        "sustos_por_paso_escolta": 1.4347275031685678
+      },
+      {
+        "seed": 77,
+        "kind": "mixto",
+        "sizes": [
+          4,
+          1
+        ],
+        "n_depredadas": 6,
+        "status": "predation",
+        "steps": 1248,
+        "pasos_escolta": 1187,
+        "pasos_2f": 307,
+        "pasos_2f_ambos": 53,
+        "dist_peor_media": 88.61658079447587,
+        "vel_active_media": 4.186862167823223,
+        "sustos_por_paso_escolta": 1.8466722830665543
+      },
+      {
+        "seed": 78,
+        "kind": "mixto",
+        "sizes": [
+          1,
+          2
+        ],
+        "n_depredadas": 4,
+        "status": "predation",
+        "steps": 1207,
+        "pasos_escolta": 1170,
+        "pasos_2f": 632,
+        "pasos_2f_ambos": 0,
+        "dist_peor_media": 169.08537640695766,
+        "vel_active_media": 3.588665422874091,
+        "sustos_por_paso_escolta": 0.6264957264957265
+      },
+      {
+        "seed": 81,
+        "kind": "mixto",
+        "sizes": [
+          3,
+          1
+        ],
+        "n_depredadas": 3,
+        "status": "predation",
+        "steps": 1114,
+        "pasos_escolta": 1096,
+        "pasos_2f": 355,
+        "pasos_2f_ambos": 5,
+        "dist_peor_media": 156.7694543387051,
+        "vel_active_media": 3.895549216102459,
+        "sustos_por_paso_escolta": 1.2007299270072993
+      },
+      {
+        "seed": 82,
+        "kind": "mixto",
+        "sizes": [
+          2,
+          2
+        ],
+        "n_depredadas": 3,
+        "status": "predation",
+        "steps": 1281,
+        "pasos_escolta": 1061,
+        "pasos_2f": 202,
+        "pasos_2f_ambos": 27,
+        "dist_peor_media": 68.30882285339511,
+        "vel_active_media": 3.5354854410996532,
+        "sustos_por_paso_escolta": 1.7351555136663526
+      },
+      {
+        "seed": 83,
+        "kind": "mixto",
+        "sizes": [
+          1,
+          3
+        ],
+        "n_depredadas": 3,
+        "status": "predation",
+        "steps": 1211,
+        "pasos_escolta": 1210,
+        "pasos_2f": 658,
+        "pasos_2f_ambos": 71,
+        "dist_peor_media": 186.6184212496337,
+        "vel_active_media": 3.820150091036986,
+        "sustos_por_paso_escolta": 1.5239669421487603
+      },
+      {
+        "seed": 84,
+        "kind": "mixto",
+        "sizes": [
+          1,
+          2
+        ],
+        "n_depredadas": 5,
+        "status": "predation",
+        "steps": 1244,
+        "pasos_escolta": 1021,
+        "pasos_2f": 322,
+        "pasos_2f_ambos": 0,
+        "dist_peor_media": 95.54813394832547,
+        "vel_active_media": 3.9644821955144103,
+        "sustos_por_paso_escolta": 0.9637610186092067
+      },
+      {
+        "seed": 88,
+        "kind": "mixto",
+        "sizes": [
+          2,
+          3
+        ],
+        "n_depredadas": 3,
+        "status": "predation",
+        "steps": 1406,
+        "pasos_escolta": 1395,
+        "pasos_2f": 379,
+        "pasos_2f_ambos": 22,
+        "dist_peor_media": 109.37645059684034,
+        "vel_active_media": 4.2398744246065885,
+        "sustos_por_paso_escolta": 2.721146953405018
+      },
+      {
+        "seed": 91,
+        "kind": "mixto",
+        "sizes": [
+          1,
+          4
+        ],
+        "n_depredadas": 4,
+        "status": "predation",
+        "steps": 742,
+        "pasos_escolta": 739,
+        "pasos_2f": 449,
+        "pasos_2f_ambos": 8,
+        "dist_peor_media": 143.34545873045045,
+        "vel_active_media": 3.989734303537329,
+        "sustos_por_paso_escolta": 1.8971583220568335
+      },
+      {
+        "seed": 94,
+        "kind": "mixto",
+        "sizes": [
+          1,
+          4
+        ],
+        "n_depredadas": 7,
+        "status": "predation",
+        "steps": 896,
+        "pasos_escolta": 881,
+        "pasos_2f": 180,
+        "pasos_2f_ambos": 2,
+        "dist_peor_media": 59.45616212212972,
+        "vel_active_media": 3.0914389794753983,
+        "sustos_por_paso_escolta": 0.8842224744608399
+      },
+      {
+        "seed": 95,
+        "kind": "mixto",
+        "sizes": [
+          1,
+          3
+        ],
+        "n_depredadas": 2,
+        "status": "predation",
+        "steps": 1060,
+        "pasos_escolta": 1059,
+        "pasos_2f": 772,
+        "pasos_2f_ambos": 60,
+        "dist_peor_media": 128.56599954630042,
+        "vel_active_media": 4.4114712846868285,
+        "sustos_por_paso_escolta": 0.6260623229461756
+      },
+      {
+        "seed": 96,
+        "kind": "mixto",
+        "sizes": [
+          4,
+          1
+        ],
+        "n_depredadas": 5,
+        "status": "predation",
+        "steps": 949,
+        "pasos_escolta": 878,
+        "pasos_2f": 346,
+        "pasos_2f_ambos": 0,
+        "dist_peor_media": 133.72472283296565,
+        "vel_active_media": 4.326419810673145,
+        "sustos_por_paso_escolta": 1.5193621867881548
+      }
+    ]
+  },
+  "politica": {
+    "resumen": {
+      "n_episodios_2grupos": 58,
+      "severidad_media_2grupos": 2.897,
+      "frac_pasos_2f": 0.396,
+      "frac_ambos_frentes_atendidos": 0.065,
+      "dist_frente_peor_atendido_m": 117.3,
+      "vel_drones_active_ms": 4.39,
+      "sustos_por_paso_escolta": 1.5
+    },
+    "episodes": [
+      {
+        "seed": 2,
+        "kind": "lobos",
+        "sizes": [
+          2,
+          1
+        ],
+        "n_depredadas": 2,
+        "status": "predation",
+        "steps": 1649,
+        "pasos_escolta": 1418,
+        "pasos_2f": 243,
+        "pasos_2f_ambos": 38,
+        "dist_peor_media": 64.205266641306,
+        "vel_active_media": 4.19141821019898,
+        "sustos_por_paso_escolta": 1.5620592383638927
+      },
+      {
+        "seed": 12,
+        "kind": "lobos",
+        "sizes": [
+          2,
+          2
+        ],
+        "n_depredadas": 4,
+        "status": "predation",
+        "steps": 1497,
+        "pasos_escolta": 1472,
+        "pasos_2f": 370,
+        "pasos_2f_ambos": 20,
+        "dist_peor_media": 139.37846364191893,
+        "vel_active_media": 4.546881344984323,
+        "sustos_por_paso_escolta": 1.9150815217391304
+      },
+      {
+        "seed": 19,
+        "kind": "lobos",
+        "sizes": [
+          2,
+          2
+        ],
+        "n_depredadas": 2,
+        "status": "predation",
+        "steps": 1523,
+        "pasos_escolta": 1477,
+        "pasos_2f": 555,
+        "pasos_2f_ambos": 6,
+        "dist_peor_media": 163.9879941778836,
+        "vel_active_media": 4.76166870763894,
+        "sustos_por_paso_escolta": 1.7095463777928233
+      },
+      {
+        "seed": 26,
+        "kind": "lobos",
+        "sizes": [
+          1,
+          3
+        ],
+        "n_depredadas": 2,
+        "status": "predation",
+        "steps": 1286,
+        "pasos_escolta": 1266,
+        "pasos_2f": 389,
+        "pasos_2f_ambos": 0,
+        "dist_peor_media": 141.08246693042852,
+        "vel_active_media": 4.491049116639661,
+        "sustos_por_paso_escolta": 2.154818325434439
+      },
+      {
+        "seed": 29,
+        "kind": "lobos",
+        "sizes": [
+          1,
+          2
+        ],
+        "n_depredadas": 2,
+        "status": "predation",
+        "steps": 1300,
+        "pasos_escolta": 1282,
+        "pasos_2f": 823,
+        "pasos_2f_ambos": 0,
+        "dist_peor_media": 144.4345568520027,
+        "vel_active_media": 4.305349314414757,
+        "sustos_por_paso_escolta": 1.24804992199688
+      },
+      {
+        "seed": 37,
+        "kind": "lobos",
+        "sizes": [
+          2,
+          2
+        ],
+        "n_depredadas": 2,
+        "status": "predation",
+        "steps": 1019,
+        "pasos_escolta": 998,
+        "pasos_2f": 477,
+        "pasos_2f_ambos": 0,
+        "dist_peor_media": 147.19970994707148,
+        "vel_active_media": 4.358987713717377,
+        "sustos_por_paso_escolta": 1.842685370741483
+      },
+      {
+        "seed": 40,
+        "kind": "lobos",
+        "sizes": [
+          2,
+          1
+        ],
+        "n_depredadas": 2,
+        "status": "predation",
+        "steps": 1526,
+        "pasos_escolta": 1482,
+        "pasos_2f": 379,
+        "pasos_2f_ambos": 11,
+        "dist_peor_media": 103.92815627585941,
+        "vel_active_media": 4.252199134239609,
+        "sustos_por_paso_escolta": 1.647098515519568
+      },
+      {
+        "seed": 42,
+        "kind": "lobos",
+        "sizes": [
+          4,
+          1
+        ],
+        "n_depredadas": 2,
+        "status": "predation",
+        "steps": 614,
+        "pasos_escolta": 601,
+        "pasos_2f": 390,
+        "pasos_2f_ambos": 65,
+        "dist_peor_media": 122.79129066048978,
+        "vel_active_media": 4.588197988965074,
+        "sustos_por_paso_escolta": 1.13477537437604
+      },
+      {
+        "seed": 43,
+        "kind": "lobos",
+        "sizes": [
+          3,
+          1
+        ],
+        "n_depredadas": 1,
+        "status": "predation",
+        "steps": 1051,
+        "pasos_escolta": 1028,
+        "pasos_2f": 509,
+        "pasos_2f_ambos": 119,
+        "dist_peor_media": 93.47602854645349,
+        "vel_active_media": 4.652883543176358,
+        "sustos_por_paso_escolta": 1.3239299610894941
+      },
+      {
+        "seed": 45,
+        "kind": "lobos",
+        "sizes": [
+          2,
+          1
+        ],
+        "n_depredadas": 2,
+        "status": "predation",
+        "steps": 1570,
+        "pasos_escolta": 1528,
+        "pasos_2f": 259,
+        "pasos_2f_ambos": 11,
+        "dist_peor_media": 97.48725618201031,
+        "vel_active_media": 4.402892876462048,
+        "sustos_por_paso_escolta": 1.6845549738219896
+      },
+      {
+        "seed": 46,
+        "kind": "lobos",
+        "sizes": [
+          3,
+          1
+        ],
+        "n_depredadas": 2,
+        "status": "predation",
+        "steps": 1009,
+        "pasos_escolta": 900,
+        "pasos_2f": 367,
+        "pasos_2f_ambos": 0,
+        "dist_peor_media": 108.84476441797733,
+        "vel_active_media": 4.3623859307980934,
+        "sustos_por_paso_escolta": 1.7222222222222223
+      },
+      {
+        "seed": 48,
+        "kind": "lobos",
+        "sizes": [
+          1,
+          2
+        ],
+        "n_depredadas": 4,
+        "status": "predation",
+        "steps": 1583,
+        "pasos_escolta": 1582,
+        "pasos_2f": 602,
+        "pasos_2f_ambos": 0,
+        "dist_peor_media": 145.1856689915264,
+        "vel_active_media": 3.9075859725814674,
+        "sustos_por_paso_escolta": 1.0916561314791404
+      },
+      {
+        "seed": 49,
+        "kind": "lobos",
+        "sizes": [
+          2,
+          2
+        ],
+        "n_depredadas": 5,
+        "status": "predation",
+        "steps": 1125,
+        "pasos_escolta": 1075,
+        "pasos_2f": 590,
+        "pasos_2f_ambos": 18,
+        "dist_peor_media": 132.3954461729327,
+        "vel_active_media": 4.450600623702001,
+        "sustos_por_paso_escolta": 1.321860465116279
+      },
+      {
+        "seed": 52,
+        "kind": "lobos",
+        "sizes": [
+          3,
+          1
+        ],
+        "n_depredadas": 3,
+        "status": "predation",
+        "steps": 864,
+        "pasos_escolta": 849,
+        "pasos_2f": 339,
+        "pasos_2f_ambos": 0,
+        "dist_peor_media": 101.15747674210401,
+        "vel_active_media": 3.7053440661596273,
+        "sustos_por_paso_escolta": 1.3215547703180213
+      },
+      {
+        "seed": 58,
+        "kind": "lobos",
+        "sizes": [
+          1,
+          3
+        ],
+        "n_depredadas": 2,
+        "status": "predation",
+        "steps": 1020,
+        "pasos_escolta": 937,
+        "pasos_2f": 490,
+        "pasos_2f_ambos": 49,
+        "dist_peor_media": 103.24051579446272,
+        "vel_active_media": 5.139817628833431,
+        "sustos_por_paso_escolta": 1.2870864461045892
+      },
+      {
+        "seed": 60,
+        "kind": "lobos",
+        "sizes": [
+          2,
+          1
+        ],
+        "n_depredadas": 1,
+        "status": "predation",
+        "steps": 586,
+        "pasos_escolta": 559,
+        "pasos_2f": 236,
+        "pasos_2f_ambos": 44,
+        "dist_peor_media": 75.25316384843438,
+        "vel_active_media": 5.337014149437296,
+        "sustos_por_paso_escolta": 0.554561717352415
+      },
+      {
+        "seed": 64,
+        "kind": "lobos",
+        "sizes": [
+          1,
+          2
+        ],
+        "n_depredadas": 3,
+        "status": "predation",
+        "steps": 968,
+        "pasos_escolta": 917,
+        "pasos_2f": 270,
+        "pasos_2f_ambos": 0,
+        "dist_peor_media": 93.80100690579445,
+        "vel_active_media": 4.208833803929174,
+        "sustos_por_paso_escolta": 0.9029443838604144
+      },
+      {
+        "seed": 76,
+        "kind": "lobos",
+        "sizes": [
+          1,
+          3
+        ],
+        "n_depredadas": 1,
+        "status": "predation",
+        "steps": 835,
+        "pasos_escolta": 809,
+        "pasos_2f": 331,
+        "pasos_2f_ambos": 21,
+        "dist_peor_media": 125.56223244905678,
+        "vel_active_media": 4.665565228583245,
+        "sustos_por_paso_escolta": 1.2941903584672436
+      },
+      {
+        "seed": 77,
+        "kind": "lobos",
+        "sizes": [
+          4,
+          1
+        ],
+        "n_depredadas": 6,
+        "status": "predation",
+        "steps": 1031,
+        "pasos_escolta": 970,
+        "pasos_2f": 313,
+        "pasos_2f_ambos": 58,
+        "dist_peor_media": 87.54586004853074,
+        "vel_active_media": 3.954628688429067,
+        "sustos_por_paso_escolta": 1.645360824742268
+      },
+      {
+        "seed": 78,
+        "kind": "lobos",
+        "sizes": [
+          1,
+          2
+        ],
+        "n_depredadas": 4,
+        "status": "predation",
+        "steps": 1266,
+        "pasos_escolta": 1229,
+        "pasos_2f": 692,
+        "pasos_2f_ambos": 7,
+        "dist_peor_media": 164.29171507974132,
+        "vel_active_media": 4.562298450134839,
+        "sustos_por_paso_escolta": 0.7550854353132628
+      },
+      {
+        "seed": 81,
+        "kind": "lobos",
+        "sizes": [
+          3,
+          1
+        ],
+        "n_depredadas": 3,
+        "status": "predation",
+        "steps": 1027,
+        "pasos_escolta": 1009,
+        "pasos_2f": 377,
+        "pasos_2f_ambos": 15,
+        "dist_peor_media": 148.39183684805198,
+        "vel_active_media": 4.522805396581435,
+        "sustos_por_paso_escolta": 1.354806739345887
+      },
+      {
+        "seed": 82,
+        "kind": "lobos",
+        "sizes": [
+          2,
+          2
+        ],
+        "n_depredadas": 3,
+        "status": "predation",
+        "steps": 2120,
+        "pasos_escolta": 1897,
+        "pasos_2f": 200,
+        "pasos_2f_ambos": 26,
+        "dist_peor_media": 59.23089236145523,
+        "vel_active_media": 3.8573448425702823,
+        "sustos_por_paso_escolta": 1.9604638903531892
+      },
+      {
+        "seed": 83,
+        "kind": "lobos",
+        "sizes": [
+          1,
+          3
+        ],
+        "n_depredadas": 3,
+        "status": "predation",
+        "steps": 957,
+        "pasos_escolta": 956,
+        "pasos_2f": 731,
+        "pasos_2f_ambos": 56,
+        "dist_peor_media": 184.53018736160928,
+        "vel_active_media": 4.792416766577346,
+        "sustos_por_paso_escolta": 1.3755230125523012
+      },
+      {
+        "seed": 84,
+        "kind": "lobos",
+        "sizes": [
+          1,
+          2
+        ],
+        "n_depredadas": 4,
+        "status": "predation",
+        "steps": 1345,
+        "pasos_escolta": 1134,
+        "pasos_2f": 323,
+        "pasos_2f_ambos": 0,
+        "dist_peor_media": 97.16568561046702,
+        "vel_active_media": 4.328917906575391,
+        "sustos_por_paso_escolta": 1.1481481481481481
+      },
+      {
+        "seed": 88,
+        "kind": "lobos",
+        "sizes": [
+          2,
+          3
+        ],
+        "n_depredadas": 2,
+        "status": "predation",
+        "steps": 1392,
+        "pasos_escolta": 1385,
+        "pasos_2f": 380,
+        "pasos_2f_ambos": 0,
+        "dist_peor_media": 122.33228474027362,
+        "vel_active_media": 4.140785657602195,
+        "sustos_por_paso_escolta": 2.784115523465704
+      },
+      {
+        "seed": 91,
+        "kind": "lobos",
+        "sizes": [
+          1,
+          4
+        ],
+        "n_depredadas": 3,
+        "status": "predation",
+        "steps": 1384,
+        "pasos_escolta": 1383,
+        "pasos_2f": 442,
+        "pasos_2f_ambos": 0,
+        "dist_peor_media": 140.24844036364325,
+        "vel_active_media": 4.079048436056238,
+        "sustos_por_paso_escolta": 2.6695589298626174
+      },
+      {
+        "seed": 94,
+        "kind": "lobos",
+        "sizes": [
+          1,
+          4
+        ],
+        "n_depredadas": 7,
+        "status": "predation",
+        "steps": 1137,
+        "pasos_escolta": 1122,
+        "pasos_2f": 181,
+        "pasos_2f_ambos": 7,
+        "dist_peor_media": 59.1116795669003,
+        "vel_active_media": 3.9835554329064995,
+        "sustos_por_paso_escolta": 1.5552584670231728
+      },
+      {
+        "seed": 95,
+        "kind": "lobos",
+        "sizes": [
+          1,
+          3
+        ],
+        "n_depredadas": 2,
+        "status": "predation",
+        "steps": 1174,
+        "pasos_escolta": 1173,
+        "pasos_2f": 789,
+        "pasos_2f_ambos": 84,
+        "dist_peor_media": 127.91668179819914,
+        "vel_active_media": 4.852354194134906,
+        "sustos_por_paso_escolta": 0.9394714407502132
+      },
+      {
+        "seed": 96,
+        "kind": "lobos",
+        "sizes": [
+          4,
+          1
+        ],
+        "n_depredadas": 3,
+        "status": "predation",
+        "steps": 1011,
+        "pasos_escolta": 988,
+        "pasos_2f": 417,
+        "pasos_2f_ambos": 0,
+        "dist_peor_media": 146.1412951148798,
+        "vel_active_media": 3.921015250739473,
+        "sustos_por_paso_escolta": 1.9342105263157894
+      },
+      {
+        "seed": 2,
+        "kind": "mixto",
+        "sizes": [
+          2,
+          1
+        ],
+        "n_depredadas": 3,
+        "status": "predation",
+        "steps": 1597,
+        "pasos_escolta": 1387,
+        "pasos_2f": 248,
+        "pasos_2f_ambos": 66,
+        "dist_peor_media": 57.99921490618956,
+        "vel_active_media": 4.177753186371784,
+        "sustos_por_paso_escolta": 1.2992069214131219
+      },
+      {
+        "seed": 12,
+        "kind": "mixto",
+        "sizes": [
+          2,
+          2
+        ],
+        "n_depredadas": 5,
+        "status": "predation",
+        "steps": 1298,
+        "pasos_escolta": 1254,
+        "pasos_2f": 360,
+        "pasos_2f_ambos": 47,
+        "dist_peor_media": 117.46276534278151,
+        "vel_active_media": 4.620416999647633,
+        "sustos_por_paso_escolta": 1.6523125996810208
+      },
+      {
+        "seed": 19,
+        "kind": "mixto",
+        "sizes": [
+          2,
+          2
+        ],
+        "n_depredadas": 3,
+        "status": "predation",
+        "steps": 1357,
+        "pasos_escolta": 1303,
+        "pasos_2f": 597,
+        "pasos_2f_ambos": 52,
+        "dist_peor_media": 156.65243789089078,
+        "vel_active_media": 4.310404462055368,
+        "sustos_por_paso_escolta": 1.4858019953952417
+      },
+      {
+        "seed": 26,
+        "kind": "mixto",
+        "sizes": [
+          1,
+          3
+        ],
+        "n_depredadas": 4,
+        "status": "predation",
+        "steps": 1107,
+        "pasos_escolta": 1064,
+        "pasos_2f": 375,
+        "pasos_2f_ambos": 0,
+        "dist_peor_media": 133.02505395593323,
+        "vel_active_media": 4.192282286689393,
+        "sustos_por_paso_escolta": 2.117481203007519
+      },
+      {
+        "seed": 29,
+        "kind": "mixto",
+        "sizes": [
+          1,
+          2
+        ],
+        "n_depredadas": 2,
+        "status": "predation",
+        "steps": 1252,
+        "pasos_escolta": 1233,
+        "pasos_2f": 794,
+        "pasos_2f_ambos": 27,
+        "dist_peor_media": 147.41972509129235,
+        "vel_active_media": 4.4685941922519605,
+        "sustos_por_paso_escolta": 1.3317112733171128
+      },
+      {
+        "seed": 37,
+        "kind": "mixto",
+        "sizes": [
+          2,
+          2
+        ],
+        "n_depredadas": 2,
+        "status": "predation",
+        "steps": 1072,
+        "pasos_escolta": 1051,
+        "pasos_2f": 480,
+        "pasos_2f_ambos": 0,
+        "dist_peor_media": 149.1299122741164,
+        "vel_active_media": 4.7693726248749035,
+        "sustos_por_paso_escolta": 1.7935299714557564
+      },
+      {
+        "seed": 40,
+        "kind": "mixto",
+        "sizes": [
+          2,
+          1
+        ],
+        "n_depredadas": 4,
+        "status": "predation",
+        "steps": 1324,
+        "pasos_escolta": 1277,
+        "pasos_2f": 394,
+        "pasos_2f_ambos": 62,
+        "dist_peor_media": 96.4967164355779,
+        "vel_active_media": 4.206002486980538,
+        "sustos_por_paso_escolta": 1.40407204385278
+      },
+      {
+        "seed": 42,
+        "kind": "mixto",
+        "sizes": [
+          4,
+          1
+        ],
+        "n_depredadas": 2,
+        "status": "predation",
+        "steps": 1075,
+        "pasos_escolta": 1062,
+        "pasos_2f": 431,
+        "pasos_2f_ambos": 0,
+        "dist_peor_media": 127.88910054549757,
+        "vel_active_media": 4.4048625874176235,
+        "sustos_por_paso_escolta": 1.984934086629002
+      },
+      {
+        "seed": 43,
+        "kind": "mixto",
+        "sizes": [
+          3,
+          1
+        ],
+        "n_depredadas": 2,
+        "status": "predation",
+        "steps": 943,
+        "pasos_escolta": 919,
+        "pasos_2f": 465,
+        "pasos_2f_ambos": 65,
+        "dist_peor_media": 100.05244670787435,
+        "vel_active_media": 3.7394017108378184,
+        "sustos_por_paso_escolta": 0.6126224156692056
+      },
+      {
+        "seed": 45,
+        "kind": "mixto",
+        "sizes": [
+          2,
+          1
+        ],
+        "n_depredadas": 2,
+        "status": "predation",
+        "steps": 1460,
+        "pasos_escolta": 1413,
+        "pasos_2f": 272,
+        "pasos_2f_ambos": 22,
+        "dist_peor_media": 79.11571334341025,
+        "vel_active_media": 4.296820515166829,
+        "sustos_por_paso_escolta": 1.5682944090587403
+      },
+      {
+        "seed": 46,
+        "kind": "mixto",
+        "sizes": [
+          3,
+          1
+        ],
+        "n_depredadas": 2,
+        "status": "predation",
+        "steps": 960,
+        "pasos_escolta": 851,
+        "pasos_2f": 366,
+        "pasos_2f_ambos": 0,
+        "dist_peor_media": 109.27801124642524,
+        "vel_active_media": 4.259108260990832,
+        "sustos_por_paso_escolta": 1.6321974148061105
+      },
+      {
+        "seed": 48,
+        "kind": "mixto",
+        "sizes": [
+          1,
+          2
+        ],
+        "n_depredadas": 4,
+        "status": "predation",
+        "steps": 1219,
+        "pasos_escolta": 1218,
+        "pasos_2f": 582,
+        "pasos_2f_ambos": 0,
+        "dist_peor_media": 149.7745208920759,
+        "vel_active_media": 3.8745711715195026,
+        "sustos_por_paso_escolta": 0.8448275862068966
+      },
+      {
+        "seed": 49,
+        "kind": "mixto",
+        "sizes": [
+          2,
+          2
+        ],
+        "n_depredadas": 5,
+        "status": "predation",
+        "steps": 902,
+        "pasos_escolta": 852,
+        "pasos_2f": 581,
+        "pasos_2f_ambos": 19,
+        "dist_peor_media": 135.65776363262793,
+        "vel_active_media": 4.706149040215992,
+        "sustos_por_paso_escolta": 1.0
+      },
+      {
+        "seed": 52,
+        "kind": "mixto",
+        "sizes": [
+          3,
+          1
+        ],
+        "n_depredadas": 3,
+        "status": "predation",
+        "steps": 871,
+        "pasos_escolta": 856,
+        "pasos_2f": 339,
+        "pasos_2f_ambos": 0,
+        "dist_peor_media": 101.11262472824545,
+        "vel_active_media": 3.768702604528367,
+        "sustos_por_paso_escolta": 1.4532710280373833
+      },
+      {
+        "seed": 58,
+        "kind": "mixto",
+        "sizes": [
+          1,
+          3
+        ],
+        "n_depredadas": 2,
+        "status": "predation",
+        "steps": 960,
+        "pasos_escolta": 871,
+        "pasos_2f": 495,
+        "pasos_2f_ambos": 63,
+        "dist_peor_media": 101.51247043398504,
+        "vel_active_media": 4.6430620771675635,
+        "sustos_por_paso_escolta": 1.2158438576349024
+      },
+      {
+        "seed": 60,
+        "kind": "mixto",
+        "sizes": [
+          2,
+          1
+        ],
+        "n_depredadas": 1,
+        "status": "predation",
+        "steps": 586,
+        "pasos_escolta": 559,
+        "pasos_2f": 249,
+        "pasos_2f_ambos": 57,
+        "dist_peor_media": 72.8540967147927,
+        "vel_active_media": 5.010274709204399,
+        "sustos_por_paso_escolta": 0.38640429338103754
+      },
+      {
+        "seed": 64,
+        "kind": "mixto",
+        "sizes": [
+          1,
+          2
+        ],
+        "n_depredadas": 3,
+        "status": "predation",
+        "steps": 1010,
+        "pasos_escolta": 957,
+        "pasos_2f": 269,
+        "pasos_2f_ambos": 0,
+        "dist_peor_media": 89.99365302704621,
+        "vel_active_media": 4.295899710454833,
+        "sustos_por_paso_escolta": 1.0752351097178683
+      },
+      {
+        "seed": 76,
+        "kind": "mixto",
+        "sizes": [
+          1,
+          3
+        ],
+        "n_depredadas": 1,
+        "status": "predation",
+        "steps": 837,
+        "pasos_escolta": 811,
+        "pasos_2f": 330,
+        "pasos_2f_ambos": 23,
+        "dist_peor_media": 125.01042398520367,
+        "vel_active_media": 4.349554153484517,
+        "sustos_por_paso_escolta": 1.2071516646115907
+      },
+      {
+        "seed": 77,
+        "kind": "mixto",
+        "sizes": [
+          4,
+          1
+        ],
+        "n_depredadas": 2,
+        "status": "predation",
+        "steps": 1637,
+        "pasos_escolta": 1576,
+        "pasos_2f": 307,
+        "pasos_2f_ambos": 52,
+        "dist_peor_media": 88.54242225230712,
+        "vel_active_media": 4.792152227663209,
+        "sustos_por_paso_escolta": 2.6484771573604062
+      },
+      {
+        "seed": 78,
+        "kind": "mixto",
+        "sizes": [
+          1,
+          2
+        ],
+        "n_depredadas": 4,
+        "status": "predation",
+        "steps": 1830,
+        "pasos_escolta": 1793,
+        "pasos_2f": 683,
+        "pasos_2f_ambos": 4,
+        "dist_peor_media": 164.66466998674028,
+        "vel_active_media": 4.000782174588245,
+        "sustos_por_paso_escolta": 0.8583379810373676
+      },
+      {
+        "seed": 81,
+        "kind": "mixto",
+        "sizes": [
+          3,
+          1
+        ],
+        "n_depredadas": 3,
+        "status": "predation",
+        "steps": 1325,
+        "pasos_escolta": 1307,
+        "pasos_2f": 374,
+        "pasos_2f_ambos": 16,
+        "dist_peor_media": 148.05727810098543,
+        "vel_active_media": 4.662852796123323,
+        "sustos_por_paso_escolta": 1.811017597551645
+      },
+      {
+        "seed": 82,
+        "kind": "mixto",
+        "sizes": [
+          2,
+          2
+        ],
+        "n_depredadas": 2,
+        "status": "predation",
+        "steps": 1161,
+        "pasos_escolta": 940,
+        "pasos_2f": 202,
+        "pasos_2f_ambos": 26,
+        "dist_peor_media": 66.580024931092,
+        "vel_active_media": 4.580154463443702,
+        "sustos_por_paso_escolta": 1.9585106382978723
+      },
+      {
+        "seed": 83,
+        "kind": "mixto",
+        "sizes": [
+          1,
+          3
+        ],
+        "n_depredadas": 2,
+        "status": "predation",
+        "steps": 1089,
+        "pasos_escolta": 1088,
+        "pasos_2f": 722,
+        "pasos_2f_ambos": 32,
+        "dist_peor_media": 186.65530599212454,
+        "vel_active_media": 5.0740253974249,
+        "sustos_por_paso_escolta": 2.03125
+      },
+      {
+        "seed": 84,
+        "kind": "mixto",
+        "sizes": [
+          1,
+          2
+        ],
+        "n_depredadas": 4,
+        "status": "predation",
+        "steps": 1550,
+        "pasos_escolta": 1334,
+        "pasos_2f": 330,
+        "pasos_2f_ambos": 0,
+        "dist_peor_media": 95.66900271627537,
+        "vel_active_media": 3.994165645618027,
+        "sustos_por_paso_escolta": 1.197151424287856
+      },
+      {
+        "seed": 88,
+        "kind": "mixto",
+        "sizes": [
+          2,
+          3
+        ],
+        "n_depredadas": 4,
+        "status": "predation",
+        "steps": 1217,
+        "pasos_escolta": 1206,
+        "pasos_2f": 386,
+        "pasos_2f_ambos": 77,
+        "dist_peor_media": 102.04200039072863,
+        "vel_active_media": 4.938203630516081,
+        "sustos_por_paso_escolta": 2.111111111111111
+      },
+      {
+        "seed": 91,
+        "kind": "mixto",
+        "sizes": [
+          1,
+          4
+        ],
+        "n_depredadas": 3,
+        "status": "predation",
+        "steps": 801,
+        "pasos_escolta": 798,
+        "pasos_2f": 463,
+        "pasos_2f_ambos": 0,
+        "dist_peor_media": 137.30638483985283,
+        "vel_active_media": 4.537489339123759,
+        "sustos_por_paso_escolta": 2.0588972431077694
+      },
+      {
+        "seed": 94,
+        "kind": "mixto",
+        "sizes": [
+          1,
+          4
+        ],
+        "n_depredadas": 7,
+        "status": "predation",
+        "steps": 876,
+        "pasos_escolta": 861,
+        "pasos_2f": 180,
+        "pasos_2f_ambos": 7,
+        "dist_peor_media": 59.274392050434805,
+        "vel_active_media": 4.230486713300805,
+        "sustos_por_paso_escolta": 1.2601626016260163
+      },
+      {
+        "seed": 95,
+        "kind": "mixto",
+        "sizes": [
+          1,
+          3
+        ],
+        "n_depredadas": 2,
+        "status": "predation",
+        "steps": 1113,
+        "pasos_escolta": 1112,
+        "pasos_2f": 751,
+        "pasos_2f_ambos": 110,
+        "dist_peor_media": 127.51613442411303,
+        "vel_active_media": 4.272359668529076,
+        "sustos_por_paso_escolta": 0.8066546762589928
+      },
+      {
+        "seed": 96,
+        "kind": "mixto",
+        "sizes": [
+          4,
+          1
+        ],
+        "n_depredadas": 3,
+        "status": "predation",
+        "steps": 1357,
+        "pasos_escolta": 1284,
+        "pasos_2f": 377,
+        "pasos_2f_ambos": 0,
+        "dist_peor_media": 135.96076096944466,
+        "vel_active_media": 4.370525232781267,
+        "sustos_por_paso_escolta": 2.372274143302181
+      }
+    ]
+  }
+}

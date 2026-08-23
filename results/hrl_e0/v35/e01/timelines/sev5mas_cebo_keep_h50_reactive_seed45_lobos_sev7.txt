@@ -1,0 +1,31 @@
+sev5mas_cebo_keep_h50_reactive_seed45_lobos_sev7 | arm=cebo_keep_h50_reactive status=predation sev=7 steps=1395 grupos=[1, 2] | muertes con procedencia al final
+t=     0  OPTION_START     option=CEBO hold=50.0 membership=keep
+t=     9  SHOW_START       mode=keep
+t=     9  STAGED
+t=   426  ESCOLTA_LATCH
+t=   427  CONFIRM_DECOY    wolf=0
+t=   427  ANCHOR_FLIP      frm=None to=0
+t=   517  LURE_COMMIT      drones_cono=4 puerta_libre_m=60.4
+t=   636  LURE_COMMIT_END
+t=   822  DEATH            kind=calf prey=1 flankers=[1]
+t=   822  STRIKE_RESOLVED  outcome=kill latencia=813
+t=   895  LURE_COMMIT      drones_cono=4 puerta_libre_m=60.7
+t=   908  DEATH            kind=calf prey=0 flankers=[2]
+t=   992  DEATH            kind=adult prey=2 flankers=[1, 2]
+t=  1074  LURE_COMMIT_END
+t=  1074  DEATH            kind=adult prey=3 flankers=[1, 2]
+t=  1170  LURE_COMMIT      drones_cono=4 puerta_libre_m=60.0
+t=  1229  LURE_COMMIT_END
+t=  1229  DEATH            kind=adult prey=4 flankers=[1, 2]
+t=  1351  LURE_COMMIT      drones_cono=4 puerta_libre_m=62.4
+t=  1356  LURE_COMMIT_END
+t=  1378  DEATH            kind=adult prey=0 flankers=[1, 2]
+t=  1395  DEATH            kind=adult prey=5 flankers=[0, 1]
+t=  1395  HERD_SAFE        n_safe=1 n_muertas=7
+t=   822  MUERTE calf#1 flankers=[1] conf=[True] nearest=1(conf=True) grupo=2 octante=7 gotera=False dflip=395
+t=   908  MUERTE calf#0 flankers=[2] conf=[True] nearest=2(conf=True) grupo=2 octante=5 gotera=False dflip=481
+t=   992  MUERTE adult#2 flankers=[1, 2] conf=[True, True] nearest=2(conf=True) grupo=2 octante=3 gotera=False dflip=565
+t=  1074  MUERTE adult#3 flankers=[1, 2] conf=[True, True] nearest=2(conf=True) grupo=2 octante=3 gotera=False dflip=647
+t=  1229  MUERTE adult#4 flankers=[1, 2] conf=[True, True] nearest=1(conf=True) grupo=2 octante=4 gotera=False dflip=802
+t=  1378  MUERTE adult#0 flankers=[1, 2] conf=[True, True] nearest=1(conf=True) grupo=2 octante=3 gotera=False dflip=951
+t=  1395  MUERTE adult#5 flankers=[0, 1] conf=[True, True] nearest=1(conf=True) grupo=2 octante=2 gotera=False dflip=968

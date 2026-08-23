@@ -1,0 +1,4 @@
+gemelo_seed21 | seed=21 lobos n=4 G=False sev_eval=0 jugada={'t_staged': 468, 't_show': 469, 't_suelta': 775, 't_strike': None, 'completa': True} stalls=0 | oracle sev=0
+t=     0  DECISION #1   CEBO_d90   -> FIN_EPISODIO      ticks= 2056 r=0.00
+t=   422  capa ALIGN_END causa=sin_progreso err_deg=82.8 ticks=422
+t=   469  capa SHOW_START mode=manager staged_causa=meseta err_rumbo_deg=86.7 delta_pretendida_deg=90.0

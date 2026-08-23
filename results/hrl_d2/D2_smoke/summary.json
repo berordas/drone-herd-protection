@@ -1,0 +1,34 @@
+{
+ "macro_pasos": 2048,
+ "segundos": 339.7,
+ "fps": 6.03,
+ "nan": false,
+ "eval_final": {
+  "sev_media": 0.35,
+  "sev_por_atacante": {
+   "natural": 0.0,
+   "manager": 0.7
+  },
+  "P_a_1cluster": {
+   "4-0": 0.0,
+   "3-1": 1.0,
+   "2-2": 0.0
+  },
+  "P_a_2clusters": {
+   "4-0": 0.0,
+   "3-1": 1.0,
+   "2-2": 0.0
+  },
+  "P_guardia_2clusters": 1.0,
+  "interrupciones_por_ep": 25.525,
+  "cambios_por_ep": 0.0,
+  "stalls_total": 125,
+  "delib_por_ep": 0.0,
+  "penetrado_medio": 617.05,
+  "decisiones_media": 27.0,
+  "entropia_media": 1.0857664047567932,
+  "jugada_completa_atacante": 0.6,
+  "pasos": 2048,
+  "final": true
+ }
+}

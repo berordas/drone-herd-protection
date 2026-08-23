@@ -1,0 +1,18 @@
+primer_lure_seed9_mixto_sev3 | arm=cebo_capa_manager status=predation sev=3 steps=2088 grupos=[4] | muertes con procedencia al final
+t=     0  OPTION_START     option=CEBO delta_deg=180.0
+t=  1271  ESCOLTA_LATCH
+t=  1272  CONFIRM_DECOY    wolf=0
+t=  1272  ANCHOR_FLIP      frm=None to=0
+t=  1826  DEATH            kind=calf prey=0 flankers=[2]
+t=  1903  LURE_COMMIT      drones_cono=4 puerta_libre_m=60.2
+t=  1969  LURE_COMMIT_END
+t=  1979  LURE_COMMIT      drones_cono=4 puerta_libre_m=60.3
+t=  1984  LURE_COMMIT_END
+t=  1984  DEATH            kind=adult prey=5 flankers=[1, 2]
+t=  2084  LURE_COMMIT      drones_cono=4 puerta_libre_m=60.2
+t=  2088  LURE_COMMIT_END
+t=  2088  DEATH            kind=adult prey=4 flankers=[1, 2]
+t=  2088  HERD_SAFE        n_safe=4 n_muertas=3
+t=  1826  MUERTE calf#0 flankers=[2] conf=[True] nearest=2(conf=True) grupo=None octante=0 gotera=True dflip=554
+t=  1984  MUERTE adult#5 flankers=[1, 2] conf=[True, True] nearest=2(conf=True) grupo=None octante=2 gotera=True dflip=712
+t=  2088  MUERTE adult#4 flankers=[1, 2] conf=[True, True] nearest=2(conf=True) grupo=None octante=7 gotera=True dflip=816

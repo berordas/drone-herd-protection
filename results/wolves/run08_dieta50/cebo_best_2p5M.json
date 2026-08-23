@@ -1,0 +1,3292 @@
+{
+  "model": "/data/wolves/run08_dieta50/checkpoints/ppo_wolves_2500000_steps.zip",
+  "fecha": "2026-08-05T11:13:35",
+  "kinds": [
+    "lobos",
+    "mixto"
+  ],
+  "n_seeds": 100,
+  "resumen": {
+    "n_episodios_2grupos": 58,
+    "severidad_media_2grupos": 3.362,
+    "n_muertes": 195,
+    "frac_pasos_un_grupo_visto": 0.205,
+    "frac_muertes_no_anclado": 0.749,
+    "n_muertes_barrera_ciega": 0,
+    "frac_sujecion_en_no_anclado": 1.0,
+    "frac_cebo_puro": 0.0,
+    "frac_killer_no_detectado": 0.0,
+    "frac_killer_no_confirmado": 0.21,
+    "frac_cebo_confirmado": 0.21,
+    "frac_pasos_un_grupo_confirmado": 0.497,
+    "sep_frentes_media_en_muertes": 44.9
+  },
+  "episodes": [
+    {
+      "seed": 2,
+      "kind": "lobos",
+      "sizes": [
+        1,
+        2
+      ],
+      "n_depredadas": 5,
+      "status": "predation",
+      "steps": 1790,
+      "steps_escolta": 805,
+      "steps_un_grupo_visto": 0,
+      "steps_un_grupo_confirmado": 613,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": false,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": true,
+          "sep_frentes": 61.1
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": false,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": true,
+          "sep_frentes": 79.1
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 21.0
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 14.8
+        },
+        {
+          "grupo_killer": 1,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": false,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 3.0
+        }
+      ]
+    },
+    {
+      "seed": 12,
+      "kind": "lobos",
+      "sizes": [
+        1,
+        3
+      ],
+      "n_depredadas": 2,
+      "status": "predation",
+      "steps": 1825,
+      "steps_escolta": 1738,
+      "steps_un_grupo_visto": 590,
+      "steps_un_grupo_confirmado": 759,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": false,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 31.4
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": false,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 6.4
+        }
+      ]
+    },
+    {
+      "seed": 19,
+      "kind": "lobos",
+      "sizes": [
+        1,
+        3
+      ],
+      "n_depredadas": 2,
+      "status": "predation",
+      "steps": 2571,
+      "steps_escolta": 1047,
+      "steps_un_grupo_visto": 16,
+      "steps_un_grupo_confirmado": 243,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": false,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 15.2
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": false,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 17.1
+        }
+      ]
+    },
+    {
+      "seed": 26,
+      "kind": "lobos",
+      "sizes": [
+        1,
+        3
+      ],
+      "n_depredadas": 2,
+      "status": "predation",
+      "steps": 1196,
+      "steps_escolta": 1115,
+      "steps_un_grupo_visto": 687,
+      "steps_un_grupo_confirmado": 1115,
+      "kills": [
+        {
+          "grupo_killer": 1,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": false,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": true,
+          "sep_frentes": 14.2
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": false,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": false,
+          "cebo_confirmado": false,
+          "sep_frentes": 3.6
+        }
+      ]
+    },
+    {
+      "seed": 29,
+      "kind": "lobos",
+      "sizes": [
+        1,
+        2
+      ],
+      "n_depredadas": 2,
+      "status": "predation",
+      "steps": 2295,
+      "steps_escolta": 1183,
+      "steps_un_grupo_visto": 241,
+      "steps_un_grupo_confirmado": 389,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 16.6
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 3.8
+        }
+      ]
+    },
+    {
+      "seed": 37,
+      "kind": "lobos",
+      "sizes": [
+        1,
+        3
+      ],
+      "n_depredadas": 6,
+      "status": "predation",
+      "steps": 2925,
+      "steps_escolta": 982,
+      "steps_un_grupo_visto": 186,
+      "steps_un_grupo_confirmado": 351,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 29.4
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 29.6
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 61.9
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 37.8
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 38.5
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 5.5
+        }
+      ]
+    },
+    {
+      "seed": 40,
+      "kind": "lobos",
+      "sizes": [
+        1,
+        2
+      ],
+      "n_depredadas": 6,
+      "status": "predation",
+      "steps": 1797,
+      "steps_escolta": 1161,
+      "steps_un_grupo_visto": 34,
+      "steps_un_grupo_confirmado": 218,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 49.9
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 61.1
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 69.0
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 46.0
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 41.3
+        },
+        {
+          "grupo_killer": 1,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": false,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 2.5
+        }
+      ]
+    },
+    {
+      "seed": 42,
+      "kind": "lobos",
+      "sizes": [
+        1,
+        4
+      ],
+      "n_depredadas": 2,
+      "status": "predation",
+      "steps": 971,
+      "steps_escolta": 853,
+      "steps_un_grupo_visto": 162,
+      "steps_un_grupo_confirmado": 853,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": false,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": true,
+          "sep_frentes": 90.5
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": false,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": true,
+          "sep_frentes": 42.9
+        }
+      ]
+    },
+    {
+      "seed": 43,
+      "kind": "lobos",
+      "sizes": [
+        1,
+        3
+      ],
+      "n_depredadas": 0,
+      "status": "timeout",
+      "steps": 23570,
+      "steps_escolta": 23484,
+      "steps_un_grupo_visto": 627,
+      "steps_un_grupo_confirmado": 740,
+      "kills": []
+    },
+    {
+      "seed": 45,
+      "kind": "lobos",
+      "sizes": [
+        1,
+        2
+      ],
+      "n_depredadas": 5,
+      "status": "predation",
+      "steps": 1630,
+      "steps_escolta": 1149,
+      "steps_un_grupo_visto": 111,
+      "steps_un_grupo_confirmado": 329,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 49.2
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 65.1
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 68.8
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 44.8
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 6.8
+        }
+      ]
+    },
+    {
+      "seed": 46,
+      "kind": "lobos",
+      "sizes": [
+        1,
+        3
+      ],
+      "n_depredadas": 5,
+      "status": "predation",
+      "steps": 2163,
+      "steps_escolta": 1057,
+      "steps_un_grupo_visto": 251,
+      "steps_un_grupo_confirmado": 353,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 57.5
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 74.4
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 69.3
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 60.4
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 20.6
+        }
+      ]
+    },
+    {
+      "seed": 48,
+      "kind": "lobos",
+      "sizes": [
+        1,
+        2
+      ],
+      "n_depredadas": 2,
+      "status": "predation",
+      "steps": 1387,
+      "steps_escolta": 1310,
+      "steps_un_grupo_visto": 172,
+      "steps_un_grupo_confirmado": 1164,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 70.5
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 48.4
+        }
+      ]
+    },
+    {
+      "seed": 49,
+      "kind": "lobos",
+      "sizes": [
+        1,
+        3
+      ],
+      "n_depredadas": 5,
+      "status": "predation",
+      "steps": 2218,
+      "steps_escolta": 1116,
+      "steps_un_grupo_visto": 27,
+      "steps_un_grupo_confirmado": 178,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": false,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": true,
+          "sep_frentes": 55.8
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 54.3
+        },
+        {
+          "grupo_killer": 1,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": false,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 6.6
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 33.2
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 5.8
+        }
+      ]
+    },
+    {
+      "seed": 52,
+      "kind": "lobos",
+      "sizes": [
+        1,
+        3
+      ],
+      "n_depredadas": 3,
+      "status": "predation",
+      "steps": 4505,
+      "steps_escolta": 1468,
+      "steps_un_grupo_visto": 231,
+      "steps_un_grupo_confirmado": 455,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 35.4
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 55.7
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 7.8
+        }
+      ]
+    },
+    {
+      "seed": 58,
+      "kind": "lobos",
+      "sizes": [
+        1,
+        3
+      ],
+      "n_depredadas": 6,
+      "status": "predation",
+      "steps": 3302,
+      "steps_escolta": 1012,
+      "steps_un_grupo_visto": 226,
+      "steps_un_grupo_confirmado": 366,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 29.6
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": false,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": true,
+          "sep_frentes": 54.4
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 33.3
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 22.3
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 26.7
+        },
+        {
+          "grupo_killer": 1,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": false,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 7.7
+        }
+      ]
+    },
+    {
+      "seed": 60,
+      "kind": "lobos",
+      "sizes": [
+        1,
+        2
+      ],
+      "n_depredadas": 1,
+      "status": "predation",
+      "steps": 870,
+      "steps_escolta": 765,
+      "steps_un_grupo_visto": 311,
+      "steps_un_grupo_confirmado": 553,
+      "kills": [
+        {
+          "grupo_killer": 1,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 10.7
+        }
+      ]
+    },
+    {
+      "seed": 64,
+      "kind": "lobos",
+      "sizes": [
+        1,
+        2
+      ],
+      "n_depredadas": 5,
+      "status": "predation",
+      "steps": 1097,
+      "steps_escolta": 783,
+      "steps_un_grupo_visto": 232,
+      "steps_un_grupo_confirmado": 345,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 68.0
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 60.5
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 64.1
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 51.2
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 5.9
+        }
+      ]
+    },
+    {
+      "seed": 76,
+      "kind": "lobos",
+      "sizes": [
+        1,
+        3
+      ],
+      "n_depredadas": 5,
+      "status": "predation",
+      "steps": 1477,
+      "steps_escolta": 1020,
+      "steps_un_grupo_visto": 224,
+      "steps_un_grupo_confirmado": 1020,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": false,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": true,
+          "sep_frentes": 79.5
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": false,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": true,
+          "sep_frentes": 62.0
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": false,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": true,
+          "sep_frentes": 66.9
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": false,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": true,
+          "sep_frentes": 62.0
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": false,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": true,
+          "sep_frentes": 4.5
+        }
+      ]
+    },
+    {
+      "seed": 77,
+      "kind": "lobos",
+      "sizes": [
+        1,
+        4
+      ],
+      "n_depredadas": 6,
+      "status": "predation",
+      "steps": 5821,
+      "steps_escolta": 1365,
+      "steps_un_grupo_visto": 145,
+      "steps_un_grupo_confirmado": 374,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 50.1
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 21.5
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 47.7
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 52.6
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 50.5
+        },
+        {
+          "grupo_killer": 1,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": false,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 5.5
+        }
+      ]
+    },
+    {
+      "seed": 78,
+      "kind": "lobos",
+      "sizes": [
+        1,
+        2
+      ],
+      "n_depredadas": 6,
+      "status": "predation",
+      "steps": 3024,
+      "steps_escolta": 792,
+      "steps_un_grupo_visto": 111,
+      "steps_un_grupo_confirmado": 792,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": false,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": true,
+          "sep_frentes": 97.2
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": false,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": true,
+          "sep_frentes": 81.2
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": false,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": true,
+          "sep_frentes": 77.5
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": false,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": true,
+          "sep_frentes": 68.8
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": false,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": true,
+          "sep_frentes": 58.5
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": false,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": true,
+          "sep_frentes": 29.2
+        }
+      ]
+    },
+    {
+      "seed": 81,
+      "kind": "lobos",
+      "sizes": [
+        1,
+        3
+      ],
+      "n_depredadas": 2,
+      "status": "predation",
+      "steps": 1068,
+      "steps_escolta": 983,
+      "steps_un_grupo_visto": 669,
+      "steps_un_grupo_confirmado": 840,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": false,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": false,
+          "cebo_confirmado": false,
+          "sep_frentes": 75.4
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": false,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 4.6
+        }
+      ]
+    },
+    {
+      "seed": 82,
+      "kind": "lobos",
+      "sizes": [
+        1,
+        3
+      ],
+      "n_depredadas": 3,
+      "status": "predation",
+      "steps": 2637,
+      "steps_escolta": 1148,
+      "steps_un_grupo_visto": 191,
+      "steps_un_grupo_confirmado": 1005,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": false,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": true,
+          "sep_frentes": 44.6
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": false,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": true,
+          "sep_frentes": 48.5
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 7.6
+        }
+      ]
+    },
+    {
+      "seed": 83,
+      "kind": "lobos",
+      "sizes": [
+        1,
+        3
+      ],
+      "n_depredadas": 6,
+      "status": "predation",
+      "steps": 1273,
+      "steps_escolta": 1204,
+      "steps_un_grupo_visto": 973,
+      "steps_un_grupo_confirmado": 1204,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": false,
+          "otro_grupo_detectado": false,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": false,
+          "cebo_confirmado": false,
+          "sep_frentes": 284.8
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": false,
+          "otro_grupo_detectado": false,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": false,
+          "cebo_confirmado": false,
+          "sep_frentes": 132.4
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": false,
+          "otro_grupo_detectado": false,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": false,
+          "cebo_confirmado": false,
+          "sep_frentes": 98.7
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": false,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": false,
+          "cebo_confirmado": false,
+          "sep_frentes": 54.4
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": false,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": false,
+          "cebo_confirmado": false,
+          "sep_frentes": 24.9
+        },
+        {
+          "grupo_killer": 1,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": false,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": true,
+          "sep_frentes": 4.6
+        }
+      ]
+    },
+    {
+      "seed": 84,
+      "kind": "lobos",
+      "sizes": [
+        1,
+        2
+      ],
+      "n_depredadas": 2,
+      "status": "predation",
+      "steps": 3669,
+      "steps_escolta": 1658,
+      "steps_un_grupo_visto": 0,
+      "steps_un_grupo_confirmado": 240,
+      "kills": [
+        {
+          "grupo_killer": 1,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 31.7
+        },
+        {
+          "grupo_killer": 1,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 17.3
+        }
+      ]
+    },
+    {
+      "seed": 88,
+      "kind": "lobos",
+      "sizes": [
+        1,
+        4
+      ],
+      "n_depredadas": 4,
+      "status": "predation",
+      "steps": 1165,
+      "steps_escolta": 1075,
+      "steps_un_grupo_visto": 191,
+      "steps_un_grupo_confirmado": 670,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 88.5
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 65.4
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 26.4
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 7.2
+        }
+      ]
+    },
+    {
+      "seed": 91,
+      "kind": "lobos",
+      "sizes": [
+        1,
+        4
+      ],
+      "n_depredadas": 3,
+      "status": "predation",
+      "steps": 1216,
+      "steps_escolta": 1135,
+      "steps_un_grupo_visto": 586,
+      "steps_un_grupo_confirmado": 729,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": false,
+          "otro_grupo_detectado": false,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": false,
+          "cebo_confirmado": false,
+          "sep_frentes": 166.1
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": false,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 29.8
+        },
+        {
+          "grupo_killer": 1,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 6.7
+        }
+      ]
+    },
+    {
+      "seed": 94,
+      "kind": "lobos",
+      "sizes": [
+        1,
+        4
+      ],
+      "n_depredadas": 6,
+      "status": "predation",
+      "steps": 1790,
+      "steps_escolta": 1681,
+      "steps_un_grupo_visto": 90,
+      "steps_un_grupo_confirmado": 267,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 32.4
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 36.7
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 36.4
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 54.8
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 78.8
+        },
+        {
+          "grupo_killer": 1,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": false,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 11.7
+        }
+      ]
+    },
+    {
+      "seed": 95,
+      "kind": "lobos",
+      "sizes": [
+        1,
+        3
+      ],
+      "n_depredadas": 1,
+      "status": "predation",
+      "steps": 1455,
+      "steps_escolta": 1344,
+      "steps_un_grupo_visto": 158,
+      "steps_un_grupo_confirmado": 889,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 31.1
+        }
+      ]
+    },
+    {
+      "seed": 96,
+      "kind": "lobos",
+      "sizes": [
+        1,
+        4
+      ],
+      "n_depredadas": 3,
+      "status": "predation",
+      "steps": 1263,
+      "steps_escolta": 702,
+      "steps_un_grupo_visto": 174,
+      "steps_un_grupo_confirmado": 327,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 120.7
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 67.6
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": false,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": true,
+          "sep_frentes": 34.8
+        }
+      ]
+    },
+    {
+      "seed": 2,
+      "kind": "mixto",
+      "sizes": [
+        1,
+        2
+      ],
+      "n_depredadas": 3,
+      "status": "predation",
+      "steps": 3128,
+      "steps_escolta": 2192,
+      "steps_un_grupo_visto": 12,
+      "steps_un_grupo_confirmado": 2192,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": false,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": false,
+          "cebo_confirmado": false,
+          "sep_frentes": 62.9
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": false,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": false,
+          "cebo_confirmado": false,
+          "sep_frentes": 70.1
+        },
+        {
+          "grupo_killer": 1,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": false,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": true,
+          "sep_frentes": 3.3
+        }
+      ]
+    },
+    {
+      "seed": 12,
+      "kind": "mixto",
+      "sizes": [
+        1,
+        3
+      ],
+      "n_depredadas": 3,
+      "status": "predation",
+      "steps": 1569,
+      "steps_escolta": 1480,
+      "steps_un_grupo_visto": 580,
+      "steps_un_grupo_confirmado": 827,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": false,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 30.7
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": false,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 33.8
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": false,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 6.8
+        }
+      ]
+    },
+    {
+      "seed": 19,
+      "kind": "mixto",
+      "sizes": [
+        1,
+        3
+      ],
+      "n_depredadas": 2,
+      "status": "predation",
+      "steps": 2018,
+      "steps_escolta": 1048,
+      "steps_un_grupo_visto": 533,
+      "steps_un_grupo_confirmado": 724,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": false,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 15.0
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": false,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 4.7
+        }
+      ]
+    },
+    {
+      "seed": 26,
+      "kind": "mixto",
+      "sizes": [
+        1,
+        3
+      ],
+      "n_depredadas": 2,
+      "status": "predation",
+      "steps": 23570,
+      "steps_escolta": 23496,
+      "steps_un_grupo_visto": 609,
+      "steps_un_grupo_confirmado": 720,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": false,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": false,
+          "cebo_confirmado": false,
+          "sep_frentes": 67.2
+        },
+        {
+          "grupo_killer": 1,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 17.5
+        }
+      ]
+    },
+    {
+      "seed": 29,
+      "kind": "mixto",
+      "sizes": [
+        1,
+        2
+      ],
+      "n_depredadas": 4,
+      "status": "predation",
+      "steps": 2570,
+      "steps_escolta": 1600,
+      "steps_un_grupo_visto": 210,
+      "steps_un_grupo_confirmado": 433,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 21.4
+        },
+        {
+          "grupo_killer": 1,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": false,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 14.2
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 25.6
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 4.2
+        }
+      ]
+    },
+    {
+      "seed": 37,
+      "kind": "mixto",
+      "sizes": [
+        1,
+        3
+      ],
+      "n_depredadas": 2,
+      "status": "predation",
+      "steps": 3697,
+      "steps_escolta": 1444,
+      "steps_un_grupo_visto": 281,
+      "steps_un_grupo_confirmado": 397,
+      "kills": [
+        {
+          "grupo_killer": 1,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 27.4
+        },
+        {
+          "grupo_killer": 1,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 5.2
+        }
+      ]
+    },
+    {
+      "seed": 40,
+      "kind": "mixto",
+      "sizes": [
+        1,
+        2
+      ],
+      "n_depredadas": 3,
+      "status": "predation",
+      "steps": 23570,
+      "steps_escolta": 22923,
+      "steps_un_grupo_visto": 62,
+      "steps_un_grupo_confirmado": 245,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 49.2
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 47.9
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 48.0
+        }
+      ]
+    },
+    {
+      "seed": 42,
+      "kind": "mixto",
+      "sizes": [
+        1,
+        4
+      ],
+      "n_depredadas": 2,
+      "status": "predation",
+      "steps": 975,
+      "steps_escolta": 884,
+      "steps_un_grupo_visto": 147,
+      "steps_un_grupo_confirmado": 884,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": false,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": true,
+          "sep_frentes": 79.4
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": false,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": true,
+          "sep_frentes": 51.3
+        }
+      ]
+    },
+    {
+      "seed": 43,
+      "kind": "mixto",
+      "sizes": [
+        1,
+        3
+      ],
+      "n_depredadas": 0,
+      "status": "timeout",
+      "steps": 23570,
+      "steps_escolta": 23466,
+      "steps_un_grupo_visto": 719,
+      "steps_un_grupo_confirmado": 1395,
+      "kills": []
+    },
+    {
+      "seed": 45,
+      "kind": "mixto",
+      "sizes": [
+        1,
+        2
+      ],
+      "n_depredadas": 2,
+      "status": "predation",
+      "steps": 1986,
+      "steps_escolta": 1574,
+      "steps_un_grupo_visto": 231,
+      "steps_un_grupo_confirmado": 370,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": false,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 7.4
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": false,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 5.5
+        }
+      ]
+    },
+    {
+      "seed": 46,
+      "kind": "mixto",
+      "sizes": [
+        1,
+        3
+      ],
+      "n_depredadas": 5,
+      "status": "predation",
+      "steps": 2560,
+      "steps_escolta": 982,
+      "steps_un_grupo_visto": 179,
+      "steps_un_grupo_confirmado": 314,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 47.3
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 73.5
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 80.9
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 61.8
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 5.2
+        }
+      ]
+    },
+    {
+      "seed": 48,
+      "kind": "mixto",
+      "sizes": [
+        1,
+        2
+      ],
+      "n_depredadas": 2,
+      "status": "predation",
+      "steps": 1376,
+      "steps_escolta": 1301,
+      "steps_un_grupo_visto": 171,
+      "steps_un_grupo_confirmado": 1122,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 101.4
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": false,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": true,
+          "sep_frentes": 56.5
+        }
+      ]
+    },
+    {
+      "seed": 49,
+      "kind": "mixto",
+      "sizes": [
+        1,
+        3
+      ],
+      "n_depredadas": 5,
+      "status": "predation",
+      "steps": 2030,
+      "steps_escolta": 921,
+      "steps_un_grupo_visto": 23,
+      "steps_un_grupo_confirmado": 148,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 68.3
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 67.5
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 25.3
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 29.4
+        },
+        {
+          "grupo_killer": 1,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": false,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 5.7
+        }
+      ]
+    },
+    {
+      "seed": 52,
+      "kind": "mixto",
+      "sizes": [
+        1,
+        3
+      ],
+      "n_depredadas": 4,
+      "status": "predation",
+      "steps": 2975,
+      "steps_escolta": 1009,
+      "steps_un_grupo_visto": 291,
+      "steps_un_grupo_confirmado": 808,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": false,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": true,
+          "sep_frentes": 51.6
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": false,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": true,
+          "sep_frentes": 46.9
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 11.4
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 4.9
+        }
+      ]
+    },
+    {
+      "seed": 58,
+      "kind": "mixto",
+      "sizes": [
+        1,
+        3
+      ],
+      "n_depredadas": 2,
+      "status": "predation",
+      "steps": 11660,
+      "steps_escolta": 3790,
+      "steps_un_grupo_visto": 429,
+      "steps_un_grupo_confirmado": 570,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": false,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 31.4
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": false,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 7.2
+        }
+      ]
+    },
+    {
+      "seed": 60,
+      "kind": "mixto",
+      "sizes": [
+        1,
+        2
+      ],
+      "n_depredadas": 1,
+      "status": "predation",
+      "steps": 878,
+      "steps_escolta": 774,
+      "steps_un_grupo_visto": 316,
+      "steps_un_grupo_confirmado": 546,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": false,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 10.1
+        }
+      ]
+    },
+    {
+      "seed": 64,
+      "kind": "mixto",
+      "sizes": [
+        1,
+        2
+      ],
+      "n_depredadas": 5,
+      "status": "predation",
+      "steps": 1110,
+      "steps_escolta": 801,
+      "steps_un_grupo_visto": 139,
+      "steps_un_grupo_confirmado": 338,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 87.0
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 63.6
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": false,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": true,
+          "sep_frentes": 46.3
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 18.7
+        },
+        {
+          "grupo_killer": 1,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": false,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 2.3
+        }
+      ]
+    },
+    {
+      "seed": 76,
+      "kind": "mixto",
+      "sizes": [
+        1,
+        3
+      ],
+      "n_depredadas": 2,
+      "status": "predation",
+      "steps": 939,
+      "steps_escolta": 845,
+      "steps_un_grupo_visto": 136,
+      "steps_un_grupo_confirmado": 845,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": false,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": true,
+          "sep_frentes": 82.3
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": false,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": true,
+          "sep_frentes": 37.0
+        }
+      ]
+    },
+    {
+      "seed": 77,
+      "kind": "mixto",
+      "sizes": [
+        1,
+        4
+      ],
+      "n_depredadas": 6,
+      "status": "predation",
+      "steps": 3741,
+      "steps_escolta": 1531,
+      "steps_un_grupo_visto": 198,
+      "steps_un_grupo_confirmado": 445,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": false,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": true,
+          "sep_frentes": 60.1
+        },
+        {
+          "grupo_killer": 1,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": false,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 5.0
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 62.2
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 57.1
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 45.0
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 23.7
+        }
+      ]
+    },
+    {
+      "seed": 78,
+      "kind": "mixto",
+      "sizes": [
+        1,
+        2
+      ],
+      "n_depredadas": 6,
+      "status": "predation",
+      "steps": 3084,
+      "steps_escolta": 839,
+      "steps_un_grupo_visto": 89,
+      "steps_un_grupo_confirmado": 809,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": false,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": true,
+          "sep_frentes": 108.8
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": false,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": true,
+          "sep_frentes": 84.3
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": false,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": true,
+          "sep_frentes": 83.2
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": false,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": true,
+          "sep_frentes": 82.7
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": false,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": true,
+          "sep_frentes": 10.6
+        },
+        {
+          "grupo_killer": 1,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": false,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 3.4
+        }
+      ]
+    },
+    {
+      "seed": 81,
+      "kind": "mixto",
+      "sizes": [
+        1,
+        3
+      ],
+      "n_depredadas": 2,
+      "status": "predation",
+      "steps": 1257,
+      "steps_escolta": 1172,
+      "steps_un_grupo_visto": 657,
+      "steps_un_grupo_confirmado": 840,
+      "kills": [
+        {
+          "grupo_killer": 1,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 3.1
+        },
+        {
+          "grupo_killer": 1,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 3.2
+        }
+      ]
+    },
+    {
+      "seed": 82,
+      "kind": "mixto",
+      "sizes": [
+        1,
+        3
+      ],
+      "n_depredadas": 4,
+      "status": "predation",
+      "steps": 2875,
+      "steps_escolta": 782,
+      "steps_un_grupo_visto": 172,
+      "steps_un_grupo_confirmado": 296,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 29.3
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 40.4
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 26.7
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 15.0
+        }
+      ]
+    },
+    {
+      "seed": 83,
+      "kind": "mixto",
+      "sizes": [
+        1,
+        3
+      ],
+      "n_depredadas": 4,
+      "status": "predation",
+      "steps": 1849,
+      "steps_escolta": 1780,
+      "steps_un_grupo_visto": 900,
+      "steps_un_grupo_confirmado": 1120,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": false,
+          "otro_grupo_detectado": false,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": false,
+          "cebo_confirmado": false,
+          "sep_frentes": 275.9
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": false,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 21.7
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": false,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 41.0
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": false,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 4.5
+        }
+      ]
+    },
+    {
+      "seed": 84,
+      "kind": "mixto",
+      "sizes": [
+        1,
+        2
+      ],
+      "n_depredadas": 4,
+      "status": "predation",
+      "steps": 4908,
+      "steps_escolta": 1414,
+      "steps_un_grupo_visto": 0,
+      "steps_un_grupo_confirmado": 7,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": false,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 38.1
+        },
+        {
+          "grupo_killer": 1,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 22.6
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": false,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 24.0
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": false,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 4.8
+        }
+      ]
+    },
+    {
+      "seed": 88,
+      "kind": "mixto",
+      "sizes": [
+        1,
+        4
+      ],
+      "n_depredadas": 1,
+      "status": "predation",
+      "steps": 23570,
+      "steps_escolta": 23470,
+      "steps_un_grupo_visto": 190,
+      "steps_un_grupo_confirmado": 666,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 89.2
+        }
+      ]
+    },
+    {
+      "seed": 91,
+      "kind": "mixto",
+      "sizes": [
+        1,
+        4
+      ],
+      "n_depredadas": 4,
+      "status": "predation",
+      "steps": 1292,
+      "steps_escolta": 1224,
+      "steps_un_grupo_visto": 577,
+      "steps_un_grupo_confirmado": 698,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": false,
+          "otro_grupo_detectado": false,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": false,
+          "cebo_confirmado": false,
+          "sep_frentes": 178.9
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": false,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 35.3
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": false,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 24.1
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 2,
+          "no_anclado": false,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 6.8
+        }
+      ]
+    },
+    {
+      "seed": 94,
+      "kind": "mixto",
+      "sizes": [
+        1,
+        4
+      ],
+      "n_depredadas": 4,
+      "status": "predation",
+      "steps": 23570,
+      "steps_escolta": 23478,
+      "steps_un_grupo_visto": 168,
+      "steps_un_grupo_confirmado": 273,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 30.3
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 28.3
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 76.8
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 76.9
+        }
+      ]
+    },
+    {
+      "seed": 95,
+      "kind": "mixto",
+      "sizes": [
+        1,
+        3
+      ],
+      "n_depredadas": 1,
+      "status": "predation",
+      "steps": 1420,
+      "steps_escolta": 1335,
+      "steps_un_grupo_visto": 183,
+      "steps_un_grupo_confirmado": 884,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": true,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": false,
+          "sep_frentes": 29.5
+        }
+      ]
+    },
+    {
+      "seed": 96,
+      "kind": "mixto",
+      "sizes": [
+        1,
+        4
+      ],
+      "n_depredadas": 4,
+      "status": "predation",
+      "steps": 1364,
+      "steps_escolta": 776,
+      "steps_un_grupo_visto": 169,
+      "steps_un_grupo_confirmado": 375,
+      "kills": [
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": false,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": true,
+          "sep_frentes": 125.0
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": false,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": true,
+          "sep_frentes": 131.5
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": false,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": true,
+          "sep_frentes": 52.8
+        },
+        {
+          "grupo_killer": 2,
+          "killer_detectado": true,
+          "grupo_ancla": 1,
+          "no_anclado": true,
+          "otro_grupo_detectado": true,
+          "cebo_puro": false,
+          "killer_confirmado": false,
+          "otro_grupo_confirmado": true,
+          "cebo_confirmado": true,
+          "sep_frentes": 23.1
+        }
+      ]
+    }
+  ]
+}

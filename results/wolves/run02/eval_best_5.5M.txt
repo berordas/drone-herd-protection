@@ -1,0 +1,8 @@
+=== eval_wolves: política SB3 vs barrera reactiva (arnés v2.4.1, mismas semillas) ===
+  modelo = /data/wolves/run02/checkpoints/ppo_wolves_5499912_steps.zip
+  kinds = ('lobos', 'mixto')  |  semillas = 100 (range(100))  |  out = /data/wolves/run02/eval_best_5.5M.json
+  tipo         scriptados     APRENDIDOS     Δsev   n_safe   terminales (aprendidos)
+  solo-lobos         2.77     0.57±0.71    -2.20     5.80   success=28 predation=44 timeout=28
+  mixto              2.80     0.56±0.67    -2.24     5.75   success=24 predation=46 timeout=30
+  (severidad = muertes/episodio: MÁS alta = mejores lobos; los scriptados son la nota a batir)
+  guardado -> /data/wolves/run02/eval_best_5.5M.json

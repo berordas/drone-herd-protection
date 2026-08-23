@@ -1,0 +1,7 @@
+dneg_max_cebo_keep_cebo_keep_h50_reactive_seed100_lobos_sev0 | arm=cebo_keep_h50_reactive status=timeout sev=0 steps=23570 grupos=[1, 4] | muertes con procedencia al final
+t=     0  OPTION_START     option=CEBO hold=50.0 membership=keep
+t=   435  SHOW_START       mode=keep
+t=   435  STAGED
+t=  1001  ESCOLTA_LATCH
+t=  1002  ANCHOR_FLIP      frm=None to=1
+t= 23570  STRIKE_RESOLVED  outcome=none latencia=23135

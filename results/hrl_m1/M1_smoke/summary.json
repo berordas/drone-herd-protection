@@ -1,0 +1,74 @@
+{
+ "macro_pasos": 2048,
+ "segundos": 2429.3,
+ "fps": 0.84,
+ "nan": false,
+ "eval_final": {
+  "sev_media": 0.1,
+  "sev_lobos": 0.2,
+  "sev_mixto": 0.0,
+  "P_cebo_G_n3": 0.0,
+  "n_G_n3": 6,
+  "P_a_G_first": {
+   "MASA": 1.0,
+   "CEBO_keep": 0.0,
+   "CEBO_d90": 0.0,
+   "CEBO_d180": 0.0
+  },
+  "P_a_S_first": {
+   "MASA": 1.0,
+   "CEBO_keep": 0.0,
+   "CEBO_d90": 0.0,
+   "CEBO_d180": 0.0
+  },
+  "P_a_n": {
+   "n2": {
+    "MASA": 1.0,
+    "CEBO_keep": 0.0,
+    "CEBO_d90": 0.0,
+    "CEBO_d180": 0.0
+   },
+   "n1": {
+    "MASA": 1.0,
+    "CEBO_keep": 0.0,
+    "CEBO_d90": 0.0,
+    "CEBO_d180": 0.0
+   },
+   "n3": {
+    "MASA": 1.0,
+    "CEBO_keep": 0.0,
+    "CEBO_d90": 0.0,
+    "CEBO_d180": 0.0
+   },
+   "n4": {
+    "MASA": 1.0,
+    "CEBO_keep": 0.0,
+    "CEBO_d90": 0.0,
+    "CEBO_d180": 0.0
+   },
+   "n5": {
+    "MASA": 1.0,
+    "CEBO_keep": 0.0,
+    "CEBO_d90": 0.0,
+    "CEBO_d180": 0.0
+   }
+  },
+  "P_a_G_all": {
+   "MASA": 1.0,
+   "CEBO_keep": 0.0,
+   "CEBO_d90": 0.0,
+   "CEBO_d180": 0.0
+  },
+  "P_a_S_all": {
+   "MASA": 1.0,
+   "CEBO_keep": 0.0,
+   "CEBO_d90": 0.0,
+   "CEBO_d180": 0.0
+  },
+  "decisiones_media": 1.725,
+  "penetrado_ticks_media": 34.95,
+  "pasos": 2048,
+  "final": true
+ },
+ "curriculum_used": false
+}

@@ -1,0 +1,67 @@
+{
+ "defensa": "dronemgr:/data/hrl_d2/D2_smoke/model.zip",
+ "atacante": "cebo2f",
+ "n": 2,
+ "cambios_particion_media": 29.0,
+ "sev": 0.0,
+ "sev_2f": 0.0,
+ "n_2f": 2,
+ "knc_frac": 0.0,
+ "jugada_completa_frac": 1.0,
+ "penetrado_medio": 6756.5,
+ "carrera": {
+  "latencia_media": 0.0,
+  "guardias_antes_2cl_frac": 1.0,
+  "reasignaciones_media": 0.0,
+  "gana_guardia_frac": 1.0,
+  "n_carreras": 2
+ },
+ "episodes": [
+  {
+   "seed": 2,
+   "kind": "lobos",
+   "sev": 0,
+   "cambios": 2,
+   "stalls_def": 2,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 0,
+   "jugada_completa": true,
+   "penetrado": 13513,
+   "carrera": {
+    "t_sec": 880,
+    "t_guard": 1,
+    "t_guard_post": 880,
+    "guardias_antes_2cl": true,
+    "latencia": 0,
+    "t_llegada_guardia": 1015,
+    "t_llegada_asalto": 1242,
+    "gana_guardia": true,
+    "reasignaciones": 0
+   }
+  },
+  {
+   "seed": 12,
+   "kind": "lobos",
+   "sev": 0,
+   "cambios": 56,
+   "stalls_def": 56,
+   "two_front": true,
+   "knc": 0,
+   "deaths": 0,
+   "jugada_completa": true,
+   "penetrado": 0,
+   "carrera": {
+    "t_sec": 709,
+    "t_guard": 1,
+    "t_guard_post": 709,
+    "guardias_antes_2cl": true,
+    "latencia": 0,
+    "t_llegada_guardia": 815,
+    "t_llegada_asalto": 1128,
+    "gana_guardia": true,
+    "reasignaciones": 0
+   }
+  }
+ ]
+}

@@ -1,0 +1,13 @@
+=== baseline v2 (CONGELADA, tag v3.4-baseline): DummyCoordinator sobre 100 semillas × 3 tipos ===
+  fidelidad CONFIG_V2 == defaults+corzos (bit a bit): OK
+  tipo            n  SEVERIDAD (media±desv)     n_safe  terminales
+  solo-lobos    100      3.82 ± 2.41   (máx 8)     2.75  success=9 predation=83 timeout=8
+  solo-corzos   100      0.00 ± 0.00   (máx 0)     0.00  success=0 predation=0 timeout=100
+  mixto         100      3.84 ± 2.43   (máx 8)     2.74  success=6 predation=85 timeout=9
+  AGREGADO      300      2.55 ± 2.67   (máx 8)     1.83  success=15 predation=168 timeout=117
+  guardado -> baseline_v2.json (por episodio) + baseline_v2.csv (tabla)
+  deriva vs referencia congelada:
+    solo-lobos   medido=3.82  referencia=3.77  -> DERIVA 0.050
+    solo-corzos  medido=0.00  referencia=0.00  -> OK
+    mixto        medido=3.84  referencia=3.74  -> DERIVA 0.100
+  ¡DERIVA! el mundo se ha movido

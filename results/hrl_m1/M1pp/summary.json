@@ -1,0 +1,108 @@
+{
+ "macro_pasos": 122880,
+ "segundos": 19516.6,
+ "fps": 6.3,
+ "nan": false,
+ "eval_final": {
+  "sev_media": 1.375,
+  "sev_lobos": 1.3,
+  "sev_mixto": 1.45,
+  "P_cebo_G_n3": 1.0,
+  "n_G_n3": 6,
+  "P_a_G_first": {
+   "MASA": 0.0,
+   "CEBO_keep": 0.333,
+   "CEBO_d90": 0.0,
+   "CEBO_d180": 0.667
+  },
+  "P_a_S_first": {
+   "MASA": 0.0,
+   "CEBO_keep": 0.0,
+   "CEBO_d90": 0.0,
+   "CEBO_d180": 1.0
+  },
+  "P_a_n": {
+   "n2": {
+    "MASA": 0.0,
+    "CEBO_keep": 0.0,
+    "CEBO_d90": 0.0,
+    "CEBO_d180": 1.0
+   },
+   "n1": {
+    "MASA": 0.0,
+    "CEBO_keep": 0.0,
+    "CEBO_d90": 0.0,
+    "CEBO_d180": 1.0
+   },
+   "n3": {
+    "MASA": 0.0,
+    "CEBO_keep": 0.0,
+    "CEBO_d90": 0.0,
+    "CEBO_d180": 1.0
+   },
+   "n4": {
+    "MASA": 0.0,
+    "CEBO_keep": 0.2,
+    "CEBO_d90": 0.0,
+    "CEBO_d180": 0.8
+   },
+   "n5": {
+    "MASA": 0.0,
+    "CEBO_keep": 0.0,
+    "CEBO_d90": 0.0,
+    "CEBO_d180": 1.0
+   }
+  },
+  "P_a_G_all": {
+   "MASA": 0.002,
+   "CEBO_keep": 0.097,
+   "CEBO_d90": 0.884,
+   "CEBO_d180": 0.017
+  },
+  "P_a_S_all": {
+   "MASA": 0.009,
+   "CEBO_keep": 0.591,
+   "CEBO_d90": 0.351,
+   "CEBO_d180": 0.049
+  },
+  "Pstoch_a_G_first": {
+   "MASA": 0.006,
+   "CEBO_keep": 0.406,
+   "CEBO_d90": 0.016,
+   "CEBO_d180": 0.572
+  },
+  "Pstoch_a_S_first": {
+   "MASA": 0.001,
+   "CEBO_keep": 0.01,
+   "CEBO_d90": 0.042,
+   "CEBO_d180": 0.948
+  },
+  "Pstoch_a_G_all": {
+   "MASA": 0.014,
+   "CEBO_keep": 0.203,
+   "CEBO_d90": 0.549,
+   "CEBO_d180": 0.235
+  },
+  "Pstoch_a_S_all": {
+   "MASA": 0.048,
+   "CEBO_keep": 0.404,
+   "CEBO_d90": 0.356,
+   "CEBO_d180": 0.192
+  },
+  "Pstoch_cebo_G_n3": 0.9940594996636113,
+  "entropia_media": 0.9578773285524396,
+  "caza_por_ep": {
+   "option_starts": 4.55,
+   "retargets": 0.025,
+   "retargets_blocked": 0.0,
+   "refix_muerte": 1.3,
+   "refix_refugio": 0.7,
+   "refix_otro": 0.0
+  },
+  "decisiones_media": 33.4,
+  "penetrado_ticks_media": 4.175,
+  "pasos": 122880,
+  "final": true
+ },
+ "curriculum_used": false
+}

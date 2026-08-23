@@ -1,0 +1,44 @@
+{
+  "args": {
+    "total_steps": 10000000,
+    "n_envs": 12,
+    "seed": 0,
+    "outdir": "/data/wolves/run02",
+    "kinds": [
+      "lobos",
+      "mixto"
+    ],
+    "device": "cpu",
+    "frame_skip": 5,
+    "smoke": false,
+    "resume": null,
+    "eval_every": 250000,
+    "shaping": "on",
+    "shaping_beta": 1.0
+  },
+  "hyper": {
+    "n_steps": 2048,
+    "batch_size": 512,
+    "gamma": 0.999,
+    "gae_lambda": 0.95,
+    "learning_rate": 0.0003,
+    "ent_coef": 0.01,
+    "clip_range": 0.2,
+    "n_epochs": 10
+  },
+  "net_arch": [
+    128,
+    128
+  ],
+  "algo": "PPO(MlpPolicy)",
+  "reward": "+1 por res matada (rala, compartida); sin castigo por tiempo ni por a-salvo; + shaping por potencial (plan B, Ng et al.)",
+  "shaping": {
+    "on": true,
+    "beta": 1.0,
+    "gamma": 0.999,
+    "phi": "-beta * mean_i dist(lobo_i, presa ternero-primero) / diagonal_campo; 0 si coasting",
+    "nota": "gamma EXACTAMENTE el del PPO (inocuidad de Ng et al.); la eval NUNCA ve el shaping"
+  },
+  "abort": "CRITERIO DE ABORTO (pactado, run02/shaping): ep_shape_mean debe ser != 0 desde el principio (señal de que el gradiente llega); lo que decide es ep_kills_mean — si a ~3.000.000 de pasos sigue ~0.00 (sin muertes emergiendo pese al acercamiento), parar el run y reportar. El plan C (currículo/BC) lo decide el usuario — NO implementarlo por cuenta propia.",
+  "fecha": "2026-07-15T15:10:50"
+}

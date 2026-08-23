@@ -1,0 +1,34 @@
+{
+  "fecha": "2026-07-15T19:13:47",
+  "n_pairs": 2829,
+  "n_episodes": 1,
+  "seeds": [
+    10000,
+    10000
+  ],
+  "seeds_disjuntas_de_eval": true,
+  "kinds": {
+    "lobos": 1,
+    "mixto": 0
+  },
+  "frame_skip": 5,
+  "accion": "v_target del scriptado en el 1er paso de la ventana, ÷ wolf_speed (=[-1,1]); slots ausentes a 0",
+  "obs": "rl/obs.py build_obs en la frontera del env (misma convención que WolfPackEnv/test 7)",
+  "experto_muertes_media": 0.0,
+  "experto_muertes_std": 0.0,
+  "experto_terminales": {
+    "success": 0,
+    "predation": 0,
+    "timeout": 1
+  },
+  "episodes": [
+    {
+      "seed": 10000,
+      "kind": "lobos",
+      "status": "timeout",
+      "steps": 14142,
+      "n_depredadas": 0,
+      "n_pairs": 2829
+    }
+  ]
+}

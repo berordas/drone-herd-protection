@@ -1,0 +1,20 @@
+{
+ "n_pares": 50,
+ "sev_cebo": 2.86,
+ "sev_masa": 1.7,
+ "delta_keep_menos_masa": [
+  1.16,
+  0.42,
+  1.9
+ ],
+ "ref_v35": 0.85,
+ "retargets_ep": {
+  "cebo": 0.0,
+  "masa": 0.34
+ },
+ "blocked_ep": {
+  "cebo": 0.0,
+  "masa": 0.02
+ },
+ "_veredicto": "DESVIACIÓN > 0.3 -> PARAR y escalar con GIFs"
+}

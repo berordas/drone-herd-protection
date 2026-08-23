@@ -1,0 +1,44 @@
+[
+ {
+  "tag": "jugada_entera_S",
+  "gif": "/data/hrl_m1/m1pppp/visionado/gifs/jugada_entera_S_seed98_mixto_sev2.gif",
+  "sev": 2,
+  "seed": 98,
+  "kind": "mixto"
+ },
+ {
+  "tag": "jugada_entera_G",
+  "gif": "/data/hrl_m1/m1pppp/visionado/gifs/jugada_entera_G_seed77_lobos_sev7.gif",
+  "sev": 7,
+  "seed": 77,
+  "kind": "lobos"
+ },
+ {
+  "tag": "gemelo_seed21",
+  "gif": "/data/hrl_m1/m1pppp/visionado/gifs/gemelo_seed21_seed21_lobos_sev0.gif",
+  "sev": 0,
+  "seed": 21,
+  "kind": "lobos"
+ },
+ {
+  "tag": "peor_manager",
+  "gif": "/data/hrl_m1/m1pppp/visionado/gifs/peor_manager_seed41_lobos_sev7.gif",
+  "sev": 7,
+  "seed": 41,
+  "kind": "lobos"
+ },
+ {
+  "tag": "stall_rescate_s68",
+  "gif": "/data/hrl_m1/m1pppp/visionado/gifs/stall_rescate_s68_seed68_lobos_sev3.gif",
+  "sev": 3,
+  "seed": 68,
+  "kind": "lobos"
+ },
+ {
+  "tag": "retarget_masa",
+  "gif": "/data/hrl_m1/m1pppp/visionado/gifs/retarget_masa_seed52_lobos_sev2.gif",
+  "sev": 2,
+  "seed": 52,
+  "kind": "lobos"
+ }
+]

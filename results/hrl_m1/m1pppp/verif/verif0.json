@@ -1,0 +1,791 @@
+{
+ "manager": [
+  {
+   "seed": 63,
+   "kind": "mixto",
+   "sev": 8,
+   "n_aborts": 1,
+   "n_shows": 1,
+   "t_shows": [
+    18667
+   ],
+   "aborts_released": 0,
+   "aborts_staged_noshow": 1,
+   "aborts_a_punto": 1,
+   "frac_a_punto": 1.0,
+   "d_asalto_presa2_mediana": 18.8,
+   "ticks_tramo_mediana": 50.0,
+   "muestra_aborts": [
+    {
+     "t": 18628,
+     "ticks_tramo": 50,
+     "released": false,
+     "staged": true,
+     "bearing_ok": false,
+     "d_asalto_presa2": 18.8,
+     "accion": "CEBO_d90"
+    }
+   ]
+  },
+  {
+   "seed": 35,
+   "kind": "lobos",
+   "sev": 0,
+   "n_aborts": 470,
+   "n_shows": 1,
+   "t_shows": [
+    919
+   ],
+   "aborts_released": 453,
+   "aborts_staged_noshow": 17,
+   "aborts_a_punto": 470,
+   "frac_a_punto": 1.0,
+   "d_asalto_presa2_mediana": 66.6,
+   "ticks_tramo_mediana": 50.0,
+   "muestra_aborts": [
+    {
+     "t": 118,
+     "ticks_tramo": 118,
+     "released": false,
+     "staged": true,
+     "bearing_ok": false,
+     "d_asalto_presa2": 146.6,
+     "accion": "CEBO_d180"
+    },
+    {
+     "t": 168,
+     "ticks_tramo": 50,
+     "released": false,
+     "staged": true,
+     "bearing_ok": false,
+     "d_asalto_presa2": 130.5,
+     "accion": "CEBO_d90"
+    },
+    {
+     "t": 218,
+     "ticks_tramo": 50,
+     "released": false,
+     "staged": true,
+     "bearing_ok": false,
+     "d_asalto_presa2": 111.6,
+     "accion": "CEBO_d90"
+    },
+    {
+     "t": 268,
+     "ticks_tramo": 50,
+     "released": false,
+     "staged": true,
+     "bearing_ok": false,
+     "d_asalto_presa2": 93.0,
+     "accion": "CEBO_d90"
+    },
+    {
+     "t": 318,
+     "ticks_tramo": 50,
+     "released": false,
+     "staged": true,
+     "bearing_ok": false,
+     "d_asalto_presa2": 74.4,
+     "accion": "CEBO_d90"
+    },
+    {
+     "t": 368,
+     "ticks_tramo": 50,
+     "released": false,
+     "staged": true,
+     "bearing_ok": false,
+     "d_asalto_presa2": 60.0,
+     "accion": "CEBO_d90"
+    }
+   ]
+  },
+  {
+   "seed": 5,
+   "kind": "mixto",
+   "sev": 0,
+   "n_aborts": 469,
+   "n_shows": 1,
+   "t_shows": [
+    389
+   ],
+   "aborts_released": 463,
+   "aborts_staged_noshow": 6,
+   "aborts_a_punto": 469,
+   "frac_a_punto": 1.0,
+   "d_asalto_presa2_mediana": 66.6,
+   "ticks_tramo_mediana": 50.0,
+   "muestra_aborts": [
+    {
+     "t": 138,
+     "ticks_tramo": 138,
+     "released": false,
+     "staged": true,
+     "bearing_ok": false,
+     "d_asalto_presa2": 173.8,
+     "accion": "CEBO_d180"
+    },
+    {
+     "t": 188,
+     "ticks_tramo": 50,
+     "released": false,
+     "staged": true,
+     "bearing_ok": false,
+     "d_asalto_presa2": 164.0,
+     "accion": "CEBO_d90"
+    },
+    {
+     "t": 238,
+     "ticks_tramo": 50,
+     "released": false,
+     "staged": true,
+     "bearing_ok": false,
+     "d_asalto_presa2": 153.3,
+     "accion": "CEBO_d90"
+    },
+    {
+     "t": 288,
+     "ticks_tramo": 50,
+     "released": false,
+     "staged": true,
+     "bearing_ok": false,
+     "d_asalto_presa2": 141.9,
+     "accion": "CEBO_d90"
+    },
+    {
+     "t": 338,
+     "ticks_tramo": 50,
+     "released": false,
+     "staged": true,
+     "bearing_ok": false,
+     "d_asalto_presa2": 129.8,
+     "accion": "CEBO_d90"
+    },
+    {
+     "t": 388,
+     "ticks_tramo": 50,
+     "released": false,
+     "staged": true,
+     "bearing_ok": false,
+     "d_asalto_presa2": 117.0,
+     "accion": "CEBO_d90"
+    }
+   ]
+  },
+  {
+   "seed": 67,
+   "kind": "lobos",
+   "sev": 1,
+   "n_aborts": 268,
+   "n_shows": 1,
+   "t_shows": [
+    4589
+   ],
+   "aborts_released": 268,
+   "aborts_staged_noshow": 0,
+   "aborts_a_punto": 268,
+   "frac_a_punto": 1.0,
+   "d_asalto_presa2_mediana": 1.2,
+   "ticks_tramo_mediana": 65.0,
+   "muestra_aborts": [
+    {
+     "t": 6293,
+     "ticks_tramo": 1137,
+     "released": true,
+     "staged": null,
+     "bearing_ok": true,
+     "d_asalto_presa2": 1.1,
+     "accion": "CEBO_keep"
+    },
+    {
+     "t": 6358,
+     "ticks_tramo": 65,
+     "released": true,
+     "staged": null,
+     "bearing_ok": true,
+     "d_asalto_presa2": 1.0,
+     "accion": "CEBO_keep"
+    },
+    {
+     "t": 6423,
+     "ticks_tramo": 65,
+     "released": true,
+     "staged": null,
+     "bearing_ok": true,
+     "d_asalto_presa2": 1.0,
+     "accion": "CEBO_keep"
+    },
+    {
+     "t": 6488,
+     "ticks_tramo": 65,
+     "released": true,
+     "staged": null,
+     "bearing_ok": true,
+     "d_asalto_presa2": 1.2,
+     "accion": "CEBO_keep"
+    },
+    {
+     "t": 6552,
+     "ticks_tramo": 64,
+     "released": true,
+     "staged": null,
+     "bearing_ok": true,
+     "d_asalto_presa2": 1.5,
+     "accion": "CEBO_keep"
+    },
+    {
+     "t": 6615,
+     "ticks_tramo": 63,
+     "released": true,
+     "staged": null,
+     "bearing_ok": true,
+     "d_asalto_presa2": 1.5,
+     "accion": "CEBO_keep"
+    }
+   ]
+  },
+  {
+   "seed": 98,
+   "kind": "lobos",
+   "sev": 4,
+   "n_aborts": 199,
+   "n_shows": 1,
+   "t_shows": [
+    12656
+   ],
+   "aborts_released": 199,
+   "aborts_staged_noshow": 0,
+   "aborts_a_punto": 199,
+   "frac_a_punto": 1.0,
+   "d_asalto_presa2_mediana": 5.7,
+   "ticks_tramo_mediana": 50.0,
+   "muestra_aborts": [
+    {
+     "t": 13643,
+     "ticks_tramo": 85,
+     "released": true,
+     "staged": null,
+     "bearing_ok": false,
+     "d_asalto_presa2": 25.0,
+     "accion": "CEBO_d90"
+    },
+    {
+     "t": 13693,
+     "ticks_tramo": 50,
+     "released": true,
+     "staged": null,
+     "bearing_ok": false,
+     "d_asalto_presa2": 12.2,
+     "accion": "CEBO_d90"
+    },
+    {
+     "t": 13743,
+     "ticks_tramo": 50,
+     "released": true,
+     "staged": null,
+     "bearing_ok": false,
+     "d_asalto_presa2": 5.8,
+     "accion": "CEBO_d90"
+    },
+    {
+     "t": 13793,
+     "ticks_tramo": 50,
+     "released": true,
+     "staged": null,
+     "bearing_ok": false,
+     "d_asalto_presa2": 5.7,
+     "accion": "CEBO_d90"
+    },
+    {
+     "t": 13843,
+     "ticks_tramo": 50,
+     "released": true,
+     "staged": null,
+     "bearing_ok": false,
+     "d_asalto_presa2": 5.9,
+     "accion": "CEBO_d90"
+    },
+    {
+     "t": 13893,
+     "ticks_tramo": 50,
+     "released": true,
+     "staged": null,
+     "bearing_ok": false,
+     "d_asalto_presa2": 5.6,
+     "accion": "CEBO_d90"
+    }
+   ]
+  },
+  {
+   "seed": 86,
+   "kind": "lobos",
+   "sev": 6,
+   "n_aborts": 143,
+   "n_shows": 1,
+   "t_shows": [
+    12727
+   ],
+   "aborts_released": 143,
+   "aborts_staged_noshow": 0,
+   "aborts_a_punto": 143,
+   "frac_a_punto": 1.0,
+   "d_asalto_presa2_mediana": 1.1,
+   "ticks_tramo_mediana": 66.0,
+   "muestra_aborts": [
+    {
+     "t": 14193,
+     "ticks_tramo": 129,
+     "released": true,
+     "staged": null,
+     "bearing_ok": false,
+     "d_asalto_presa2": 0.9,
+     "accion": "CEBO_d90"
+    },
+    {
+     "t": 14260,
+     "ticks_tramo": 67,
+     "released": true,
+     "staged": null,
+     "bearing_ok": false,
+     "d_asalto_presa2": 1.0,
+     "accion": "CEBO_d90"
+    },
+    {
+     "t": 14326,
+     "ticks_tramo": 66,
+     "released": true,
+     "staged": null,
+     "bearing_ok": false,
+     "d_asalto_presa2": 1.0,
+     "accion": "CEBO_d90"
+    },
+    {
+     "t": 14392,
+     "ticks_tramo": 66,
+     "released": true,
+     "staged": null,
+     "bearing_ok": false,
+     "d_asalto_presa2": 1.1,
+     "accion": "CEBO_d90"
+    },
+    {
+     "t": 14458,
+     "ticks_tramo": 66,
+     "released": true,
+     "staged": null,
+     "bearing_ok": false,
+     "d_asalto_presa2": 1.1,
+     "accion": "CEBO_d90"
+    },
+    {
+     "t": 14524,
+     "ticks_tramo": 66,
+     "released": true,
+     "staged": null,
+     "bearing_ok": false,
+     "d_asalto_presa2": 1.1,
+     "accion": "CEBO_d90"
+    }
+   ]
+  }
+ ],
+ "arms_resumen": {
+  "n": 30,
+  "staged_noshow_max_global": 23570,
+  "episodios_stall_400": 9,
+  "stalls": [
+   {
+    "policy": "oracle",
+    "seed": 3,
+    "kind": "lobos",
+    "sev": 0,
+    "staged_noshow_max": 5116,
+    "bearing_fail_ticks": 5116,
+    "n_shows": 0,
+    "t_show1": null
+   },
+   {
+    "policy": "oracle",
+    "seed": 5,
+    "kind": "lobos",
+    "sev": 0,
+    "staged_noshow_max": 23570,
+    "bearing_fail_ticks": 23570,
+    "n_shows": 0,
+    "t_show1": null
+   },
+   {
+    "policy": "oracle",
+    "seed": 9,
+    "kind": "lobos",
+    "sev": 0,
+    "staged_noshow_max": 17707,
+    "bearing_fail_ticks": 17707,
+    "n_shows": 0,
+    "t_show1": null
+   },
+   {
+    "policy": "oracle",
+    "seed": 14,
+    "kind": "lobos",
+    "sev": 0,
+    "staged_noshow_max": 485,
+    "bearing_fail_ticks": 485,
+    "n_shows": 0,
+    "t_show1": null
+   },
+   {
+    "policy": "oracle",
+    "seed": 18,
+    "kind": "lobos",
+    "sev": 0,
+    "staged_noshow_max": 1598,
+    "bearing_fail_ticks": 1598,
+    "n_shows": 0,
+    "t_show1": null
+   },
+   {
+    "policy": "oracle",
+    "seed": 24,
+    "kind": "lobos",
+    "sev": 0,
+    "staged_noshow_max": 15462,
+    "bearing_fail_ticks": 15462,
+    "n_shows": 0,
+    "t_show1": null
+   },
+   {
+    "policy": "oracle",
+    "seed": 35,
+    "kind": "lobos",
+    "sev": 0,
+    "staged_noshow_max": 1632,
+    "bearing_fail_ticks": 1632,
+    "n_shows": 0,
+    "t_show1": null
+   },
+   {
+    "policy": "oracle",
+    "seed": 36,
+    "kind": "lobos",
+    "sev": 0,
+    "staged_noshow_max": 4295,
+    "bearing_fail_ticks": 4295,
+    "n_shows": 0,
+    "t_show1": null
+   },
+   {
+    "policy": "oracle",
+    "seed": 55,
+    "kind": "lobos",
+    "sev": 0,
+    "staged_noshow_max": 2547,
+    "bearing_fail_ticks": 2547,
+    "n_shows": 0,
+    "t_show1": null
+   }
+  ]
+ },
+ "arms": [
+  {
+   "policy": "oracle",
+   "seed": 3,
+   "kind": "lobos",
+   "sev": 0,
+   "staged_noshow_max": 5116,
+   "bearing_fail_ticks": 5116,
+   "n_shows": 0,
+   "t_show1": null
+  },
+  {
+   "policy": "oracle",
+   "seed": 5,
+   "kind": "lobos",
+   "sev": 0,
+   "staged_noshow_max": 23570,
+   "bearing_fail_ticks": 23570,
+   "n_shows": 0,
+   "t_show1": null
+  },
+  {
+   "policy": "oracle",
+   "seed": 6,
+   "kind": "lobos",
+   "sev": 0,
+   "staged_noshow_max": 356,
+   "bearing_fail_ticks": 355,
+   "n_shows": 1,
+   "t_show1": 1058
+  },
+  {
+   "policy": "oracle",
+   "seed": 8,
+   "kind": "lobos",
+   "sev": 0,
+   "staged_noshow_max": 0,
+   "bearing_fail_ticks": 0,
+   "n_shows": 1,
+   "t_show1": 10445
+  },
+  {
+   "policy": "oracle",
+   "seed": 9,
+   "kind": "lobos",
+   "sev": 0,
+   "staged_noshow_max": 17707,
+   "bearing_fail_ticks": 17707,
+   "n_shows": 0,
+   "t_show1": null
+  },
+  {
+   "policy": "oracle",
+   "seed": 14,
+   "kind": "lobos",
+   "sev": 0,
+   "staged_noshow_max": 485,
+   "bearing_fail_ticks": 485,
+   "n_shows": 0,
+   "t_show1": null
+  },
+  {
+   "policy": "oracle",
+   "seed": 18,
+   "kind": "lobos",
+   "sev": 0,
+   "staged_noshow_max": 1598,
+   "bearing_fail_ticks": 1598,
+   "n_shows": 0,
+   "t_show1": null
+  },
+  {
+   "policy": "oracle",
+   "seed": 20,
+   "kind": "lobos",
+   "sev": 0,
+   "staged_noshow_max": 0,
+   "bearing_fail_ticks": 0,
+   "n_shows": 0,
+   "t_show1": null
+  },
+  {
+   "policy": "oracle",
+   "seed": 21,
+   "kind": "lobos",
+   "sev": 0,
+   "staged_noshow_max": 0,
+   "bearing_fail_ticks": 0,
+   "n_shows": 0,
+   "t_show1": null
+  },
+  {
+   "policy": "oracle",
+   "seed": 24,
+   "kind": "lobos",
+   "sev": 0,
+   "staged_noshow_max": 15462,
+   "bearing_fail_ticks": 15462,
+   "n_shows": 0,
+   "t_show1": null
+  },
+  {
+   "policy": "oracle",
+   "seed": 28,
+   "kind": "lobos",
+   "sev": 0,
+   "staged_noshow_max": 0,
+   "bearing_fail_ticks": 0,
+   "n_shows": 1,
+   "t_show1": 10288
+  },
+  {
+   "policy": "oracle",
+   "seed": 32,
+   "kind": "lobos",
+   "sev": 5,
+   "staged_noshow_max": 1,
+   "bearing_fail_ticks": 0,
+   "n_shows": 1,
+   "t_show1": 1148
+  },
+  {
+   "policy": "oracle",
+   "seed": 35,
+   "kind": "lobos",
+   "sev": 0,
+   "staged_noshow_max": 1632,
+   "bearing_fail_ticks": 1632,
+   "n_shows": 0,
+   "t_show1": null
+  },
+  {
+   "policy": "oracle",
+   "seed": 36,
+   "kind": "lobos",
+   "sev": 0,
+   "staged_noshow_max": 4295,
+   "bearing_fail_ticks": 4295,
+   "n_shows": 0,
+   "t_show1": null
+  },
+  {
+   "policy": "oracle",
+   "seed": 41,
+   "kind": "lobos",
+   "sev": 0,
+   "staged_noshow_max": 27,
+   "bearing_fail_ticks": 26,
+   "n_shows": 1,
+   "t_show1": 867
+  },
+  {
+   "policy": "oracle",
+   "seed": 47,
+   "kind": "lobos",
+   "sev": 0,
+   "staged_noshow_max": 0,
+   "bearing_fail_ticks": 0,
+   "n_shows": 1,
+   "t_show1": 13948
+  },
+  {
+   "policy": "oracle",
+   "seed": 50,
+   "kind": "lobos",
+   "sev": 1,
+   "staged_noshow_max": 8,
+   "bearing_fail_ticks": 7,
+   "n_shows": 1,
+   "t_show1": 5776
+  },
+  {
+   "policy": "oracle",
+   "seed": 53,
+   "kind": "lobos",
+   "sev": 0,
+   "staged_noshow_max": 0,
+   "bearing_fail_ticks": 0,
+   "n_shows": 0,
+   "t_show1": null
+  },
+  {
+   "policy": "oracle",
+   "seed": 55,
+   "kind": "lobos",
+   "sev": 0,
+   "staged_noshow_max": 2547,
+   "bearing_fail_ticks": 2547,
+   "n_shows": 0,
+   "t_show1": null
+  },
+  {
+   "policy": "oracle",
+   "seed": 56,
+   "kind": "lobos",
+   "sev": 4,
+   "staged_noshow_max": 1,
+   "bearing_fail_ticks": 0,
+   "n_shows": 1,
+   "t_show1": 2519
+  },
+  {
+   "policy": "spawn",
+   "seed": 2,
+   "kind": "lobos",
+   "sev": 5,
+   "staged_noshow_max": 0,
+   "bearing_fail_ticks": 0,
+   "n_shows": 1,
+   "t_show1": 360
+  },
+  {
+   "policy": "spawn",
+   "seed": 12,
+   "kind": "lobos",
+   "sev": 5,
+   "staged_noshow_max": 0,
+   "bearing_fail_ticks": 0,
+   "n_shows": 1,
+   "t_show1": 1
+  },
+  {
+   "policy": "spawn",
+   "seed": 19,
+   "kind": "lobos",
+   "sev": 0,
+   "staged_noshow_max": 0,
+   "bearing_fail_ticks": 0,
+   "n_shows": 0,
+   "t_show1": null
+  },
+  {
+   "policy": "spawn",
+   "seed": 26,
+   "kind": "lobos",
+   "sev": 5,
+   "staged_noshow_max": 0,
+   "bearing_fail_ticks": 0,
+   "n_shows": 1,
+   "t_show1": 1
+  },
+  {
+   "policy": "spawn",
+   "seed": 29,
+   "kind": "lobos",
+   "sev": 6,
+   "staged_noshow_max": 0,
+   "bearing_fail_ticks": 0,
+   "n_shows": 1,
+   "t_show1": 1
+  },
+  {
+   "policy": "spawn",
+   "seed": 37,
+   "kind": "lobos",
+   "sev": 5,
+   "staged_noshow_max": 1,
+   "bearing_fail_ticks": 0,
+   "n_shows": 1,
+   "t_show1": 646
+  },
+  {
+   "policy": "spawn",
+   "seed": 40,
+   "kind": "lobos",
+   "sev": 5,
+   "staged_noshow_max": 1,
+   "bearing_fail_ticks": 0,
+   "n_shows": 1,
+   "t_show1": 458
+  },
+  {
+   "policy": "spawn",
+   "seed": 42,
+   "kind": "lobos",
+   "sev": 2,
+   "staged_noshow_max": 1,
+   "bearing_fail_ticks": 0,
+   "n_shows": 1,
+   "t_show1": 529
+  },
+  {
+   "policy": "spawn",
+   "seed": 43,
+   "kind": "lobos",
+   "sev": 0,
+   "staged_noshow_max": 0,
+   "bearing_fail_ticks": 0,
+   "n_shows": 1,
+   "t_show1": 1
+  },
+  {
+   "policy": "spawn",
+   "seed": 45,
+   "kind": "lobos",
+   "sev": 7,
+   "staged_noshow_max": 0,
+   "bearing_fail_ticks": 0,
+   "n_shows": 1,
+   "t_show1": 9
+  }
+ ],
+ "VEREDICTO_GUION": "SE ATASCA SOLO - PARAR"
+}

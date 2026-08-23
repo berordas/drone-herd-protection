@@ -1,0 +1,5 @@
+jugada_entera_S | seed=98 mixto n=4 G=False sev_eval=2 jugada={'t_staged': 901, 't_show': 1231, 't_suelta': 1419, 't_strike': 2375, 'completa': True} stalls=0 | oracle sev=2
+t=     0  DECISION #1   CEBO_d90   -> MUERTE            ticks= 2430 r=1.00
+t=  2430  DECISION #2   MASA       -> FIN_EPISODIO      ticks=  149 r=1.00
+t=  1230  capa ALIGN_END causa=sin_progreso err_deg=25.2 ticks=1230
+t=  1231  capa SHOW_START mode=manager staged_causa=meseta err_rumbo_deg=25.2 delta_pretendida_deg=90.0

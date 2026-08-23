@@ -1,0 +1,10 @@
+peor_manager | seed=41 lobos n=4 G=False sev_eval=7 jugada={'t_staged': 648, 't_show': 867, 't_suelta': 995, 't_strike': 1360, 'completa': True} stalls=0 | oracle sev=4
+t=     0  DECISION #1   CEBO_d90   -> MUERTE            ticks= 1368 r=1.00
+t=  1368  DECISION #2   MASA       -> MUERTE            ticks=   53 r=1.00
+t=  1421  DECISION #3   CEBO_keep  -> MUERTE            ticks=    1 r=1.00
+t=  1422  DECISION #4   MASA       -> MUERTE            ticks=  156 r=1.00
+t=  1578  DECISION #5   MASA       -> MUERTE            ticks=   73 r=1.00
+t=  1651  DECISION #6   MASA       -> MUERTE            ticks=  132 r=1.00
+t=  1783  DECISION #7   CEBO_keep  -> FIN_EPISODIO      ticks=  162 r=1.00
+t=   866  capa ALIGN_END causa=tolerancia err_deg=24.9 ticks=866
+t=   867  capa SHOW_START mode=manager staged_causa=a_tiro err_rumbo_deg=24.9 delta_pretendida_deg=90.0

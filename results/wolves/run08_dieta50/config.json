@@ -1,0 +1,71 @@
+{
+  "args": {
+    "total_steps": 10000000,
+    "n_envs": 8,
+    "seed": 0,
+    "outdir": "/data/wolves/run08_dieta50",
+    "kinds": [
+      "lobos",
+      "mixto"
+    ],
+    "device": "cpu",
+    "frame_skip": 5,
+    "smoke": false,
+    "resume": null,
+    "eval_every": 250000,
+    "shaping": "off",
+    "shaping_beta": 1.0,
+    "init_from": null,
+    "lr": 0.0001,
+    "abort_ref": null,
+    "residual": true,
+    "residual_scale": null,
+    "phase1_steps": 1000000,
+    "train_two_front_rate": 0.5,
+    "curriculum": false
+  },
+  "hyper": {
+    "n_steps": 2048,
+    "batch_size": 512,
+    "gamma": 0.999,
+    "gae_lambda": 0.95,
+    "learning_rate": 0.0001,
+    "ent_coef": 0.01,
+    "clip_range": 0.2,
+    "n_epochs": 10
+  },
+  "net_arch": [
+    256,
+    256
+  ],
+  "algo": "PPO(MlpPolicy)",
+  "reward": "+1 por res matada (rala, compartida); sin castigo por tiempo ni por a-salvo",
+  "shaping": {
+    "on": false,
+    "beta": 1.0,
+    "gamma": 0.999,
+    "phi": "-beta * mean_i dist(lobo_i, presa ternero-primero) / diagonal_campo; 0 si coasting",
+    "nota": "gamma EXACTAMENTE el del PPO (inocuidad de Ng et al.); la eval NUNCA ve el shaping"
+  },
+  "init_from": null,
+  "residual": {
+    "on": true,
+    "scale": "wolf_speed",
+    "phase1_steps": 1000000,
+    "log_std_init": -2.0,
+    "obs": "132 = 122 + accion del script normalizada (pista del estado oculto)",
+    "nota": "RPL (Silver et al. 2018): v_final = clip_norma(v_script + delta); el script entero vive dentro (su presa/histéresis/coasting)"
+  },
+  "diet": {
+    "on": true,
+    "train_two_front_rate": 0.5,
+    "mecanismo": "muestreo por RECHAZO del spawn real v3.4 (semillas re-sorteadas; nada sintético; cebo 1 / asalto n-1 como los produce el mundo)",
+    "recompensa": "EQUIPO PURA (+1/muerte, shaping OFF, SIN pista de cebo)",
+    "nota": "override SOLO de entrenamiento (WolfPackEnv train_two_front_rate); la EVAL es SIEMPRE spawn grouped normal v3.4 (~29% de 2 frentes)"
+  },
+  "curriculum": {
+    "on": false
+  },
+  "abort": "CRITERIOS (pactados, run08: DIETA 50% DE DOS FRENTES sobre v3.4 — residual, recompensa de EQUIPO PURA +1/muerte, shaping OFF, SIN pista de cebo; δ autoridad plena; el ÚNICO cambio vs run05/07 es la dieta: 50% de episodios de ENTRENAMIENTO forzados a 2 subgrupos por muestreo por RECHAZO del spawn real v3.4 —nada sintético—; la EVAL sigue al ~29% real). PREGUNTA QUE RESPONDE: ¿el cebo no emergió por FALTA DE DIETA (escenario infrecuente) o por ARQUITECTURA (política plana)? SUELO v3.4 MEDIDO (paso 0): eval ligera 10 semillas lobos δ=0 = 3.20 (detalle [1,0,5,4,5,3,3,5,3,3]; en FASE 1, política congelada, las ligeras deben CLAVARSE ahí); arnés = 2.68/0/2.77 (el scriptado v3.4 congelado, bit a bit por test 9). REFERENCIA DE CEBO DEL SCRIPTADO v3.4 (cebo_diag --floor, 58 eps de 2 subgrupos, 203 muertes; ¡NO nula — el scriptado v3.4 YA ceba a mano, en v2.8 era 0.0%!): killer-NO-CONFIRMADO 26.6%, cebo-confirmado 26.6%, muertes-del-NO-anclado 79.3%, sev 2-frentes 3.50. GUARDIA DEL SUELO: si en fase 2 la eval ligera cae por debajo de ~2.9 (suelo − 0.3) de forma SOSTENIDA (>=1.500.000 pasos = 6 evals), PARAR y reportar (PPO erosiona al script). MÉTRICA QUE DECIDE (al final, checkpoints con cebo_diag sobre la eval real al ~29%): ¿la política iguala/supera el killer-no-confirmado del scriptado y sube la severidad, o se queda igual? DESENLACES: (1) el cebo ASOMA con dieta 50% -> era FALTA DE DIETA; (2) se mueve pero no llega -> la dieta ayuda pero no basta (jerárquico justificado con matiz); (3) sigue clavado en el scriptado -> ESTRUCTURAL (arquitectura), jerárquico justificado con evidencia. La vara REAL es eval_wolves 100 semillas (spawn normal, vs 2.68/2.77) + cebo_diag vs la referencia del scriptado.",
+  "fecha": "2026-08-04T11:35:59"
+}

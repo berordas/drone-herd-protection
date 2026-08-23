@@ -150,7 +150,7 @@ cabecera y en la memoria (corregidos) · redondeos (Reactive vs manager lobo 1.7
 Código = `313cb51` (último commit con conducta; D2b) + commits de docs; tags `v3.4-baseline` … `v3.7.1-plazas-estacion`;
 worktree `wt_v37_replica` @ `4bf5024` conservado (pin de la réplica M1''''); artefactos en `/data` (`hrl_e0/`,
 `hrl_m1/`, `hrl_d2/`, `drones/`, `wolves/`, `metro_v35/`, `gifs/`, `TABLA_MAESTRA.md`); verja 8/8 verde en el commit
-de cierre; contenedor `202214793-wolves` parado. **No hay siguiente paso ejecutable** (§11 queda como histórico).
+de cierre; contenedor `<uid>-wolves` parado. **No hay siguiente paso ejecutable** (§11 queda como histórico).
 
 
 >

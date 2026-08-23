@@ -1,0 +1,45 @@
+{
+ "rows": [
+  {
+   "seed": 67,
+   "kind": "lobos",
+   "aborts_M1pp": 268,
+   "aborts_pre_show": 0,
+   "aborts_post_show": 0,
+   "t_show": 728,
+   "sev": 6,
+   "decisiones": 6
+  },
+  {
+   "seed": 86,
+   "kind": "lobos",
+   "aborts_M1pp": 143,
+   "aborts_pre_show": 0,
+   "aborts_post_show": 0,
+   "t_show": 3518,
+   "sev": 3,
+   "decisiones": 4
+  },
+  {
+   "seed": 63,
+   "kind": "mixto",
+   "aborts_M1pp": 1,
+   "aborts_pre_show": 0,
+   "aborts_post_show": 0,
+   "t_show": 719,
+   "sev": 0,
+   "decisiones": 1
+  },
+  {
+   "seed": 35,
+   "kind": "lobos",
+   "aborts_M1pp": 470,
+   "aborts_pre_show": 7,
+   "aborts_post_show": 0,
+   "t_show": 419,
+   "sev": 0,
+   "decisiones": 8
+  }
+ ],
+ "post_show_cero": true
+}

@@ -1,0 +1,28 @@
+sev_max_seed49_lobos_sev6 | arm=cebo_capa_manager status=predation sev=6 steps=4389 grupos=[1, 3] | muertes con procedencia al final
+t=     0  OPTION_START     option=CEBO delta_deg=180.0
+t=  3397  ESCOLTA_LATCH
+t=  3397  ESCOLTA_PREMATURA primer_confirmado=0 quien=señuelo investigador=1 investigador_hacia_corzo=False asalto_borde_min_m=0.0 pinzamiento_borde=True
+t=  3398  CONFIRM_DECOY    wolf=0
+t=  3398  ANCHOR_FLIP      frm=None to=0
+t=  3474  LURE_COMMIT      drones_cono=3 puerta_libre_m=60.3
+t=  3870  LURE_COMMIT_END
+t=  3941  DEATH            kind=calf prey=0 flankers=[1]
+t=  4006  LURE_COMMIT      drones_cono=4 puerta_libre_m=60.0
+t=  4034  DEATH            kind=calf prey=1 flankers=[2]
+t=  4040  DEATH            kind=adult prey=1 flankers=[1, 2]
+t=  4189  LURE_COMMIT_END
+t=  4189  DEATH            kind=adult prey=5 flankers=[1, 2]
+t=  4210  LURE_COMMIT      drones_cono=4 puerta_libre_m=60.1
+t=  4220  SHOW_START       mode=manager
+t=  4220  STAGED
+t=  4321  DEATH            kind=adult prey=3 flankers=[2, 3]
+t=  4321  STRIKE_RESOLVED  outcome=kill latencia=101
+t=  4374  LURE_COMMIT_END
+t=  4389  DEATH            kind=adult prey=0 flankers=[1, 2]
+t=  4389  HERD_SAFE        n_safe=2 n_muertas=6
+t=  3941  MUERTE calf#0 flankers=[1] conf=[False] nearest=1(conf=False) grupo=2 octante=2 gotera=False dflip=543
+t=  4034  MUERTE calf#1 flankers=[2] conf=[False] nearest=2(conf=False) grupo=2 octante=3 gotera=False dflip=636
+t=  4040  MUERTE adult#1 flankers=[1, 2] conf=[False, False] nearest=2(conf=False) grupo=2 octante=3 gotera=False dflip=642
+t=  4189  MUERTE adult#5 flankers=[1, 2] conf=[False, False] nearest=2(conf=False) grupo=2 octante=5 gotera=False dflip=791
+t=  4321  MUERTE adult#3 flankers=[2, 3] conf=[False, True] nearest=2(conf=False) grupo=2 octante=4 gotera=False dflip=923
+t=  4389  MUERTE adult#0 flankers=[1, 2] conf=[False, False] nearest=1(conf=False) grupo=2 octante=5 gotera=False dflip=991

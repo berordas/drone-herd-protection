@@ -1,0 +1,11 @@
+jugada_entera_G | seed=77 lobos n=5 G=True sev_eval=7 jugada={'t_staged': 726, 't_show': 727, 't_suelta': 974, 't_strike': 1332, 'completa': True} stalls=0 | oracle sev=7
+t=     0  DECISION #1   CEBO_keep  -> MUERTE            ticks= 1340 r=1.00
+t=  1340  DECISION #2   CEBO_d90   -> MUERTE            ticks=   43 r=1.00
+t=  1383  DECISION #3   CEBO_d90   -> MUERTE            ticks=   88 r=1.00
+t=  1471  DECISION #4   CEBO_keep  -> MUERTE            ticks=  206 r=1.00
+t=  1677  DECISION #5   CEBO_d180  -> MUERTE            ticks=  117 r=1.00
+t=  1794  DECISION #6   CEBO_d180  -> MUERTE            ticks=   92 r=1.00
+t=  1886  DECISION #7   CEBO_d180  -> FIN_EPISODIO      ticks=   72 r=1.00
+t=   727  capa SHOW_START mode=keep staged_causa=meseta err_rumbo_deg=None delta_pretendida_deg=None
+t=  1396  capa ALIGN_END causa=tolerancia err_deg=24.4 ticks=56
+t=  1814  capa ALIGN_END causa=tolerancia err_deg=24.8 ticks=137

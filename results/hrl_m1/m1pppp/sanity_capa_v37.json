@@ -1,0 +1,19 @@
+{
+ "n_pares": 50,
+ "sev_keep": 2.86,
+ "sev_masa": 1.7,
+ "delta_keep_menos_masa": [
+  1.16,
+  0.38,
+  1.94
+ ],
+ "ref_v36": [
+  1.16,
+  0.42,
+  1.9
+ ],
+ "censura_keep": {
+  "jugada_completa_frac": 1.0,
+  "stalls_total": 0
+ }
+}

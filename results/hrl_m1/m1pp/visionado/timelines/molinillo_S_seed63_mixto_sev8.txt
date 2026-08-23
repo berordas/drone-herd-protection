@@ -1,0 +1,15 @@
+molinillo_S | seed=63 mixto n=4 G=False
+t=     0  DECISION #1   CEBO_d180  -> K_MAX             ticks= 4500 r=0
+t=  4500  DECISION #2   CEBO_d90   -> K_MAX             ticks= 4500 r=0
+t=  9000  DECISION #3   CEBO_d180  -> K_MAX             ticks= 4500 r=0
+t= 13500  DECISION #4   CEBO_keep  -> K_MAX             ticks= 4500 r=0
+t= 18000  DECISION #5   MASA       -> MUERTE            ticks=  423 r=1
+t= 18423  DECISION #6   MASA       -> MUERTE            ticks=   50 r=1
+t= 18473  DECISION #7   MASA       -> MUERTE            ticks=    8 r=1
+t= 18481  DECISION #8   MASA       -> MUERTE            ticks=   97 r=1
+t= 18578  DECISION #9   CEBO_d90   -> ABORT_BAIT_FAILED ticks=   50 r=0
+t= 18628  DECISION #10  CEBO_d90   -> MUERTE            ticks=   51 r=1
+t= 18679  DECISION #11  CEBO_d90   -> MUERTE            ticks=  111 r=1
+t= 18790  DECISION #12  CEBO_d90   -> MUERTE            ticks=   61 r=1
+t= 18851  DECISION #13  CEBO_d90   -> FIN_EPISODIO      ticks=  106 r=1
+t= 18667  capa SHOW_START mode=manager

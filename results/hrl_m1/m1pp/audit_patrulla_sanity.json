@@ -1,0 +1,3705 @@
+{
+ "modo": "sanity",
+ "total": {
+  "n_eps": 100,
+  "ticks_patrulla": 172677,
+  "frac_aviso": 0.9577419111983646,
+  "frac_violacion": 0.0,
+  "D_max": 185.4,
+  "R_media": 69.012,
+  "R_max": 93.0,
+  "R_zonas_frac": {
+   "lt71": 0.06740330211898515,
+   "z71_142": 0.9325966978810148,
+   "gt142": 0.0
+  },
+  "eps_con_violacion": 0,
+  "entradas_no_detectadas": 0,
+  "end_por_arco_violacion": 0,
+  "end_por_arco_aviso": 0
+ },
+ "CEBO_keep": {
+  "n_eps": 50,
+  "ticks_patrulla": 161725,
+  "frac_aviso": 0.9695285206368836,
+  "frac_violacion": 0.0,
+  "D_max": 185.4,
+  "R_media": 72.71600000000001,
+  "R_max": 93.0,
+  "R_zonas_frac": {
+   "lt71": 0.053312722213634256,
+   "z71_142": 0.9466872777863657,
+   "gt142": 0.0
+  },
+  "eps_con_violacion": 0,
+  "entradas_no_detectadas": 0,
+  "end_por_arco_violacion": 0,
+  "end_por_arco_aviso": 0
+ },
+ "MASA": {
+  "n_eps": 50,
+  "ticks_patrulla": 10952,
+  "frac_aviso": 0.7836924762600438,
+  "frac_violacion": 0.0,
+  "D_max": 183.8,
+  "R_media": 65.308,
+  "R_max": 92.5,
+  "R_zonas_frac": {
+   "lt71": 0.27547479912344774,
+   "z71_142": 0.7245252008765523,
+   "gt142": 0.0
+  },
+  "eps_con_violacion": 0,
+  "entradas_no_detectadas": 0,
+  "end_por_arco_violacion": 0,
+  "end_por_arco_aviso": 0
+ },
+ "decoy_1d": {
+  "n": 50,
+  "no_alcanzado": 0,
+  "t_merodeo_medio": 626.6,
+  "t_teorico_medio": 424.8399999999999,
+  "sobrecoste_medio": 201.76000000000005,
+  "sobrecoste_p50": 10.7,
+  "sobrecoste_p90": 676.82,
+  "sobrecoste_max": 1078.4
+ },
+ "episodes": [
+  {
+   "ticks_patrulla": 926,
+   "ticks_aviso": 874,
+   "ticks_violacion": 0,
+   "D_max": 148.4,
+   "R_media": 73.3,
+   "R_max": 75.6,
+   "R_zonas": {
+    "lt71": 56,
+    "z71_142": 870,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 52,
+     "d_max": 148.4,
+     "r": 74.2,
+     "m": 3,
+     "t1": 926
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 2,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 5,
+   "steps": 1669,
+   "decoy": {
+    "t_merodeo": 710,
+    "dist_recta": 169.3,
+    "t_teorico": 423.3,
+    "sobrecoste": 286.7
+   }
+  },
+  {
+   "ticks_patrulla": 649,
+   "ticks_aviso": 606,
+   "ticks_violacion": 0,
+   "D_max": 162.7,
+   "R_media": 78.6,
+   "R_max": 81.6,
+   "R_zonas": {
+    "lt71": 45,
+    "z71_142": 604,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 43,
+     "d_max": 162.7,
+     "r": 81.3,
+     "m": 3,
+     "t1": 649
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 12,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 5,
+   "steps": 1588,
+   "decoy": {
+    "t_merodeo": 420,
+    "dist_recta": 163.7,
+    "t_teorico": 409.3,
+    "sobrecoste": 10.7
+   }
+  },
+  {
+   "ticks_patrulla": 23570,
+   "ticks_aviso": 23530,
+   "ticks_violacion": 0,
+   "D_max": 141.9,
+   "R_media": 79.0,
+   "R_max": 87.5,
+   "R_zonas": {
+    "lt71": 725,
+    "z71_142": 22845,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 40,
+     "d_max": 141.9,
+     "r": 52.7,
+     "m": 4,
+     "t1": 23570
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 19,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 0,
+   "steps": 23570,
+   "decoy": {
+    "t_merodeo": 2093,
+    "dist_recta": 514.7,
+    "t_teorico": 1286.9,
+    "sobrecoste": 806.1
+   }
+  },
+  {
+   "ticks_patrulla": 557,
+   "ticks_aviso": 398,
+   "ticks_violacion": 0,
+   "D_max": 150.7,
+   "R_media": 70.6,
+   "R_max": 75.4,
+   "R_zonas": {
+    "lt71": 172,
+    "z71_142": 385,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 159,
+     "d_max": 150.7,
+     "r": 75.4,
+     "m": 3,
+     "t1": 557
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 26,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 5,
+   "steps": 1571,
+   "decoy": {
+    "t_merodeo": 354,
+    "dist_recta": 140.9,
+    "t_teorico": 352.1,
+    "sobrecoste": 1.9
+   }
+  },
+  {
+   "ticks_patrulla": 1081,
+   "ticks_aviso": 1036,
+   "ticks_violacion": 0,
+   "D_max": 155.9,
+   "R_media": 73.9,
+   "R_max": 78.3,
+   "R_zonas": {
+    "lt71": 52,
+    "z71_142": 1029,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 45,
+     "d_max": 155.9,
+     "r": 78.0,
+     "m": 3,
+     "t1": 1081
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 29,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 6,
+   "steps": 2006,
+   "decoy": {
+    "t_merodeo": 751,
+    "dist_recta": 290.3,
+    "t_teorico": 725.7,
+    "sobrecoste": 25.3
+   }
+  },
+  {
+   "ticks_patrulla": 104,
+   "ticks_aviso": 57,
+   "ticks_violacion": 0,
+   "D_max": 156.0,
+   "R_media": 63.4,
+   "R_max": 77.3,
+   "R_zonas": {
+    "lt71": 49,
+    "z71_142": 55,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 47,
+     "d_max": 156.0,
+     "r": 77.2,
+     "m": 3,
+     "t1": 104
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 37,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 5,
+   "steps": 2116,
+   "decoy": {
+    "t_merodeo": 0,
+    "dist_recta": 0.0,
+    "t_teorico": 0.0,
+    "sobrecoste": 0.0
+   }
+  },
+  {
+   "ticks_patrulla": 633,
+   "ticks_aviso": 188,
+   "ticks_violacion": 0,
+   "D_max": 140.9,
+   "R_media": 67.9,
+   "R_max": 71.1,
+   "R_zonas": {
+    "lt71": 583,
+    "z71_142": 50,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 313,
+     "d_max": 100.5,
+     "r": 71.1,
+     "m": 4,
+     "t1": 422
+    },
+    {
+     "estado": "aviso",
+     "t0": 554,
+     "d_max": 140.9,
+     "r": 70.4,
+     "m": 3,
+     "t1": 633
+    }
+   ],
+   "n_ventanas": 2,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 40,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 5,
+   "steps": 1510,
+   "decoy": {
+    "t_merodeo": 31,
+    "dist_recta": 9.5,
+    "t_teorico": 23.9,
+    "sobrecoste": 7.1
+   }
+  },
+  {
+   "ticks_patrulla": 98,
+   "ticks_aviso": 59,
+   "ticks_violacion": 0,
+   "D_max": 174.8,
+   "R_media": 70.3,
+   "R_max": 86.5,
+   "R_zonas": {
+    "lt71": 40,
+    "z71_142": 58,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 39,
+     "d_max": 174.8,
+     "r": 86.3,
+     "m": 3,
+     "t1": 98
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 42,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 2,
+   "steps": 916,
+   "decoy": {
+    "t_merodeo": 0,
+    "dist_recta": 0.0,
+    "t_teorico": 0.0,
+    "sobrecoste": 0.0
+   }
+  },
+  {
+   "ticks_patrulla": 599,
+   "ticks_aviso": 550,
+   "ticks_violacion": 0,
+   "D_max": 155.4,
+   "R_media": 73.9,
+   "R_max": 77.7,
+   "R_zonas": {
+    "lt71": 52,
+    "z71_142": 547,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 49,
+     "d_max": 155.4,
+     "r": 77.7,
+     "m": 3,
+     "t1": 599
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 43,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 0,
+   "steps": 2015,
+   "decoy": {
+    "t_merodeo": 395,
+    "dist_recta": 155.5,
+    "t_teorico": 388.7,
+    "sobrecoste": 6.3
+   }
+  },
+  {
+   "ticks_patrulla": 464,
+   "ticks_aviso": 418,
+   "ticks_violacion": 0,
+   "D_max": 159.2,
+   "R_media": 76.1,
+   "R_max": 80.2,
+   "R_zonas": {
+    "lt71": 49,
+    "z71_142": 415,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 46,
+     "d_max": 159.2,
+     "r": 79.6,
+     "m": 3,
+     "t1": 464
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 45,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 7,
+   "steps": 1513,
+   "decoy": {
+    "t_merodeo": 144,
+    "dist_recta": 53.3,
+    "t_teorico": 133.3,
+    "sobrecoste": 10.7
+   }
+  },
+  {
+   "ticks_patrulla": 3252,
+   "ticks_aviso": 3174,
+   "ticks_violacion": 0,
+   "D_max": 159.8,
+   "R_media": 83.9,
+   "R_max": 90.9,
+   "R_zonas": {
+    "lt71": 91,
+    "z71_142": 3161,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 37,
+     "d_max": 144.7,
+     "r": 77.1,
+     "m": 4,
+     "t1": 2743
+    },
+    {
+     "estado": "aviso",
+     "t0": 2784,
+     "d_max": 159.8,
+     "r": 79.9,
+     "m": 3,
+     "t1": 3252
+    }
+   ],
+   "n_ventanas": 2,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 46,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 4,
+   "steps": 23570,
+   "decoy": {
+    "t_merodeo": 311,
+    "dist_recta": 76.8,
+    "t_teorico": 192.1,
+    "sobrecoste": 118.9
+   }
+  },
+  {
+   "ticks_patrulla": 76,
+   "ticks_aviso": 43,
+   "ticks_violacion": 0,
+   "D_max": 149.0,
+   "R_media": 56.5,
+   "R_max": 75.0,
+   "R_zonas": {
+    "lt71": 54,
+    "z71_142": 22,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 33,
+     "d_max": 149.0,
+     "r": 74.2,
+     "m": 3,
+     "t1": 76
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 48,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 3,
+   "steps": 1412,
+   "decoy": {
+    "t_merodeo": 0,
+    "dist_recta": 0.0,
+    "t_teorico": 0.0,
+    "sobrecoste": 0.0
+   }
+  },
+  {
+   "ticks_patrulla": 1945,
+   "ticks_aviso": 1902,
+   "ticks_violacion": 0,
+   "D_max": 146.6,
+   "R_media": 75.2,
+   "R_max": 82.0,
+   "R_zonas": {
+    "lt71": 285,
+    "z71_142": 1660,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 43,
+     "d_max": 146.6,
+     "r": 77.4,
+     "m": 3,
+     "t1": 1945
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 49,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 5,
+   "steps": 2751,
+   "decoy": {
+    "t_merodeo": 1321,
+    "dist_recta": 309.8,
+    "t_teorico": 774.5,
+    "sobrecoste": 546.5
+   }
+  },
+  {
+   "ticks_patrulla": 618,
+   "ticks_aviso": 581,
+   "ticks_violacion": 0,
+   "D_max": 147.5,
+   "R_media": 73.6,
+   "R_max": 79.6,
+   "R_zonas": {
+    "lt71": 41,
+    "z71_142": 577,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 37,
+     "d_max": 147.5,
+     "r": 73.7,
+     "m": 3,
+     "t1": 618
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 52,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 5,
+   "steps": 1558,
+   "decoy": {
+    "t_merodeo": 17,
+    "dist_recta": 4.3,
+    "t_teorico": 10.7,
+    "sobrecoste": 6.3
+   }
+  },
+  {
+   "ticks_patrulla": 23570,
+   "ticks_aviso": 23529,
+   "ticks_violacion": 0,
+   "D_max": 149.1,
+   "R_media": 80.5,
+   "R_max": 87.9,
+   "R_zonas": {
+    "lt71": 465,
+    "z71_142": 23105,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 41,
+     "d_max": 149.1,
+     "r": 55.3,
+     "m": 4,
+     "t1": 23570
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 58,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 0,
+   "steps": 23570,
+   "decoy": {
+    "t_merodeo": 1718,
+    "dist_recta": 418.5,
+    "t_teorico": 1046.1,
+    "sobrecoste": 671.9
+   }
+  },
+  {
+   "ticks_patrulla": 210,
+   "ticks_aviso": 163,
+   "ticks_violacion": 0,
+   "D_max": 151.3,
+   "R_media": 68.7,
+   "R_max": 75.7,
+   "R_zonas": {
+    "lt71": 51,
+    "z71_142": 159,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 47,
+     "d_max": 151.3,
+     "r": 75.7,
+     "m": 3,
+     "t1": 210
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 60,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 0,
+   "steps": 23570,
+   "decoy": {
+    "t_merodeo": 52,
+    "dist_recta": 20.1,
+    "t_teorico": 50.1,
+    "sobrecoste": 1.9
+   }
+  },
+  {
+   "ticks_patrulla": 23570,
+   "ticks_aviso": 22579,
+   "ticks_violacion": 0,
+   "D_max": 142.5,
+   "R_media": 76.7,
+   "R_max": 84.6,
+   "R_zonas": {
+    "lt71": 1531,
+    "z71_142": 22039,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 10209,
+     "d_max": 112.5,
+     "r": 79.3,
+     "m": 4,
+     "t1": 18378
+    },
+    {
+     "estado": "aviso",
+     "t0": 60,
+     "d_max": 142.5,
+     "r": 52.9,
+     "m": 4,
+     "t1": 5239
+    },
+    {
+     "estado": "aviso",
+     "t0": 5278,
+     "d_max": 120.3,
+     "r": 84.5,
+     "m": 4,
+     "t1": 9649
+    },
+    {
+     "estado": "aviso",
+     "t0": 19071,
+     "d_max": 115.5,
+     "r": 81.7,
+     "m": 4,
+     "t1": 22602
+    },
+    {
+     "estado": "aviso",
+     "t0": 18428,
+     "d_max": 140.7,
+     "r": 52.4,
+     "m": 4,
+     "t1": 19024
+    },
+    {
+     "estado": "aviso",
+     "t0": 23242,
+     "d_max": 103.5,
+     "r": 73.1,
+     "m": 4,
+     "t1": 23570
+    },
+    {
+     "estado": "aviso",
+     "t0": 9701,
+     "d_max": 135.1,
+     "r": 49.1,
+     "m": 4,
+     "t1": 9993
+    },
+    {
+     "estado": "aviso",
+     "t0": 10032,
+     "d_max": 108.1,
+     "r": 72.5,
+     "m": 4,
+     "t1": 10145
+    }
+   ],
+   "n_ventanas": 8,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 64,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 0,
+   "steps": 23570,
+   "decoy": {
+    "t_merodeo": 39,
+    "dist_recta": 10.7,
+    "t_teorico": 26.6,
+    "sobrecoste": 12.4
+   }
+  },
+  {
+   "ticks_patrulla": 412,
+   "ticks_aviso": 373,
+   "ticks_violacion": 0,
+   "D_max": 152.9,
+   "R_media": 73.7,
+   "R_max": 76.7,
+   "R_zonas": {
+    "lt71": 44,
+    "z71_142": 368,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 39,
+     "d_max": 152.9,
+     "r": 76.4,
+     "m": 3,
+     "t1": 412
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 76,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 0,
+   "steps": 23570,
+   "decoy": {
+    "t_merodeo": 0,
+    "dist_recta": 0.0,
+    "t_teorico": 0.0,
+    "sobrecoste": 0.0
+   }
+  },
+  {
+   "ticks_patrulla": 1492,
+   "ticks_aviso": 1448,
+   "ticks_violacion": 0,
+   "D_max": 154.9,
+   "R_media": 77.8,
+   "R_max": 83.1,
+   "R_zonas": {
+    "lt71": 47,
+    "z71_142": 1445,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 44,
+     "d_max": 154.9,
+     "r": 77.4,
+     "m": 3,
+     "t1": 1492
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 77,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 8,
+   "steps": 2538,
+   "decoy": {
+    "t_merodeo": 1293,
+    "dist_recta": 306.6,
+    "t_teorico": 766.5,
+    "sobrecoste": 526.5
+   }
+  },
+  {
+   "ticks_patrulla": 5719,
+   "ticks_aviso": 5641,
+   "ticks_violacion": 0,
+   "D_max": 167.5,
+   "R_media": 82.0,
+   "R_max": 87.1,
+   "R_zonas": {
+    "lt71": 153,
+    "z71_142": 5566,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 2074,
+     "d_max": 167.5,
+     "r": 83.8,
+     "m": 3,
+     "t1": 5719
+    },
+    {
+     "estado": "aviso",
+     "t0": 42,
+     "d_max": 128.9,
+     "r": 68.5,
+     "m": 4,
+     "t1": 2038
+    }
+   ],
+   "n_ventanas": 2,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 78,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 5,
+   "steps": 6577,
+   "decoy": {
+    "t_merodeo": 30,
+    "dist_recta": 11.3,
+    "t_teorico": 28.1,
+    "sobrecoste": 1.9
+   }
+  },
+  {
+   "ticks_patrulla": 81,
+   "ticks_aviso": 43,
+   "ticks_violacion": 0,
+   "D_max": 185.4,
+   "R_media": 67.1,
+   "R_max": 93.0,
+   "R_zonas": {
+    "lt71": 41,
+    "z71_142": 40,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 38,
+     "d_max": 185.4,
+     "r": 92.6,
+     "m": 3,
+     "t1": 81
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 81,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 0,
+   "steps": 23570,
+   "decoy": {
+    "t_merodeo": 529,
+    "dist_recta": 209.4,
+    "t_teorico": 523.6,
+    "sobrecoste": 5.4
+   }
+  },
+  {
+   "ticks_patrulla": 1214,
+   "ticks_aviso": 1176,
+   "ticks_violacion": 0,
+   "D_max": 167.2,
+   "R_media": 80.4,
+   "R_max": 84.7,
+   "R_zonas": {
+    "lt71": 110,
+    "z71_142": 1104,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 38,
+     "d_max": 167.2,
+     "r": 83.6,
+     "m": 3,
+     "t1": 1214
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 82,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 2,
+   "steps": 23570,
+   "decoy": {
+    "t_merodeo": 999,
+    "dist_recta": 207.9,
+    "t_teorico": 519.8,
+    "sobrecoste": 479.2
+   }
+  },
+  {
+   "ticks_patrulla": 114,
+   "ticks_aviso": 66,
+   "ticks_violacion": 0,
+   "D_max": 160.1,
+   "R_media": 64.4,
+   "R_max": 79.6,
+   "R_zonas": {
+    "lt71": 50,
+    "z71_142": 64,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 48,
+     "d_max": 160.1,
+     "r": 79.6,
+     "m": 3,
+     "t1": 114
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 83,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 0,
+   "steps": 23570,
+   "decoy": {
+    "t_merodeo": 948,
+    "dist_recta": 338.6,
+    "t_teorico": 846.4,
+    "sobrecoste": 101.6
+   }
+  },
+  {
+   "ticks_patrulla": 1897,
+   "ticks_aviso": 1859,
+   "ticks_violacion": 0,
+   "D_max": 171.3,
+   "R_media": 85.9,
+   "R_max": 92.5,
+   "R_zonas": {
+    "lt71": 45,
+    "z71_142": 1852,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 38,
+     "d_max": 171.3,
+     "r": 85.6,
+     "m": 3,
+     "t1": 1897
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 84,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 6,
+   "steps": 2919,
+   "decoy": {
+    "t_merodeo": 1704,
+    "dist_recta": 393.2,
+    "t_teorico": 982.9,
+    "sobrecoste": 721.1
+   }
+  },
+  {
+   "ticks_patrulla": 91,
+   "ticks_aviso": 54,
+   "ticks_violacion": 0,
+   "D_max": 175.2,
+   "R_media": 66.2,
+   "R_max": 89.2,
+   "R_zonas": {
+    "lt71": 46,
+    "z71_142": 45,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 37,
+     "d_max": 175.2,
+     "r": 88.8,
+     "m": 3,
+     "t1": 91
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 88,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 4,
+   "steps": 1119,
+   "decoy": {
+    "t_merodeo": 0,
+    "dist_recta": 0.0,
+    "t_teorico": 0.0,
+    "sobrecoste": 0.0
+   }
+  },
+  {
+   "ticks_patrulla": 73,
+   "ticks_aviso": 43,
+   "ticks_violacion": 0,
+   "D_max": 172.2,
+   "R_media": 65.2,
+   "R_max": 88.9,
+   "R_zonas": {
+    "lt71": 42,
+    "z71_142": 31,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 30,
+     "d_max": 172.2,
+     "r": 88.5,
+     "m": 3,
+     "t1": 73
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 91,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 0,
+   "steps": 23570,
+   "decoy": {
+    "t_merodeo": 490,
+    "dist_recta": 184.1,
+    "t_teorico": 460.4,
+    "sobrecoste": 29.6
+   }
+  },
+  {
+   "ticks_patrulla": 68,
+   "ticks_aviso": 35,
+   "ticks_violacion": 0,
+   "D_max": 161.5,
+   "R_media": 55.0,
+   "R_max": 80.1,
+   "R_zonas": {
+    "lt71": 50,
+    "z71_142": 18,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 33,
+     "d_max": 161.5,
+     "r": 80.1,
+     "m": 3,
+     "t1": 68
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 94,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 0,
+   "steps": 1669,
+   "decoy": {
+    "t_merodeo": 0,
+    "dist_recta": 0.0,
+    "t_teorico": 0.0,
+    "sobrecoste": 0.0
+   }
+  },
+  {
+   "ticks_patrulla": 73,
+   "ticks_aviso": 44,
+   "ticks_violacion": 0,
+   "D_max": 167.8,
+   "R_media": 62.9,
+   "R_max": 85.2,
+   "R_zonas": {
+    "lt71": 45,
+    "z71_142": 28,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 29,
+     "d_max": 167.8,
+     "r": 85.0,
+     "m": 3,
+     "t1": 73
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 95,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 1,
+   "steps": 1447,
+   "decoy": {
+    "t_merodeo": 0,
+    "dist_recta": 0.0,
+    "t_teorico": 0.0,
+    "sobrecoste": 0.0
+   }
+  },
+  {
+   "ticks_patrulla": 579,
+   "ticks_aviso": 538,
+   "ticks_violacion": 0,
+   "D_max": 150.7,
+   "R_media": 73.7,
+   "R_max": 77.8,
+   "R_zonas": {
+    "lt71": 43,
+    "z71_142": 536,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 41,
+     "d_max": 150.7,
+     "r": 75.3,
+     "m": 3,
+     "t1": 579
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 96,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 3,
+   "steps": 1258,
+   "decoy": {
+    "t_merodeo": 11,
+    "dist_recta": 3.7,
+    "t_teorico": 9.2,
+    "sobrecoste": 1.8
+   }
+  },
+  {
+   "ticks_patrulla": 981,
+   "ticks_aviso": 196,
+   "ticks_violacion": 0,
+   "D_max": 146.2,
+   "R_media": 68.2,
+   "R_max": 74.9,
+   "R_zonas": {
+    "lt71": 803,
+    "z71_142": 178,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 785,
+     "d_max": 146.2,
+     "r": 73.1,
+     "m": 3,
+     "t1": 981
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 100,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 5,
+   "steps": 1763,
+   "decoy": {
+    "t_merodeo": 782,
+    "dist_recta": 200.4,
+    "t_teorico": 500.9,
+    "sobrecoste": 281.1
+   }
+  },
+  {
+   "ticks_patrulla": 103,
+   "ticks_aviso": 47,
+   "ticks_violacion": 0,
+   "D_max": 142.1,
+   "R_media": 59.6,
+   "R_max": 70.8,
+   "R_zonas": {
+    "lt71": 103,
+    "z71_142": 0,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 56,
+     "d_max": 142.1,
+     "r": 70.7,
+     "m": 3,
+     "t1": 103
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 106,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 0,
+   "steps": 23570,
+   "decoy": {
+    "t_merodeo": 477,
+    "dist_recta": 189.9,
+    "t_teorico": 474.8,
+    "sobrecoste": 2.2
+   }
+  },
+  {
+   "ticks_patrulla": 877,
+   "ticks_aviso": 834,
+   "ticks_violacion": 0,
+   "D_max": 158.9,
+   "R_media": 77.5,
+   "R_max": 80.2,
+   "R_zonas": {
+    "lt71": 45,
+    "z71_142": 832,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 43,
+     "d_max": 158.9,
+     "r": 79.5,
+     "m": 3,
+     "t1": 877
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 107,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 0,
+   "steps": 2397,
+   "decoy": {
+    "t_merodeo": 633,
+    "dist_recta": 127.1,
+    "t_teorico": 317.7,
+    "sobrecoste": 315.3
+   }
+  },
+  {
+   "ticks_patrulla": 84,
+   "ticks_aviso": 49,
+   "ticks_violacion": 0,
+   "D_max": 164.1,
+   "R_media": 67.6,
+   "R_max": 81.5,
+   "R_zonas": {
+    "lt71": 40,
+    "z71_142": 44,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 35,
+     "d_max": 164.1,
+     "r": 81.2,
+     "m": 3,
+     "t1": 84
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 110,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 0,
+   "steps": 23570,
+   "decoy": {
+    "t_merodeo": 0,
+    "dist_recta": 0.0,
+    "t_teorico": 0.0,
+    "sobrecoste": 0.0
+   }
+  },
+  {
+   "ticks_patrulla": 982,
+   "ticks_aviso": 942,
+   "ticks_violacion": 0,
+   "D_max": 149.6,
+   "R_media": 80.7,
+   "R_max": 85.3,
+   "R_zonas": {
+    "lt71": 50,
+    "z71_142": 932,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 40,
+     "d_max": 149.6,
+     "r": 76.0,
+     "m": 3,
+     "t1": 982
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 113,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 7,
+   "steps": 1943,
+   "decoy": {
+    "t_merodeo": 738,
+    "dist_recta": 196.7,
+    "t_teorico": 491.8,
+    "sobrecoste": 246.2
+   }
+  },
+  {
+   "ticks_patrulla": 97,
+   "ticks_aviso": 59,
+   "ticks_violacion": 0,
+   "D_max": 177.9,
+   "R_media": 70.3,
+   "R_max": 88.4,
+   "R_zonas": {
+    "lt71": 41,
+    "z71_142": 56,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 38,
+     "d_max": 177.9,
+     "r": 88.2,
+     "m": 3,
+     "t1": 97
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 116,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 3,
+   "steps": 1993,
+   "decoy": {
+    "t_merodeo": 20,
+    "dist_recta": 7.3,
+    "t_teorico": 18.1,
+    "sobrecoste": 1.9
+   }
+  },
+  {
+   "ticks_patrulla": 1252,
+   "ticks_aviso": 1209,
+   "ticks_violacion": 0,
+   "D_max": 150.9,
+   "R_media": 77.4,
+   "R_max": 83.7,
+   "R_zonas": {
+    "lt71": 47,
+    "z71_142": 1205,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 43,
+     "d_max": 150.9,
+     "r": 75.4,
+     "m": 3,
+     "t1": 1252
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 127,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 6,
+   "steps": 2295,
+   "decoy": {
+    "t_merodeo": 934,
+    "dist_recta": 228.5,
+    "t_teorico": 571.3,
+    "sobrecoste": 362.7
+   }
+  },
+  {
+   "ticks_patrulla": 821,
+   "ticks_aviso": 714,
+   "ticks_violacion": 0,
+   "D_max": 148.2,
+   "R_media": 71.7,
+   "R_max": 78.7,
+   "R_zonas": {
+    "lt71": 143,
+    "z71_142": 678,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 36,
+     "d_max": 111.6,
+     "r": 78.7,
+     "m": 4,
+     "t1": 692
+    },
+    {
+     "estado": "aviso",
+     "t0": 763,
+     "d_max": 148.2,
+     "r": 75.7,
+     "m": 3,
+     "t1": 821
+    }
+   ],
+   "n_ventanas": 2,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 129,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 5,
+   "steps": 1605,
+   "decoy": {
+    "t_merodeo": 0,
+    "dist_recta": 0.0,
+    "t_teorico": 0.0,
+    "sobrecoste": 0.0
+   }
+  },
+  {
+   "ticks_patrulla": 535,
+   "ticks_aviso": 491,
+   "ticks_violacion": 0,
+   "D_max": 143.7,
+   "R_media": 72.1,
+   "R_max": 78.6,
+   "R_zonas": {
+    "lt71": 65,
+    "z71_142": 470,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 44,
+     "d_max": 143.7,
+     "r": 71.8,
+     "m": 3,
+     "t1": 535
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 131,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 0,
+   "steps": 1510,
+   "decoy": {
+    "t_merodeo": 331,
+    "dist_recta": 131.7,
+    "t_teorico": 329.1,
+    "sobrecoste": 1.9
+   }
+  },
+  {
+   "ticks_patrulla": 86,
+   "ticks_aviso": 45,
+   "ticks_violacion": 0,
+   "D_max": 156.8,
+   "R_media": 60.1,
+   "R_max": 79.2,
+   "R_zonas": {
+    "lt71": 50,
+    "z71_142": 36,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 41,
+     "d_max": 156.8,
+     "r": 78.6,
+     "m": 3,
+     "t1": 86
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 136,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 0,
+   "steps": 23570,
+   "decoy": {
+    "t_merodeo": 50,
+    "dist_recta": 19.3,
+    "t_teorico": 48.1,
+    "sobrecoste": 1.9
+   }
+  },
+  {
+   "ticks_patrulla": 97,
+   "ticks_aviso": 54,
+   "ticks_violacion": 0,
+   "D_max": 177.3,
+   "R_media": 67.0,
+   "R_max": 87.4,
+   "R_zonas": {
+    "lt71": 46,
+    "z71_142": 51,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 43,
+     "d_max": 177.3,
+     "r": 87.3,
+     "m": 3,
+     "t1": 97
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 137,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 0,
+   "steps": 23570,
+   "decoy": {
+    "t_merodeo": 518,
+    "dist_recta": 205.3,
+    "t_teorico": 513.3,
+    "sobrecoste": 4.7
+   }
+  },
+  {
+   "ticks_patrulla": 23570,
+   "ticks_aviso": 23414,
+   "ticks_violacion": 0,
+   "D_max": 162.8,
+   "R_media": 80.4,
+   "R_max": 91.1,
+   "R_zonas": {
+    "lt71": 792,
+    "z71_142": 22778,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 1128,
+     "d_max": 154.9,
+     "r": 57.3,
+     "m": 4,
+     "t1": 10269
+    },
+    {
+     "estado": "aviso",
+     "t0": 15580,
+     "d_max": 136.8,
+     "r": 50.9,
+     "m": 4,
+     "t1": 23570
+    },
+    {
+     "estado": "aviso",
+     "t0": 10297,
+     "d_max": 162.8,
+     "r": 60.4,
+     "m": 4,
+     "t1": 15536
+    },
+    {
+     "estado": "aviso",
+     "t0": 43,
+     "d_max": 116.1,
+     "r": 61.7,
+     "m": 4,
+     "t1": 1087
+    }
+   ],
+   "n_ventanas": 4,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 139,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 0,
+   "steps": 23570,
+   "decoy": {
+    "t_merodeo": 2126,
+    "dist_recta": 511.6,
+    "t_teorico": 1279.0,
+    "sobrecoste": 847.0
+   }
+  },
+  {
+   "ticks_patrulla": 87,
+   "ticks_aviso": 48,
+   "ticks_violacion": 0,
+   "D_max": 171.8,
+   "R_media": 67.3,
+   "R_max": 85.2,
+   "R_zonas": {
+    "lt71": 42,
+    "z71_142": 45,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 39,
+     "d_max": 171.8,
+     "r": 85.0,
+     "m": 3,
+     "t1": 87
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 140,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 0,
+   "steps": 23570,
+   "decoy": {
+    "t_merodeo": 572,
+    "dist_recta": 227.7,
+    "t_teorico": 569.3,
+    "sobrecoste": 2.7
+   }
+  },
+  {
+   "ticks_patrulla": 10577,
+   "ticks_aviso": 10427,
+   "ticks_violacion": 0,
+   "D_max": 168.8,
+   "R_media": 79.9,
+   "R_max": 85.8,
+   "R_zonas": {
+    "lt71": 258,
+    "z71_142": 10319,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 1719,
+     "d_max": 168.8,
+     "r": 84.4,
+     "m": 3,
+     "t1": 10577
+    },
+    {
+     "estado": "aviso",
+     "t0": 44,
+     "d_max": 110.0,
+     "r": 77.8,
+     "m": 4,
+     "t1": 1270
+    },
+    {
+     "estado": "aviso",
+     "t0": 1330,
+     "d_max": 115.8,
+     "r": 81.8,
+     "m": 4,
+     "t1": 1673
+    }
+   ],
+   "n_ventanas": 3,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 142,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 5,
+   "steps": 11363,
+   "decoy": {
+    "t_merodeo": 510,
+    "dist_recta": 115.6,
+    "t_teorico": 289.1,
+    "sobrecoste": 220.9
+   }
+  },
+  {
+   "ticks_patrulla": 433,
+   "ticks_aviso": 385,
+   "ticks_violacion": 0,
+   "D_max": 153.4,
+   "R_media": 72.1,
+   "R_max": 77.7,
+   "R_zonas": {
+    "lt71": 51,
+    "z71_142": 382,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 48,
+     "d_max": 153.4,
+     "r": 76.7,
+     "m": 3,
+     "t1": 433
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 147,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 4,
+   "steps": 1208,
+   "decoy": {
+    "t_merodeo": 0,
+    "dist_recta": 0.0,
+    "t_teorico": 0.0,
+    "sobrecoste": 0.0
+   }
+  },
+  {
+   "ticks_patrulla": 2302,
+   "ticks_aviso": 2266,
+   "ticks_violacion": 0,
+   "D_max": 152.8,
+   "R_media": 80.4,
+   "R_max": 86.6,
+   "R_zonas": {
+    "lt71": 105,
+    "z71_142": 2197,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 36,
+     "d_max": 152.8,
+     "r": 56.8,
+     "m": 4,
+     "t1": 2302
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 150,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 5,
+   "steps": 3143,
+   "decoy": {
+    "t_merodeo": 1692,
+    "dist_recta": 429.2,
+    "t_teorico": 1073.0,
+    "sobrecoste": 619.0
+   }
+  },
+  {
+   "ticks_patrulla": 1226,
+   "ticks_aviso": 1192,
+   "ticks_violacion": 0,
+   "D_max": 169.3,
+   "R_media": 80.5,
+   "R_max": 84.9,
+   "R_zonas": {
+    "lt71": 37,
+    "z71_142": 1189,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 34,
+     "d_max": 169.3,
+     "r": 84.6,
+     "m": 3,
+     "t1": 1226
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 151,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 0,
+   "steps": 2544,
+   "decoy": {
+    "t_merodeo": 1024,
+    "dist_recta": 224.6,
+    "t_teorico": 561.5,
+    "sobrecoste": 462.5
+   }
+  },
+  {
+   "ticks_patrulla": 2522,
+   "ticks_aviso": 2429,
+   "ticks_violacion": 0,
+   "D_max": 166.5,
+   "R_media": 79.2,
+   "R_max": 83.8,
+   "R_zonas": {
+    "lt71": 102,
+    "z71_142": 2420,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 606,
+     "d_max": 166.5,
+     "r": 83.3,
+     "m": 3,
+     "t1": 2522
+    },
+    {
+     "estado": "aviso",
+     "t0": 45,
+     "d_max": 115.6,
+     "r": 81.7,
+     "m": 4,
+     "t1": 558
+    }
+   ],
+   "n_ventanas": 2,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 153,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 4,
+   "steps": 3408,
+   "decoy": {
+    "t_merodeo": 2264,
+    "dist_recta": 512.1,
+    "t_teorico": 1280.2,
+    "sobrecoste": 983.8
+   }
+  },
+  {
+   "ticks_patrulla": 1092,
+   "ticks_aviso": 807,
+   "ticks_violacion": 0,
+   "D_max": 145.1,
+   "R_media": 70.5,
+   "R_max": 74.5,
+   "R_zonas": {
+    "lt71": 314,
+    "z71_142": 778,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 285,
+     "d_max": 145.1,
+     "r": 72.6,
+     "m": 3,
+     "t1": 1092
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 160,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 5,
+   "steps": 2117,
+   "decoy": {
+    "t_merodeo": 877,
+    "dist_recta": 337.9,
+    "t_teorico": 844.7,
+    "sobrecoste": 32.3
+   }
+  },
+  {
+   "ticks_patrulla": 1332,
+   "ticks_aviso": 1290,
+   "ticks_violacion": 0,
+   "D_max": 146.0,
+   "R_media": 76.8,
+   "R_max": 80.9,
+   "R_zonas": {
+    "lt71": 47,
+    "z71_142": 1285,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 42,
+     "d_max": 146.0,
+     "r": 73.0,
+     "m": 3,
+     "t1": 1332
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 168,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 4,
+   "steps": 2046,
+   "decoy": {
+    "t_merodeo": 1054,
+    "dist_recta": 324.1,
+    "t_teorico": 810.3,
+    "sobrecoste": 243.7
+   }
+  },
+  {
+   "ticks_patrulla": 18934,
+   "ticks_aviso": 18892,
+   "ticks_violacion": 0,
+   "D_max": 151.7,
+   "R_media": 80.1,
+   "R_max": 89.6,
+   "R_zonas": {
+    "lt71": 384,
+    "z71_142": 18550,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 42,
+     "d_max": 151.7,
+     "r": 75.8,
+     "m": 3,
+     "t1": 18934
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 171,
+   "kind": "lobos",
+   "arm": "CEBO_keep",
+   "sev": 4,
+   "steps": 19913,
+   "decoy": {
+    "t_merodeo": 2368,
+    "dist_recta": 515.8,
+    "t_teorico": 1289.6,
+    "sobrecoste": 1078.4
+   }
+  },
+  {
+   "ticks_patrulla": 568,
+   "ticks_aviso": 516,
+   "ticks_violacion": 0,
+   "D_max": 150.8,
+   "R_media": 72.4,
+   "R_max": 75.6,
+   "R_zonas": {
+    "lt71": 56,
+    "z71_142": 512,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 52,
+     "d_max": 150.8,
+     "r": 75.4,
+     "m": 3,
+     "t1": 568
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 2,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 4,
+   "steps": 1203
+  },
+  {
+   "ticks_patrulla": 83,
+   "ticks_aviso": 43,
+   "ticks_violacion": 0,
+   "D_max": 171.9,
+   "R_media": 64.3,
+   "R_max": 86.2,
+   "R_zonas": {
+    "lt71": 44,
+    "z71_142": 39,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 40,
+     "d_max": 171.9,
+     "r": 85.5,
+     "m": 3,
+     "t1": 83
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 12,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 0,
+   "steps": 23570
+  },
+  {
+   "ticks_patrulla": 182,
+   "ticks_aviso": 142,
+   "ticks_violacion": 0,
+   "D_max": 149.2,
+   "R_media": 69.2,
+   "R_max": 74.8,
+   "R_zonas": {
+    "lt71": 43,
+    "z71_142": 139,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 40,
+     "d_max": 149.2,
+     "r": 74.6,
+     "m": 3,
+     "t1": 182
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 19,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 0,
+   "steps": 23570
+  },
+  {
+   "ticks_patrulla": 101,
+   "ticks_aviso": 46,
+   "ticks_violacion": 0,
+   "D_max": 140.6,
+   "R_media": 59.2,
+   "R_max": 70.2,
+   "R_zonas": {
+    "lt71": 101,
+    "z71_142": 0,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 55,
+     "d_max": 140.6,
+     "r": 70.2,
+     "m": 3,
+     "t1": 101
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 26,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 1,
+   "steps": 23570
+  },
+  {
+   "ticks_patrulla": 78,
+   "ticks_aviso": 39,
+   "ticks_violacion": 0,
+   "D_max": 153.0,
+   "R_media": 60.0,
+   "R_max": 76.7,
+   "R_zonas": {
+    "lt71": 49,
+    "z71_142": 29,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 39,
+     "d_max": 153.0,
+     "r": 76.2,
+     "m": 3,
+     "t1": 78
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 29,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 0,
+   "steps": 23570
+  },
+  {
+   "ticks_patrulla": 68,
+   "ticks_aviso": 35,
+   "ticks_violacion": 0,
+   "D_max": 162.3,
+   "R_media": 57.1,
+   "R_max": 80.7,
+   "R_zonas": {
+    "lt71": 48,
+    "z71_142": 20,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 33,
+     "d_max": 162.3,
+     "r": 80.7,
+     "m": 3,
+     "t1": 68
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 37,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 3,
+   "steps": 1273
+  },
+  {
+   "ticks_patrulla": 123,
+   "ticks_aviso": 46,
+   "ticks_violacion": 0,
+   "D_max": 137.8,
+   "R_media": 58.3,
+   "R_max": 69.3,
+   "R_zonas": {
+    "lt71": 123,
+    "z71_142": 0,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 77,
+     "d_max": 137.8,
+     "r": 68.9,
+     "m": 3,
+     "t1": 123
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 40,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 3,
+   "steps": 937
+  },
+  {
+   "ticks_patrulla": 67,
+   "ticks_aviso": 40,
+   "ticks_violacion": 0,
+   "D_max": 161.0,
+   "R_media": 62.1,
+   "R_max": 84.0,
+   "R_zonas": {
+    "lt71": 42,
+    "z71_142": 25,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 27,
+     "d_max": 161.0,
+     "r": 84.0,
+     "m": 3,
+     "t1": 67
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 42,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 2,
+   "steps": 949
+  },
+  {
+   "ticks_patrulla": 81,
+   "ticks_aviso": 44,
+   "ticks_violacion": 0,
+   "D_max": 162.3,
+   "R_media": 59.6,
+   "R_max": 80.5,
+   "R_zonas": {
+    "lt71": 50,
+    "z71_142": 31,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 37,
+     "d_max": 162.3,
+     "r": 80.3,
+     "m": 3,
+     "t1": 81
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 43,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 0,
+   "steps": 23570
+  },
+  {
+   "ticks_patrulla": 99,
+   "ticks_aviso": 53,
+   "ticks_violacion": 0,
+   "D_max": 160.9,
+   "R_media": 63.3,
+   "R_max": 80.3,
+   "R_zonas": {
+    "lt71": 49,
+    "z71_142": 50,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 46,
+     "d_max": 160.9,
+     "r": 80.2,
+     "m": 3,
+     "t1": 99
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 45,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 1,
+   "steps": 23570
+  },
+  {
+   "ticks_patrulla": 384,
+   "ticks_aviso": 347,
+   "ticks_violacion": 0,
+   "D_max": 163.8,
+   "R_media": 79.0,
+   "R_max": 83.4,
+   "R_zonas": {
+    "lt71": 40,
+    "z71_142": 344,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 37,
+     "d_max": 163.8,
+     "r": 81.9,
+     "m": 3,
+     "t1": 384
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 46,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 4,
+   "steps": 1212
+  },
+  {
+   "ticks_patrulla": 57,
+   "ticks_aviso": 25,
+   "ticks_violacion": 0,
+   "D_max": 121.3,
+   "R_media": 49.0,
+   "R_max": 66.4,
+   "R_zonas": {
+    "lt71": 57,
+    "z71_142": 0,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 32,
+     "d_max": 121.3,
+     "r": 66.4,
+     "m": 3,
+     "t1": 57
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 48,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 4,
+   "steps": 1358
+  },
+  {
+   "ticks_patrulla": 192,
+   "ticks_aviso": 149,
+   "ticks_violacion": 0,
+   "D_max": 148.7,
+   "R_media": 68.6,
+   "R_max": 75.2,
+   "R_zonas": {
+    "lt71": 47,
+    "z71_142": 145,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 43,
+     "d_max": 148.7,
+     "r": 74.3,
+     "m": 3,
+     "t1": 192
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 49,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 0,
+   "steps": 23570
+  },
+  {
+   "ticks_patrulla": 125,
+   "ticks_aviso": 88,
+   "ticks_violacion": 0,
+   "D_max": 157.5,
+   "R_media": 69.4,
+   "R_max": 79.6,
+   "R_zonas": {
+    "lt71": 41,
+    "z71_142": 84,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 37,
+     "d_max": 157.5,
+     "r": 78.8,
+     "m": 3,
+     "t1": 125
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 52,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 2,
+   "steps": 1011
+  },
+  {
+   "ticks_patrulla": 312,
+   "ticks_aviso": 271,
+   "ticks_violacion": 0,
+   "D_max": 155.0,
+   "R_media": 72.7,
+   "R_max": 77.5,
+   "R_zonas": {
+    "lt71": 47,
+    "z71_142": 265,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 41,
+     "d_max": 155.0,
+     "r": 77.5,
+     "m": 3,
+     "t1": 312
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 58,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 0,
+   "steps": 23570
+  },
+  {
+   "ticks_patrulla": 80,
+   "ticks_aviso": 40,
+   "ticks_violacion": 0,
+   "D_max": 162.4,
+   "R_media": 59.2,
+   "R_max": 80.5,
+   "R_zonas": {
+    "lt71": 51,
+    "z71_142": 29,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 40,
+     "d_max": 162.4,
+     "r": 80.3,
+     "m": 3,
+     "t1": 80
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 60,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 0,
+   "steps": 23570
+  },
+  {
+   "ticks_patrulla": 150,
+   "ticks_aviso": 90,
+   "ticks_violacion": 0,
+   "D_max": 146.3,
+   "R_media": 62.4,
+   "R_max": 73.2,
+   "R_zonas": {
+    "lt71": 62,
+    "z71_142": 88,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 60,
+     "d_max": 146.3,
+     "r": 73.1,
+     "m": 3,
+     "t1": 150
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 64,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 5,
+   "steps": 888
+  },
+  {
+   "ticks_patrulla": 73,
+   "ticks_aviso": 38,
+   "ticks_violacion": 0,
+   "D_max": 161.5,
+   "R_media": 63.3,
+   "R_max": 80.7,
+   "R_zonas": {
+    "lt71": 42,
+    "z71_142": 31,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 35,
+     "d_max": 161.5,
+     "r": 80.2,
+     "m": 3,
+     "t1": 73
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 76,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 2,
+   "steps": 918
+  },
+  {
+   "ticks_patrulla": 289,
+   "ticks_aviso": 245,
+   "ticks_violacion": 0,
+   "D_max": 163.3,
+   "R_media": 75.8,
+   "R_max": 82.0,
+   "R_zonas": {
+    "lt71": 47,
+    "z71_142": 242,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 44,
+     "d_max": 163.3,
+     "r": 81.7,
+     "m": 3,
+     "t1": 289
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 77,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 0,
+   "steps": 23570
+  },
+  {
+   "ticks_patrulla": 97,
+   "ticks_aviso": 55,
+   "ticks_violacion": 0,
+   "D_max": 153.8,
+   "R_media": 63.3,
+   "R_max": 76.8,
+   "R_zonas": {
+    "lt71": 48,
+    "z71_142": 49,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 42,
+     "d_max": 153.8,
+     "r": 76.8,
+     "m": 3,
+     "t1": 97
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 78,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 3,
+   "steps": 1317
+  },
+  {
+   "ticks_patrulla": 58,
+   "ticks_aviso": 32,
+   "ticks_violacion": 0,
+   "D_max": 138.7,
+   "R_media": 55.8,
+   "R_max": 77.7,
+   "R_zonas": {
+    "lt71": 48,
+    "z71_142": 10,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 26,
+     "d_max": 138.7,
+     "r": 77.7,
+     "m": 3,
+     "t1": 58
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 81,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 0,
+   "steps": 23570
+  },
+  {
+   "ticks_patrulla": 547,
+   "ticks_aviso": 509,
+   "ticks_violacion": 0,
+   "D_max": 168.2,
+   "R_media": 79.8,
+   "R_max": 84.2,
+   "R_zonas": {
+    "lt71": 43,
+    "z71_142": 504,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 38,
+     "d_max": 168.2,
+     "r": 84.1,
+     "m": 3,
+     "t1": 547
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 82,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 0,
+   "steps": 23570
+  },
+  {
+   "ticks_patrulla": 58,
+   "ticks_aviso": 22,
+   "ticks_violacion": 0,
+   "D_max": 126.1,
+   "R_media": 48.8,
+   "R_max": 72.0,
+   "R_zonas": {
+    "lt71": 56,
+    "z71_142": 2,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 36,
+     "d_max": 126.1,
+     "r": 72.0,
+     "m": 3,
+     "t1": 58
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 83,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 0,
+   "steps": 23570
+  },
+  {
+   "ticks_patrulla": 485,
+   "ticks_aviso": 447,
+   "ticks_violacion": 0,
+   "D_max": 183.8,
+   "R_media": 87.2,
+   "R_max": 92.5,
+   "R_zonas": {
+    "lt71": 45,
+    "z71_142": 440,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 38,
+     "d_max": 183.8,
+     "r": 91.9,
+     "m": 3,
+     "t1": 485
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 84,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 1,
+   "steps": 23570
+  },
+  {
+   "ticks_patrulla": 65,
+   "ticks_aviso": 36,
+   "ticks_violacion": 0,
+   "D_max": 144.3,
+   "R_media": 55.5,
+   "R_max": 79.5,
+   "R_zonas": {
+    "lt71": 51,
+    "z71_142": 14,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 29,
+     "d_max": 144.3,
+     "r": 79.5,
+     "m": 3,
+     "t1": 65
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 88,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 4,
+   "steps": 1072
+  },
+  {
+   "ticks_patrulla": 58,
+   "ticks_aviso": 37,
+   "ticks_violacion": 0,
+   "D_max": 142.0,
+   "R_media": 57.5,
+   "R_max": 78.9,
+   "R_zonas": {
+    "lt71": 47,
+    "z71_142": 11,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 21,
+     "d_max": 142.0,
+     "r": 78.9,
+     "m": 3,
+     "t1": 58
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 91,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 0,
+   "steps": 23570
+  },
+  {
+   "ticks_patrulla": 57,
+   "ticks_aviso": 25,
+   "ticks_violacion": 0,
+   "D_max": 131.0,
+   "R_media": 48.7,
+   "R_max": 69.9,
+   "R_zonas": {
+    "lt71": 57,
+    "z71_142": 0,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 32,
+     "d_max": 131.0,
+     "r": 69.9,
+     "m": 3,
+     "t1": 57
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 94,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 0,
+   "steps": 23570
+  },
+  {
+   "ticks_patrulla": 64,
+   "ticks_aviso": 42,
+   "ticks_violacion": 0,
+   "D_max": 145.3,
+   "R_media": 57.9,
+   "R_max": 79.5,
+   "R_zonas": {
+    "lt71": 49,
+    "z71_142": 15,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 22,
+     "d_max": 145.3,
+     "r": 79.5,
+     "m": 3,
+     "t1": 64
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 95,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 1,
+   "steps": 1417
+  },
+  {
+   "ticks_patrulla": 92,
+   "ticks_aviso": 51,
+   "ticks_violacion": 0,
+   "D_max": 159.5,
+   "R_media": 65.8,
+   "R_max": 79.0,
+   "R_zonas": {
+    "lt71": 43,
+    "z71_142": 49,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 41,
+     "d_max": 159.5,
+     "r": 79.0,
+     "m": 3,
+     "t1": 92
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 96,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 3,
+   "steps": 1040
+  },
+  {
+   "ticks_patrulla": 544,
+   "ticks_aviso": 49,
+   "ticks_violacion": 0,
+   "D_max": 136.8,
+   "R_media": 66.3,
+   "R_max": 68.6,
+   "R_zonas": {
+    "lt71": 544,
+    "z71_142": 0,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 495,
+     "d_max": 136.8,
+     "r": 68.4,
+     "m": 3,
+     "t1": 544
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 100,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 0,
+   "steps": 23570
+  },
+  {
+   "ticks_patrulla": 68,
+   "ticks_aviso": 39,
+   "ticks_violacion": 0,
+   "D_max": 148.9,
+   "R_media": 55.4,
+   "R_max": 75.1,
+   "R_zonas": {
+    "lt71": 52,
+    "z71_142": 16,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 29,
+     "d_max": 148.9,
+     "r": 75.0,
+     "m": 3,
+     "t1": 68
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 106,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 0,
+   "steps": 23570
+  },
+  {
+   "ticks_patrulla": 455,
+   "ticks_aviso": 412,
+   "ticks_violacion": 0,
+   "D_max": 159.8,
+   "R_media": 75.7,
+   "R_max": 80.1,
+   "R_zonas": {
+    "lt71": 45,
+    "z71_142": 410,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 43,
+     "d_max": 159.8,
+     "r": 79.9,
+     "m": 3,
+     "t1": 455
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 107,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 4,
+   "steps": 1377
+  },
+  {
+   "ticks_patrulla": 62,
+   "ticks_aviso": 39,
+   "ticks_violacion": 0,
+   "D_max": 150.5,
+   "R_media": 61.6,
+   "R_max": 78.1,
+   "R_zonas": {
+    "lt71": 43,
+    "z71_142": 19,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 23,
+     "d_max": 150.5,
+     "r": 77.8,
+     "m": 3,
+     "t1": 62
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 110,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 3,
+   "steps": 916
+  },
+  {
+   "ticks_patrulla": 526,
+   "ticks_aviso": 486,
+   "ticks_violacion": 0,
+   "D_max": 166.1,
+   "R_media": 79.1,
+   "R_max": 83.2,
+   "R_zonas": {
+    "lt71": 47,
+    "z71_142": 479,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 40,
+     "d_max": 166.1,
+     "r": 83.0,
+     "m": 3,
+     "t1": 526
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 113,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 6,
+   "steps": 1337
+  },
+  {
+   "ticks_patrulla": 71,
+   "ticks_aviso": 43,
+   "ticks_violacion": 0,
+   "D_max": 160.8,
+   "R_media": 62.9,
+   "R_max": 85.4,
+   "R_zonas": {
+    "lt71": 43,
+    "z71_142": 28,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 28,
+     "d_max": 160.8,
+     "r": 84.8,
+     "m": 3,
+     "t1": 71
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 116,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 3,
+   "steps": 1277
+  },
+  {
+   "ticks_patrulla": 574,
+   "ticks_aviso": 531,
+   "ticks_violacion": 0,
+   "D_max": 160.6,
+   "R_media": 78.8,
+   "R_max": 83.7,
+   "R_zonas": {
+    "lt71": 47,
+    "z71_142": 527,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 43,
+     "d_max": 160.6,
+     "r": 80.3,
+     "m": 3,
+     "t1": 574
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 127,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 7,
+   "steps": 1396
+  },
+  {
+   "ticks_patrulla": 83,
+   "ticks_aviso": 47,
+   "ticks_violacion": 0,
+   "D_max": 166.4,
+   "R_media": 66.1,
+   "R_max": 82.5,
+   "R_zonas": {
+    "lt71": 43,
+    "z71_142": 40,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 36,
+     "d_max": 166.4,
+     "r": 82.5,
+     "m": 3,
+     "t1": 83
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 129,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 2,
+   "steps": 1207
+  },
+  {
+   "ticks_patrulla": 92,
+   "ticks_aviso": 48,
+   "ticks_violacion": 0,
+   "D_max": 166.2,
+   "R_media": 65.3,
+   "R_max": 82.2,
+   "R_zonas": {
+    "lt71": 45,
+    "z71_142": 47,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 44,
+     "d_max": 166.2,
+     "r": 82.0,
+     "m": 3,
+     "t1": 92
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 131,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 0,
+   "steps": 1132
+  },
+  {
+   "ticks_patrulla": 67,
+   "ticks_aviso": 36,
+   "ticks_violacion": 0,
+   "D_max": 141.5,
+   "R_media": 54.5,
+   "R_max": 75.5,
+   "R_zonas": {
+    "lt71": 54,
+    "z71_142": 13,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 31,
+     "d_max": 141.5,
+     "r": 75.5,
+     "m": 3,
+     "t1": 67
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 136,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 0,
+   "steps": 23570
+  },
+  {
+   "ticks_patrulla": 78,
+   "ticks_aviso": 49,
+   "ticks_violacion": 0,
+   "D_max": 162.2,
+   "R_media": 60.7,
+   "R_max": 85.4,
+   "R_zonas": {
+    "lt71": 49,
+    "z71_142": 29,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 29,
+     "d_max": 162.2,
+     "r": 84.7,
+     "m": 3,
+     "t1": 78
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 137,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 0,
+   "steps": 23570
+  },
+  {
+   "ticks_patrulla": 541,
+   "ticks_aviso": 498,
+   "ticks_violacion": 0,
+   "D_max": 145.9,
+   "R_media": 72.2,
+   "R_max": 76.3,
+   "R_zonas": {
+    "lt71": 50,
+    "z71_142": 491,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 43,
+     "d_max": 145.9,
+     "r": 73.0,
+     "m": 3,
+     "t1": 541
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 139,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 0,
+   "steps": 23570
+  },
+  {
+   "ticks_patrulla": 73,
+   "ticks_aviso": 35,
+   "ticks_violacion": 0,
+   "D_max": 176.0,
+   "R_media": 64.7,
+   "R_max": 87.3,
+   "R_zonas": {
+    "lt71": 40,
+    "z71_142": 33,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 38,
+     "d_max": 176.0,
+     "r": 87.3,
+     "m": 3,
+     "t1": 73
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 140,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 0,
+   "steps": 23570
+  },
+  {
+   "ticks_patrulla": 231,
+   "ticks_aviso": 187,
+   "ticks_violacion": 0,
+   "D_max": 150.0,
+   "R_media": 69.3,
+   "R_max": 75.1,
+   "R_zonas": {
+    "lt71": 49,
+    "z71_142": 182,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 44,
+     "d_max": 150.0,
+     "r": 75.0,
+     "m": 3,
+     "t1": 231
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 142,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 0,
+   "steps": 23570
+  },
+  {
+   "ticks_patrulla": 62,
+   "ticks_aviso": 34,
+   "ticks_violacion": 0,
+   "D_max": 149.1,
+   "R_media": 53.2,
+   "R_max": 75.4,
+   "R_zonas": {
+    "lt71": 52,
+    "z71_142": 10,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 28,
+     "d_max": 149.1,
+     "r": 75.4,
+     "m": 3,
+     "t1": 62
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 147,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 2,
+   "steps": 869
+  },
+  {
+   "ticks_patrulla": 636,
+   "ticks_aviso": 600,
+   "ticks_violacion": 0,
+   "D_max": 160.8,
+   "R_media": 80.3,
+   "R_max": 83.8,
+   "R_zonas": {
+    "lt71": 41,
+    "z71_142": 595,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 36,
+     "d_max": 160.8,
+     "r": 80.4,
+     "m": 3,
+     "t1": 636
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 150,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 4,
+   "steps": 1732
+  },
+  {
+   "ticks_patrulla": 555,
+   "ticks_aviso": 521,
+   "ticks_violacion": 0,
+   "D_max": 158.1,
+   "R_media": 77.4,
+   "R_max": 80.9,
+   "R_zonas": {
+    "lt71": 37,
+    "z71_142": 518,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 34,
+     "d_max": 158.1,
+     "r": 79.1,
+     "m": 3,
+     "t1": 555
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 151,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 4,
+   "steps": 1436
+  },
+  {
+   "ticks_patrulla": 327,
+   "ticks_aviso": 282,
+   "ticks_violacion": 0,
+   "D_max": 162.1,
+   "R_media": 75.8,
+   "R_max": 81.3,
+   "R_zonas": {
+    "lt71": 47,
+    "z71_142": 280,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 45,
+     "d_max": 162.1,
+     "r": 81.0,
+     "m": 3,
+     "t1": 327
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 153,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 3,
+   "steps": 1184
+  },
+  {
+   "ticks_patrulla": 72,
+   "ticks_aviso": 36,
+   "ticks_violacion": 0,
+   "D_max": 143.3,
+   "R_media": 48.8,
+   "R_max": 71.2,
+   "R_zonas": {
+    "lt71": 70,
+    "z71_142": 2,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 36,
+     "d_max": 143.3,
+     "r": 71.2,
+     "m": 3,
+     "t1": 72
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 160,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 0,
+   "steps": 23570
+  },
+  {
+   "ticks_patrulla": 564,
+   "ticks_aviso": 522,
+   "ticks_violacion": 0,
+   "D_max": 161.1,
+   "R_media": 76.2,
+   "R_max": 80.9,
+   "R_zonas": {
+    "lt71": 47,
+    "z71_142": 517,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 42,
+     "d_max": 161.1,
+     "r": 80.6,
+     "m": 3,
+     "t1": 564
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 168,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 4,
+   "steps": 1298
+  },
+  {
+   "ticks_patrulla": 578,
+   "ticks_aviso": 536,
+   "ticks_violacion": 0,
+   "D_max": 159.1,
+   "R_media": 75.9,
+   "R_max": 79.5,
+   "R_zonas": {
+    "lt71": 46,
+    "z71_142": 532,
+    "gt142": 0
+   },
+   "ventanas_top": [
+    {
+     "estado": "aviso",
+     "t0": 42,
+     "d_max": 159.1,
+     "r": 79.5,
+     "m": 3,
+     "t1": 578
+    }
+   ],
+   "n_ventanas": 1,
+   "entradas_no_detectadas": 0,
+   "entradas_no_detectadas_por_arco_violacion": 0,
+   "entradas_no_detectadas_por_arco_aviso": 0,
+   "seed": 171,
+   "kind": "lobos",
+   "arm": "MASA",
+   "sev": 0,
+   "steps": 2015
+  }
+ ]
+}

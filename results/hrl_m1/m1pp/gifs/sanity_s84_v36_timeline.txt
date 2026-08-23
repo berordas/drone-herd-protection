@@ -1,0 +1,11 @@
+t=0 OPTION_START option=CEBO membership=keep hold=50.0
+t=1671 SHOW_START mode=keep
+t=1829 FASE VIGILANCIA->SOSPECHA
+t=1897 FASE SOSPECHA->ESCOLTA
+t=2442 MUERTE (total 1)
+t=2537 MUERTE (total 2)
+t=2714 MUERTE (total 3)
+t=2812 MUERTE (total 4)
+t=2873 MUERTE (total 5)
+t=2919 MUERTE (total 6)
+sev=6 status=predation stride=1 frames=2920

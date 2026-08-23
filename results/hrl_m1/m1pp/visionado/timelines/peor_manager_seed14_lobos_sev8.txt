@@ -1,0 +1,13 @@
+peor_manager | seed=14 lobos n=5 G=False sev_eval=8 | oracle sev=0
+t=     0  DECISION #1   CEBO_d180  -> K_MAX             ticks= 4500 r=0
+t=  4500  DECISION #2   CEBO_keep  -> K_MAX             ticks= 4500 r=0
+t=  9000  DECISION #3   MASA       -> MUERTE            ticks=  481 r=1
+t=  9481  DECISION #4   MASA       -> MUERTE            ticks=   81 r=1
+t=  9562  DECISION #5   MASA       -> MUERTE            ticks=   74 r=1
+t=  9636  DECISION #6   CEBO_d90   -> ABORT_BAIT_FAILED ticks=   50 r=0
+t=  9686  DECISION #7   CEBO_d90   -> MUERTE            ticks=   75 r=1
+t=  9761  DECISION #8   CEBO_d90   -> MUERTE            ticks=  150 r=1
+t=  9911  DECISION #9   CEBO_d90   -> MUERTE            ticks=   52 r=1
+t=  9963  DECISION #10  CEBO_d90   -> MUERTE            ticks=  107 r=1
+t= 10070  DECISION #11  CEBO_d90   -> FIN_EPISODIO      ticks=   50 r=1
+t=  9725  capa SHOW_START mode=manager

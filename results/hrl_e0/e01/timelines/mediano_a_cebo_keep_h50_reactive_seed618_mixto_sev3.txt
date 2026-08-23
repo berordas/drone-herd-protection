@@ -1,0 +1,24 @@
+mediano_a_cebo_keep_h50_reactive_seed618_mixto_sev3 | arm=cebo_keep_h50_reactive status=predation sev=3 steps=1340 grupos=[1, 4] | muertes con procedencia al final
+t=     0  OPTION_START     option=CEBO hold=50.0 membership=keep
+t=    96  ESCOLTA_LATCH
+t=    96  ESCOLTA_PREMATURA primer_confirmado=0 quien=señuelo investigador=2 investigador_hacia_corzo=False asalto_borde_min_m=None pinzamiento_borde=False
+t=    97  CONFIRM_DECOY    wolf=0
+t=    97  ANCHOR_FLIP      frm=None to=0
+t=   186  LURE_COMMIT      drones_cono=4 puerta_libre_m=61.5
+t=   750  SHOW_START       mode=keep
+t=   750  STAGED
+t=   924  LURE_COMMIT_END
+t=  1134  DEATH            kind=calf prey=1 flankers=[3]
+t=  1134  STRIKE_RESOLVED  outcome=kill latencia=384
+t=  1215  LURE_COMMIT      drones_cono=4 puerta_libre_m=60.2
+t=  1262  LURE_COMMIT_END
+t=  1262  DEATH            kind=adult prey=0 flankers=[3, 4]
+t=  1296  LURE_COMMIT      drones_cono=4 puerta_libre_m=60.1
+t=  1326  LURE_COMMIT_END
+t=  1329  LURE_COMMIT      drones_cono=4 puerta_libre_m=61.0
+t=  1339  LURE_COMMIT_END
+t=  1340  DEATH            kind=adult prey=1 flankers=[1, 3]
+t=  1340  HERD_SAFE        n_safe=5 n_muertas=3
+t=  1134  MUERTE calf#1 flankers=[3] conf=[True] nearest=3(conf=True) grupo=2 octante=0 gotera=False dflip=1037
+t=  1262  MUERTE adult#0 flankers=[3, 4] conf=[True, True] nearest=3(conf=True) grupo=2 octante=3 gotera=False dflip=1165
+t=  1340  MUERTE adult#1 flankers=[1, 3] conf=[True, True] nearest=1(conf=True) grupo=2 octante=0 gotera=False dflip=1243

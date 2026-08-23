@@ -1,0 +1,112 @@
+{
+ "macro_pasos": 122880,
+ "segundos": 6347.1,
+ "fps": 19.36,
+ "nan": false,
+ "eval_final": {
+  "sev_media": 1.2,
+  "sev_lobos": 1.4,
+  "sev_mixto": 1.0,
+  "P_cebo_G_n3": 1.0,
+  "n_G_n3": 6,
+  "P_a_G_first": {
+   "MASA": 0.0,
+   "CEBO_keep": 0.0,
+   "CEBO_d90": 0.0,
+   "CEBO_d180": 1.0
+  },
+  "P_a_S_first": {
+   "MASA": 0.0,
+   "CEBO_keep": 0.0,
+   "CEBO_d90": 1.0,
+   "CEBO_d180": 0.0
+  },
+  "P_a_n": {
+   "n2": {
+    "MASA": 0.0,
+    "CEBO_keep": 0.0,
+    "CEBO_d90": 1.0,
+    "CEBO_d180": 0.0
+   },
+   "n1": {
+    "MASA": 0.0,
+    "CEBO_keep": 0.0,
+    "CEBO_d90": 1.0,
+    "CEBO_d180": 0.0
+   },
+   "n3": {
+    "MASA": 0.0,
+    "CEBO_keep": 0.0,
+    "CEBO_d90": 0.667,
+    "CEBO_d180": 0.333
+   },
+   "n4": {
+    "MASA": 0.0,
+    "CEBO_keep": 0.0,
+    "CEBO_d90": 0.6,
+    "CEBO_d180": 0.4
+   },
+   "n5": {
+    "MASA": 0.0,
+    "CEBO_keep": 0.0,
+    "CEBO_d90": 1.0,
+    "CEBO_d180": 0.0
+   }
+  },
+  "P_a_G_all": {
+   "MASA": 0.088,
+   "CEBO_keep": 0.529,
+   "CEBO_d90": 0.294,
+   "CEBO_d180": 0.088
+  },
+  "P_a_S_all": {
+   "MASA": 0.166,
+   "CEBO_keep": 0.312,
+   "CEBO_d90": 0.478,
+   "CEBO_d180": 0.045
+  },
+  "Pstoch_a_G_first": {
+   "MASA": 0.004,
+   "CEBO_keep": 0.333,
+   "CEBO_d90": 0.156,
+   "CEBO_d180": 0.508
+  },
+  "Pstoch_a_S_first": {
+   "MASA": 0.002,
+   "CEBO_keep": 0.013,
+   "CEBO_d90": 0.922,
+   "CEBO_d180": 0.063
+  },
+  "Pstoch_a_G_all": {
+   "MASA": 0.18,
+   "CEBO_keep": 0.354,
+   "CEBO_d90": 0.244,
+   "CEBO_d180": 0.222
+  },
+  "Pstoch_a_S_all": {
+   "MASA": 0.196,
+   "CEBO_keep": 0.223,
+   "CEBO_d90": 0.411,
+   "CEBO_d180": 0.17
+  },
+  "Pstoch_cebo_G_n3": 0.9963273861600707,
+  "entropia_media": 0.9926121012369792,
+  "caza_por_ep": {
+   "option_starts": 2.475,
+   "retargets": 0.025,
+   "retargets_blocked": 0.0,
+   "refix_muerte": 1.2,
+   "refix_refugio": 0.75,
+   "refix_otro": 0.025
+  },
+  "aborts_por_ep": 0.15,
+  "delib_por_ep": 0.0075000000000000015,
+  "stalls_total": 4,
+  "jugada_completa_frac": 1.0,
+  "decisiones_media": 5.625,
+  "penetrado_ticks_media": 2.075,
+  "pasos": 122880,
+  "final": true
+ },
+ "curriculum_used": false
+}

@@ -1,0 +1,20 @@
+STOP-M2 jugada cortada | seed=76 lobos n=4 G=True sev=2 jugada={'t_staged': 292, 't_show': 301, 't_suelta': 434, 't_strike': 790, 'completa': True} K=1000 FIJO
+t=     0  DECISION #1   CEBO_d180  -> MUERTE            ticks=  809
+t=   809  DECISION #2   CEBO_keep  -> K_MAX             ticks= 1000
+t=  1809  DECISION #3   CEBO_keep  -> K_MAX             ticks= 1000
+t=  2809  DECISION #4   CEBO_keep  -> K_MAX             ticks= 1000
+t=  3809  DECISION #5   CEBO_keep  -> K_MAX             ticks= 1000
+t=  4809  DECISION #6   CEBO_keep  -> K_MAX             ticks= 1000
+t=  5809  DECISION #7   CEBO_keep  -> K_MAX             ticks= 1000
+t=  6809  DECISION #8   CEBO_keep  -> K_MAX             ticks= 1000
+t=  7809  DECISION #9   CEBO_keep  -> K_MAX             ticks= 1000
+t=  8809  DECISION #10  CEBO_keep  -> K_MAX             ticks= 1000
+t=  9809  DECISION #11  CEBO_keep  -> K_MAX             ticks= 1000
+t= 10809  DECISION #12  CEBO_keep  -> K_MAX             ticks= 1000
+t= 11809  DECISION #13  CEBO_keep  -> K_MAX             ticks= 1000
+t= 12809  DECISION #14  CEBO_keep  -> K_MAX             ticks= 1000
+t= 13809  DECISION #15  CEBO_keep  -> K_MAX             ticks= 1000
+t= 14809  DECISION #16  CEBO_keep  -> K_MAX             ticks= 1000
+t= 15809  DECISION #17  MASA       -> FIN_EPISODIO      ticks=   81
+t=   300  capa ALIGN_END causa=sin_progreso err_deg=175.7 ticks=300
+t=   301  capa SHOW_START mode=manager staged_causa=a_tiro err_rumbo_deg=175.7 delta_pretendida_deg=180.0

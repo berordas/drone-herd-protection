@@ -1,0 +1,28 @@
+=== M1: dist(centro formación -> vaca no-a-salvo más próxima) ===
+  pasos ESCOLTA 67878 | rama línea 63691 | PENETRADO 4159
+  %% pasos que CRECE (bruto, solo mientras lobos se acercan): 50.6%  | por ventanas de 3 s: 58.4%
+  episodio: d(inicio50) -> d(media) -> d(máx) -> d(final50):
+    lobos/s0: 9.2 -> 22.3 -> máx 50.2 -> 49.1
+    lobos/s1: 10.3 -> 32.1 -> máx 53.7 -> 48.8
+    lobos/s2: 26.4 -> 37.6 -> máx 62.4 -> 60.7
+    lobos/s3: 18.3 -> 43.0 -> máx 63.6 -> 51.2
+    lobos/s4: 18.5 -> 41.0 -> máx 72.1 -> 58.3
+    lobos/s5: 14.6 -> 46.8 -> máx 70.2 -> 62.8
+    lobos/s6: 14.9 -> 37.3 -> máx 62.1 -> 53.1
+    lobos/s7: 21.7 -> 25.8 -> máx 53.5 -> 49.3
+    lobos/s8: 14.2 -> 31.9 -> máx 62.7 -> 41.1
+    lobos/s9: 8.4 -> 37.8 -> máx 68.6 -> 61.9
+    lobos/s10: 13.1 -> 40.8 -> máx 62.9 -> 47.1
+    lobos/s11: 13.1 -> 48.7 -> máx 64.7 -> 57.4
+    lobos/s12: 15.6 -> 51.6 -> máx 68.7 -> 57.6
+    lobos/s13: 7.3 -> 40.3 -> máx 63.4 -> 55.4
+
+=== M2: cruces de segmento entre drones contiguos ===
+  TOTAL cruces: 56 en 28 episodios | HACIA DENTRO: 36 | con la LÍNEA en pie (rama CLEAN): 44 (hacia dentro 33)
+  por sector: {'unico': 50, 'asalto': 6}
+  estado del lobo al cruzar: walled=27 scared=24 libre=5
+  anchura del hueco cruzado: mediana 20.6 m  p90 42.3  máx 46.4
+
+=== M3: ¿qué sector ANCLA la barrera? (2 frentes) ===
+  n=4 | ancla: {'asalto': 4}  (el DISEÑO pide cebo ~100%)
+  d(asalto->presa) al saltar ESCOLTA: mediana 146  <=150: 50%

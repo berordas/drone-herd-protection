@@ -1,0 +1,1028 @@
+[
+ {
+  "seed": 0,
+  "kind": "lobos",
+  "grupos": [
+   2
+  ],
+  "sev": 1,
+  "steps": 1741,
+  "sha": "697d45c256a8753bf1094a3a6f7001bde8c4b43a7fa2a81c778b32873395dbc7"
+ },
+ {
+  "seed": 1,
+  "kind": "lobos",
+  "grupos": [
+   1
+  ],
+  "sev": 0,
+  "steps": 23570,
+  "sha": "dc5d63cfa824905123bf40db7d14068b31d2e9a0a89ecb208ee27a6290f89f0d"
+ },
+ {
+  "seed": 2,
+  "kind": "lobos",
+  "grupos": [
+   1,
+   2
+  ],
+  "sev": 5,
+  "steps": 1690,
+  "sha": "683a5eef3dfcbe4c4b390240d2f785ee1f012af86a2d68b2d97f2d80ed005a1c"
+ },
+ {
+  "seed": 3,
+  "kind": "lobos",
+  "grupos": [
+   4
+  ],
+  "sev": 4,
+  "steps": 876,
+  "sha": "940f939732040c508cc47999d4b6855652b168be0268c4f1f89a5b33b880ced0"
+ },
+ {
+  "seed": 4,
+  "kind": "lobos",
+  "grupos": [
+   2
+  ],
+  "sev": 5,
+  "steps": 1105,
+  "sha": "a7e626aa9955e64a333be02579653424ee5928c7ae4f53b8d81e92a1e26b6105"
+ },
+ {
+  "seed": 5,
+  "kind": "lobos",
+  "grupos": [
+   3
+  ],
+  "sev": 3,
+  "steps": 1123,
+  "sha": "6819499a6fb57427890401cb35d0195bf04e406fb6b2cce79726cb1a8e8ef1ae"
+ },
+ {
+  "seed": 6,
+  "kind": "lobos",
+  "grupos": [
+   3
+  ],
+  "sev": 3,
+  "steps": 2224,
+  "sha": "888c0ef24bc9e9bbfdb435f7942c3281934b2d61c1c003f307decc035731d3b6"
+ },
+ {
+  "seed": 7,
+  "kind": "lobos",
+  "grupos": [
+   2
+  ],
+  "sev": 5,
+  "steps": 2074,
+  "sha": "b24278477705aa58f187a675c16a46b5fbc631a937de455156420db4582583eb"
+ },
+ {
+  "seed": 8,
+  "kind": "lobos",
+  "grupos": [
+   4
+  ],
+  "sev": 3,
+  "steps": 2478,
+  "sha": "2086d8a6a459a84decf5785b7abc2f07d38a5eef1b0115a820ff5e8cdc88116b"
+ },
+ {
+  "seed": 9,
+  "kind": "lobos",
+  "grupos": [
+   4
+  ],
+  "sev": 3,
+  "steps": 848,
+  "sha": "ad12b9016f437859e8a090f28d51721ffd79b22af68b1b0092dd20620f5b5918"
+ },
+ {
+  "seed": 10,
+  "kind": "lobos",
+  "grupos": [
+   2
+  ],
+  "sev": 4,
+  "steps": 1450,
+  "sha": "d59f547febc4d3e19be64f77090395248018af439271583608e07ada8b302288"
+ },
+ {
+  "seed": 11,
+  "kind": "lobos",
+  "grupos": [
+   2
+  ],
+  "sev": 1,
+  "steps": 1132,
+  "sha": "39659d392da9b7e6b14877e7a66d629999f554a9934622d6a8379ef3dcdca58c"
+ },
+ {
+  "seed": 12,
+  "kind": "lobos",
+  "grupos": [
+   1,
+   3
+  ],
+  "sev": 3,
+  "steps": 1359,
+  "sha": "a553151d95acbe0d6819d213e4883b4085d687e86bcef62bdb30b18fe2b93e9a"
+ },
+ {
+  "seed": 13,
+  "kind": "lobos",
+  "grupos": [
+   1
+  ],
+  "sev": 0,
+  "steps": 1895,
+  "sha": "e209f836b392a783d64f7128f271ef35a20cd7f0885dbceedf1a36e6861a239c"
+ },
+ {
+  "seed": 14,
+  "kind": "lobos",
+  "grupos": [
+   5
+  ],
+  "sev": 0,
+  "steps": 23570,
+  "sha": "dd0e1aa7abb28c0c3196ea54091d27cea2ee514d5f42c7a718ff19ea618023a4"
+ },
+ {
+  "seed": 15,
+  "kind": "lobos",
+  "grupos": [
+   1
+  ],
+  "sev": 0,
+  "steps": 1841,
+  "sha": "59832389604485ad914b3b37bbc918ee6ca144c8b71022b7a23f72673a75d170"
+ },
+ {
+  "seed": 16,
+  "kind": "lobos",
+  "grupos": [
+   1
+  ],
+  "sev": 0,
+  "steps": 1822,
+  "sha": "b722bb35c02c572245beddf1036beb4feb51fb840259979ad361479969f61cd8"
+ },
+ {
+  "seed": 17,
+  "kind": "lobos",
+  "grupos": [
+   2
+  ],
+  "sev": 4,
+  "steps": 994,
+  "sha": "3aab14dcbbfc969ae046faad6bfa028574356b482e8ac927d1d221eac52ce437"
+ },
+ {
+  "seed": 18,
+  "kind": "lobos",
+  "grupos": [
+   5
+  ],
+  "sev": 2,
+  "steps": 1323,
+  "sha": "024925bfb2d64dd0a5d4304ca291b2b3c666c757c167101a123da2d8b021f1f0"
+ },
+ {
+  "seed": 19,
+  "kind": "lobos",
+  "grupos": [
+   1,
+   3
+  ],
+  "sev": 2,
+  "steps": 1863,
+  "sha": "38e6e7a6e008257092532a055dddf10c2ea6f8229e933dd5baf0573c6527711c"
+ },
+ {
+  "seed": 20,
+  "kind": "lobos",
+  "grupos": [
+   4
+  ],
+  "sev": 3,
+  "steps": 1323,
+  "sha": "25cefcf25a0f20513e14b68157cc82abd7f42a71fff909b88e38e2b4ed401a3c"
+ },
+ {
+  "seed": 21,
+  "kind": "lobos",
+  "grupos": [
+   4
+  ],
+  "sev": 1,
+  "steps": 1980,
+  "sha": "0165d6e7d395dc837cf0cf81ea893e8853e258937dda826dc07c582872ab3834"
+ },
+ {
+  "seed": 22,
+  "kind": "lobos",
+  "grupos": [
+   2
+  ],
+  "sev": 4,
+  "steps": 1589,
+  "sha": "742400d956b721e8deba6fe61317e17950e53a49537085924c3a79e80fc22bd6"
+ },
+ {
+  "seed": 23,
+  "kind": "lobos",
+  "grupos": [
+   2
+  ],
+  "sev": 2,
+  "steps": 1382,
+  "sha": "2bf3b2fcaf98f21341b5ee8e00d51f05524da8cdf3eb8d57548efa06ae1ac1f6"
+ },
+ {
+  "seed": 24,
+  "kind": "lobos",
+  "grupos": [
+   3
+  ],
+  "sev": 3,
+  "steps": 1072,
+  "sha": "e53fac89b1fd2966c02553d5057c18161ee8b85e70954800e6df346f3d6fed5e"
+ },
+ {
+  "seed": 25,
+  "kind": "lobos",
+  "grupos": [
+   2
+  ],
+  "sev": 3,
+  "steps": 1309,
+  "sha": "4cd2890987f9dcb77aa41b7580cefaae56f9d01b93dc212c9cf969a5cc1f3c94"
+ },
+ {
+  "seed": 26,
+  "kind": "lobos",
+  "grupos": [
+   1,
+   3
+  ],
+  "sev": 2,
+  "steps": 1062,
+  "sha": "ff4d912bf5c03c2323c0178db8a206bb7043bac4b7cf97768f5f9953a0d48344"
+ },
+ {
+  "seed": 27,
+  "kind": "lobos",
+  "grupos": [
+   2
+  ],
+  "sev": 1,
+  "steps": 1910,
+  "sha": "d8be22fe8cc07bf374d4b13a1f2a967586daea7d0f8f0c3ec29d542d2fa6b8c9"
+ },
+ {
+  "seed": 28,
+  "kind": "lobos",
+  "grupos": [
+   3
+  ],
+  "sev": 1,
+  "steps": 1465,
+  "sha": "34ed1fd31321a0b55f977feff5a484d948c1eeb36d075a72775b39a6b921f7ce"
+ },
+ {
+  "seed": 29,
+  "kind": "lobos",
+  "grupos": [
+   1,
+   2
+  ],
+  "sev": 6,
+  "steps": 2194,
+  "sha": "5020f5151e4a50889e158e7989c17a46dfa69f71a8e83fad0789b8af681823ff"
+ },
+ {
+  "seed": 30,
+  "kind": "lobos",
+  "grupos": [
+   2
+  ],
+  "sev": 3,
+  "steps": 1571,
+  "sha": "f0138f20cedecb6be4bded9f4c2b578792c6a5c394b152e5babac250a4a48ba6"
+ },
+ {
+  "seed": 31,
+  "kind": "lobos",
+  "grupos": [
+   2
+  ],
+  "sev": 4,
+  "steps": 1442,
+  "sha": "7f4bc43828bcb768bd4cff48480ebfb659cdedc271d20fd824c213494cafb2a6"
+ },
+ {
+  "seed": 32,
+  "kind": "lobos",
+  "grupos": [
+   3
+  ],
+  "sev": 4,
+  "steps": 1566,
+  "sha": "eeced56a6c568b9661168a9a10c28e05bfae2df4b742090d16be25ea7089085a"
+ },
+ {
+  "seed": 33,
+  "kind": "lobos",
+  "grupos": [
+   2
+  ],
+  "sev": 2,
+  "steps": 1989,
+  "sha": "c4da1d20f86bac5a2c31e050d4e85ebabcde29c2d84c78fa13d046fbc80fd10f"
+ },
+ {
+  "seed": 34,
+  "kind": "lobos",
+  "grupos": [
+   1
+  ],
+  "sev": 0,
+  "steps": 23570,
+  "sha": "dc28ad3be83599dd583d69596e71b59a78ca4b709663164f29726e3ae07826df"
+ },
+ {
+  "seed": 35,
+  "kind": "lobos",
+  "grupos": [
+   4
+  ],
+  "sev": 4,
+  "steps": 1280,
+  "sha": "907b18a03518edd0b4ea7bb279832da917e0bb1bf0bdec34eda9fb2d04cc7511"
+ },
+ {
+  "seed": 36,
+  "kind": "lobos",
+  "grupos": [
+   4
+  ],
+  "sev": 3,
+  "steps": 1965,
+  "sha": "d095a5bdb36404b3d3a7eee85888d1d66b92d8e92fd36e3855e3eada592eba7c"
+ },
+ {
+  "seed": 37,
+  "kind": "lobos",
+  "grupos": [
+   1,
+   3
+  ],
+  "sev": 6,
+  "steps": 3057,
+  "sha": "f14b4c7def714c4811ea5dbeeebc0652dabecd960c0a2a436cf76166288f58ad"
+ },
+ {
+  "seed": 38,
+  "kind": "lobos",
+  "grupos": [
+   1
+  ],
+  "sev": 0,
+  "steps": 23570,
+  "sha": "dc391cdda8ec4d724f9168dc366f03dbb825cd2d90d2486efd6130a0ee6fc000"
+ },
+ {
+  "seed": 39,
+  "kind": "lobos",
+  "grupos": [
+   1
+  ],
+  "sev": 0,
+  "steps": 1683,
+  "sha": "ef42c0a82f5b9bd7520bfa974ed5bd50cd7b2a7fe6f7c2023e9b1867052b39eb"
+ },
+ {
+  "seed": 40,
+  "kind": "lobos",
+  "grupos": [
+   1,
+   2
+  ],
+  "sev": 3,
+  "steps": 23570,
+  "sha": "17b2913b4e220a23c78804a9a0bdd49537539060c11cd961a062743409aa886c"
+ },
+ {
+  "seed": 41,
+  "kind": "lobos",
+  "grupos": [
+   4
+  ],
+  "sev": 3,
+  "steps": 1886,
+  "sha": "8b31039b92e15b9ce679515b629d841dd48b86cf8522585e62b73be737f96816"
+ },
+ {
+  "seed": 42,
+  "kind": "lobos",
+  "grupos": [
+   1,
+   4
+  ],
+  "sev": 2,
+  "steps": 915,
+  "sha": "6004bec76d2902f19524c738ca08a1d25b3ef9088506a5161130d540a280e7f8"
+ },
+ {
+  "seed": 43,
+  "kind": "lobos",
+  "grupos": [
+   1,
+   3
+  ],
+  "sev": 1,
+  "steps": 2625,
+  "sha": "dda6ba194fe48955a3e0cd821ae7a7317969651b2a6e0521270c97e626de1eb4"
+ },
+ {
+  "seed": 44,
+  "kind": "lobos",
+  "grupos": [
+   2
+  ],
+  "sev": 2,
+  "steps": 1843,
+  "sha": "a7d9bb79e837baf5cd8d48f75b023161dfd2ca85682640298c8b3e39faf3b354"
+ },
+ {
+  "seed": 45,
+  "kind": "lobos",
+  "grupos": [
+   1,
+   2
+  ],
+  "sev": 5,
+  "steps": 1668,
+  "sha": "41cd1404d137ef01df6caeca12f74e6a26f06380317a3a18378fe932f984a97f"
+ },
+ {
+  "seed": 46,
+  "kind": "lobos",
+  "grupos": [
+   1,
+   3
+  ],
+  "sev": 5,
+  "steps": 2267,
+  "sha": "397f9fb59cde06fbeb5a14b34d97794c969a7554a6650ea3d0b168f2bf6b3441"
+ },
+ {
+  "seed": 47,
+  "kind": "lobos",
+  "grupos": [
+   4
+  ],
+  "sev": 2,
+  "steps": 2333,
+  "sha": "06a3e00e3bfb53288dd8787a0223f38669a5b651a323aee7871cf08c23885655"
+ },
+ {
+  "seed": 48,
+  "kind": "lobos",
+  "grupos": [
+   1,
+   2
+  ],
+  "sev": 3,
+  "steps": 23570,
+  "sha": "7aa7087e989a06748bae9b14adc7a5030f30256ac773d3babb6b204b10d7c57d"
+ },
+ {
+  "seed": 49,
+  "kind": "lobos",
+  "grupos": [
+   1,
+   3
+  ],
+  "sev": 5,
+  "steps": 2099,
+  "sha": "8a773d3e803a05d0ee36feca2e046df77d27c4f6165508cb66b1c9fcea35c2b7"
+ },
+ {
+  "seed": 0,
+  "kind": "mixto",
+  "grupos": [
+   2
+  ],
+  "sev": 3,
+  "steps": 1786,
+  "sha": "263a946faa848a27797d552e54b253d1f7981230a78c5c5318caa21345c454d4"
+ },
+ {
+  "seed": 1,
+  "kind": "mixto",
+  "grupos": [
+   1
+  ],
+  "sev": 0,
+  "steps": 3175,
+  "sha": "9bd4afe5d33d37dac965595ae44573da1a69bdbb034b3a7cf891b0a826980559"
+ },
+ {
+  "seed": 2,
+  "kind": "mixto",
+  "grupos": [
+   1,
+   2
+  ],
+  "sev": 2,
+  "steps": 5908,
+  "sha": "17fd1650760c9495d177046985a62b2e41dd17914486b3d57dc4732545c6fc7e"
+ },
+ {
+  "seed": 3,
+  "kind": "mixto",
+  "grupos": [
+   4
+  ],
+  "sev": 4,
+  "steps": 969,
+  "sha": "8963970d8d2f838b51feea096fac9c20187fddd29201f75ec93aef3e77d01dbf"
+ },
+ {
+  "seed": 4,
+  "kind": "mixto",
+  "grupos": [
+   2
+  ],
+  "sev": 5,
+  "steps": 1071,
+  "sha": "0ae63aee411307e348d8e9134eb1e3edbb6952a7421d339c7d79e66d49acd2f1"
+ },
+ {
+  "seed": 5,
+  "kind": "mixto",
+  "grupos": [
+   3
+  ],
+  "sev": 3,
+  "steps": 1187,
+  "sha": "ecd584439a25d487b4a9cc1a9785da8ef2ba14f973588de02f12368530b0fb12"
+ },
+ {
+  "seed": 6,
+  "kind": "mixto",
+  "grupos": [
+   3
+  ],
+  "sev": 3,
+  "steps": 1996,
+  "sha": "892040bb8f8775d8608a30fe889f6e640deace880782e9a561cab427f9f64111"
+ },
+ {
+  "seed": 7,
+  "kind": "mixto",
+  "grupos": [
+   2
+  ],
+  "sev": 5,
+  "steps": 2074,
+  "sha": "7cc8ef2321b7a7dfbf12a6f2a29f7864b8a6b3b950355c9f834cec87d5f3e110"
+ },
+ {
+  "seed": 8,
+  "kind": "mixto",
+  "grupos": [
+   4
+  ],
+  "sev": 2,
+  "steps": 2043,
+  "sha": "e57dcd046e0df9dc2185594e1c7f46b9d4b4d42584377e3cee4536e7fd0f63e5"
+ },
+ {
+  "seed": 9,
+  "kind": "mixto",
+  "grupos": [
+   4
+  ],
+  "sev": 3,
+  "steps": 946,
+  "sha": "2b4b746e6d2518c99cf00d2bd6bbec4469cbb10781fcac569fc3f71cb7902851"
+ },
+ {
+  "seed": 10,
+  "kind": "mixto",
+  "grupos": [
+   2
+  ],
+  "sev": 2,
+  "steps": 1837,
+  "sha": "dbf152257039e75bd052d75550eb9839d7e33b9f8b94ad178511a661d8bc52ed"
+ },
+ {
+  "seed": 11,
+  "kind": "mixto",
+  "grupos": [
+   2
+  ],
+  "sev": 1,
+  "steps": 1140,
+  "sha": "87d4d6421fb6adf5a1177339af8b4cf85bc0cba51182f35b5d11d4e94e55bc1a"
+ },
+ {
+  "seed": 12,
+  "kind": "mixto",
+  "grupos": [
+   1,
+   3
+  ],
+  "sev": 3,
+  "steps": 1701,
+  "sha": "f1efaf3db5b129f1a04f33f08f0a2a626e50c238f991593d79ab5e4a8776f5a2"
+ },
+ {
+  "seed": 13,
+  "kind": "mixto",
+  "grupos": [
+   1
+  ],
+  "sev": 0,
+  "steps": 2054,
+  "sha": "a74d24c827ca3402e1d863bd4375c63400dd3bbc667e76bebf8edb8647514be2"
+ },
+ {
+  "seed": 14,
+  "kind": "mixto",
+  "grupos": [
+   5
+  ],
+  "sev": 5,
+  "steps": 1784,
+  "sha": "ad312933e78271a8c9f23743b0a90ab653ffcd8125a9878729649402d82432a1"
+ },
+ {
+  "seed": 15,
+  "kind": "mixto",
+  "grupos": [
+   1
+  ],
+  "sev": 0,
+  "steps": 1929,
+  "sha": "4434315071f8623aad2b6f7f90c4b530c4093be19741f09496fa04d654546d3e"
+ },
+ {
+  "seed": 16,
+  "kind": "mixto",
+  "grupos": [
+   1
+  ],
+  "sev": 0,
+  "steps": 1840,
+  "sha": "e478ae69cdb4bac7fc37b7847169d86e0e0a3ce682b6ae8efc8a3c4917ed357a"
+ },
+ {
+  "seed": 17,
+  "kind": "mixto",
+  "grupos": [
+   2
+  ],
+  "sev": 2,
+  "steps": 1483,
+  "sha": "d678f257450e7a055ea49b663f3648d3486b3001b65b5b266d52d4521d5e3602"
+ },
+ {
+  "seed": 18,
+  "kind": "mixto",
+  "grupos": [
+   5
+  ],
+  "sev": 3,
+  "steps": 1117,
+  "sha": "1586c0c775eca4c4019c8456099ee048bea2b49a0cd174a2a4c9ba4108ff1010"
+ },
+ {
+  "seed": 19,
+  "kind": "mixto",
+  "grupos": [
+   1,
+   3
+  ],
+  "sev": 2,
+  "steps": 2561,
+  "sha": "b73ee1e5c000214aace8bf98df400a2b741d1701d409eea043032f09386e28ec"
+ },
+ {
+  "seed": 20,
+  "kind": "mixto",
+  "grupos": [
+   4
+  ],
+  "sev": 3,
+  "steps": 1363,
+  "sha": "c96f8701f20ca66412e66beeeac08c8d295fb3245345f659f83f29ed85fc28b7"
+ },
+ {
+  "seed": 21,
+  "kind": "mixto",
+  "grupos": [
+   4
+  ],
+  "sev": 3,
+  "steps": 1800,
+  "sha": "aa10ccbc367c8a147da0d38290a298ed357357b89165b6b2ce167496f0891cd1"
+ },
+ {
+  "seed": 22,
+  "kind": "mixto",
+  "grupos": [
+   2
+  ],
+  "sev": 1,
+  "steps": 1873,
+  "sha": "2684348eefe9b5c1e1c355d9df5e2b0895dc3498792cad794044b838c22b75bd"
+ },
+ {
+  "seed": 23,
+  "kind": "mixto",
+  "grupos": [
+   2
+  ],
+  "sev": 2,
+  "steps": 1410,
+  "sha": "ce7001a3c4edb57f5e672505c286d85de734cc9becc28a62dc4ce3e5c30317d0"
+ },
+ {
+  "seed": 24,
+  "kind": "mixto",
+  "grupos": [
+   3
+  ],
+  "sev": 1,
+  "steps": 1256,
+  "sha": "c7c088f3371fe0be19341b5879e9a09fd9373988863c1e97c4154757b5c7d10a"
+ },
+ {
+  "seed": 25,
+  "kind": "mixto",
+  "grupos": [
+   2
+  ],
+  "sev": 4,
+  "steps": 1341,
+  "sha": "14e26d5e27907e813c57d7fc0b07906e0980ecb6991905a2294866086136f6ba"
+ },
+ {
+  "seed": 26,
+  "kind": "mixto",
+  "grupos": [
+   1,
+   3
+  ],
+  "sev": 2,
+  "steps": 1161,
+  "sha": "f1f21ffaeb5e3c916fae00e4d265360c18d782bbe96c378cfca2115d57d9f990"
+ },
+ {
+  "seed": 27,
+  "kind": "mixto",
+  "grupos": [
+   2
+  ],
+  "sev": 3,
+  "steps": 1692,
+  "sha": "f47e061050a8021779685573722e200f73b45eaa1e3aae8cc4aebd7841b42e83"
+ },
+ {
+  "seed": 28,
+  "kind": "mixto",
+  "grupos": [
+   3
+  ],
+  "sev": 1,
+  "steps": 1453,
+  "sha": "2cd80bdcb6d8f257da9aa222a8c10bfd10f2bc18c31286c4c23276a0748af167"
+ },
+ {
+  "seed": 29,
+  "kind": "mixto",
+  "grupos": [
+   1,
+   2
+  ],
+  "sev": 5,
+  "steps": 1947,
+  "sha": "1ad4df7ea61a150a5f65b5aaf99d09b29b31664fb1c1faf9fd9a0783dc86ac25"
+ },
+ {
+  "seed": 30,
+  "kind": "mixto",
+  "grupos": [
+   2
+  ],
+  "sev": 2,
+  "steps": 1544,
+  "sha": "3aa02721aa85006461bebb0744f2aa961772411a600ad9702bb61d131ae1ab02"
+ },
+ {
+  "seed": 31,
+  "kind": "mixto",
+  "grupos": [
+   2
+  ],
+  "sev": 4,
+  "steps": 1450,
+  "sha": "c3b7daff7bb06a183414f11d4475a264733299776b1ac77d2356d7096558ca2a"
+ },
+ {
+  "seed": 32,
+  "kind": "mixto",
+  "grupos": [
+   3
+  ],
+  "sev": 2,
+  "steps": 2239,
+  "sha": "fcc133764c8a10d7a52f4f519cc4ee1f813a3b3473c9f876066afda354a79149"
+ },
+ {
+  "seed": 33,
+  "kind": "mixto",
+  "grupos": [
+   2
+  ],
+  "sev": 5,
+  "steps": 2057,
+  "sha": "1f8cd5ee2fc4ea5728a4b23a0d04c84abab8771b4739a0573a83dd2665a84f58"
+ },
+ {
+  "seed": 34,
+  "kind": "mixto",
+  "grupos": [
+   1
+  ],
+  "sev": 0,
+  "steps": 23570,
+  "sha": "e7f7e713b86bd08528a5bd57ab1ba0f7610e5eb4e94b0173b2385909eb02bea6"
+ },
+ {
+  "seed": 35,
+  "kind": "mixto",
+  "grupos": [
+   4
+  ],
+  "sev": 4,
+  "steps": 1029,
+  "sha": "9c6b71c83cac64dfafe167790925175418a72e27ab82ca05df5ca6b7675e5261"
+ },
+ {
+  "seed": 36,
+  "kind": "mixto",
+  "grupos": [
+   4
+  ],
+  "sev": 4,
+  "steps": 1566,
+  "sha": "df8a4849e676ed09c2231f4a037c02ddedc2203df04ff950543df2114457e3c8"
+ },
+ {
+  "seed": 37,
+  "kind": "mixto",
+  "grupos": [
+   1,
+   3
+  ],
+  "sev": 2,
+  "steps": 3795,
+  "sha": "e17ac6521b06e842b3a23a3a8d5c4abc76996e7722d641512ae367b8bef90344"
+ },
+ {
+  "seed": 38,
+  "kind": "mixto",
+  "grupos": [
+   1
+  ],
+  "sev": 0,
+  "steps": 23570,
+  "sha": "a9a792b8f41a87f4f0919ed244b04cb60d648d7e76c61a28c1834e2917d9a300"
+ },
+ {
+  "seed": 39,
+  "kind": "mixto",
+  "grupos": [
+   1
+  ],
+  "sev": 0,
+  "steps": 1653,
+  "sha": "d81d71847bc704d1f5515f9f5932a2fdda0146048fb6a52a9c9292e7b7099286"
+ },
+ {
+  "seed": 40,
+  "kind": "mixto",
+  "grupos": [
+   1,
+   2
+  ],
+  "sev": 6,
+  "steps": 1638,
+  "sha": "8e8cd06f5f9fbcc34da4cf4efd42bd41a885da44d4d38ae0296e43eb095e8a09"
+ },
+ {
+  "seed": 41,
+  "kind": "mixto",
+  "grupos": [
+   4
+  ],
+  "sev": 3,
+  "steps": 23570,
+  "sha": "d1e9ab0d91f1e70ccabf17536e189425d36d0680e001d3d56b253b384b0b78bf"
+ },
+ {
+  "seed": 42,
+  "kind": "mixto",
+  "grupos": [
+   1,
+   4
+  ],
+  "sev": 2,
+  "steps": 917,
+  "sha": "ed1ba68c42d4b7b30b9efa9fa35d746fbf8940299511f5c7045c37677fcc64fa"
+ },
+ {
+  "seed": 43,
+  "kind": "mixto",
+  "grupos": [
+   1,
+   3
+  ],
+  "sev": 2,
+  "steps": 1536,
+  "sha": "268ceab952af9fc1ebfed6014ab3244daf7e20b1c04f11a3273bd33c69af57b3"
+ },
+ {
+  "seed": 44,
+  "kind": "mixto",
+  "grupos": [
+   2
+  ],
+  "sev": 3,
+  "steps": 1587,
+  "sha": "a09ec42cd78052f221b382df3ec58c733543670a22bfc3328fa89f13fa4befd0"
+ },
+ {
+  "seed": 45,
+  "kind": "mixto",
+  "grupos": [
+   1,
+   2
+  ],
+  "sev": 5,
+  "steps": 1622,
+  "sha": "7153413a576e4d4cbdb1f6b023aa04f90f691542336515a60db66c31648b9b34"
+ },
+ {
+  "seed": 46,
+  "kind": "mixto",
+  "grupos": [
+   1,
+   3
+  ],
+  "sev": 5,
+  "steps": 2361,
+  "sha": "3e6e1ef70ad2396cf76d8a37775c95f4ef54ab0deb448b5d35cc3e485ebcc8de"
+ },
+ {
+  "seed": 47,
+  "kind": "mixto",
+  "grupos": [
+   4
+  ],
+  "sev": 0,
+  "steps": 23570,
+  "sha": "db5cb04a74f1ea2d9883add0543206e2d6344d1d8e83fa74d23391e69b68f15b"
+ },
+ {
+  "seed": 48,
+  "kind": "mixto",
+  "grupos": [
+   1,
+   2
+  ],
+  "sev": 3,
+  "steps": 23570,
+  "sha": "3de015cb014cc2733058e302e3ee8ab01c047ae975ca1487475656486e2c5957"
+ },
+ {
+  "seed": 49,
+  "kind": "mixto",
+  "grupos": [
+   1,
+   3
+  ],
+  "sev": 5,
+  "steps": 1991,
+  "sha": "f0a16798c51d2d629d035057e115d236b714db7322516ea112b902b340eea2c3"
+ }
+]

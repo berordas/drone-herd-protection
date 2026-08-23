@@ -1,0 +1,5 @@
+reparto_entero | seed=43 lobos sev_eval=0 cambios=2 carrera={'t_sec': 535, 't_guard': 572, 't_guard_post': 572, 'guardias_antes_2cl': False, 'latencia': 37, 't_llegada_guardia': 662, 't_llegada_asalto': 1672, 'gana_guardia': True, 'reasignaciones': 3}
+t=     0  PARTICION (4, 0) (evento previo INICIO)
+t=   571  PARTICION (2, 2) (evento previo CLUSTER_CHANGE)
+t=  1186  PARTICION (4, 0) (evento previo STALL)
+t=  1672  PARTICION (2, 2) (evento previo CLUSTER_CHANGE)

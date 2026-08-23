@@ -1,0 +1,6 @@
+escolta_prematura_asalto_seed3_lobos_sev0 | arm=cebo_capa_manager status=success sev=0 steps=1229 grupos=[4] | muertes con procedencia al final
+t=     0  OPTION_START     option=CEBO delta_deg=180.0
+t=    80  ESCOLTA_LATCH
+t=    80  ESCOLTA_PREMATURA primer_confirmado=1 quien=asalto investigador=2 investigador_hacia_corzo=False asalto_borde_min_m=None pinzamiento_borde=False
+t=    81  ANCHOR_FLIP      frm=None to=1
+t=  1229  HERD_SAFE        n_safe=6 n_muertas=0

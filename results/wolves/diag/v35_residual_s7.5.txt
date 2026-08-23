@@ -1,0 +1,8 @@
+s=7.5: 20 cruces hacia dentro (CLEAN)
+  pose |Δc| en el paso del cruce (m): mediana 0.078  p90 0.104  (equivale a 0.8 m/s; quieta <0.1)
+  pose |Δφ| (grados/paso): mediana 0.039  p90 0.083
+  |v| del lobo al cruzar: mediana 3.21 m/s  p10 3.00 (caza plena=4; lento = lo llevan por delante)
+  aproximación del dron más cercano: mediana -0.22 m/s  cruces con dron echándosele encima (>1, gate expulsión): 0/20 | con aproximación >0: 4/20
+  |cos| v_lobo·normal: mediana 0.99 (1=perpendicular a la línea, 0=rasante)
+  pasos seguidos walled antes de cruzar: mediana 80  p90 1137
+  scared al cruzar: 1 | walled: 19

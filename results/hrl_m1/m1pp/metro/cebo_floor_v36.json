@@ -1,0 +1,1897 @@
+{
+ "n_episodios_2grupos": 58,
+ "n_muertes": 172,
+ "severidad_media_2grupos": 2.9655172413793105,
+ "frac_killer_no_confirmado": 0.38953488372093026,
+ "frac_ancla_cebo": 0.7924528301886793,
+ "gotera_por_ep": 0.0,
+ "episodes": [
+  {
+   "seed": 2,
+   "kind": "lobos",
+   "sizes": [
+    1,
+    2
+   ],
+   "sev": 5,
+   "primer_ancla": 0,
+   "gotera": 0,
+   "relevos": {
+    "n": 2,
+    "escolta": 2,
+    "patrulla": 0,
+    "espera_media": 162.5,
+    "espera_max": 243,
+    "stranded": 0
+   },
+   "deaths": [
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": true,
+     "grupo": 2
+    }
+   ]
+  },
+  {
+   "seed": 12,
+   "kind": "lobos",
+   "sizes": [
+    1,
+    3
+   ],
+   "sev": 5,
+   "primer_ancla": 0,
+   "gotera": 0,
+   "relevos": {
+    "n": 0,
+    "escolta": 0,
+    "patrulla": 0,
+    "espera_media": null,
+    "espera_max": null,
+    "stranded": 0
+   },
+   "deaths": [
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    }
+   ]
+  },
+  {
+   "seed": 19,
+   "kind": "lobos",
+   "sizes": [
+    1,
+    3
+   ],
+   "sev": 0,
+   "primer_ancla": null,
+   "gotera": 0,
+   "relevos": {
+    "n": 23,
+    "escolta": 0,
+    "patrulla": 23,
+    "espera_media": 86.73913043478261,
+    "espera_max": 136,
+    "stranded": 0
+   },
+   "deaths": []
+  },
+  {
+   "seed": 26,
+   "kind": "lobos",
+   "sizes": [
+    1,
+    3
+   ],
+   "sev": 5,
+   "primer_ancla": 0,
+   "gotera": 0,
+   "relevos": {
+    "n": 1,
+    "escolta": 1,
+    "patrulla": 0,
+    "espera_media": 52.0,
+    "espera_max": 52,
+    "stranded": 0
+   },
+   "deaths": [
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": true,
+     "grupo": 2
+    }
+   ]
+  },
+  {
+   "seed": 29,
+   "kind": "lobos",
+   "sizes": [
+    1,
+    2
+   ],
+   "sev": 6,
+   "primer_ancla": 0,
+   "gotera": 0,
+   "relevos": {
+    "n": 0,
+    "escolta": 0,
+    "patrulla": 0,
+    "espera_media": null,
+    "espera_max": null,
+    "stranded": 0
+   },
+   "deaths": [
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    }
+   ]
+  },
+  {
+   "seed": 37,
+   "kind": "lobos",
+   "sizes": [
+    1,
+    3
+   ],
+   "sev": 5,
+   "primer_ancla": 0,
+   "gotera": 0,
+   "relevos": {
+    "n": 0,
+    "escolta": 0,
+    "patrulla": 0,
+    "espera_media": null,
+    "espera_max": null,
+    "stranded": 0
+   },
+   "deaths": [
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    }
+   ]
+  },
+  {
+   "seed": 40,
+   "kind": "lobos",
+   "sizes": [
+    1,
+    2
+   ],
+   "sev": 5,
+   "primer_ancla": 0,
+   "gotera": 0,
+   "relevos": {
+    "n": 2,
+    "escolta": 2,
+    "patrulla": 0,
+    "espera_media": 178.5,
+    "espera_max": 247,
+    "stranded": 0
+   },
+   "deaths": [
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    }
+   ]
+  },
+  {
+   "seed": 42,
+   "kind": "lobos",
+   "sizes": [
+    1,
+    4
+   ],
+   "sev": 2,
+   "primer_ancla": 0,
+   "gotera": 0,
+   "relevos": {
+    "n": 0,
+    "escolta": 0,
+    "patrulla": 0,
+    "espera_media": null,
+    "espera_max": null,
+    "stranded": 0
+   },
+   "deaths": [
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": true,
+     "grupo": 2
+    }
+   ]
+  },
+  {
+   "seed": 43,
+   "kind": "lobos",
+   "sizes": [
+    1,
+    3
+   ],
+   "sev": 0,
+   "primer_ancla": 0,
+   "gotera": 0,
+   "relevos": {
+    "n": 3,
+    "escolta": 3,
+    "patrulla": 0,
+    "espera_media": 70.0,
+    "espera_max": 76,
+    "stranded": 0
+   },
+   "deaths": []
+  },
+  {
+   "seed": 45,
+   "kind": "lobos",
+   "sizes": [
+    1,
+    2
+   ],
+   "sev": 7,
+   "primer_ancla": 0,
+   "gotera": 0,
+   "relevos": {
+    "n": 1,
+    "escolta": 1,
+    "patrulla": 0,
+    "espera_media": 55.0,
+    "espera_max": 55,
+    "stranded": 0
+   },
+   "deaths": [
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    }
+   ]
+  },
+  {
+   "seed": 46,
+   "kind": "lobos",
+   "sizes": [
+    1,
+    3
+   ],
+   "sev": 4,
+   "primer_ancla": 0,
+   "gotera": 0,
+   "relevos": {
+    "n": 20,
+    "escolta": 17,
+    "patrulla": 3,
+    "espera_media": 68.45,
+    "espera_max": 262,
+    "stranded": 0
+   },
+   "deaths": [
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    }
+   ]
+  },
+  {
+   "seed": 48,
+   "kind": "lobos",
+   "sizes": [
+    1,
+    2
+   ],
+   "sev": 3,
+   "primer_ancla": 0,
+   "gotera": 0,
+   "relevos": {
+    "n": 3,
+    "escolta": 3,
+    "patrulla": 0,
+    "espera_media": 215.66666666666666,
+    "espera_max": 309,
+    "stranded": 0
+   },
+   "deaths": [
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": true,
+     "grupo": 2
+    }
+   ]
+  },
+  {
+   "seed": 49,
+   "kind": "lobos",
+   "sizes": [
+    1,
+    3
+   ],
+   "sev": 5,
+   "primer_ancla": 0,
+   "gotera": 0,
+   "relevos": {
+    "n": 4,
+    "escolta": 0,
+    "patrulla": 4,
+    "espera_media": 119.75,
+    "espera_max": 193,
+    "stranded": 0
+   },
+   "deaths": [
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": true,
+     "grupo": 2
+    }
+   ]
+  },
+  {
+   "seed": 52,
+   "kind": "lobos",
+   "sizes": [
+    1,
+    3
+   ],
+   "sev": 5,
+   "primer_ancla": 0,
+   "gotera": 0,
+   "relevos": {
+    "n": 2,
+    "escolta": 2,
+    "patrulla": 0,
+    "espera_media": 95.5,
+    "espera_max": 107,
+    "stranded": 0
+   },
+   "deaths": [
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": true,
+     "grupo": 2
+    }
+   ]
+  },
+  {
+   "seed": 58,
+   "kind": "lobos",
+   "sizes": [
+    1,
+    3
+   ],
+   "sev": 0,
+   "primer_ancla": null,
+   "gotera": 0,
+   "relevos": {
+    "n": 20,
+    "escolta": 0,
+    "patrulla": 20,
+    "espera_media": 81.3,
+    "espera_max": 134,
+    "stranded": 0
+   },
+   "deaths": []
+  },
+  {
+   "seed": 60,
+   "kind": "lobos",
+   "sizes": [
+    1,
+    2
+   ],
+   "sev": 0,
+   "primer_ancla": 1,
+   "gotera": 0,
+   "relevos": {
+    "n": 20,
+    "escolta": 20,
+    "patrulla": 0,
+    "espera_media": 92.15,
+    "espera_max": 128,
+    "stranded": 0
+   },
+   "deaths": []
+  },
+  {
+   "seed": 64,
+   "kind": "lobos",
+   "sizes": [
+    1,
+    2
+   ],
+   "sev": 0,
+   "primer_ancla": null,
+   "gotera": 0,
+   "relevos": {
+    "n": 24,
+    "escolta": 0,
+    "patrulla": 24,
+    "espera_media": 105.5,
+    "espera_max": 155,
+    "stranded": 0
+   },
+   "deaths": []
+  },
+  {
+   "seed": 76,
+   "kind": "lobos",
+   "sizes": [
+    1,
+    3
+   ],
+   "sev": 0,
+   "primer_ancla": 0,
+   "gotera": 0,
+   "relevos": {
+    "n": 20,
+    "escolta": 20,
+    "patrulla": 0,
+    "espera_media": 99.35,
+    "espera_max": 120,
+    "stranded": 0
+   },
+   "deaths": []
+  },
+  {
+   "seed": 77,
+   "kind": "lobos",
+   "sizes": [
+    1,
+    4
+   ],
+   "sev": 8,
+   "primer_ancla": 0,
+   "gotera": 0,
+   "relevos": {
+    "n": 1,
+    "escolta": 0,
+    "patrulla": 1,
+    "espera_media": 129.0,
+    "espera_max": 129,
+    "stranded": 0
+   },
+   "deaths": [
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    }
+   ]
+  },
+  {
+   "seed": 78,
+   "kind": "lobos",
+   "sizes": [
+    1,
+    2
+   ],
+   "sev": 5,
+   "primer_ancla": 0,
+   "gotera": 0,
+   "relevos": {
+    "n": 6,
+    "escolta": 1,
+    "patrulla": 5,
+    "espera_media": 94.33333333333333,
+    "espera_max": 163,
+    "stranded": 0
+   },
+   "deaths": [
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": true,
+     "grupo": 2
+    }
+   ]
+  },
+  {
+   "seed": 81,
+   "kind": "lobos",
+   "sizes": [
+    1,
+    3
+   ],
+   "sev": 0,
+   "primer_ancla": 2,
+   "gotera": 0,
+   "relevos": {
+    "n": 20,
+    "escolta": 20,
+    "patrulla": 0,
+    "espera_media": 42.2,
+    "espera_max": 71,
+    "stranded": 0
+   },
+   "deaths": []
+  },
+  {
+   "seed": 82,
+   "kind": "lobos",
+   "sizes": [
+    1,
+    3
+   ],
+   "sev": 2,
+   "primer_ancla": 0,
+   "gotera": 0,
+   "relevos": {
+    "n": 21,
+    "escolta": 20,
+    "patrulla": 1,
+    "espera_media": 44.095238095238095,
+    "espera_max": 74,
+    "stranded": 0
+   },
+   "deaths": [
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": true,
+     "grupo": 2
+    }
+   ]
+  },
+  {
+   "seed": 83,
+   "kind": "lobos",
+   "sizes": [
+    1,
+    3
+   ],
+   "sev": 0,
+   "primer_ancla": 1,
+   "gotera": 0,
+   "relevos": {
+    "n": 20,
+    "escolta": 20,
+    "patrulla": 0,
+    "espera_media": 73.4,
+    "espera_max": 110,
+    "stranded": 0
+   },
+   "deaths": []
+  },
+  {
+   "seed": 84,
+   "kind": "lobos",
+   "sizes": [
+    1,
+    2
+   ],
+   "sev": 6,
+   "primer_ancla": 0,
+   "gotera": 0,
+   "relevos": {
+    "n": 3,
+    "escolta": 1,
+    "patrulla": 2,
+    "espera_media": 86.66666666666667,
+    "espera_max": 100,
+    "stranded": 0
+   },
+   "deaths": [
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    }
+   ]
+  },
+  {
+   "seed": 88,
+   "kind": "lobos",
+   "sizes": [
+    1,
+    4
+   ],
+   "sev": 4,
+   "primer_ancla": 0,
+   "gotera": 0,
+   "relevos": {
+    "n": 1,
+    "escolta": 1,
+    "patrulla": 0,
+    "espera_media": 304.0,
+    "espera_max": 304,
+    "stranded": 0
+   },
+   "deaths": [
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    }
+   ]
+  },
+  {
+   "seed": 91,
+   "kind": "lobos",
+   "sizes": [
+    1,
+    4
+   ],
+   "sev": 0,
+   "primer_ancla": 2,
+   "gotera": 0,
+   "relevos": {
+    "n": 21,
+    "escolta": 21,
+    "patrulla": 0,
+    "espera_media": 73.71428571428571,
+    "espera_max": 221,
+    "stranded": 0
+   },
+   "deaths": []
+  },
+  {
+   "seed": 94,
+   "kind": "lobos",
+   "sizes": [
+    1,
+    4
+   ],
+   "sev": 0,
+   "primer_ancla": 4,
+   "gotera": 0,
+   "relevos": {
+    "n": 3,
+    "escolta": 3,
+    "patrulla": 0,
+    "espera_media": 93.66666666666667,
+    "espera_max": 104,
+    "stranded": 0
+   },
+   "deaths": []
+  },
+  {
+   "seed": 95,
+   "kind": "lobos",
+   "sizes": [
+    1,
+    3
+   ],
+   "sev": 1,
+   "primer_ancla": 0,
+   "gotera": 0,
+   "relevos": {
+    "n": 3,
+    "escolta": 3,
+    "patrulla": 0,
+    "espera_media": 241.66666666666666,
+    "espera_max": 364,
+    "stranded": 0
+   },
+   "deaths": [
+    {
+     "knc": true,
+     "grupo": 2
+    }
+   ]
+  },
+  {
+   "seed": 96,
+   "kind": "lobos",
+   "sizes": [
+    1,
+    4
+   ],
+   "sev": 3,
+   "primer_ancla": 0,
+   "gotera": 0,
+   "relevos": {
+    "n": 2,
+    "escolta": 2,
+    "patrulla": 0,
+    "espera_media": 106.0,
+    "espera_max": 124,
+    "stranded": 0
+   },
+   "deaths": [
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    }
+   ]
+  },
+  {
+   "seed": 2,
+   "kind": "mixto",
+   "sizes": [
+    1,
+    2
+   ],
+   "sev": 5,
+   "primer_ancla": 0,
+   "gotera": 0,
+   "relevos": {
+    "n": 2,
+    "escolta": 1,
+    "patrulla": 1,
+    "espera_media": 118.5,
+    "espera_max": 150,
+    "stranded": 0
+   },
+   "deaths": [
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": true,
+     "grupo": 2
+    }
+   ]
+  },
+  {
+   "seed": 12,
+   "kind": "mixto",
+   "sizes": [
+    1,
+    3
+   ],
+   "sev": 0,
+   "primer_ancla": 1,
+   "gotera": 0,
+   "relevos": {
+    "n": 20,
+    "escolta": 20,
+    "patrulla": 0,
+    "espera_media": 94.45,
+    "espera_max": 115,
+    "stranded": 0
+   },
+   "deaths": []
+  },
+  {
+   "seed": 19,
+   "kind": "mixto",
+   "sizes": [
+    1,
+    3
+   ],
+   "sev": 6,
+   "primer_ancla": 0,
+   "gotera": 0,
+   "relevos": {
+    "n": 19,
+    "escolta": 1,
+    "patrulla": 18,
+    "espera_media": 106.21052631578948,
+    "espera_max": 223,
+    "stranded": 0
+   },
+   "deaths": [
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    }
+   ]
+  },
+  {
+   "seed": 26,
+   "kind": "mixto",
+   "sizes": [
+    1,
+    3
+   ],
+   "sev": 0,
+   "primer_ancla": 1,
+   "gotera": 0,
+   "relevos": {
+    "n": 21,
+    "escolta": 21,
+    "patrulla": 0,
+    "espera_media": 85.19047619047619,
+    "espera_max": 112,
+    "stranded": 0
+   },
+   "deaths": []
+  },
+  {
+   "seed": 29,
+   "kind": "mixto",
+   "sizes": [
+    1,
+    2
+   ],
+   "sev": 5,
+   "primer_ancla": 0,
+   "gotera": 0,
+   "relevos": {
+    "n": 0,
+    "escolta": 0,
+    "patrulla": 0,
+    "espera_media": null,
+    "espera_max": null,
+    "stranded": 0
+   },
+   "deaths": [
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    }
+   ]
+  },
+  {
+   "seed": 37,
+   "kind": "mixto",
+   "sizes": [
+    1,
+    3
+   ],
+   "sev": 5,
+   "primer_ancla": 0,
+   "gotera": 0,
+   "relevos": {
+    "n": 0,
+    "escolta": 0,
+    "patrulla": 0,
+    "espera_media": null,
+    "espera_max": null,
+    "stranded": 0
+   },
+   "deaths": [
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    }
+   ]
+  },
+  {
+   "seed": 40,
+   "kind": "mixto",
+   "sizes": [
+    1,
+    2
+   ],
+   "sev": 6,
+   "primer_ancla": 0,
+   "gotera": 0,
+   "relevos": {
+    "n": 2,
+    "escolta": 1,
+    "patrulla": 1,
+    "espera_media": 155.5,
+    "espera_max": 248,
+    "stranded": 0
+   },
+   "deaths": [
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    }
+   ]
+  },
+  {
+   "seed": 42,
+   "kind": "mixto",
+   "sizes": [
+    1,
+    4
+   ],
+   "sev": 2,
+   "primer_ancla": 0,
+   "gotera": 0,
+   "relevos": {
+    "n": 0,
+    "escolta": 0,
+    "patrulla": 0,
+    "espera_media": null,
+    "espera_max": null,
+    "stranded": 0
+   },
+   "deaths": [
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": true,
+     "grupo": 2
+    }
+   ]
+  },
+  {
+   "seed": 43,
+   "kind": "mixto",
+   "sizes": [
+    1,
+    3
+   ],
+   "sev": 0,
+   "primer_ancla": 0,
+   "gotera": 0,
+   "relevos": {
+    "n": 3,
+    "escolta": 3,
+    "patrulla": 0,
+    "espera_media": 69.0,
+    "espera_max": 74,
+    "stranded": 0
+   },
+   "deaths": []
+  },
+  {
+   "seed": 45,
+   "kind": "mixto",
+   "sizes": [
+    1,
+    2
+   ],
+   "sev": 7,
+   "primer_ancla": 0,
+   "gotera": 0,
+   "relevos": {
+    "n": 1,
+    "escolta": 1,
+    "patrulla": 0,
+    "espera_media": 240.0,
+    "espera_max": 240,
+    "stranded": 0
+   },
+   "deaths": [
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    }
+   ]
+  },
+  {
+   "seed": 46,
+   "kind": "mixto",
+   "sizes": [
+    1,
+    3
+   ],
+   "sev": 5,
+   "primer_ancla": 0,
+   "gotera": 0,
+   "relevos": {
+    "n": 8,
+    "escolta": 2,
+    "patrulla": 6,
+    "espera_media": 92.125,
+    "espera_max": 146,
+    "stranded": 0
+   },
+   "deaths": [
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    }
+   ]
+  },
+  {
+   "seed": 48,
+   "kind": "mixto",
+   "sizes": [
+    1,
+    2
+   ],
+   "sev": 3,
+   "primer_ancla": 0,
+   "gotera": 0,
+   "relevos": {
+    "n": 3,
+    "escolta": 3,
+    "patrulla": 0,
+    "espera_media": 216.33333333333334,
+    "espera_max": 312,
+    "stranded": 0
+   },
+   "deaths": [
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": true,
+     "grupo": 2
+    }
+   ]
+  },
+  {
+   "seed": 49,
+   "kind": "mixto",
+   "sizes": [
+    1,
+    3
+   ],
+   "sev": 0,
+   "primer_ancla": null,
+   "gotera": 0,
+   "relevos": {
+    "n": 23,
+    "escolta": 0,
+    "patrulla": 23,
+    "espera_media": 103.08695652173913,
+    "espera_max": 186,
+    "stranded": 0
+   },
+   "deaths": []
+  },
+  {
+   "seed": 52,
+   "kind": "mixto",
+   "sizes": [
+    1,
+    3
+   ],
+   "sev": 4,
+   "primer_ancla": 0,
+   "gotera": 0,
+   "relevos": {
+    "n": 4,
+    "escolta": 4,
+    "patrulla": 0,
+    "espera_media": 87.25,
+    "espera_max": 107,
+    "stranded": 0
+   },
+   "deaths": [
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": true,
+     "grupo": 2
+    }
+   ]
+  },
+  {
+   "seed": 58,
+   "kind": "mixto",
+   "sizes": [
+    1,
+    3
+   ],
+   "sev": 0,
+   "primer_ancla": null,
+   "gotera": 0,
+   "relevos": {
+    "n": 20,
+    "escolta": 0,
+    "patrulla": 20,
+    "espera_media": 80.45,
+    "espera_max": 137,
+    "stranded": 0
+   },
+   "deaths": []
+  },
+  {
+   "seed": 60,
+   "kind": "mixto",
+   "sizes": [
+    1,
+    2
+   ],
+   "sev": 0,
+   "primer_ancla": 1,
+   "gotera": 0,
+   "relevos": {
+    "n": 20,
+    "escolta": 20,
+    "patrulla": 0,
+    "espera_media": 84.25,
+    "espera_max": 130,
+    "stranded": 0
+   },
+   "deaths": []
+  },
+  {
+   "seed": 64,
+   "kind": "mixto",
+   "sizes": [
+    1,
+    2
+   ],
+   "sev": 5,
+   "primer_ancla": 0,
+   "gotera": 0,
+   "relevos": {
+    "n": 4,
+    "escolta": 1,
+    "patrulla": 3,
+    "espera_media": 115.75,
+    "espera_max": 141,
+    "stranded": 0
+   },
+   "deaths": [
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    }
+   ]
+  },
+  {
+   "seed": 76,
+   "kind": "mixto",
+   "sizes": [
+    1,
+    3
+   ],
+   "sev": 2,
+   "primer_ancla": 0,
+   "gotera": 0,
+   "relevos": {
+    "n": 0,
+    "escolta": 0,
+    "patrulla": 0,
+    "espera_media": null,
+    "espera_max": null,
+    "stranded": 0
+   },
+   "deaths": [
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": true,
+     "grupo": 2
+    }
+   ]
+  },
+  {
+   "seed": 77,
+   "kind": "mixto",
+   "sizes": [
+    1,
+    4
+   ],
+   "sev": 8,
+   "primer_ancla": 0,
+   "gotera": 0,
+   "relevos": {
+    "n": 1,
+    "escolta": 0,
+    "patrulla": 1,
+    "espera_media": 135.0,
+    "espera_max": 135,
+    "stranded": 0
+   },
+   "deaths": [
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    }
+   ]
+  },
+  {
+   "seed": 78,
+   "kind": "mixto",
+   "sizes": [
+    1,
+    2
+   ],
+   "sev": 5,
+   "primer_ancla": 0,
+   "gotera": 0,
+   "relevos": {
+    "n": 6,
+    "escolta": 1,
+    "patrulla": 5,
+    "espera_media": 94.5,
+    "espera_max": 156,
+    "stranded": 0
+   },
+   "deaths": [
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": true,
+     "grupo": 2
+    }
+   ]
+  },
+  {
+   "seed": 81,
+   "kind": "mixto",
+   "sizes": [
+    1,
+    3
+   ],
+   "sev": 0,
+   "primer_ancla": 2,
+   "gotera": 0,
+   "relevos": {
+    "n": 20,
+    "escolta": 20,
+    "patrulla": 0,
+    "espera_media": 42.1,
+    "espera_max": 72,
+    "stranded": 0
+   },
+   "deaths": []
+  },
+  {
+   "seed": 82,
+   "kind": "mixto",
+   "sizes": [
+    1,
+    3
+   ],
+   "sev": 3,
+   "primer_ancla": 0,
+   "gotera": 0,
+   "relevos": {
+    "n": 21,
+    "escolta": 20,
+    "patrulla": 1,
+    "espera_media": 64.80952380952381,
+    "espera_max": 93,
+    "stranded": 0
+   },
+   "deaths": [
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": true,
+     "grupo": 2
+    }
+   ]
+  },
+  {
+   "seed": 83,
+   "kind": "mixto",
+   "sizes": [
+    1,
+    3
+   ],
+   "sev": 0,
+   "primer_ancla": 1,
+   "gotera": 0,
+   "relevos": {
+    "n": 20,
+    "escolta": 20,
+    "patrulla": 0,
+    "espera_media": 76.2,
+    "espera_max": 113,
+    "stranded": 0
+   },
+   "deaths": []
+  },
+  {
+   "seed": 84,
+   "kind": "mixto",
+   "sizes": [
+    1,
+    2
+   ],
+   "sev": 6,
+   "primer_ancla": 0,
+   "gotera": 0,
+   "relevos": {
+    "n": 3,
+    "escolta": 1,
+    "patrulla": 2,
+    "espera_media": 86.0,
+    "espera_max": 97,
+    "stranded": 0
+   },
+   "deaths": [
+    {
+     "knc": true,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    }
+   ]
+  },
+  {
+   "seed": 88,
+   "kind": "mixto",
+   "sizes": [
+    1,
+    4
+   ],
+   "sev": 1,
+   "primer_ancla": 0,
+   "gotera": 0,
+   "relevos": {
+    "n": 21,
+    "escolta": 21,
+    "patrulla": 0,
+    "espera_media": 51.904761904761905,
+    "espera_max": 301,
+    "stranded": 0
+   },
+   "deaths": [
+    {
+     "knc": false,
+     "grupo": 2
+    }
+   ]
+  },
+  {
+   "seed": 91,
+   "kind": "mixto",
+   "sizes": [
+    1,
+    4
+   ],
+   "sev": 0,
+   "primer_ancla": 1,
+   "gotera": 0,
+   "relevos": {
+    "n": 21,
+    "escolta": 21,
+    "patrulla": 0,
+    "espera_media": 70.85714285714286,
+    "espera_max": 249,
+    "stranded": 0
+   },
+   "deaths": []
+  },
+  {
+   "seed": 94,
+   "kind": "mixto",
+   "sizes": [
+    1,
+    4
+   ],
+   "sev": 6,
+   "primer_ancla": 0,
+   "gotera": 0,
+   "relevos": {
+    "n": 3,
+    "escolta": 3,
+    "patrulla": 0,
+    "espera_media": 103.33333333333333,
+    "espera_max": 119,
+    "stranded": 0
+   },
+   "deaths": [
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    },
+    {
+     "knc": false,
+     "grupo": 2
+    }
+   ]
+  },
+  {
+   "seed": 95,
+   "kind": "mixto",
+   "sizes": [
+    1,
+    3
+   ],
+   "sev": 1,
+   "primer_ancla": 0,
+   "gotera": 0,
+   "relevos": {
+    "n": 3,
+    "escolta": 3,
+    "patrulla": 0,
+    "espera_media": 242.0,
+    "espera_max": 365,
+    "stranded": 0
+   },
+   "deaths": [
+    {
+     "knc": true,
+     "grupo": 2
+    }
+   ]
+  },
+  {
+   "seed": 96,
+   "kind": "mixto",
+   "sizes": [
+    1,
+    4
+   ],
+   "sev": 1,
+   "primer_ancla": 0,
+   "gotera": 0,
+   "relevos": {
+    "n": 21,
+    "escolta": 21,
+    "patrulla": 0,
+    "espera_media": 46.95238095238095,
+    "espera_max": 129,
+    "stranded": 0
+   },
+   "deaths": [
+    {
+     "knc": true,
+     "grupo": 2
+    }
+   ]
+  }
+ ]
+}

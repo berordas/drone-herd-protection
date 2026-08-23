@@ -1,0 +1,10 @@
+abort_en_accion | seed=88 lobos n=5 G=True | manager=model sev_eval=1 | oracle sev=1
+t=     0  DECISION #1   CEBO_keep  -> ABORT_BAIT_FAILED ticks=  803 r=0
+t=   803  DECISION #2   CEBO_d90   -> MUERTE            ticks=   39 r=1
+t=   842  DECISION #3   CEBO_d180  -> ABORT_BAIT_FAILED ticks=  881 r=0
+t=  1723  DECISION #4   CEBO_keep  -> FIN_EPISODIO      ticks=   26 r=0
+t=     0  capa OPTION_START {'t': 0, 'ev': 'OPTION_START', 'option': 'CEBO', 'membership': 'keep', 'hold': 50.0}
+t=   433  capa SHOW_START {'t': 433, 'ev': 'SHOW_START', 'mode': 'keep'}
+t=   803  capa OPTION_START {'t': 803, 'ev': 'OPTION_START', 'option': 'CEBO', 'delta_deg': 90.0, 'hold': 50.0}
+t=   842  capa OPTION_START {'t': 842, 'ev': 'OPTION_START', 'option': 'CEBO', 'delta_deg': 180.0, 'hold': 50.0}
+t=  1723  capa OPTION_START {'t': 1723, 'ev': 'OPTION_START', 'option': 'CEBO', 'membership': 'keep', 'hold': 50.0}

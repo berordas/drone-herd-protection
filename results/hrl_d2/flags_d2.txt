@@ -1,0 +1,44 @@
+{
+ "natural": {
+  "n": 100,
+  "eps_con_stall": 32,
+  "stalls": 153,
+  "stall_en_2f": 5,
+  "stall_sev0": 28,
+  "pen_dron": 41.7,
+  "pen_prop": 32.1,
+  "pen_2f_dron": 66.9,
+  "pen_2f_prop": 21.0,
+  "guardias_antes_2cl": 0.05,
+  "sev_2f_dron": 0.955,
+  "sev_2f_prop": 0.955
+ },
+ "cebo2f": {
+  "n": 100,
+  "eps_con_stall": 17,
+  "stalls": 20,
+  "stall_en_2f": 17,
+  "stall_sev0": 13,
+  "pen_dron": 529.0,
+  "pen_prop": 433.6,
+  "pen_2f_dron": 529.0,
+  "pen_2f_prop": 433.6,
+  "guardias_antes_2cl": 0.17,
+  "sev_2f_dron": 1.03,
+  "sev_2f_prop": 0.85
+ },
+ "manager": {
+  "n": 200,
+  "eps_con_stall": 11,
+  "stalls": 16,
+  "stall_en_2f": 6,
+  "stall_sev0": 5,
+  "pen_dron": 146.5,
+  "pen_prop": 71.5,
+  "pen_2f_dron": 36.1,
+  "pen_2f_prop": 49.1,
+  "guardias_antes_2cl": 0.02,
+  "sev_2f_dron": 1.103,
+  "sev_2f_prop": 0.983
+ }
+}

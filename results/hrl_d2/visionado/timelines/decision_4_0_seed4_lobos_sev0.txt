@@ -1,0 +1,2 @@
+decision_4_0 | seed=4 lobos sev_eval=0 cambios=0 carrera={'t_sec': None, 't_guard': None, 't_guard_post': None, 'guardias_antes_2cl': False, 'latencia': None, 't_llegada_guardia': None, 't_llegada_asalto': None, 'gana_guardia': False, 'reasignaciones': 0}
+t=     0  PARTICION (4, 0) (evento previo INICIO)
