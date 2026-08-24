@@ -26,3 +26,7 @@ events.out.tfevents.*
 !media/seed98_full_play.gif
 !media/seed43_linkedin.mp4
 !media/seed43_split_2-2.gif
+
+# Copia de seguridad ante la reconfiguración del DGX (25-31 ago): tarballs pequeños y GIFs del
+# archivo dentro del repo (la copia principal es la descarga del dueño; sha256 en results/MANIFEST.md)
+!results/archive/**
