@@ -180,12 +180,12 @@
    "to_ancho_x": "PENETRADO (ticks)",
    "to_ancho_y": "severidad",
    "fr_panels": [
-    "(a) show — t = 1231",
+    "(a) muestra — t = 1231",
     "(b) suelta — t = 1419",
     "(c) golpe — t = 2375"
    ],
    "fr_ann": {
-    "decoy_show": "señuelo (show)",
+    "decoy_show": "señuelo (muestra)",
     "assault_ready": "asalto a tiro",
     "herd": "rebaño",
     "patrol": "patrulla (4 drones)",
@@ -198,7 +198,7 @@
     "wolves_in_herd": "lobos en el rebaño",
     "barrier": "drones (barrera)"
    },
-   "fr_sup": "Jugada entera del manager lobo (seed 98, mixto, estrato S, opción Δ90): staged 901 → show 1231 → suelta 1419 → golpe 2375; sev 2",
+   "fr_sup": "Jugada entera del manager lobo (seed 98, mixto, estrato S, opción Δ90): preparado 901 → muestra 1231 → suelta 1419 → golpe 2375; sev 2",
    "hm_rows": [
     "G, n=3",
     "G, n=4",
@@ -215,7 +215,7 @@
     "CEBO Δ90",
     "CEBO Δ180"
    ],
-   "hm_title": "(a) P(1ª opción | estrato, n lobos), manager final",
+   "hm_title": "(a) P(1ª opción | estrato, n lobos), run principal vs Reactive\n200 episodios = 100 semillas × {lobos, mixto}",
    "hm_row_n": "{l} (n={n})",
    "lig_cebo": "P(CEBO | G, n≥3)",
    "lig_d90": "P(Δ90 | S)",
@@ -224,7 +224,7 @@
    "lig_x": "macro-pasos de PPO",
    "lig_y": "probabilidad (ligera, 40 semillas)",
    "lig_y2": "severidad media (ligera)",
-   "lig_title": "(b) emergencia en la ligera (RUN-M1'''', 40 semillas)",
+   "lig_title": "(b) emergencia en la ligera\ndel run principal (40 semillas)",
    "mu_shelter": "establo\n(zona segura, r = 60 m)",
    "mu_station": "estación de carga\n(r = 25 m, plazas fijas)",
    "mu_herd": "rebaño (pasto, ±40 m)",
@@ -454,7 +454,7 @@
     "DECOY Δ90",
     "DECOY Δ180"
    ],
-   "hm_title": "(a) P(first option | stratum, n wolves), final manager",
+   "hm_title": "(a) P(first option | stratum, n wolves), main run vs Reactive\n200 episodes = 100 seeds × {wolves, mixed}",
    "hm_row_n": "{l} (n={n})",
    "lig_cebo": "P(DECOY | G, n≥3)",
    "lig_d90": "P(Δ90 | S)",
@@ -463,7 +463,7 @@
    "lig_x": "PPO macro-steps",
    "lig_y": "probability (light eval, 40 seeds)",
    "lig_y2": "mean severity (light eval)",
-   "lig_title": "(b) emergence during training (RUN-M1'''', 40 seeds)",
+   "lig_title": "(b) emergence during training\nmain run (light eval, 40 seeds)",
    "mu_shelter": "shelter\n(safe zone, r = 60 m)",
    "mu_station": "charging station\n(r = 25 m, fixed slots)",
    "mu_herd": "herd (grazing, ±40 m)",

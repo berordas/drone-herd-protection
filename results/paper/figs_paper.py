@@ -26,17 +26,17 @@ LABELS = {
   "to_x": "PENETRADO (ticks con lobo dentro de la línea; escala log)", "to_y": "severidad (muertes/episodio)",
   "to_title": "Trade-off cobertura/reparto (100 pares por celda; IC 95 %)",
   "to_ancho_title": "atacante: {a}", "to_ancho_x": "PENETRADO (ticks)", "to_ancho_y": "severidad",
-  "fr_panels": ["(a) show — t = 1231", "(b) suelta — t = 1419", "(c) golpe — t = 2375"],
-  "fr_ann": {"decoy_show": "señuelo (show)", "assault_ready": "asalto a tiro", "herd": "rebaño", "patrol": "patrulla (4 drones)",
+  "fr_panels": ["(a) muestra — t = 1231", "(b) suelta — t = 1419", "(c) golpe — t = 2375"],
+  "fr_ann": {"decoy_show": "señuelo (muestra)", "assault_ready": "asalto a tiro", "herd": "rebaño", "patrol": "patrulla (4 drones)",
              "shelter": "establo", "station": "estación", "decoy_released": "señuelo suelto", "assault_detected": "asalto detectado",
              "drone_invest": "dron investiga", "assault_confirmed": "asalto confirmado", "wolves_in_herd": "lobos en el rebaño", "barrier": "drones (barrera)"},
-  "fr_sup": "Jugada entera del manager lobo (seed 98, mixto, estrato S, opción Δ90): staged 901 → show 1231 → suelta 1419 → golpe 2375; sev 2",
+  "fr_sup": "Jugada entera del manager lobo (seed 98, mixto, estrato S, opción Δ90): preparado 901 → muestra 1231 → suelta 1419 → golpe 2375; sev 2",
   "hm_rows": ["G, n=3", "G, n=4", "G, n=5", "S, n=1", "S, n=2", "S, n=3", "S, n=4", "S, n=5"],
   "hm_acts": ["MASA", "CEBO keep", "CEBO Δ90", "CEBO Δ180"],
-  "hm_title": "(a) P(1ª opción | estrato, n lobos), manager final", "hm_row_n": "{l} (n={n})",
+  "hm_title": "(a) P(1ª opción | estrato, n lobos), run principal vs Reactive\n200 episodios = 100 semillas × {lobos, mixto}", "hm_row_n": "{l} (n={n})",
   "lig_cebo": "P(CEBO | G, n≥3)", "lig_d90": "P(Δ90 | S)", "lig_keep": "P(keep | G)", "lig_sev": "severidad (ligera)",
   "lig_x": "macro-pasos de PPO", "lig_y": "probabilidad (ligera, 40 semillas)", "lig_y2": "severidad media (ligera)",
-  "lig_title": "(b) emergencia en la ligera (RUN-M1'''', 40 semillas)",
+  "lig_title": "(b) emergencia en la ligera\ndel run principal (40 semillas)",
   "mu_shelter": "establo\n(zona segura, r = 60 m)", "mu_station": "estación de carga\n(r = 25 m, plazas fijas)",
   "mu_herd": "rebaño (pasto, ±40 m)", "mu_drone": "dron", "mu_exp": "expulsión 20 m", "mu_conf": "confirmación 40 m", "mu_det": "detección 100 m",
   "mu_wolves": "lobos\n(4 m/s)", "mu_flee": "huida al establo\n(vacas 1,2 m/s)", "mu_head": "parcela 500 × 500 m · dt = 0,1 s · drones 15 m/s", "mu_axis": "m",
@@ -57,10 +57,10 @@ LABELS = {
   "fr_sup": "Full play of the wolf manager (seed 98, mixed, stratum S, option Δ90): staged 901 → show 1231 → release 1419 → strike 2375; severity 2",
   "hm_rows": ["G, n=3", "G, n=4", "G, n=5", "S, n=1", "S, n=2", "S, n=3", "S, n=4", "S, n=5"],
   "hm_acts": ["MASS", "DECOY keep", "DECOY Δ90", "DECOY Δ180"],
-  "hm_title": "(a) P(first option | stratum, n wolves), final manager", "hm_row_n": "{l} (n={n})",
+  "hm_title": "(a) P(first option | stratum, n wolves), main run vs Reactive\n200 episodes = 100 seeds × {wolves, mixed}", "hm_row_n": "{l} (n={n})",
   "lig_cebo": "P(DECOY | G, n≥3)", "lig_d90": "P(Δ90 | S)", "lig_keep": "P(keep | G)", "lig_sev": "severity (light eval)",
   "lig_x": "PPO macro-steps", "lig_y": "probability (light eval, 40 seeds)", "lig_y2": "mean severity (light eval)",
-  "lig_title": "(b) emergence during training (RUN-M1'''', 40 seeds)",
+  "lig_title": "(b) emergence during training\nmain run (light eval, 40 seeds)",
   "mu_shelter": "shelter\n(safe zone, r = 60 m)", "mu_station": "charging station\n(r = 25 m, fixed slots)",
   "mu_herd": "herd (grazing, ±40 m)", "mu_drone": "drone", "mu_exp": "expulsion 20 m", "mu_conf": "confirmation 40 m", "mu_det": "detection 100 m",
   "mu_wolves": "wolves\n(4 m/s)", "mu_flee": "flight to shelter\n(cows 1.2 m/s)", "mu_head": "plot 500 × 500 m · dt = 0.1 s · drones 15 m/s", "mu_axis": "m",
@@ -116,7 +116,7 @@ for a, _ in ATK:
     for d, _ in DEF:
         eps = json.load(open(f"{D}/hrl_d2/e04_{d}__{a}.json"))["episodes"]
         pts[(d, a)] = (ci([e["penetrado"] for e in eps]), ci([e["sev"] for e in eps]), len(eps))
-fig, ax = plt.subplots(figsize=(COL, COL * 0.8))
+fig, ax = plt.subplots(figsize=(COL, COL * 0.9))
 for a, col in ATK:
     xs = []
     for d, mk in DEF:
@@ -129,17 +129,17 @@ for a, col in ATK:
 for d, mk in DEF:
     ax.plot([], [], mk, color="k", mfc="k" if d != "dronemgr_r1" else "white", ms=6 if mk == "*" else 4, label=L["def"][d])
 ax.set_xscale("log"); ax.set_xlabel(L["to_x"]); ax.set_ylabel(L["to_y"]); ax.set_title(L["to_title"], fontsize=7)
-ax.legend(frameon=False, loc="upper left"); ax.grid(alpha=0.25, lw=0.4, which="both")
+ax.legend(frameon=False, loc="upper center", bbox_to_anchor=(0.5, -0.22), ncol=2); ax.grid(alpha=0.25, lw=0.4, which="both")
 fig.tight_layout(); fig.savefig(f"{OUT}/fig_tradeoff.png", dpi=300); plt.close(fig)
-fig, axs = plt.subplots(1, 3, figsize=(DBL, DBL * 0.3))
+fig, axs = plt.subplots(1, 3, figsize=(DBL, DBL * 0.36))
 for ax, (a, col) in zip(axs, ATK):
     for d, mk in DEF:
         (p, pl, ph), (s, sl, sh), n = pts[(d, a)]; c = col if d != "reactive" else "#444"
         ax.errorbar(p, s, xerr=[[p - pl], [ph - p]], yerr=[[s - sl], [sh - s]], fmt=mk, color=c, ms=7 if mk == "*" else 4.5,
                     mfc=c if d != "dronemgr_r1" else "white", capsize=1.5, elinewidth=0.5, lw=0.5, label=L["def"][d])
     ax.set_title(L["to_ancho_title"].format(a=L["atk"][a])); ax.set_xlabel(L["to_ancho_x"]); ax.set_ylabel(L["to_ancho_y"]); ax.grid(alpha=0.25, lw=0.4)
-axs[0].legend(frameon=False)
-fig.tight_layout(); fig.savefig(f"{OUT}/fig_tradeoff_ancho.png", dpi=300); plt.close(fig)
+h, l = axs[0].get_legend_handles_labels(); fig.legend(h, l, frameon=False, loc="lower center", ncol=4, bbox_to_anchor=(0.5, 0.0))
+fig.tight_layout(rect=(0, 0.09, 1, 1)); fig.savefig(f"{OUT}/fig_tradeoff_ancho.png", dpi=300); plt.close(fig)
 notes["tradeoff"] = {f"{d}|{a}": {"pen": round(pts[(d, a)][0][0], 1), "sev": round(pts[(d, a)][1][0], 2)} for (d, a) in pts}
 
 # ------------------------------------------------------------------ fig_cebo_frames
@@ -185,7 +185,8 @@ M = np.array([[P[k][a] for a in acts] for k in keys]); cnt = {}
 for e in r["episodes"]:
     k = ("G" if e["two_front"] else "S") + f"_n{e['n_wolves']}"; cnt[k] = cnt.get(k, 0) + 1
 LG = [json.loads(l) for l in open(f"{D}/hrl_m1/M1pppp/eval_ligera.jsonl")]
-fig, (a1, a2) = plt.subplots(1, 2, figsize=(DBL, DBL * 0.33), gridspec_kw={"width_ratios": [1, 1.3]})
+fig, (a1, a2) = plt.subplots(1, 2, figsize=(DBL, DBL * 0.36), gridspec_kw={"width_ratios": [1, 1.3]})
+a1.title.set_fontsize(6.5)
 a1.imshow(M, cmap="Greens", vmin=0, vmax=1, aspect="auto")
 a1.set_xticks(range(4)); a1.set_xticklabels(L["hm_acts"], rotation=20); a1.set_yticks(range(len(keys)))
 a1.set_yticklabels([L["hm_row_n"].format(l=l, n=cnt.get(k, 0)) for l, k in zip(L["hm_rows"], keys)])
