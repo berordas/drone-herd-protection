@@ -42,7 +42,7 @@ services:
       - CHOWN_HOME=yes
       - CHOWN_HOME_OPTS=-R
       - NVIDIA_DRIVER_CAPABILITIES=compute,utility
-      - PYTHONPATH=/workspace # world.py y rl/ importables desde cualquier cwd (checks, SubprocVecEnv)
+      - PYTHONPATH=/workspace:/workspace/sim # rl/, hrl/ y el núcleo sim/ (world.py…) importables desde cualquier cwd (tests, SubprocVecEnv)
 
 networks:
   alumnos:

@@ -66,6 +66,8 @@
 > a la proporcional contra el cebo scriptado. Artefactos: /data/hrl_d2/ (STOP_D2_INFORME.md, TABLA_D2.md,
 > PREREGISTRO_D2.md, visionado/).
 
+**(2026-08-24) Reorganización de carpetas del repo público, sin cambios de conducta**: el núcleo del simulador pasa a `sim/`, las entradas a `scripts/`, los 8 checks y sus fixtures (`baseline_v2*`) a `tests/` (`bash tests/run_all.sh` = la verja), los documentos a `docs/`; `pyproject.toml` + `PYTHONPATH=/workspace:/workspace/sim` en el compose + un shim de 2 líneas en scripts/tests mantienen los imports de nivel superior (`from world import World`). Las rutas citadas en las entradas anteriores de este diario son las de la época (raíz del repo).
+
 ## 0. CIERRE TOTAL DEL PROYECTO (2026-08-23) — KILL-DATE absoluto firmado por el dueño en el STOP-D2
 
 **Qué se cierra.** Con la réplica D2 terminada se ejecuta el CIERRE TOTAL firmado: último commit, esta entrada, la

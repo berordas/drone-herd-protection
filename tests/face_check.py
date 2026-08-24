@@ -11,6 +11,8 @@ face_check.py — Verificación del modelo "DAR LA CARA" + presa común + TERNER
   7) TASA sin drones range(100) (terneros por defecto) + split ternero/adulta + toques.
   8) REPRODUCIBILIDAD (incluido nº de terneros y defensoras).
 """
+import sys as _sys, pathlib as _pl  # layout: raíz (rl/, hrl/) y sim/ (núcleo) importables sin instalar el paquete
+_ROOT = _pl.Path(__file__).resolve().parents[1]; _sys.path[:0] = [str(_ROOT), str(_ROOT / "sim")]
 
 import numpy as np
 from world import World

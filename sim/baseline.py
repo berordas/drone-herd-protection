@@ -311,7 +311,7 @@ def _verify_fidelity(seeds=(0, 1, 2, 3, 4)) -> bool:
     return ok
 
 
-def _write_artifacts(results: dict, path_json="baseline_v2.json", path_csv="baseline_v2.csv") -> None:
+def _write_artifacts(results: dict, path_json=str(__import__("pathlib").Path(__file__).resolve().parents[1] / "tests/fixtures/baseline_v2.json"), path_csv=str(__import__("pathlib").Path(__file__).resolve().parents[1] / "tests/fixtures/baseline_v2.csv")) -> None:
     """Guarda los resultados como referencia fija: JSON (rico, por episodio) + CSV (tabla)."""
     payload = {
         "frozen_tag": FROZEN_TAG,
@@ -365,7 +365,7 @@ if __name__ == "__main__":
     results = evaluate()
     _print_table(results)
     _write_artifacts(results)
-    print("  guardado -> baseline_v2.json (por episodio) + baseline_v2.csv (tabla)")
+    print("  guardado -> tests/fixtures/baseline_v2.json (por episodio) + baseline_v2.csv (tabla)")
 
     # Self-check de deriva: la severidad por tipo debe coincidir con la referencia congelada.
     print("  deriva vs referencia congelada:")

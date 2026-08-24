@@ -32,7 +32,7 @@ from rl.policy_wolf_controller import PolicyWolfController, SyncedReactiveCoordi
 from rl.wolf_env import VALID_KINDS
 
 
-def _scripted_reference(path: str = "baseline_v2_reactive.json") -> dict:
+def _scripted_reference(path: str = str(__import__("pathlib").Path(__file__).resolve().parents[1] / "tests/fixtures/baseline_v2_reactive.json")) -> dict:
     """Severidad de los lobos SCRIPTADOS contra la misma barrera (el artefacto VIGENTE del repo)."""
     try:
         with open(path, encoding="utf-8") as f:

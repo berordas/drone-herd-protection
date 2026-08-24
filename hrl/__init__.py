@@ -11,3 +11,6 @@ subclase aquí, como NonRigidBarrier en rl/); wolf_controllers.py solo recibió 
 conducta-preservante del Commit A (fases del cebo como funciones de módulo, bit a bit).
 La capa y los eventos NO consumen ningún stream RNG del mundo. Artefactos a /data/hrl_e0/.
 """
+import sys as _sys, pathlib as _pl  # layout: sim/ (núcleo del simulador) importable como módulos de nivel superior
+_SIM = str(_pl.Path(__file__).resolve().parents[1] / "sim")
+if _SIM not in _sys.path: _sys.path.insert(0, _SIM)

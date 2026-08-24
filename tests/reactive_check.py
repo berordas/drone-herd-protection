@@ -50,6 +50,8 @@ sigue idéntica (mismo arnés baseline.py). face_check y la regresión siguen ve
 """
 
 from __future__ import annotations
+import sys as _sys, pathlib as _pl  # layout: raíz (rl/, hrl/) y sim/ (núcleo) importables sin instalar el paquete
+_ROOT = _pl.Path(__file__).resolve().parents[1]; _sys.path[:0] = [str(_ROOT), str(_ROOT / "sim")]
 import sys
 import subprocess
 
@@ -725,7 +727,7 @@ def test_reproducible():
 def test_no_regresiones():
     print("=== 8) Sin regresiones (world.py intacto): face_check + battery_check ===")
     for script in ("face_check.py", "battery_check.py"):
-        r = subprocess.run([sys.executable, script], capture_output=True, text=True)
+        r = subprocess.run([sys.executable, str(_pl.Path(__file__).resolve().parent / script)], capture_output=True, text=True)
         ok = r.returncode == 0
         print("  %-16s -> %s" % (script, "VERDE" if ok else "ROJO (exit %d)" % r.returncode))
         assert ok, "FALLO: %s no pasó\n%s" % (script, (r.stdout + r.stderr)[-800:])

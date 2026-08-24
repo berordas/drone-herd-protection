@@ -17,6 +17,8 @@ Uso:
 """
 
 from __future__ import annotations
+import sys as _sys, pathlib as _pl  # layout: raíz (rl/, hrl/) y sim/ (núcleo) importables sin instalar el paquete
+_ROOT = _pl.Path(__file__).resolve().parents[1]; _sys.path[:0] = [str(_ROOT), str(_ROOT / "sim")]
 import argparse
 import numpy as np
 

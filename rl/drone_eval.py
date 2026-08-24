@@ -85,8 +85,8 @@ def main() -> None:
                        w, model=model, residual_scale=args.residual_scale),
                    seeds=seeds)                                      # lobos scriptados (default)
 
-    dummy = _reference("baseline_v2.json", "Dummy")
-    reactive = _reference("baseline_v2_reactive.json", "Reactive")
+    dummy = _reference(str(__import__("pathlib").Path(__file__).resolve().parents[1] / "tests/fixtures/baseline_v2.json"), "Dummy")
+    reactive = _reference(str(__import__("pathlib").Path(__file__).resolve().parents[1] / "tests/fixtures/baseline_v2_reactive.json"), "Reactive")
     floor_ref = _reference(args.floor_ref, "suelo re-medido") if args.floor_ref else {}
     print("  %-12s %8s %9s %8s %11s %9s %8s %8s   %s"
           % ("tipo", "Dummy", "Reactive", "suelo", "APRENDIDO", "Δreactive", "Δsuelo", "n_safe",

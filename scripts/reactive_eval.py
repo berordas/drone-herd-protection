@@ -12,6 +12,8 @@ sigue 0 (sin amenaza) y ahí lo que importa es la eficiencia (movimiento/baterí
 """
 
 from __future__ import annotations
+import sys as _sys, pathlib as _pl  # layout: raíz (rl/, hrl/) y sim/ (núcleo) importables sin instalar el paquete
+_ROOT = _pl.Path(__file__).resolve().parents[1]; _sys.path[:0] = [str(_ROOT), str(_ROOT / "sim")]
 import csv
 import json
 
@@ -19,7 +21,7 @@ from baseline import evaluate, EVAL_SEEDS, KINDS, KIND_LABEL, TERMINALS, N_PER_K
 from coordinators import ReactiveCoordinator
 
 
-def _load_dummy_reference(path="baseline_v2.json") -> dict:
+def _load_dummy_reference(path=str(_ROOT / "tests/fixtures/baseline_v2.json")) -> dict:
     with open(path, encoding="utf-8") as f:
         d = json.load(f)
     return {k: d["by_kind"][k] for k in KINDS} | {"aggregate": d["aggregate"]}
@@ -46,7 +48,7 @@ def main():
     print("  guardado -> baseline_v2_reactive.json (por episodio) + baseline_v2_reactive.csv (tabla comparada)")
 
 
-def _write(res: dict, ref: dict, path_json="baseline_v2_reactive.json", path_csv="baseline_v2_reactive.csv") -> None:
+def _write(res: dict, ref: dict, path_json=str(_ROOT / "tests/fixtures/baseline_v2_reactive.json"), path_csv=str(_ROOT / "tests/fixtures/baseline_v2_reactive.csv")) -> None:
     payload = {
         "coordinator": "ReactiveCoordinator",
         "compared_to": "DummyCoordinator (baseline_v2, tag v2-baseline)",

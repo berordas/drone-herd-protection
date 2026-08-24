@@ -16,6 +16,8 @@ El fingerprint de equivalencia (SHA del estado en episodios completos, git stash
 prueba REINA; esto son comprobaciones dirigidas complementarias. face_check/battery/escort/drone/reactive
 siguen verdes SIN adaptar (el comportamiento no cambió).
 """
+import sys as _sys, pathlib as _pl  # layout: raíz (rl/, hrl/) y sim/ (núcleo) importables sin instalar el paquete
+_ROOT = _pl.Path(__file__).resolve().parents[1]; _sys.path[:0] = [str(_ROOT), str(_ROOT / "sim")]
 
 import json
 import numpy as np
@@ -168,7 +170,7 @@ def test_presa_por_sector():
 
 def test_spotcheck_baseline():
     print("=== 4) SPOT-CHECK vs baseline v2.7 CONGELADA (baseline_v2.json, metro DGX): severidades IDÉNTICAS (no re-medir) ===")
-    with open("baseline_v2.json", encoding="utf-8") as f:
+    with open(_ROOT / "tests/fixtures/baseline_v2.json", encoding="utf-8") as f:
         ref = json.load(f)
     # v2.7 = susto de DOS RADIOS (pared blanda estática); RE-MEDIDA en el contenedor canónico de la DGX (metro
     # oficial). Este spot-check solo es reproducible DENTRO de ese entorno (fuera puede salir rojo: deriva FP).

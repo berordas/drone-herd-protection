@@ -53,6 +53,8 @@ comprueba (asserts, estilo de los demás checks; corre con `python rl_env_check.
          al cruzar r_confirm=40 pasa a CONFIRMADOS (sale de contactos: grupos disjuntos) y SE
          RECUERDA (memoria de equipo) aunque vuelva a alejarse a >r_detect.
 """
+import sys as _sys, pathlib as _pl  # layout: raíz (rl/, hrl/) y sim/ (núcleo) importables sin instalar el paquete
+_ROOT = _pl.Path(__file__).resolve().parents[1]; _sys.path[:0] = [str(_ROOT), str(_ROOT / "sim")]
 
 import json
 
@@ -270,7 +272,7 @@ def test_mundo_scriptado_intacto():
     w2 = build_world(0, "lobos", wolf_controller=ctrl)
     assert w2.wolf_controller is ctrl, "build_world no respeta la inyección de wolf_controller"
     # Spot-check: el andamiaje no puede haber movido la física (severidades IDÉNTICAS a v2.4).
-    with open("baseline_v2.json", encoding="utf-8") as f:
+    with open(_ROOT / "tests/fixtures/baseline_v2.json", encoding="utf-8") as f:
         ref = json.load(f)
     assert ref["frozen_tag"] == "v3.5-sonido"   # regla del sonido (v3.5); metro DGX (reproducible solo dentro del contenedor)
     checked = 0

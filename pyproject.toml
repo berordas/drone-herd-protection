@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "drone-herd-protection"
+version = "1.0.0"
+description = "Crossing the Coordination Valley: hierarchical RL managers learn two-front tactics in a drone-based livestock-protection game"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Bernardo Ordás Cernadas" }]
+requires-python = ">=3.11"
+dependencies = ["numpy", "matplotlib", "pillow", "gymnasium", "stable-baselines3", "torch"]
+
+# Núcleo del simulador (sim/) expuesto como módulos de nivel superior (`from world import World`),
+# más los paquetes rl/ y hrl/. `pip install -e .` deja todo importable desde cualquier cwd.
+[tool.setuptools]
+py-modules = ["world", "wolf_controllers", "coordinators", "render", "baseline"]
+packages = ["rl", "hrl"]
+
+[tool.setuptools.package-dir]
+"" = "sim"
+rl = "rl"
+hrl = "hrl"

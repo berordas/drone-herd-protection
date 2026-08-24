@@ -30,6 +30,8 @@ fijada se refugia, la manada RE-SELECCIONA (única re-fijación permitida). Dron
   9) Tasa de la escolta (Dummy + guiado + DISUASIÓN) candidata a v2: MEDIDA (tasa + severidad), no objetivo.
   + Ojeo: animación por terminal + DISUASIÓN (despeja un pin) + arco detección->ESCOLTA + BUCLE COMPLETO.
 """
+import sys as _sys, pathlib as _pl  # layout: raíz (rl/, hrl/) y sim/ (núcleo) importables sin instalar el paquete
+_ROOT = _pl.Path(__file__).resolve().parents[1]; _sys.path[:0] = [str(_ROOT), str(_ROOT / "sim")]
 
 import matplotlib
 matplotlib.use("Agg")   # sin ventana: guardamos las animaciones a disco
@@ -1137,7 +1139,7 @@ def test_reproducible():
 def test_no_regressions():
     print("=== 7) Sin regresiones (face_check.py + battery_check.py) ===")
     for script in ("face_check.py", "battery_check.py"):
-        r = subprocess.run([sys.executable, script], capture_output=True, text=True)
+        r = subprocess.run([sys.executable, str(_pl.Path(__file__).resolve().parent / script)], capture_output=True, text=True)
         ok = r.returncode == 0
         print("  %-16s -> %s" % (script, "VERDE" if ok else "ROJO (exit %d)" % r.returncode))
         assert ok, "FALLO: %s no pasó\n%s" % (script, (r.stdout + r.stderr)[-800:])

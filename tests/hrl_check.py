@@ -1,7 +1,7 @@
-"""hrl/hrl_check.py — Verificación de la capa de opciones del jerárquico (Etapa 0).
+"""tests/hrl_check.py — Verificación de la capa de opciones del jerárquico (Etapa 0).
 
 ENTRA EN LA VERJA desde el Commit C (8º check, junto a los 7 de siempre). Corre DENTRO del
-contenedor: `python3 hrl/hrl_check.py`. Asserts al estilo de los demás checks.
+contenedor: `python3 tests/hrl_check.py` (o `bash tests/run_all.sh`). Asserts al estilo de los demás checks.
 
   0) UNIDADES de events/behavior_checks (Commit B): geometría de seg_cross · detector
      LURE_COMMIT dirigido (stub geométrico: 3/4 drones en el cono del señuelo + puerta del
@@ -44,6 +44,8 @@ contenedor: `python3 hrl/hrl_check.py`. Asserts al estilo de los demás checks.
 """
 
 from __future__ import annotations
+import sys as _sys, pathlib as _pl  # layout: raíz (rl/, hrl/) y sim/ (núcleo) importables sin instalar el paquete
+_ROOT = _pl.Path(__file__).resolve().parents[1]; _sys.path[:0] = [str(_ROOT), str(_ROOT / "sim")]
 
 import hashlib
 import json

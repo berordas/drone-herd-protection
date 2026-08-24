@@ -13,6 +13,8 @@ batería que flotar (flag #7, "pursuit cost"). NO cambia aún ningún comportami
   5) Sin regresiones: face_check 12/12, battery_check 4/2/2, escort_check 8/8 verdes.
   + Ojeo: animación de un dron volando A->B.
 """
+import sys as _sys, pathlib as _pl  # layout: raíz (rl/, hrl/) y sim/ (núcleo) importables sin instalar el paquete
+_ROOT = _pl.Path(__file__).resolve().parents[1]; _sys.path[:0] = [str(_ROOT), str(_ROOT / "sim")]
 
 import matplotlib
 matplotlib.use("Agg")
@@ -117,7 +119,7 @@ def test_reproducible():
 def test_no_regressions():
     print("=== 5) Sin regresiones (face_check + battery_check + escort_check) ===")
     for script in ("face_check.py", "battery_check.py", "escort_check.py"):
-        r = subprocess.run([sys.executable, script], capture_output=True, text=True)
+        r = subprocess.run([sys.executable, str(_pl.Path(__file__).resolve().parent / script)], capture_output=True, text=True)
         ok = r.returncode == 0
         print("  %-16s -> %s" % (script, "VERDE" if ok else "ROJO (exit %d)" % r.returncode))
         assert ok, "FALLO: %s no pasó\n%s" % (script, (r.stdout + r.stderr)[-800:])
