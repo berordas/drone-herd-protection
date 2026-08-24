@@ -85,13 +85,17 @@ wolf_controllers.py    # scripted pack behaviors (mass hunt, two-front bait)
 coordinators.py        # classical defenses (patrol/barrier, proportional allocator)
 baseline.py            # scripted-vs-scripted harness and configs
 render.py              # episode renderer (GIF)
+main.py                # run and render one episode (CLI)
+reactive_eval.py       # classical-barrier evaluation harness
+*_check.py             # regression gate: 8 behavioral test suites (see Quickstart)
+baseline_v2*.json/csv  # frozen reference metrics read by the regression gate (do not regenerate)
 rl/                    # flat MARL campaigns (PPO wolves, MAPPO drones)
 hrl/                   # options layer + semi-MDP managers (both sides)
 docker/                # reproducible environment
-results/               # evaluations, verification report, paper + figures
+results/               # evaluations, verification report, paper + figures, archive (see results/README.md)
 media/                 # cover GIF and LinkedIn clip
-DISEÑO.md              # full design & decision log (Spanish)
-BIBLIOGRAFIA.md        # annotated bibliography
+docs/DISEÑO.md         # full design & decision log (Spanish)
+docs/BIBLIOGRAFIA.md   # annotated bibliography
 ```
 
 ## Quickstart

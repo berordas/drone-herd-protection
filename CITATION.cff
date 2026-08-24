@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "If you use this software or its results, please cite it as below."
+type: software
+title: "Crossing the Coordination Valley: hierarchical RL managers learn two-front tactics in a drone-based livestock-protection game"
+authors:
+  - family-names: "Ordás Cernadas"
+    given-names: "Bernardo"
+year: 2026
+repository-code: "https://github.com/berordas/drone-herd-protection"
+license: MIT
+keywords:
+  - hierarchical reinforcement learning
+  - multi-agent reinforcement learning
+  - options
+  - semi-MDP
+  - livestock protection
+  - drones

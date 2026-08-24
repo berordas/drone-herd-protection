@@ -1,6 +1,6 @@
 # CLAUDE.md — Proyecto escolta (drones / lobos / vacas) · AI Lab, Comillas
 
-Contrato de trabajo para este repo. El razonamiento completo está en `DISEÑO.md`;
+Contrato de trabajo para este repo. El razonamiento completo está en `docs/DISEÑO.md`;
 esto es lo que no debe perderse entre sesiones ni tras un /compact. Trabajamos en español.
 
 ## Disciplina (siempre)
